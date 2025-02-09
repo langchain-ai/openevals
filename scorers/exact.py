@@ -1,8 +1,8 @@
-from matchers.base import MatchResult
+from scorers.base import ScorerResult
 import json
 
 
-def exact_matcher(*, inputs: dict, outputs: dict) -> MatchResult:
+def exact_match(*, inputs: dict, outputs: dict) -> ScorerResult:
     """
     Performs exact string matching between input and output values.
 
@@ -19,4 +19,4 @@ def exact_matcher(*, inputs: dict, outputs: dict) -> MatchResult:
     # Convert both to JSON strings for deep comparison
     inputs_json = json.dumps(inputs, sort_keys=True)
     outputs_json = json.dumps(outputs, sort_keys=True)
-    return MatchResult(key="equal", score=1.0 if inputs_json == outputs_json else 0.0)
+    return ScorerResult(key="equal", score=1.0 if inputs_json == outputs_json else 0.0)

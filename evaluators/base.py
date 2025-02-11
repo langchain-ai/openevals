@@ -9,5 +9,10 @@ class EvaluatorResult(TypedDict):
 
 class SimpleEvaluator(Protocol):
     def __call__(
-        self, *, inputs: dict, outputs: dict, reference_outputs: Optional[dict] = None
+        self,
+        *,
+        inputs: dict,
+        outputs: dict,
+        reference_outputs: Optional[dict] = None,
+        **kwargs,
     ) -> bool: ...

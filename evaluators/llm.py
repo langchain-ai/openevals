@@ -3,7 +3,6 @@ from langsmith import testing as t
 from langsmith.testing._internal import _TEST_CASE
 from typing import (
     Callable,
-    List,
     Optional,
     Protocol,
     TypedDict,
@@ -15,7 +14,7 @@ import json
 
 
 class ChatCompletionMessage(TypedDict):
-    content: str
+    content: list[Union[str, dict]]
     role: str
 
 
@@ -46,9 +45,9 @@ class LangChainLikeModel(Protocol):
 
 def create_llm_as_judge(
     *,
-    prompt: str,
+    prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     client_or_scorer: Union[
-        ModelClient, LangChainLikeModel, Callable[[List[ChatCompletionMessage]], float]
+        ModelClient, LangChainLikeModel, Callable[[list[ChatCompletionMessage]], float]
     ],
     model: Optional[str] = None,
     key: str = "quality",
@@ -64,16 +63,31 @@ def create_llm_as_judge(
         reference_outputs: Optional[dict] = None,
         **kwargs,
     ) -> EvaluatorResult:
-        formatted_prompt = prompt.format(
-            inputs=inputs,
-            outputs=outputs,
-            reference_outputs=reference_outputs,
-            **kwargs,
-        )
-
-        messages = [
-            {"role": "user", "content": formatted_prompt},
-        ]
+        if isinstance(prompt, RunnableLike):
+            formatted_prompt = prompt.invoke(
+                inputs=inputs,
+                outputs=outputs,
+                reference_outputs=reference_outputs,
+                **kwargs,
+            )
+            messages = formatted_prompt.messages
+        elif isinstance(prompt, str):
+            formatted_prompt = prompt.format(
+                inputs=inputs,
+                outputs=outputs,
+                reference_outputs=reference_outputs,
+                **kwargs,
+            )
+            messages = [
+                {"role": "user", "content": formatted_prompt},
+            ]
+        else:
+            messages = prompt(
+                inputs=inputs,
+                outputs=outputs,
+                reference_outputs=reference_outputs,
+                **kwargs,
+            )
 
         def get_score():
             json_schema = {

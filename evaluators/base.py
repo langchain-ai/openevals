@@ -4,6 +4,7 @@ from typing import TypedDict, Union, Optional, Protocol
 class EvaluatorResult(TypedDict):
     key: str
     score: Union[int, bool]
+    reasoning: Optional[str]
     comment: Optional[str]
 
 

@@ -48,14 +48,10 @@ def create_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     key: str = "quality",
-    judge: Optional[
-        Union[
-            ModelClient,
-            LangChainLikeModel,
-            Callable[[list[ChatCompletionMessage]], float],
-        ]
-    ] = None,
     model: Optional[str] = None,
+    client: Optional[ModelClient] = None,
+    continuous: bool = False,
+    use_reasoning: bool = True,
 ) -> SimpleEvaluator:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
@@ -77,12 +73,14 @@ def create_llm_as_judge(
             )
             messages = formatted_prompt.messages
         elif isinstance(prompt, str):
-            formatted_prompt = prompt.format(
-                inputs=inputs,
-                outputs=outputs,
-                reference_outputs=reference_outputs,
+            format_args = {
+                "inputs": inputs,
+                "outputs": outputs,
                 **kwargs,
-            )
+            }
+            if "{reference_outputs}" in prompt:
+                format_args["reference_outputs"] = reference_outputs
+            formatted_prompt = prompt.format(**format_args)
             messages = [
                 {"role": "user", "content": formatted_prompt},
             ]
@@ -95,38 +93,67 @@ def create_llm_as_judge(
             )
 
         def get_score():
-            description = f"A numerical score indicating the {key} of the output relative to the reference output"
             json_schema = {
                 "type": "object",
-                "properties": {
-                    "score": {
-                        "type": "number",
-                        "description": description,
-                    }
-                },
-                "required": ["score"],
                 "additionalProperties": False,
             }
+            # Make the output continuous or not
+            if continuous:
+                description = f"A continuous score from 0 to 1 indicating how well the test case satisfies the criteria"
+                score_schema = {
+                    "type": "number",
+                    "description": description,
+                }
+            else:
+                description = f"A binary score of 0 or 1 indicating whether the test case satisfies the criteria"
+                score_schema = {
+                    "type": "number",
+                    "description": description,
+                    "enum": [0, 1],
+                }
+            
+            # Add reasoning if passed
+            if use_reasoning:
+                json_schema["properties"] = {
+                    "reasoning": {
+                        "type": "string",
+                        "description": "A human-readable explanation of the score",
+                    },
+                    "score": score_schema,
+                }
+                json_schema["required"] = ["score", "reasoning"]
+            else:
+                json_schema["properties"] = {
+                    "score": score_schema,
+                }
+                json_schema["required"] = ["score"]
 
-            nonlocal judge
+            nonlocal client
 
-            if judge is None:
+            if client is None:
                 if model is None:
-                    raise ValueError("`model` is required if `judge` is not provided")
+                    # Default to gpt-4o-mini
+                    model_to_use = "openai:gpt-4o-mini"
+                else:
+                    model_to_use = model
                 from langchain.chat_models import init_chat_model
 
-                judge = init_chat_model(model=model)
+                try:
+                    judge = init_chat_model(model=model_to_use)
+                except ValueError:
+                    raise ValueError(
+                        f"Could not find model: {model_to_use}."
+                    )
+                json_schema['title'] = "evaluator_score"
+                json_schema['description'] = "The score for the evaluation criteria"
+                judge = judge.with_structured_output(
+                    json_schema
+                )
+                response = judge.invoke(messages)
+                return response["score"], response.get("reasoning")
+                
 
-            if isinstance(judge, LangChainLikeModel):
-                response = judge.with_structured_output(
-                    {
-                        "title": "score",
-                        "description": description,
-                        **json_schema,
-                    }
-                ).invoke(messages)
-                return response["score"]
-            elif isinstance(judge, ModelClient):
+            elif isinstance(client, ModelClient):
                 if model is None:
                     raise ValueError("`model` is required for non-LangChain clients")
                 params = {
@@ -155,20 +182,14 @@ def create_llm_as_judge(
 
                 response = invoke_llm(**params)
                 parsed = json.loads(response.choices[0].message.content)
-                return parsed["score"]
-            else:
-                if model is not None:
-                    raise ValueError(
-                        "`model` is not allowed when passing a raw function as the judge"
-                    )
-                return judge(formatted_prompt)
+                return parsed["score"], parsed.get("reasoning")
 
         if _TEST_CASE.get():
             with t.trace_feedback():
-                score = get_score()
+                score, reasoning = get_score()
                 t.log_feedback(key=key, score=score)
         else:
-            score = get_score()
-        return EvaluatorResult(key=key, score=score)
+            score, reasoning = get_score()
+        return EvaluatorResult(key=key, score=score, reasoning=reasoning)
 
     return wrapped_evaluator

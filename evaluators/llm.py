@@ -1,5 +1,6 @@
 from evaluators.base import EvaluatorResult, SimpleEvaluator
 from langsmith import testing as t
+from langsmith import traceable
 from langsmith.testing._internal import _TEST_CASE
 from typing import (
     Callable,
@@ -46,11 +47,11 @@ class LangChainLikeModel(Protocol):
 def create_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
+    key: str = "quality",
     client_or_scorer: Union[
         ModelClient, LangChainLikeModel, Callable[[list[ChatCompletionMessage]], float]
     ],
     model: Optional[str] = None,
-    key: str = "quality",
 ) -> SimpleEvaluator:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
@@ -90,12 +91,13 @@ def create_llm_as_judge(
             )
 
         def get_score():
+            description = f"A numerical score indicating the {key} of the output relative to the reference output"
             json_schema = {
                 "type": "object",
                 "properties": {
                     "score": {
                         "type": "number",
-                        "description": "A numerical score indicating the quality of the output",
+                        "description": description,
                     }
                 },
                 "required": ["score"],
@@ -107,7 +109,7 @@ def create_llm_as_judge(
                 response = client_or_scorer.with_structured_output(
                     {
                         "title": "score",
-                        "description": "A numerical score indicating the quality of the output",
+                        "description": description,
                         **json_schema,
                     }
                 ).invoke(messages)
@@ -127,12 +129,24 @@ def create_llm_as_judge(
                         },
                     },
                 }
-                response = client_or_scorer.chat.completions.create(**params)
+
+                @traceable(
+                    run_type="llm",
+                    metadata={
+                        "ls_provider": "openai",
+                        "ls_model_name": model,
+                        "ls_model_type": "chat",
+                    },
+                )
+                def invoke_llm(**params):
+                    return client_or_scorer.chat.completions.create(**params)
+
+                response = invoke_llm(**params)
                 parsed = json.loads(response.choices[0].message.content)
                 return parsed["score"]
             else:
                 if model is not None:
-                    raise ValueError("`model` is not allowed for arbitraryfunctions")
+                    raise ValueError("`model` is not allowed for arbitrary functions")
                 return client_or_scorer(formatted_prompt)
 
         if _TEST_CASE.get():

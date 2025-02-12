@@ -52,6 +52,7 @@ def create_llm_as_judge(
     client: Optional[ModelClient] = None,
     continuous: bool = False,
     use_reasoning: bool = True,
+    model_kwargs: Optional[dict] = None,
 ) -> SimpleEvaluator:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
@@ -139,7 +140,7 @@ def create_llm_as_judge(
                 from langchain.chat_models import init_chat_model
 
                 try:
-                    judge = init_chat_model(model=model_to_use)
+                    judge = init_chat_model(model=model_to_use, **(model_kwargs or {}))
                 except ValueError:
                     raise ValueError(
                         f"Could not find model: {model_to_use}."
@@ -167,6 +168,7 @@ def create_llm_as_judge(
                             "schema": json_schema,
                         },
                     },
+                    **(model_kwargs or {}),
                 }
 
                 @traceable(
@@ -190,6 +192,6 @@ def create_llm_as_judge(
                 t.log_feedback(key=key, score=score)
         else:
             score, reasoning = get_score()
-        return EvaluatorResult(key=key, score=score, reasoning=reasoning)
+        return EvaluatorResult(key=key, score=score, comment=reasoning)
 
     return wrapped_evaluator

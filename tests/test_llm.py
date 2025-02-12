@@ -11,7 +11,7 @@ def test_llm_as_judge_openai():
     client = OpenAI()
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
-        client_or_scorer=client,
+        judge=client,
         model="gpt-4o-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -25,7 +25,7 @@ def test_llm_as_judge_langchain():
     client = ChatOpenAI(model="gpt-4o-mini")
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
-        client_or_scorer=client,
+        judge=client,
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
@@ -53,7 +53,7 @@ def test_llm_as_judge_arbitrary_function():
 
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
-        client_or_scorer=arbitrary_function,
+        judge=arbitrary_function,
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == 1.0

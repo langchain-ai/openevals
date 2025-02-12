@@ -48,7 +48,7 @@ def create_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     key: str = "quality",
-    client_or_scorer: Optional[
+    judge: Optional[
         Union[
             ModelClient,
             LangChainLikeModel,
@@ -108,19 +108,17 @@ def create_llm_as_judge(
                 "additionalProperties": False,
             }
 
-            nonlocal client_or_scorer
+            nonlocal judge
 
-            if client_or_scorer is None:
+            if judge is None:
                 if model is None:
-                    raise ValueError(
-                        "`model` is required if `client_or_scorer` is not provided"
-                    )
+                    raise ValueError("`model` is required if `judge` is not provided")
                 from langchain.chat_models import init_chat_model
 
-                client_or_scorer = init_chat_model(model=model)
+                judge = init_chat_model(model=model)
 
-            if isinstance(client_or_scorer, LangChainLikeModel):
-                response = client_or_scorer.with_structured_output(
+            if isinstance(judge, LangChainLikeModel):
+                response = judge.with_structured_output(
                     {
                         "title": "score",
                         "description": description,
@@ -128,7 +126,7 @@ def create_llm_as_judge(
                     }
                 ).invoke(messages)
                 return response["score"]
-            elif isinstance(client_or_scorer, ModelClient):
+            elif isinstance(judge, ModelClient):
                 if model is None:
                     raise ValueError("`model` is required for non-LangChain clients")
                 params = {
@@ -153,15 +151,17 @@ def create_llm_as_judge(
                     },
                 )
                 def invoke_llm(**params):
-                    return client_or_scorer.chat.completions.create(**params)
+                    return judge.chat.completions.create(**params)
 
                 response = invoke_llm(**params)
                 parsed = json.loads(response.choices[0].message.content)
                 return parsed["score"]
             else:
                 if model is not None:
-                    raise ValueError("`model` is not allowed for arbitrary functions")
-                return client_or_scorer(formatted_prompt)
+                    raise ValueError(
+                        "`model` is not allowed when passing a raw function as the judge"
+                    )
+                return judge(formatted_prompt)
 
         if _TEST_CASE.get():
             with t.trace_feedback():

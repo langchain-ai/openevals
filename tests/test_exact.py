@@ -1,5 +1,5 @@
-from evaluators.base import EvaluatorResult
 from evaluators.exact import exact_match
+from evaluators.types import EvaluatorResult
 
 import pytest
 

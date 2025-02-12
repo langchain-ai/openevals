@@ -1,4 +1,4 @@
-from evaluators.base import EvaluatorResult, SimpleEvaluator
+from evaluators.types import EvaluatorResult, SimpleEvaluator
 from langsmith import testing as t
 from langsmith import traceable
 from langsmith.testing._internal import _TEST_CASE

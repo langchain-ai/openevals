@@ -48,9 +48,13 @@ def create_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     key: str = "quality",
-    client_or_scorer: Union[
-        ModelClient, LangChainLikeModel, Callable[[list[ChatCompletionMessage]], float]
-    ],
+    client_or_scorer: Optional[
+        Union[
+            ModelClient,
+            LangChainLikeModel,
+            Callable[[list[ChatCompletionMessage]], float],
+        ]
+    ] = None,
     model: Optional[str] = None,
 ) -> SimpleEvaluator:
     """
@@ -103,9 +107,19 @@ def create_llm_as_judge(
                 "required": ["score"],
                 "additionalProperties": False,
             }
+
+            nonlocal client_or_scorer
+
+            if client_or_scorer is None:
+                if model is None:
+                    raise ValueError(
+                        "`model` is required if `client_or_scorer` is not provided"
+                    )
+                from langchain.chat_models import init_chat_model
+
+                client_or_scorer = init_chat_model(model=model)
+
             if isinstance(client_or_scorer, LangChainLikeModel):
-                if model is not None:
-                    raise ValueError("`model` is not allowed for LangChain clients")
                 response = client_or_scorer.with_structured_output(
                     {
                         "title": "score",

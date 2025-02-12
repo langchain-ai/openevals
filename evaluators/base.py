@@ -1,4 +1,4 @@
-from typing import TypedDict, Union, Optional, Protocol
+from typing import Any, Optional, Protocol, TypedDict, Union
 
 
 class EvaluatorResult(TypedDict):
@@ -11,8 +11,8 @@ class SimpleEvaluator(Protocol):
     def __call__(
         self,
         *,
-        inputs: dict,
-        outputs: dict,
-        reference_outputs: Optional[dict] = None,
+        inputs: Any,
+        outputs: Any,
+        reference_outputs: Optional[Any] = None,
         **kwargs,
     ) -> bool: ...

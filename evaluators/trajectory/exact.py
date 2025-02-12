@@ -7,6 +7,7 @@ def exact_trajectory_match(
     *,
     outputs: list[ChatCompletionMessage],
     reference_outputs: list[ChatCompletionMessage],
+    **kwargs: Any,
 ) -> EvaluatorResult:
     """
     Assert agent trajectory and called tools matches output agent trajectory and called tools for some given input.
@@ -16,7 +17,7 @@ def exact_trajectory_match(
         reference_outputs (list[ChatCompletionMessage]): Ideal reference trajectory the agent should have followed
 
     Returns:
-        MatchResult: Contains match result with score 1.0 for exact match, 0.0 otherwise
+        MatchResult: Contains match result with score 1.0 if trajectory (including called tools) matches, 0.0 otherwise
     """
 
     exact_match = True

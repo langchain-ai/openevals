@@ -3,7 +3,7 @@ import json
 from typing import Any
 
 
-def exact_match(*, inputs: Any, outputs: Any) -> EvaluatorResult:
+def exact_match(*, inputs: Any, outputs: Any, **kwargs: Any) -> EvaluatorResult:
     """
     Performs exact matching between input and output values.
 

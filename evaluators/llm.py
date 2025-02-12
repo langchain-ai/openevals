@@ -47,7 +47,7 @@ class LangChainLikeModel(Protocol):
 def create_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
-    key: str = "quality",
+    metric: str = "quality",
     judge: Optional[
         Union[
             ModelClient,
@@ -95,7 +95,7 @@ def create_llm_as_judge(
             )
 
         def get_score():
-            description = f"A numerical score indicating the {key} of the output relative to the reference output"
+            description = f"A numerical score measuring {metric}"
             json_schema = {
                 "type": "object",
                 "properties": {
@@ -166,9 +166,9 @@ def create_llm_as_judge(
         if _TEST_CASE.get():
             with t.trace_feedback():
                 score = get_score()
-                t.log_feedback(key=key, score=score)
+                t.log_feedback(key=metric, score=score)
         else:
             score = get_score()
-        return EvaluatorResult(key=key, score=score)
+        return EvaluatorResult(key=metric, score=score)
 
     return wrapped_evaluator

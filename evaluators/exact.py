@@ -1,21 +1,18 @@
 from evaluators.base import EvaluatorResult
 import json
+from typing import Any
 
-
-def exact_match(*, inputs: dict, outputs: dict) -> EvaluatorResult:
+def exact_match(*, inputs: Any, outputs: Any) -> EvaluatorResult:
     """
     Performs exact string matching between input and output values.
 
     Args:
-        inputs (dict): Input dictionary to compare
-        outputs (dict): Output dictionary to compare
+        inputs (Any): Inputs to compare
+        outputs (Any): Outputs to compare
 
     Returns:
         MatchResult: Contains match result with score 1.0 for exact match, 0.0 otherwise
     """
-    if not isinstance(inputs, dict) or not isinstance(outputs, dict):
-        raise TypeError("Both inputs and outputs must be dictionaries")
-
     # Convert both to JSON strings for deep comparison
     inputs_json = json.dumps(inputs, sort_keys=True)
     outputs_json = json.dumps(outputs, sort_keys=True)

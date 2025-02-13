@@ -11,7 +11,7 @@ def _run_evaluator(
     *, run_name: str, evaluator_fn: Callable, feedback_key: str
 ) -> EvaluatorResult:
     if _TEST_CASE.get():
-        with t.trace_feedback(run_name):
+        with t.trace_feedback(name=run_name):
             score = evaluator_fn()
             t.log_feedback(key=feedback_key, score=score)
     else:

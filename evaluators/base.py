@@ -16,3 +16,5 @@ class SimpleEvaluator(Protocol):
         reference_outputs: Optional[dict] = None,
         **kwargs,
     ) -> bool: ...
+
+    

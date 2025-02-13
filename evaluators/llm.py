@@ -52,7 +52,6 @@ def create_llm_as_judge(
     client: Optional[ModelClient] = None,
     continuous: bool = False,
     use_reasoning: bool = True,
-    model_kwargs: Optional[dict] = None,
 ) -> SimpleEvaluator:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
@@ -63,6 +62,7 @@ def create_llm_as_judge(
         inputs: dict,
         outputs: dict,
         reference_outputs: Optional[dict] = None,
+        model_kwargs: Optional[dict] = None,
         **kwargs,
     ) -> EvaluatorResult:
         if isinstance(prompt, RunnableLike):
@@ -74,14 +74,12 @@ def create_llm_as_judge(
             )
             messages = formatted_prompt.messages
         elif isinstance(prompt, str):
-            format_args = {
-                "inputs": inputs,
-                "outputs": outputs,
+            formatted_prompt = prompt.format(
+                inputs=inputs,
+                outputs=outputs,
+                reference_outputs=reference_outputs,
                 **kwargs,
-            }
-            if "{reference_outputs}" in prompt:
-                format_args["reference_outputs"] = reference_outputs
-            formatted_prompt = prompt.format(**format_args)
+            )
             messages = [
                 {"role": "user", "content": formatted_prompt},
             ]
@@ -106,11 +104,10 @@ def create_llm_as_judge(
                     "description": description,
                 }
             else:
-                description = f"A binary score of 0 or 1 indicating whether the test case satisfies the criteria"
+                description = f"A boolean of True or False. Return True if the test case satisfies any of the criteria."
                 score_schema = {
-                    "type": "number",
+                    "type": "boolean",
                     "description": description,
-                    "enum": [0, 1],
                 }
             
             # Add reasoning if passed
@@ -133,17 +130,14 @@ def create_llm_as_judge(
 
             if client is None:
                 if model is None:
-                    # Default to gpt-4o-mini
-                    model_to_use = "openai:gpt-4o-mini"
-                else:
-                    model_to_use = model
+                    raise ValueError("`model` is required for non-LangChain clients")
                 from langchain.chat_models import init_chat_model
 
                 try:
-                    judge = init_chat_model(model=model_to_use, **(model_kwargs or {}))
+                    judge = init_chat_model(model=model, **(model_kwargs or {}))
                 except ValueError:
                     raise ValueError(
-                        f"Could not find model: {model_to_use}."
+                        f"Could not find model: {model}."
                     )
                 json_schema['title'] = "evaluator_score"
                 json_schema['description'] = "The score for the evaluation criteria"

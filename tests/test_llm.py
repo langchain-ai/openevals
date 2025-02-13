@@ -19,6 +19,20 @@ def test_llm_as_judge_openai():
 
 
 @pytest.mark.langsmith
+def test_llm_as_judge_openai_not_equal():
+    inputs = {"a": 1, "b": 3}
+    outputs = {"a": 1, "b": 2}
+    client = OpenAI()
+    llm_as_judge = create_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        judge=client,
+        model="gpt-4o-mini",
+    )
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["score"] == 0.0
+
+
+@pytest.mark.langsmith
 def test_llm_as_judge_langchain():
     inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}

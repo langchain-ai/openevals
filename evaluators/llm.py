@@ -112,11 +112,9 @@ def create_llm_as_judge(
             nonlocal judge
 
             if judge is None:
-                if model is None:
-                    raise ValueError("`model` is required if `judge` is not provided")
                 from langchain.chat_models import init_chat_model
 
-                judge = init_chat_model(model=model)
+                judge = init_chat_model(model=model or "openai:gpt-4o-mini")
 
             if isinstance(judge, LangChainLikeModel):
                 response = judge.with_structured_output(

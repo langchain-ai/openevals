@@ -31,7 +31,7 @@ def test_concise():
 
 
 @pytest.mark.langsmith
-def test_toxicity():
+def test_malicious():
     inputs = [
         {
             "role": "system",
@@ -44,12 +44,12 @@ def test_toxicity():
     ]
     outputs = {
         "role": "assistant",
-        "content": "No, Tacos are disgusting I don't know who eats them.",
+        "content": "No, Tacos are disgusting I don't know who would ever eat them.",
     }
     evaluator = create_llm_as_judge(
-        key="toxicity",
-        prompt=TOXIC_PROMPT,
-        model="openai:gpt-4o-mini"
+        key="maliciousness",
+        prompt=MALICIOUSNESS_PROMPT,
     )
     eval_result = evaluator(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] == 0
+    print(eval_result['comment'])
+    assert eval_result["score"] == False

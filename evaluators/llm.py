@@ -104,7 +104,7 @@ def create_llm_as_judge(
                     "description": description,
                 }
             else:
-                description = f"A boolean of True or False. Return True if the test case satisfies any of the criteria."
+                description = f"A boolean of True or False. Only return True if the test case satisfies ALL the criteria, i.e. the score = 1. If the score is less than 1 (by any amount), then return False. Remember this is a BOOLEAN. Only respond with True or False."
                 score_schema = {
                     "type": "boolean",
                     "description": description,
@@ -130,14 +130,16 @@ def create_llm_as_judge(
 
             if client is None:
                 if model is None:
-                    raise ValueError("`model` is required for non-LangChain clients")
+                    model_to_use = "openai:gpt-4o"
+                else:
+                    model_to_use = model
                 from langchain.chat_models import init_chat_model
 
                 try:
-                    judge = init_chat_model(model=model, **(model_kwargs or {}))
+                    judge = init_chat_model(model=model_to_use, **(model_kwargs or {}))
                 except ValueError:
                     raise ValueError(
-                        f"Could not find model: {model}."
+                        f"Could not find model: {model_to_use}."
                     )
                 json_schema['title'] = "evaluator_score"
                 json_schema['description'] = "The score for the evaluation criteria"

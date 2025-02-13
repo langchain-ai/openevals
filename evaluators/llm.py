@@ -1,7 +1,8 @@
+from evaluators.utils import _run_evaluator
 from evaluators.types import EvaluatorResult, SimpleEvaluator
-from langsmith import testing as t
+
 from langsmith import traceable
-from langsmith.testing._internal import _TEST_CASE
+
 from typing import (
     Callable,
     Optional,
@@ -163,12 +164,10 @@ def create_llm_as_judge(
                     )
                 return judge(formatted_prompt)
 
-        if _TEST_CASE.get():
-            with t.trace_feedback():
-                score = get_score()
-                t.log_feedback(key=metric, score=score)
-        else:
-            score = get_score()
-        return EvaluatorResult(key=metric, score=score)
+        return _run_evaluator(
+            run_name=f"llm_as_{metric}_judge",
+            evaluator_fn=get_score,
+            feedback_key=metric,
+        )
 
     return wrapped_evaluator

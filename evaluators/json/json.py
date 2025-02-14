@@ -6,11 +6,15 @@ from evaluators.llm import _create_llm_as_judge_scorer, ModelClient, LangChainLi
 SYSTEM_PROMPT = """You an LLM that evaluates the accuracy of structured outputs.
 Make sure to evaluate each key the users you to evaluate separately. Assign the score
 for each key based on it's own criteria - DO NOT convolute the scores of different keys.
+Also only evaluate the output v.s. the reference output based on the criteria. DO NOT EVALUATE
+BASED ON ANYTHING ELSE. If the output does not match the reference output in some way that
+is not mentioned in the criteria that is not a problem and you should ignore those discrepancies.
+Only focus on finding discrepancies based on the criteria.
 """
 
 USER_PROMPT = """
 Can you please evaluate the accuracy of the following output keys?
-{criteria}
+{rubric}
 <Outputs>
 {outputs}
 </Outputs>
@@ -20,8 +24,8 @@ Can you please evaluate the accuracy of the following output keys?
 
 def json_match_evaluator(
     *,
-    aggregator: Optional[Literal["average", "conjunction"]] = None,
-    list_aggregator: Literal["average", "conjunction"] = "conjunction",
+    aggregator: Optional[Literal["average", "all"]] = None,
+    list_aggregator: Literal["average", "all"] = "all",
     rubric: Dict[str,str] = {},
     exclude_keys: list[str] = [],
     judge: Optional[
@@ -37,14 +41,14 @@ def json_match_evaluator(
     Create an evaluator to evaluate the accuracy of structured outputs.
 
     Parameters:
-        aggregator (Optional[Literal["average", "conjunction"]]): The aggregation method to use for combining the keys of each structured object.
+        aggregator (Optional[Literal["average", "all"]]): The aggregation method to use for combining the keys of each structured object.
             Defaults to None. If None, will return a single EvaluatorResult for each key that appears in either
             the outputs or the reference_outputs or both. If "average", will return a single EvaluatorResult that
-            is the average of the feedback for each key in the outputs/reference_outputs. If "conjunction", will return
-            a single EvaluatorResult that is the conjunction of the feedback for each key in the outputs/reference_outputs.
-            If "conjunction"/"average" the feedback key returned will be called "structured_match_score
-        list_aggregator (Literal["average", "conjunction"]): The aggregation method to use when evaluating a list of outputs.
-            Defaults to "conjunction". If "conjunction", the score for a single feedback key will be the conjunction of the scores for
+            is the average of the feedback for each key in the outputs/reference_outputs. If "all", will return
+            a single EvaluatorResult that is a combined and statement of the feedback for each key in the outputs/reference_outputs.
+            If "all"/"average" the feedback key returned will be called "structured_match_score
+        list_aggregator (Literal["average", "all"]): The aggregation method to use when evaluating a list of outputs.
+            Defaults to "all". If "all", the score for a single feedback key will be a combined and statement of the scores for
             that key across all elements of the list. If "average", the score for a single feedback key will be the
             average of the scores for that key across all elements of the list
         rubric (Optional[Dict[str,str]]): The rubric to use for the judge. Each entry of the dict is a 
@@ -77,7 +81,7 @@ def json_match_evaluator(
         }
 
         scores = {}
-        criteria = ""
+        formatted_rubric = ""
         use_list_reducer = False
         if isinstance(outputs, list):
             use_list_reducer = True
@@ -112,7 +116,7 @@ def json_match_evaluator(
                 scores[raw_key] = 0
             else:
                 key_criteria = rubric[key]
-                criteria += f"Key: {key}, Criteria: {key_criteria}\n" 
+                formatted_rubric += f"Key: {key}, Criteria: {key_criteria}\n" 
                 if not use_reasoning:
                     json_schema["properties"][raw_key] = {
                         "type": "boolean",
@@ -143,7 +147,7 @@ def json_match_evaluator(
                 scores[raw_key] = 0
 
         scorer = None
-        if len(criteria) > 0:
+        if len(formatted_rubric) > 0:
             output_keys = "\n".join([f"{key}: {outputs[key]}" for key in json_schema["properties"]])
             expected_output_keys = "\n".join([f"{key}: {reference_outputs[key]}" for key in json_schema["properties"]])
             scorer = _create_llm_as_judge_scorer(
@@ -154,7 +158,7 @@ def json_match_evaluator(
                 model=model,
             )
         else:
-            criteria, output_keys, expected_output_keys = None, None, None
+            formatted_rubric, output_keys, expected_output_keys = None, None, None
             
             
         def _scorer(
@@ -162,13 +166,13 @@ def json_match_evaluator(
             scores: dict,
             output_keys: Optional[str] = None,
             expected_output_keys: Optional[str] = None,
-            criteria: Optional[str] = None,
+            rubric: Optional[str] = None,
         ) -> Union[float, bool, dict]:
             if scorer is not None:
                 llm_scores = scorer(
                     outputs=output_keys,
                     reference_outputs=expected_output_keys,
-                    criteria=criteria,
+                    rubric=rubric,
                 )
                 scores.update(llm_scores)
 
@@ -180,7 +184,7 @@ def json_match_evaluator(
                         scores_aggregated_across_list[key] = sum(
                             [(scores[k]['score'] if isinstance(scores[k], dict) else scores[k]) for k in scores if k[:k.rfind("_")] == key]
                         ) / len([scores[k] for k in scores if k[:k.rfind("_")] == key])
-                elif list_aggregator == "conjunction":
+                elif list_aggregator == "all":
                     for key in keys:
                         scores_aggregated_across_list[key] = 0 if 0 in [(scores[k]['score'] if isinstance(scores[k], dict) else scores[k]) for k in scores if k[:k.rfind("_")] == key] else 1
                 scores = scores_aggregated_across_list
@@ -188,7 +192,7 @@ def json_match_evaluator(
             score = None
             if aggregator == "average":
                 score = sum([v['score'] if isinstance(v, dict) else v for v in scores.values()]) / len(scores)
-            elif aggregator == "conjunction":
+            elif aggregator == "all":
                 score = 0 if any([(v['score'] if isinstance(v, dict) else v) != 1 for v in scores.values()]) else 1
 
             # If there is an aggregator, return a single result 
@@ -211,7 +215,7 @@ def json_match_evaluator(
             feedback_key="structured_match_score",
             output_keys=output_keys,
             expected_output_keys=expected_output_keys,
-            criteria=criteria,
+            rubric=formatted_rubric,
             scores=scores,
             **kwargs,
         )

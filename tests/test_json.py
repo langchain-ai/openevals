@@ -47,7 +47,7 @@ def test_json_match_exclude():
 def test_json_match_all():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 3}
-    evaluator = json_match_evaluator(aggregator="conjunction")
+    evaluator = json_match_evaluator(aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
@@ -57,7 +57,7 @@ def test_json_match_rubric():
     outputs = {"name": "Harrison Chase", "description": "CEO of LangChain, used to work at Kensho + Robust Intelligence."}
     reference_outputs = {"name": "Harrison Chase", "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."}
     evaluator = json_match_evaluator(
-        aggregator="conjunction",
+        aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         }
@@ -71,7 +71,7 @@ def test_json_match_rubric_wrong():
     outputs = {"name": "Harrison Chase", "description": "CEO of LangChain, used to work at Kensho."}
     reference_outputs = {"name": "Harrison Chase", "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."}
     evaluator = json_match_evaluator(
-        aggregator="conjunction",
+        aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         }
@@ -99,7 +99,7 @@ def test_json_match_rubric_without_reasoning():
     outputs = {"description": "CEO of LangChain, used to work at Kensho."}
     reference_outputs = {"description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."}
     evaluator = json_match_evaluator(
-        aggregator="conjunction",
+        aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         },
@@ -175,7 +175,7 @@ def test_json_match_list_all_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
     ]
-    evaluator = json_match_evaluator(aggregator="conjunction")
+    evaluator = json_match_evaluator(aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
@@ -190,7 +190,7 @@ def test_json_match_list_average_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 3},
     ]
-    evaluator = json_match_evaluator(list_aggregator="average",aggregator="conjunction")
+    evaluator = json_match_evaluator(list_aggregator="average",aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
@@ -283,7 +283,7 @@ def test_json_match_list_mismatch_all_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = json_match_evaluator(aggregator="conjunction")
+    evaluator = json_match_evaluator(aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
@@ -298,7 +298,7 @@ def test_json_match_list_mismatch_average_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = json_match_evaluator(list_aggregator="average", aggregator="conjunction")
+    evaluator = json_match_evaluator(list_aggregator="average", aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0

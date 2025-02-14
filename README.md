@@ -186,7 +186,7 @@ def test_json_match_mix():
     outputs = {"a": "Mango, Bananas", "b": 2, "c": [1,2,3]}
     reference_outputs = {"a": "Bananas, Mango", "b": 3, "c": [1,2,3]}
     evaluator = json_match_evaluator(
-        # How to aggregate the feedback keys. Can be "average", "conjunction", or None
+        # How to aggregate the feedback keys. Can be "average", "all", or None
         # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
         aggregator="average",
         # The criteria for the LLM judge to use for each key you want evaluated by the LLM
@@ -196,7 +196,7 @@ def test_json_match_mix():
         # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
         exclude_keys=["c"],
         # The provider and name of the model to use, defaults to openai:o3-mini
-        model="openai:gpt-4o",
+        model="openai:o3-mini",
         # Whether to force the model to reason about the keys in `rubric`. Defaults to True
         use_reasoning=True
     )
@@ -224,9 +224,9 @@ def test_json_match_list_all_average():
         {"a": "Apples, Strawberries", "b": 2},
     ]
     evaluator = json_match_evaluator(
-        # How to aggregate the feedback keys across elements of the list. Can be "average" or "conjunction". Defaults to "conjunction". If "conjunction", the score for each key will be the conjunction of the scores for that key across all elements of the list. If "average", the score for each key will be the average of the scores for that key across all elements of the list
-        list_aggregator="conjunction",
-        # How to aggregate the feedback keys for each object in the list. Can be "average", "conjunction", or None
+        # How to aggregate the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". If "all", the score for each key will be a combined and statement of the scores for that key across all elements of the list. If "average", the score for each key will be the average of the scores for that key across all elements of the list
+        list_aggregator="all",
+        # How to aggregate the feedback keys for each object in the list. Can be "average", "all", or None
         # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
         aggregator="average",
         # The criteria for the LLM judge to use for each key you want evaluated by the LLM
@@ -236,7 +236,7 @@ def test_json_match_list_all_average():
         # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
         exclude_keys=["c"],
         # The provider and name of the model to use, defaults to openai:o3-mini
-        model="openai:gpt-4o",
+        model="openai:o3-mini",
         # Whether to force the model to reason about the keys in `rubric`. Defaults to True
         use_reasoning=True
     )

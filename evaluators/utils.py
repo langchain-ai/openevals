@@ -10,49 +10,46 @@ from evaluators.types import ChatCompletionMessage, EvaluatorResult
 def _run_evaluator(
     *, run_name: str, scorer: Callable, feedback_key: str, **kwargs: Any
 ) -> EvaluatorResult | list[EvaluatorResult]:
-    reasoning = None
+    # Get the initial score
     score = scorer(**kwargs)
-    if _TEST_CASE.get():
-        with t.trace_feedback(name=run_name):
-            if isinstance(score, dict):
-                for individual_feedback_key in score:
-                    if isinstance(score[individual_feedback_key], dict):
-                        if set(score[individual_feedback_key].keys()) == {"score", "reasoning"}:
-                            key_score = score[individual_feedback_key]["score"]
-                            reasoning = score[individual_feedback_key]["reasoning"]
-                        else:
-                            raise ValueError(
-                                f"Expected a dictionary with keys 'score' and 'reasoning', but got {score[individual_feedback_key]}"
-                            )
-                    else:
-                        key_score = score[individual_feedback_key]
-                        reasoning = None
-                    t.log_feedback(key=individual_feedback_key, score=key_score, comment=reasoning)
-            else:
-                if isinstance(score, tuple):
-                    score, reasoning = score
-                t.log_feedback(key=feedback_key, score=score, comment=reasoning)
-    # Always return the feedback, even if not logging
+    
+    # Helper function to process individual scores
+    def process_score(key: str, value: Any) -> tuple[float, str | None]:
+        if isinstance(value, dict):
+            if set(value.keys()) == {"score", "reasoning"}:
+                return value["score"], value["reasoning"]
+            raise ValueError(
+                f"Expected a dictionary with keys 'score' and 'reasoning', but got {value}"
+            )
+        return value, None
+
+    # Collect all results first
+    results = []
     if isinstance(score, dict):
-        results = []
-        for individual_feedback_key in score:
-            if isinstance(score[individual_feedback_key], dict):
-                if set(score[individual_feedback_key].keys()) == {"score", "reasoning"}:
-                    key_score = score[individual_feedback_key]["score"]
-                    reasoning = score[individual_feedback_key]["reasoning"]
-                else:
-                    raise ValueError(
-                        f"Expected a dictionary with keys 'score' and 'reasoning', but got {score[individual_feedback_key]}"
-                    )
-            else:
-                key_score = score[individual_feedback_key]
-                reasoning = None
-            results.append(EvaluatorResult(key=individual_feedback_key, score=key_score, comment=reasoning))
-        return results
+        # Handle dictionary of scores
+        for key, value in score.items():
+            key_score, reasoning = process_score(key, value)
+            results.append(EvaluatorResult(key=key, score=key_score, comment=reasoning))
     else:
+        # Handle single score
         if isinstance(score, tuple):
             score, reasoning = score
-        return EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
+        else:
+            reasoning = None
+        results.append(EvaluatorResult(key=feedback_key, score=score, comment=reasoning))
+
+    # Log feedback if in test case
+    if _TEST_CASE.get():
+        with t.trace_feedback(name=run_name):
+            for result in results:
+                t.log_feedback(
+                    key=result["key"],
+                    score=result["score"],
+                    comment=result["comment"]
+                )
+
+    # Return single result or list of results
+    return results[0] if len(results) == 1 else results
 
 
 def _chat_completion_messages_to_string(messages: list[ChatCompletionMessage]) -> str:

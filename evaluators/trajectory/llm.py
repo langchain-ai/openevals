@@ -52,13 +52,27 @@ def create_trajectory_llm_as_judge(
     def _wrapped_evaluator(
         *,
         inputs: Optional[dict] = None,
-        outputs: list[ChatCompletionMessage] | dict,
-        reference_outputs: Optional[dict] = None,
+        outputs: Union[list[ChatCompletionMessage], dict],
+        reference_outputs: Optional[Union[list[ChatCompletionMessage], dict]] = None,
         rubric: Optional[str] = None,
         **kwargs,
     ) -> EvaluatorResult:
+        if isinstance(outputs, dict):
+            if "messages" in outputs:
+                outputs = outputs["messages"]
+            else:
+                raise ValueError(
+                    "if outputs is a dict, it must contain a 'messages' key"
+                )
+        if isinstance(reference_outputs, dict):
+            if "messages" in reference_outputs:
+                reference_outputs = reference_outputs["messages"]
+            else:
+                raise ValueError(
+                    "if reference_outputs is a dict, it must contain a 'messages' key"
+                )
         if reference_outputs:
-            formatted_reference_outputs = f"\nUse the following trajectory as an example reference when grading:\n<reference_trajectory>\n{reference_outputs}\n</reference_trajectory>\n"
+            formatted_reference_outputs = f"\nUse the following trajectory as an example reference when grading:\n<reference_trajectory>\n{_chat_completion_messages_to_string(reference_outputs)}\n</reference_trajectory>\n"
         else:
             formatted_reference_outputs = ""
         if inputs:

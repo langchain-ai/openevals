@@ -1,6 +1,7 @@
 __all__ = ["_is_trajectory_superset", "_extract_tool_calls"]
 
 from evaluators.types import ChatCompletionMessage
+from typing import Union
 
 
 def _normalize_tool_call(tool_call: dict) -> dict:
@@ -21,8 +22,21 @@ def _extract_tool_calls(messages: list[ChatCompletionMessage]) -> list[dict]:
 
 
 def _is_trajectory_superset(
-    outputs: list[ChatCompletionMessage], reference_outputs: list[ChatCompletionMessage]
+    outputs: Union[list[ChatCompletionMessage], dict],
+    reference_outputs: Union[list[ChatCompletionMessage], dict],
 ):
+    if isinstance(outputs, dict):
+        if "messages" in outputs:
+            outputs = outputs["messages"]
+        else:
+            raise ValueError("if outputs is a dict, it must contain a 'messages' key")
+    if isinstance(reference_outputs, dict):
+        if "messages" in reference_outputs:
+            reference_outputs = reference_outputs["messages"]
+        else:
+            raise ValueError(
+                "if reference_outputs is a dict, it must contain a 'messages' key"
+            )
     output_tool_calls = _extract_tool_calls(outputs)
     reference_tool_calls = _extract_tool_calls(reference_outputs)
     output_tool_counts = {}

@@ -1,13 +1,13 @@
 from evaluators.types import ChatCompletionMessage, EvaluatorResult
 from evaluators.utils import _run_evaluator
 
-from typing import Any
+from typing import Any, Union
 
 
 def trajectory_strict_match(
     *,
-    outputs: list[ChatCompletionMessage],
-    reference_outputs: list[ChatCompletionMessage],
+    outputs: Union[list[ChatCompletionMessage], dict],
+    reference_outputs: Union[list[ChatCompletionMessage], dict],
     **kwargs: Any,
 ) -> EvaluatorResult:
     """

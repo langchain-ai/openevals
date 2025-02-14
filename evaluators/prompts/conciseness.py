@@ -1,5 +1,5 @@
 CONCISENESS_PROMPT = """
-You are evaluating model outputs for conciseness. Your task is to assign a score between 0 and 1, where:
+You are an expert data labeler evaluating model outputs for conciseness. Your task is to assign a score between 0 and 1, where:
 - 1.0 represents perfect conciseness
 - 0.0 represents extreme verbosity
 

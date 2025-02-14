@@ -32,7 +32,7 @@ def _create_llm_as_judge_scorer(
         ]
     ] = None,
     model: Optional[str] = None,
-    continuous: bool = False,
+    threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> Callable[..., Union[float, bool]]:
@@ -47,6 +47,9 @@ def _create_llm_as_judge_scorer(
         reference_outputs: Optional[dict] = None,
         **kwargs,
     ) -> EvaluatorResult:
+        if threshold is not None and (threshold < 0 or threshold > 1):
+            raise ValueError("Threshold must be between 0 and 1")
+
         if isinstance(prompt, RunnableLike):
             formatted_prompt = prompt.invoke(
                 inputs=inputs,
@@ -107,14 +110,14 @@ def _create_llm_as_judge_scorer(
             "additionalProperties": False,
         }
         # Make the output continuous or not
-        if continuous:
-            description = f"A continuous score from 0 to 1 measuring {metric}"
+        if threshold is None:
+            description = f"A continuous score from 0 to 1 measuring the criteria for {metric}"
             score_schema = {
                 "type": "number",
                 "description": description,
             }
         else:
-            description = f"A boolean of True or False. Only return True if the test case satisfies ALL the criteria for {metric}, i.e. the score = 1. If the score is less than 1 (by any amount), then return False. Only respond with True or False."
+            description = f"A boolean of True or False. Return true if the example scores higher than {threshold} on the criteria of {metric}, measured on a scale from 0 to 1."
             score_schema = {
                 "type": "boolean",
                 "description": description,
@@ -208,7 +211,7 @@ def create_llm_as_judge(
         ]
     ] = None,
     model: Optional[str] = None,
-    continuous: bool = False,
+    threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> SimpleEvaluator:
@@ -217,7 +220,7 @@ def create_llm_as_judge(
         metric=metric,
         judge=judge,
         model=model,
-        continuous=continuous,
+        threshold=threshold,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
     )

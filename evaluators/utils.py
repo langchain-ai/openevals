@@ -10,13 +10,16 @@ from evaluators.types import ChatCompletionMessage, EvaluatorResult
 def _run_evaluator(
     *, run_name: str, scorer: Callable, feedback_key: str, **kwargs: Any
 ) -> EvaluatorResult:
+    reasoning = None
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             score = scorer(**kwargs)
-            t.log_feedback(key=feedback_key, score=score)
+            if isinstance(score, tuple):
+                score, reasoning = score
+            t.log_feedback(key=feedback_key, score=score, comment=reasoning)
     else:
         score = scorer(**kwargs)
-    return EvaluatorResult(key=feedback_key, score=score)
+    return EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
 
 
 def _chat_completion_messages_to_string(messages: list[ChatCompletionMessage]) -> str:

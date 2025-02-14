@@ -16,6 +16,22 @@ def test_llm_as_judge_openai():
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
+    assert eval_result["comment"] is not None
+
+@pytest.mark.langsmith
+def test_llm_as_judge_openai_no_reasoning():
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    client = OpenAI()
+    llm_as_judge = create_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        judge=client,
+        model="gpt-4o-mini",
+        use_reasoning=False
+    )
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["score"] is not None
+    assert eval_result["comment"] is None
 
 
 @pytest.mark.langsmith
@@ -30,6 +46,21 @@ def test_llm_as_judge_openai_not_equal():
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == 0.0
+
+@pytest.mark.langsmith
+def test_llm_as_judge_openai_not_equal_continuous():
+    inputs = {"a": 1, "b": 3}
+    outputs = {"a": 1, "b": 2}
+    client = OpenAI()
+    llm_as_judge = create_llm_as_judge(
+        prompt="How equal are these 2? {inputs} {outputs}",
+        judge=client,
+        model="gpt-4o-mini",
+        continuous=True
+    )
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["score"] > 0
+    assert eval_result["score"] < 1
 
 
 @pytest.mark.langsmith

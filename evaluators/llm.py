@@ -102,13 +102,13 @@ def _create_llm_as_judge_scorer(
         }
         # Make the output continuous or not
         if continuous:
-            description = f"A continuous score from 0 to 1 indicating how well the test case satisfies the criteria"
+            description = f"A continuous score from 0 to 1 measuring {metric}"
             score_schema = {
                 "type": "number",
                 "description": description,
             }
         else:
-            description = f"A boolean of True or False. Only return True if the test case satisfies ALL the criteria, i.e. the score = 1. If the score is less than 1 (by any amount), then return False. Remember this is a BOOLEAN. Only respond with True or False."
+            description = f"A boolean of True or False. Only return True if the test case satisfies ALL the criteria for {metric}, i.e. the score = 1. If the score is less than 1 (by any amount), then return False. Only respond with True or False."
             score_schema = {
                 "type": "boolean",
                 "description": description,
@@ -145,6 +145,8 @@ def _create_llm_as_judge_scorer(
                     **json_schema,
                 }
             ).invoke(messages)
+            if use_reasoning:
+                return (response["score"], response["reasoning"])
             return response["score"]
         elif isinstance(judge, ModelClient):
             if model is None:
@@ -175,6 +177,8 @@ def _create_llm_as_judge_scorer(
 
             response = invoke_llm(**params)
             parsed = json.loads(response.choices[0].message.content)
+            if use_reasoning:
+                return (parsed["score"], parsed["reasoning"])
             return parsed["score"]
         else:
             if model is not None:
@@ -198,9 +202,16 @@ def create_llm_as_judge(
         ]
     ] = None,
     model: Optional[str] = None,
+    continuous: bool = False,
+    use_reasoning: bool = True,
 ) -> SimpleEvaluator:
     scorer = _create_llm_as_judge_scorer(
-        prompt=prompt, metric=metric, judge=judge, model=model
+        prompt=prompt,
+        metric=metric,
+        judge=judge,
+        model=model,
+        continuous=continuous,
+        use_reasoning=use_reasoning,
     )
 
     def _wrapped_evaluator(

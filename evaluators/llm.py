@@ -57,6 +57,8 @@ def _create_llm_as_judge_scorer(
         ]
     ] = None,
     model: Optional[str] = None,
+    continuous: bool = False,
+    use_reasoning: bool = True,
 ) -> Callable[..., Union[float, bool]]:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
@@ -94,18 +96,39 @@ def _create_llm_as_judge_scorer(
                 reference_outputs=reference_outputs,
                 **kwargs,
             )
-        description = f"A numerical score measuring {metric}"
         json_schema = {
-            "type": "object",
-            "properties": {
-                "score": {
-                    "type": "number",
-                    "description": description,
-                }
-            },
-            "required": ["score"],
-            "additionalProperties": False,
+                "type": "object",
+                "additionalProperties": False,
         }
+        # Make the output continuous or not
+        if continuous:
+            description = f"A continuous score from 0 to 1 indicating how well the test case satisfies the criteria"
+            score_schema = {
+                "type": "number",
+                "description": description,
+            }
+        else:
+            description = f"A boolean of True or False. Only return True if the test case satisfies ALL the criteria, i.e. the score = 1. If the score is less than 1 (by any amount), then return False. Remember this is a BOOLEAN. Only respond with True or False."
+            score_schema = {
+                "type": "boolean",
+                "description": description,
+            }
+        
+        # Add reasoning if passed
+        if use_reasoning:
+            json_schema["properties"] = {
+                "reasoning": {
+                    "type": "string",
+                    "description": "A human-readable explanation of the score",
+                },
+                "score": score_schema,
+            }
+            json_schema["required"] = ["score", "reasoning"]
+        else:
+            json_schema["properties"] = {
+                "score": score_schema,
+            }
+            json_schema["required"] = ["score"]
 
         nonlocal judge
 

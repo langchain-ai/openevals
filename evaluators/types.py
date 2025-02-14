@@ -10,7 +10,7 @@ from typing import (
 
 class EvaluatorResult(TypedDict):
     key: str
-    score: Union[int, bool]
+    score: Union[float, bool]
     comment: Optional[str]
 
 

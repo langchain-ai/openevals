@@ -75,8 +75,6 @@ def json_match_evaluator(
             "required": [],
             "additionalProperties": False,
         }
-        # how do i deal with nested objects?
-        # how to deal with None values, i.e. didn't extract anything
 
         scores = {}
         criteria = ""

@@ -26,5 +26,5 @@ def exact_match(*, inputs: Any, outputs: Any, **kwargs: Any) -> EvaluatorResult:
         return 1.0 if inputs_json == outputs_json else 0.0
 
     return _run_evaluator(
-        run_name="exact_match", evaluator_fn=get_score, feedback_key="exact_match"
+        run_name="exact_match", scorer=get_score, feedback_key="exact_match"
     )

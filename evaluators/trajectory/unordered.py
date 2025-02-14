@@ -35,6 +35,6 @@ def trajectory_unordered_match(
 
     return _run_evaluator(
         run_name="trajectory_unordered_match",
-        evaluator_fn=get_score,
+        scorer=get_score,
         feedback_key="trajectory_unordered_match",
     )

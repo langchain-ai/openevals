@@ -32,6 +32,6 @@ def trajectory_subset(
 
     return _run_evaluator(
         run_name="trajectory_subset",
-        evaluator_fn=get_score,
+        scorer=get_score,
         feedback_key="trajectory_subset",
     )

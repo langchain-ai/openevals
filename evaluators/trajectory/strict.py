@@ -59,6 +59,6 @@ def trajectory_strict_match(
 
     return _run_evaluator(
         run_name="trajectory_strict_match",
-        evaluator_fn=get_score,
+        scorer=get_score,
         feedback_key="trajectory_strict_match",
     )

@@ -33,6 +33,6 @@ def trajectory_superset(
 
     return _run_evaluator(
         run_name="trajectory_superset",
-        evaluator_fn=get_score,
+        scorer=get_score,
         feedback_key="trajectory_superset",
     )

@@ -176,7 +176,7 @@ def create_llm_as_judge(
     ] = None,
     model: Optional[str] = None,
 ) -> SimpleEvaluator:
-    evaluator = _create_llm_as_judge_scorer(
+    scorer = _create_llm_as_judge_scorer(
         prompt=prompt, metric=metric, judge=judge, model=model
     )
 
@@ -189,7 +189,7 @@ def create_llm_as_judge(
     ) -> EvaluatorResult:
         return _run_evaluator(
             run_name=f"llm_as_{metric}_judge",
-            evaluator_fn=evaluator,
+            scorer=scorer,
             feedback_key=metric,
             inputs=inputs,
             outputs=outputs,

@@ -5,7 +5,7 @@ from evaluators.prompts.hallucination import HALLUCINATION_PROMPT
 
 
 @pytest.mark.langsmith
-def test_llm_as_judge_correctness():
+def test_llm_as_judge_hallucination():
     inputs = {
         "question": "Who was the first president of the Star Republic of Oiewjoie?",
     }
@@ -20,7 +20,7 @@ def test_llm_as_judge_correctness():
 
 
 @pytest.mark.langsmith
-def test_llm_as_judge_correctness_not_correct():
+def test_llm_as_judge_hallucination_not_correct():
     inputs = {
         "question": "Who was the first president of the Star Republic of Oiewjoie?",
     }

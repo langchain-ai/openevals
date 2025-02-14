@@ -66,7 +66,7 @@ def _create_llm_as_judge_scorer(
 
     def get_score(
         *,
-        inputs: dict,
+        inputs: Optional[dict] = None,
         outputs: dict,
         reference_outputs: Optional[dict] = None,
         **kwargs,
@@ -97,8 +97,8 @@ def _create_llm_as_judge_scorer(
                 **kwargs,
             )
         json_schema = {
-                "type": "object",
-                "additionalProperties": False,
+            "type": "object",
+            "additionalProperties": False,
         }
         # Make the output continuous or not
         if continuous:
@@ -113,7 +113,7 @@ def _create_llm_as_judge_scorer(
                 "type": "boolean",
                 "description": description,
             }
-        
+
         # Add reasoning if passed
         if use_reasoning:
             json_schema["properties"] = {
@@ -123,7 +123,7 @@ def _create_llm_as_judge_scorer(
                 },
                 "score": score_schema,
             }
-            json_schema["required"] = ["score", "reasoning"]
+            json_schema["required"] = ["reasoning", "score"]
         else:
             json_schema["properties"] = {
                 "score": score_schema,
@@ -135,7 +135,7 @@ def _create_llm_as_judge_scorer(
         if judge is None:
             from langchain.chat_models import init_chat_model
 
-            judge = init_chat_model(model=model or "openai:gpt-4o-mini")
+            judge = init_chat_model(model=model or "openai:o3-mini")
 
         if isinstance(judge, LangChainLikeModel):
             response = judge.with_structured_output(

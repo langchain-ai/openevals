@@ -48,27 +48,39 @@ class LangChainLikeModel(Protocol):
 def _create_llm_as_judge_scorer(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
-    metric: str,
+    metric: Optional[str] = None,
+    system: Optional[str] = None,
+    schema: Optional[dict] = None,
     judge: Optional[
         Union[
             ModelClient,
             LangChainLikeModel,
-            Callable[[list[ChatCompletionMessage]], float],
         ]
     ] = None,
-    model: Optional[str] = None,
-) -> Callable[..., Union[float, bool]]:
+    model: str = "openai:gpt-4o-mini",
+) -> Callable[..., Union[float, bool, dict]]:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
     """
 
     def get_score(
         *,
-        inputs: dict,
-        outputs: dict,
-        reference_outputs: Optional[dict] = None,
+        outputs: Union[str, dict],
+        inputs: Optional[Union[str, dict]] = None,
+        reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ) -> EvaluatorResult:
+        if system is not None and not isinstance(prompt, str):
+            raise ValueError(
+                "`system` is only supported when `prompt` is a string template"
+            )
+        if isinstance(outputs, dict):
+            outputs = json.dumps(outputs)
+        if isinstance(reference_outputs, dict):
+            reference_outputs = json.dumps(reference_outputs)
+        if isinstance(inputs, dict):
+            inputs = json.dumps(inputs)
+
         if isinstance(prompt, RunnableLike):
             formatted_prompt = prompt.invoke(
                 inputs=inputs,
@@ -94,8 +106,15 @@ def _create_llm_as_judge_scorer(
                 reference_outputs=reference_outputs,
                 **kwargs,
             )
+        
+        if system is not None:
+            messages = [
+                {"role": "system", "content": system},
+                *messages,
+            ]
+
         description = f"A numerical score measuring {metric}"
-        json_schema = {
+        json_schema = schema if schema is not None else {
             "type": "object",
             "properties": {
                 "score": {
@@ -112,7 +131,7 @@ def _create_llm_as_judge_scorer(
         if judge is None:
             from langchain.chat_models import init_chat_model
 
-            judge = init_chat_model(model=model or "openai:gpt-4o-mini")
+            judge = init_chat_model(model=model)
 
         if isinstance(judge, LangChainLikeModel):
             response = judge.with_structured_output(
@@ -122,7 +141,10 @@ def _create_llm_as_judge_scorer(
                     **json_schema,
                 }
             ).invoke(messages)
-            return response["score"]
+            if schema is None:
+                return response["score"]
+            else:
+                return response
         elif isinstance(judge, ModelClient):
             if model is None:
                 raise ValueError("`model` is required for non-LangChain clients")
@@ -132,7 +154,7 @@ def _create_llm_as_judge_scorer(
                 "response_format": {
                     "type": "json_schema",
                     "json_schema": {
-                        "name": "score",
+                        "name": "evaluation_score",
                         "strict": True,
                         "schema": json_schema,
                     },
@@ -152,13 +174,10 @@ def _create_llm_as_judge_scorer(
 
             response = invoke_llm(**params)
             parsed = json.loads(response.choices[0].message.content)
-            return parsed["score"]
-        else:
-            if model is not None:
-                raise ValueError(
-                    "`model` is not allowed when passing a raw function as the judge"
-                )
-            return judge(formatted_prompt)
+            if schema is None:
+                return parsed["score"]
+            else:
+                return parsed
 
     return get_score
 

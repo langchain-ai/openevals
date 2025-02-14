@@ -1,19 +1,34 @@
-from typing import Literal, Optional, Dict, Any
+from typing import Literal, Optional, Dict, Any, Union
 from evaluators.types import EvaluatorResult, SimpleEvaluator
-from langchain.chat_models import init_chat_model
-from langsmith import testing as t
-from langsmith.testing._internal import _TEST_CASE
+from evaluators.utils import _run_evaluator
+from evaluators.llm import _create_llm_as_judge_scorer, ModelClient, LangChainLikeModel
 
-META_PROMPT = """You an LLM that evaluates the accuracy of structured outputs.
+SYSTEM_PROMPT = """You an LLM that evaluates the accuracy of structured outputs.
 Make sure to evaluate each key the users you to evaluate separately. Assign the score
 for each key based on it's own criteria - DO NOT convolute the scores of different keys.
 """
+
+USER_PROMPT = """
+Can you please evaluate the accuracy of the following output keys?
+{criteria}
+<Outputs>
+{outputs}
+</Outputs>
+<Expected Outputs>
+{reference_outputs}
+</Expected Outputs>"""
 
 def json_match_evaluator(
     *,
     aggregator: Optional[Literal["average", "all"]] = None,
     judge_rubric: Dict[str,str] = {},
     exclude_keys: list[str] = [],
+    judge: Optional[
+        Union[
+            ModelClient,
+            LangChainLikeModel,
+        ]
+    ] = None,
     model: str = "openai:gpt-4o",
 ) -> SimpleEvaluator:
     """
@@ -38,12 +53,7 @@ def json_match_evaluator(
         # how to deal with keys in reference output that don't show up in output
 
         scores = {}
-        messages = [
-            {"role": "system", "content": META_PROMPT},
-        ]
-        llm_judge_prompt_prefix = "Can you please evaluate the accuracy of the following output keys?\n"
-        llm_judge_prompt = ""
-        judge = init_chat_model(model=model)
+        criteria = ""
         
         for key, value in outputs.items():
             if key in exclude_keys:
@@ -56,51 +66,65 @@ def json_match_evaluator(
             elif key not in judge_rubric:
                 scores[key] = 0
             else:
-                llm_judge_prompt += f"Key: {key}, Criteria: {judge_rubric[key]}\n" 
+                criteria += f"Key: {key}, Criteria: {judge_rubric[key]}\n" 
                 json_schema["properties"][key] = {
                     "type": "boolean",
                     "description": f"Does the output for key {key}, follow the criteria? {judge_rubric[key]}",
                 }
 
-        if len(llm_judge_prompt) > 0:
-            llm_judge_prompt = llm_judge_prompt_prefix + llm_judge_prompt
+        scorer = None
+        if len(criteria) > 0:
             output_keys = "\n".join([f"{key}: {outputs[key]}" for key in json_schema["properties"]])
             expected_output_keys = "\n".join([f"{key}: {reference_outputs[key]}" for key in json_schema["properties"]])
-            llm_judge_prompt += f"""<Outputs>
-            {output_keys}
-            </Outputs>
-            <Expected Outputs>
-            {expected_output_keys}
-            </Expected Outputs>"""
-            messages.append({"role": "user", "content": llm_judge_prompt})
-            judge = judge.with_structured_output(json_schema)
-            key_scores = judge.invoke(messages)
-            for key, score in key_scores.items():
-                scores[key] = int(score)
-
-        score = None
-        if aggregator == "average":
-            score = sum(scores.values()) / len(scores)
-        elif aggregator == "all":
-            score = 0 if 0 in scores.values() else 1
-
-        # Otherwise we are returning per key scores 
-        if score is not None:
-            results = EvaluatorResult(key="structured_match_score", score=score)
+            scorer = _create_llm_as_judge_scorer(
+                system=SYSTEM_PROMPT,
+                prompt=USER_PROMPT,
+                schema=json_schema,
+                judge=judge,
+                model=model,
+            )
         else:
-            results = []
-            for key, value in scores.items():
-                results.append(EvaluatorResult(key=key, score=value))
-            if len(results) == 1:
-                results = results[0]
+            criteria, output_keys, expected_output_keys = None, None, None
+            
+            
+        def _scorer(
+            *,
+            output_keys: Optional[str] = None,
+            expected_output_keys: Optional[str] = None,
+            criteria: Optional[str] = None,
+        ):
+            if scorer is not None:
+                llm_scores = scorer(
+                    outputs=output_keys,
+                    reference_outputs=expected_output_keys,
+                    criteria=criteria,
+                )
+                scores.update(llm_scores)
+            score = None
+            if aggregator == "average":
+                score = sum(scores.values()) / len(scores)
+            elif aggregator == "all":
+                score = 0 if 0 in scores.values() else 1
 
-        if _TEST_CASE.get():
-            with t.trace_feedback(name="json_match_evaluator"):
-                if isinstance(results, list):
-                    for result in results:
-                        t.log_feedback(key=result["key"], score=result["score"])
-                else:
-                    t.log_feedback(key=results["key"], score=results["score"])
-        return results
+            # If there is an aggregator, return a single result 
+            if score is not None:
+                return score
+            else:
+                results = {}
+                for key, value in scores.items():
+                    results[key] = value
+                if len(results) == 1:
+                    return list(results.values())[0]
+                return results
+        
+        return _run_evaluator(
+            run_name="json_match_judge",
+            scorer=_scorer,
+            feedback_key="structured_match_score",
+            output_keys=output_keys,
+            expected_output_keys=expected_output_keys,
+            criteria=criteria,
+            **kwargs,
+        )
 
     return wrapped_evaluator

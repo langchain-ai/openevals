@@ -57,7 +57,7 @@ def _create_llm_as_judge_scorer(
             LangChainLikeModel,
         ]
     ] = None,
-    model: Optional[str] = None,
+    model: str = "openai:o3-mini",
     continuous: bool = False,
     use_reasoning: bool = True,
 ) -> Callable[..., Union[float, bool, dict]]:
@@ -77,10 +77,6 @@ def _create_llm_as_judge_scorer(
                 "`system` is only supported when `prompt` is a string template"
             )
             
-        if schema is not None and any([continuous, use_reasoning]):
-            raise ValueError(
-                "When passing custom schema, cannot set `continuous` or `use_reasoning` flags"
-            )
         if isinstance(outputs, dict):
             outputs = json.dumps(outputs)
         if isinstance(reference_outputs, dict):
@@ -121,12 +117,12 @@ def _create_llm_as_judge_scorer(
             ]
 
         description = f"A numerical score measuring {metric}"
-        json_schema = schema if schema is not None {
+        json_schema = schema if schema is not None else {
                 "type": "object",
                 "additionalProperties": False,
         }
         # Make the output continuous or not
-        if continuous:
+        if continuous and schema is None:
             description = f"A continuous score from 0 to 1 measuring {metric}"
             score_schema = {
                 "type": "number",
@@ -140,7 +136,7 @@ def _create_llm_as_judge_scorer(
             }
         
         # Add reasoning if passed
-        if use_reasoning:
+        if use_reasoning and schema is None:
             json_schema["properties"] = {
                 "reasoning": {
                     "type": "string",

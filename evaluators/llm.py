@@ -1,48 +1,23 @@
 from evaluators.utils import _run_evaluator
-from evaluators.types import EvaluatorResult, SimpleEvaluator
+from evaluators.types import (
+    EvaluatorResult,
+    SimpleEvaluator,
+    RunnableLike,
+    LangChainLikeModel,
+    ModelClient,
+    ChatCompletionMessage,
+    FewShotExample,
+)
 
 from langsmith import traceable
 
 from typing import (
     Callable,
     Optional,
-    Protocol,
-    TypedDict,
     Union,
-    runtime_checkable,
 )
 
 import json
-
-
-class ChatCompletionMessage(TypedDict):
-    content: list[Union[str, dict]]
-    role: str
-
-
-class ChatCompletion(TypedDict):
-    choices: list[dict]
-
-
-@runtime_checkable
-class ChatCompletionsClient(Protocol):
-    def create(self, **kwargs) -> ChatCompletion: ...
-
-
-@runtime_checkable
-class ModelClient(Protocol):
-    @property
-    def chat(self) -> type[ChatCompletionsClient]: ...
-
-
-@runtime_checkable
-class RunnableLike(Protocol):
-    def invoke(self, **kwargs) -> ChatCompletion: ...
-
-
-@runtime_checkable
-class LangChainLikeModel(Protocol):
-    def with_structured_output(self, **kwargs) -> RunnableLike: ...
 
 
 def _create_llm_as_judge_scorer(
@@ -60,15 +35,16 @@ def _create_llm_as_judge_scorer(
     model: str = "openai:o3-mini",
     continuous: bool = False,
     use_reasoning: bool = True,
-) -> Callable[..., Union[float, bool, dict]]:
+    few_shot_examples: Optional[list[FewShotExample]] = None,
+) -> Callable[..., Union[float, bool]]:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
     """
 
     def get_score(
         *,
-        outputs: Union[str, dict],
         inputs: Optional[Union[str, dict]] = None,
+        outputs: Union[str, dict],
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ) -> EvaluatorResult:
@@ -109,12 +85,44 @@ def _create_llm_as_judge_scorer(
                 reference_outputs=reference_outputs,
                 **kwargs,
             )
+
         
         if system is not None:
             messages = [
                 {"role": "system", "content": system},
                 *messages,
             ]
+        
+        if few_shot_examples:
+            # Find the last user message to append examples to
+            last_user_message_idx = None
+            for i, msg in enumerate(messages[::-1]):
+                if msg.get("role") == "user":
+                    last_user_message_idx = len(messages) - 1 - i
+                    break
+
+            if last_user_message_idx is None:
+                raise ValueError(
+                    "Appending few-shot examples requires a user message in the provided prompt"
+                )
+
+            messages[last_user_message_idx]["content"] += "\n\n" + "\n".join(
+                [
+                    f"<example>\n<input>{example['inputs']}</input>\n<output>{example['outputs']}</output>"
+                    + (
+                        f"\n<reasoning>{example['reasoning']}</reasoning>"
+                        if "reasoning" in example
+                        else ""
+                    )
+                    + (
+                        f"\n<score>{example['score']}</score>"
+                        if "score" in example
+                        else ""
+                    )
+                    + "\n</example>"
+                    for example in few_shot_examples
+                ]
+            )
 
         description = f"A numerical score measuring {metric}"
         json_schema = schema if schema is not None else {
@@ -134,7 +142,7 @@ def _create_llm_as_judge_scorer(
                 "type": "boolean",
                 "description": description,
             }
-        
+
         # Add reasoning if passed
         if use_reasoning and schema is None:
             json_schema["properties"] = {
@@ -144,7 +152,7 @@ def _create_llm_as_judge_scorer(
                 },
                 "score": score_schema,
             }
-            json_schema["required"] = ["score", "reasoning"]
+            json_schema["required"] = ["reasoning", "score"]
         elif schema is None:
             json_schema["properties"] = {
                 "score": score_schema,
@@ -225,6 +233,7 @@ def create_llm_as_judge(
     model: Optional[str] = None,
     continuous: bool = False,
     use_reasoning: bool = True,
+    few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> SimpleEvaluator:
     scorer = _create_llm_as_judge_scorer(
         prompt=prompt,
@@ -233,6 +242,7 @@ def create_llm_as_judge(
         model=model,
         continuous=continuous,
         use_reasoning=use_reasoning,
+        few_shot_examples=few_shot_examples,
     )
 
     def _wrapped_evaluator(

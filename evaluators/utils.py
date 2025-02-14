@@ -19,4 +19,6 @@ def _run_evaluator(
             t.log_feedback(key=feedback_key, score=score, comment=reasoning)
     else:
         score = scorer(**kwargs)
+        if isinstance(score, tuple):
+            score, reasoning = score
     return EvaluatorResult(key=feedback_key, score=score, comment=reasoning)

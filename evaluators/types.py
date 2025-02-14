@@ -35,6 +35,13 @@ class ChatCompletion(TypedDict):
     choices: list[dict]
 
 
+class FewShotExample(TypedDict):
+    inputs: Any
+    outputs: Any
+    score: float | bool
+    reasoning: Optional[str]
+
+
 @runtime_checkable
 class ChatCompletionsClient(Protocol):
     def create(self, **kwargs) -> ChatCompletion: ...

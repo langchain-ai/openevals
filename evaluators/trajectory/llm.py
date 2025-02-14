@@ -8,7 +8,7 @@ from evaluators.llm import (
     Optional,
     Union,
 )
-from evaluators.types import EvaluatorResult
+from evaluators.types import EvaluatorResult, FewShotExample
 from evaluators.utils import _chat_completion_messages_to_string, _run_evaluator
 
 DEFAULT_PROMPT = """Grade the following agent trajectory:
@@ -37,6 +37,7 @@ def create_trajectory_llm_as_judge(
     model: Optional[str] = None,
     continuous: bool = False,
     use_reasoning: bool = True,
+    few_shot_examples: Optional[list[FewShotExample]] = None,
 ):
     scorer = _create_llm_as_judge_scorer(
         prompt=prompt,
@@ -45,6 +46,7 @@ def create_trajectory_llm_as_judge(
         model=model,
         continuous=continuous,
         use_reasoning=use_reasoning,
+        few_shot_examples=few_shot_examples,
     )
 
     def _wrapped_evaluator(

@@ -1,48 +1,23 @@
 from evaluators.utils import _run_evaluator
-from evaluators.types import EvaluatorResult, SimpleEvaluator
+from evaluators.types import (
+    EvaluatorResult,
+    SimpleEvaluator,
+    RunnableLike,
+    LangChainLikeModel,
+    ModelClient,
+    ChatCompletionMessage,
+    FewShotExample,
+)
 
 from langsmith import traceable
 
 from typing import (
     Callable,
     Optional,
-    Protocol,
-    TypedDict,
     Union,
-    runtime_checkable,
 )
 
 import json
-
-
-class ChatCompletionMessage(TypedDict):
-    content: list[Union[str, dict]]
-    role: str
-
-
-class ChatCompletion(TypedDict):
-    choices: list[dict]
-
-
-@runtime_checkable
-class ChatCompletionsClient(Protocol):
-    def create(self, **kwargs) -> ChatCompletion: ...
-
-
-@runtime_checkable
-class ModelClient(Protocol):
-    @property
-    def chat(self) -> type[ChatCompletionsClient]: ...
-
-
-@runtime_checkable
-class RunnableLike(Protocol):
-    def invoke(self, **kwargs) -> ChatCompletion: ...
-
-
-@runtime_checkable
-class LangChainLikeModel(Protocol):
-    def with_structured_output(self, **kwargs) -> RunnableLike: ...
 
 
 def _create_llm_as_judge_scorer(
@@ -59,6 +34,7 @@ def _create_llm_as_judge_scorer(
     model: Optional[str] = None,
     continuous: bool = False,
     use_reasoning: bool = True,
+    few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> Callable[..., Union[float, bool]]:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
@@ -95,6 +71,36 @@ def _create_llm_as_judge_scorer(
                 outputs=outputs,
                 reference_outputs=reference_outputs,
                 **kwargs,
+            )
+        if few_shot_examples:
+            # Find the last user message to append examples to
+            last_user_message_idx = None
+            for i, msg in enumerate(messages[::-1]):
+                if msg.get("role") == "user":
+                    last_user_message_idx = len(messages) - 1 - i
+                    break
+
+            if last_user_message_idx is None:
+                raise ValueError(
+                    "Appending few-shot examples requires a user message in the provided prompt"
+                )
+
+            messages[last_user_message_idx]["content"] += "\n\n" + "\n".join(
+                [
+                    f"<example>\n<input>{example['inputs']}</input>\n<output>{example['outputs']}</output>"
+                    + (
+                        f"\n<reasoning>{example['reasoning']}</reasoning>"
+                        if "reasoning" in example
+                        else ""
+                    )
+                    + (
+                        f"\n<score>{example['score']}</score>"
+                        if "score" in example
+                        else ""
+                    )
+                    + "\n</example>"
+                    for example in few_shot_examples
+                ]
             )
         json_schema = {
             "type": "object",
@@ -204,6 +210,7 @@ def create_llm_as_judge(
     model: Optional[str] = None,
     continuous: bool = False,
     use_reasoning: bool = True,
+    few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> SimpleEvaluator:
     scorer = _create_llm_as_judge_scorer(
         prompt=prompt,
@@ -212,6 +219,7 @@ def create_llm_as_judge(
         model=model,
         continuous=continuous,
         use_reasoning=use_reasoning,
+        few_shot_examples=few_shot_examples,
     )
 
     def _wrapped_evaluator(

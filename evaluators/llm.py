@@ -57,7 +57,9 @@ def _create_llm_as_judge_scorer(
             LangChainLikeModel,
         ]
     ] = None,
-    model: str = "openai:gpt-4o-mini",
+    model: Optional[str] = None,
+    continuous: bool = False,
+    use_reasoning: bool = True,
 ) -> Callable[..., Union[float, bool, dict]]:
     """
     Create a simple evaluator that uses an LLM to evaluate the quality of the outputs.
@@ -73,6 +75,11 @@ def _create_llm_as_judge_scorer(
         if system is not None and not isinstance(prompt, str):
             raise ValueError(
                 "`system` is only supported when `prompt` is a string template"
+            )
+            
+        if schema is not None and any([continuous, use_reasoning]):
+            raise ValueError(
+                "When passing custom schema, cannot set `continuous` or `use_reasoning` flags"
             )
         if isinstance(outputs, dict):
             outputs = json.dumps(outputs)
@@ -114,17 +121,39 @@ def _create_llm_as_judge_scorer(
             ]
 
         description = f"A numerical score measuring {metric}"
-        json_schema = schema if schema is not None else {
-            "type": "object",
-            "properties": {
-                "score": {
-                    "type": "number",
-                    "description": description,
-                }
-            },
-            "required": ["score"],
-            "additionalProperties": False,
+        json_schema = schema if schema is not None {
+                "type": "object",
+                "additionalProperties": False,
         }
+        # Make the output continuous or not
+        if continuous:
+            description = f"A continuous score from 0 to 1 measuring {metric}"
+            score_schema = {
+                "type": "number",
+                "description": description,
+            }
+        elif schema is None:
+            description = f"A boolean of True or False. Only return True if the test case satisfies ALL the criteria for {metric}, i.e. the score = 1. If the score is less than 1 (by any amount), then return False. Only respond with True or False."
+            score_schema = {
+                "type": "boolean",
+                "description": description,
+            }
+        
+        # Add reasoning if passed
+        if use_reasoning:
+            json_schema["properties"] = {
+                "reasoning": {
+                    "type": "string",
+                    "description": "A human-readable explanation of the score",
+                },
+                "score": score_schema,
+            }
+            json_schema["required"] = ["score", "reasoning"]
+        elif schema is None:
+            json_schema["properties"] = {
+                "score": score_schema,
+            }
+            json_schema["required"] = ["score"]
 
         nonlocal judge
 
@@ -142,6 +171,8 @@ def _create_llm_as_judge_scorer(
                 }
             ).invoke(messages)
             if schema is None:
+                if use_reasoning:
+                    return (response["score"], response["reasoning"])
                 return response["score"]
             else:
                 return response
@@ -175,6 +206,8 @@ def _create_llm_as_judge_scorer(
             response = invoke_llm(**params)
             parsed = json.loads(response.choices[0].message.content)
             if schema is None:
+                if use_reasoning:
+                    return (parsed["score"], parsed["reasoning"])
                 return parsed["score"]
             else:
                 return parsed
@@ -194,9 +227,16 @@ def create_llm_as_judge(
         ]
     ] = None,
     model: Optional[str] = None,
+    continuous: bool = False,
+    use_reasoning: bool = True,
 ) -> SimpleEvaluator:
     scorer = _create_llm_as_judge_scorer(
-        prompt=prompt, metric=metric, judge=judge, model=model
+        prompt=prompt,
+        metric=metric,
+        judge=judge,
+        model=model,
+        continuous=continuous,
+        use_reasoning=use_reasoning,
     )
 
     def _wrapped_evaluator(

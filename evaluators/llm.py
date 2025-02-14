@@ -181,7 +181,7 @@ def _create_llm_as_judge_scorer(
                 "response_format": {
                     "type": "json_schema",
                     "json_schema": {
-                        "name": "evaluation_score",
+                        "name": "score",
                         "strict": True,
                         "schema": json_schema,
                     },

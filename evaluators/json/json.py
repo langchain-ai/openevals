@@ -20,9 +20,9 @@ Can you please evaluate the accuracy of the following output keys?
 
 def json_match_evaluator(
     *,
-    aggregator: Optional[Literal["average", "all"]] = None,
-    list_aggregator: Literal["average", "all"] = "all",
-    judge_rubric: Dict[str,str] = {},
+    aggregator: Optional[Literal["average", "conjunction"]] = None,
+    list_aggregator: Literal["average", "conjunction"] = "conjunction",
+    rubric: Dict[str,str] = {},
     exclude_keys: list[str] = [],
     judge: Optional[
         Union[
@@ -35,6 +35,30 @@ def json_match_evaluator(
 ) -> SimpleEvaluator:
     """
     Create an evaluator to evaluate the accuracy of structured outputs.
+
+    Parameters:
+        aggregator (Optional[Literal["average", "conjunction"]]): The aggregation method to use for combining the keys of each structured object.
+            Defaults to None. If None, will return a single EvaluatorResult for each key that appears in either
+            the outputs or the reference_outputs or both. If "average", will return a single EvaluatorResult that
+            is the average of the feedback for each key in the outputs/reference_outputs. If "conjunction", will return
+            a single EvaluatorResult that is the conjunction of the feedback for each key in the outputs/reference_outputs.
+            If "conjunction"/"average" the feedback key returned will be called "structured_match_score
+        list_aggregator (Literal["average", "conjunction"]): The aggregation method to use when evaluating a list of outputs.
+            Defaults to "conjunction". If "conjunction", the score for a single feedback key will be the conjunction of the scores for
+            that key across all elements of the list. If "average", the score for a single feedback key will be the
+            average of the scores for that key across all elements of the list
+        rubric (Optional[Dict[str,str]]): The rubric to use for the judge. Each entry of the dict is a 
+            key/value pair where the key is the structured output key and the value is the criteria for the LLM to 
+            evaluate that key on against the reference output.
+        exclude_keys (Optional[list[str]]): The keys to exclude from the evaluation. Use this if there are 
+            keys in your structured output you don't care about evaluating. Every key not in `exclude_keys` or in `rubric`
+            will be evaluated for exact match with the reference output.
+        judge (ModelClient or LangChainLikeModel): The judge to use for the evaluation.
+        model (str): The model to use for the evaluation.
+        use_reasoning (bool): Whether to use reasoning for the keys in `rubric`. Defaults to True.
+
+    Returns:
+        A function that takes in outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults.
     """
 
     def wrapped_evaluator(
@@ -84,12 +108,12 @@ def json_match_evaluator(
             if raw_key not in reference_outputs:
                 scores[raw_key] = 0
                 continue
-            if key not in judge_rubric and reference_outputs[raw_key] == value:
+            if key not in rubric and reference_outputs[raw_key] == value:
                 scores[raw_key] = 1
-            elif key not in judge_rubric:
+            elif key not in rubric:
                 scores[raw_key] = 0
             else:
-                key_criteria = judge_rubric[key]
+                key_criteria = rubric[key]
                 criteria += f"Key: {key}, Criteria: {key_criteria}\n" 
                 if not use_reasoning:
                     json_schema["properties"][raw_key] = {
@@ -112,9 +136,13 @@ def json_match_evaluator(
                         "required": ["score", "reasoning"],
                         "additionalProperties": False,
                     }
-        for key, value in reference_outputs.items():
-            if key not in exclude_keys and key not in outputs:
-                scores[key] = 0
+        for raw_key, value in reference_outputs.items():
+            if use_list_reducer:
+                key = raw_key[:raw_key.rfind("_")]
+            else:
+                key = raw_key
+            if key not in exclude_keys and raw_key not in outputs:
+                scores[raw_key] = 0
 
         scorer = None
         if len(criteria) > 0:
@@ -144,7 +172,6 @@ def json_match_evaluator(
                     reference_outputs=expected_output_keys,
                     criteria=criteria,
                 )
-                
                 scores.update(llm_scores)
 
             if use_list_reducer:
@@ -155,7 +182,7 @@ def json_match_evaluator(
                         scores_aggregated_across_list[key] = sum(
                             [(scores[k]['score'] if isinstance(scores[k], dict) else scores[k]) for k in scores if k[:k.rfind("_")] == key]
                         ) / len([scores[k] for k in scores if k[:k.rfind("_")] == key])
-                elif list_aggregator == "all":
+                elif list_aggregator == "conjunction":
                     for key in keys:
                         scores_aggregated_across_list[key] = 0 if 0 in [(scores[k]['score'] if isinstance(scores[k], dict) else scores[k]) for k in scores if k[:k.rfind("_")] == key] else 1
                 scores = scores_aggregated_across_list
@@ -163,7 +190,7 @@ def json_match_evaluator(
             score = None
             if aggregator == "average":
                 score = sum([v['score'] if isinstance(v, dict) else v for v in scores.values()]) / len(scores)
-            elif aggregator == "all":
+            elif aggregator == "conjunction":
                 score = 0 if any([(v['score'] if isinstance(v, dict) else v) != 1 for v in scores.values()]) else 1
 
             # If there is an aggregator, return a single result 
@@ -181,7 +208,7 @@ def json_match_evaluator(
                 return results
         
         return _run_evaluator(
-            run_name="json_match_judge",
+            run_name="structured_match_evaluator",
             scorer=_scorer,
             feedback_key="structured_match_score",
             output_keys=output_keys,

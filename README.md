@@ -1,4 +1,4 @@
-# LangSmith Evaluators
+# 🦜⚖️ LangSmith Evaluators
 
 Much like unit tests in traditional software, evals are a hugely important part of bringing LLM applications to production.
 The goal of this package is to help provide a starting point for you to write evals for your LLM applications, from which
@@ -8,10 +8,10 @@ To learn more about how to write more custom evals, please check out this [docum
 
 ## Setup
 
-Install this package like this:
+To get started, run the following command to install this package:
 
 ```bash
-$ uv add langsmith-evaluators
+$ uv add langeval
 ```
 
 For LLM-as-judge evaluators, you will also need an LLM client. You can use [LangChain chat models](https://python.langchain.com/docs/integrations/chat/):
@@ -39,11 +39,11 @@ This package contains the `create_llm_as_judge` function, which takes a prompt a
 that handles formatting inputs, parsing the judge LLM's outputs into a score, and LangSmith tracing and result logging.
 
 To use the `create_llm_as_judge` function, you need to provide a prompt and a model. For prompts, LangSmith has some prebuilt prompts
-in the `langsmith.evaluators.prompts` module that you can use out of the box. Here's an example:
+in the `langeval.evaluators.prompts` module that you can use out of the box. Here's an example:
 
 ```python
-from langsmith.evaluators.llm_as_judge import create_llm_as_judge
-from langsmith.evaluators.prompts import CONCISENESS_PROMPT
+from langeval.evaluators.llm_as_judge import create_llm_as_judge
+from langeval.evaluators.prompts import CONCISENESS_PROMPT
 
 conciseness_evaluator = create_llm_as_judge(
     prompt=CONCISENESS_PROMPT,
@@ -104,7 +104,7 @@ Prompts can also require additional inputs. In this case, you would pass extra k
 
 #### Customization
 
-The `prompt` may be an f-string, LangChain prompt template, or a function that returns a string.
+The `prompt` may be an f-string, LangChain prompt template, or a function that returns a list of formatted messages.
 
 If you don't populate a `model` or `judge` parameter, the `create_llm_as_judge` function will default to OpenAI's `o3-mini` model
 through LangChain's `ChatOpenAI` class, which requires you to install the `langchain_openai` package. Alternatively, you can:
@@ -118,6 +118,7 @@ There are some additional fields that you can set as well:
 - `threshold`: a float between 0 and 1 that sets the threshold for the evaluator. If set, changes the evaluator to only return 0 or 1 depending on whether the true evaluator score is above or below the threshold
 - `use_reasoning`: a boolean that sets whether the evaluator should also output a `reasoning` field with the evaluator's reasoning behind assigning a score. Defaults to `True`.
 - `few_shot_examples`: a list of example dicts that are appended to the end of the prompt. This is useful for providing the judge model with examples of good and bad outputs.
+- `system`: a string that sets a system prompt for the judge model by adding a `system` message before the prompt.
 
 ### Agent trajectory evaluators
 
@@ -129,7 +130,7 @@ ensures that they contain the same messages in the same order with the same tool
 to allow for some variation in model outputs.
 
 ```python
-from langsmith.evaluators.trajectory.strict import trajectory_strict_match
+from langeval.evaluators.trajectory.strict import trajectory_strict_match
 
 @pytest.mark.langsmith
 def test_trajectory_strict_match():
@@ -176,7 +177,7 @@ There are other evaluators for checking partial trajectory matches (ensuring tha
 as well as an LLM-as-judge trajectory evaluator that uses an LLM to evaluate the trajectory. This allows for more flexibility in the trajectory comparison:
 
 ```python
-from langsmith.evaluators.trajectory.llm import create_trajectory_llm_as_judge, DEFAULT_PROMPT
+from langeval.evaluators.trajectory.llm import create_trajectory_llm_as_judge, DEFAULT_PROMPT
 
 @pytest.mark.langsmith
 def test_trajectory_llm_as_judge():
@@ -225,10 +226,10 @@ def test_trajectory_llm_as_judge():
 
 LangSmith also provides a variety of prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:
 
-#### Exact Match
+#### Exact match
 
 ```python
-from langsmith.evaluators.exact import exact_match
+from langeval.evaluators.exact import exact_match
 
 @pytest.mark.langsmith
 def test_exact_matcher():
@@ -239,10 +240,10 @@ def test_exact_matcher():
     )
 ```
 
-#### Levenshtein Distance
+#### Levenshtein distance
 
 ```python
-from langsmith.evaluators.levenshetein import levenshtein_distance
+from langeval.evaluators.levenshetein import levenshtein_distance
 
 @pytest.mark.langsmith
 def test_levenshtein_distance():
@@ -254,7 +255,7 @@ def test_levenshtein_distance():
     assert eval_result["score"] == 0
 ```
 
-### Prebuilt Extraction/Tool Call evaluators
+### Prebuilt extraction/tool call evaluators
 
 Two very common use cases for LLMs are extracting structured output from documents and tool calling. Both of these require the LLM
 to respond in a structured format. LangSmith provides a prebuilt evaluator to help you evaluate these use cases, and is flexible
@@ -266,7 +267,7 @@ Here is a code example of how to evaluate a single structured output, with comme
 
 ```python
 import pytest
-from langsmith.evaluators.json import json_match_evaluator
+from langeval.evaluators.json import json_match_evaluator
 
 @pytest.mark.langsmith
 def test_json_match_mix():
@@ -279,7 +280,7 @@ def test_json_match_mix():
         # The criteria for the LLM judge to use for each key you want evaluated by the LLM
         rubric={
             "a": "Does the answer mention all the fruits in the reference answer?"
-        }, 
+        },
         # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
         exclude_keys=["c"],
         # The provider and name of the model to use, defaults to openai:o3-mini
@@ -298,7 +299,7 @@ Here is a code example of how to evaluate a list of structured outputs, with com
 
 ```python
 import pytest
-from langsmith.evaluators.json import json_match_evaluator
+from langeval.evaluators.json import json_match_evaluator
 
 @pytest.mark.langsmith
 def test_json_match_list_all_average():
@@ -319,7 +320,7 @@ def test_json_match_list_all_average():
         # The criteria for the LLM judge to use for each key you want evaluated by the LLM
         rubric={
             "a": "Does the answer mention all the fruits in the reference answer?"
-        }, 
+        },
         # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
         exclude_keys=["c"],
         # The provider and name of the model to use, defaults to openai:o3-mini

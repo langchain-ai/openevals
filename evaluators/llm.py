@@ -229,6 +229,7 @@ def create_llm_as_judge(
             Callable[[list[ChatCompletionMessage]], float],
         ]
     ] = None,
+    system: Optional[str] = None,
     model: Optional[str] = None,
     threshold: Optional[float] = None,
     use_reasoning: bool = True,
@@ -238,6 +239,7 @@ def create_llm_as_judge(
         prompt=prompt,
         metric=metric,
         judge=judge,
+        system=system,
         model=model,
         threshold=threshold,
         use_reasoning=use_reasoning,

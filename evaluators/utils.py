@@ -57,7 +57,7 @@ def _run_evaluator(
 ) -> EvaluatorResult | list[EvaluatorResult]:
     # Get the initial score
     score = scorer(**kwargs)
-    
+
     # Helper function to process individual scores
     def process_score(key: str, value: Any) -> tuple[float, str | None]:
         if isinstance(value, dict):
@@ -81,16 +81,16 @@ def _run_evaluator(
             score, reasoning = score
         else:
             reasoning = None
-        results.append(EvaluatorResult(key=feedback_key, score=score, comment=reasoning))
+        results.append(
+            EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
+        )
 
     # Log feedback if in test case
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             for result in results:
                 t.log_feedback(
-                    key=result["key"],
-                    score=result["score"],
-                    comment=result["comment"]
+                    key=result["key"], score=result["score"], comment=result["comment"]
                 )
 
     # Return single result or list of results

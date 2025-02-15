@@ -12,11 +12,10 @@ def test_llm_as_judge_conciseness():
     outputs = {"answer": "Sunny and 90 degrees."}
     llm_as_judge = create_llm_as_judge(
         prompt=CONCISENESS_PROMPT,
-        metric="conciseness",
+        feedback_key="conciseness",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] == 1.0
-
+    assert eval_result["score"] == True
 
 @pytest.mark.langsmith
 def test_llm_as_judge_conciseness_not_concise():
@@ -28,7 +27,7 @@ def test_llm_as_judge_conciseness_not_concise():
     }
     llm_as_judge = create_llm_as_judge(
         prompt=CONCISENESS_PROMPT,
-        metric="conciseness",
+        feedback_key="conciseness",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] != 1.0
+    assert eval_result["score"] == False

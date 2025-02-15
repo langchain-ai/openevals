@@ -78,6 +78,7 @@ def test_llm_as_judge_openai_not_equal_binary_fail():
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == 0
 
+
 @pytest.mark.langsmith
 def test_llm_as_judge_openai_not_equal_binary_pass():
     inputs = {"a": 1, "b": 3}
@@ -91,6 +92,7 @@ def test_llm_as_judge_openai_not_equal_binary_pass():
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == 1
+
 
 @pytest.mark.langsmith
 def test_llm_as_judge_langchain():

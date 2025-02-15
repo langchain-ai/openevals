@@ -33,7 +33,7 @@ def create_trajectory_llm_as_judge(
     prompt: str
     | RunnableLike
     | Callable[..., list[ChatCompletionMessage]] = DEFAULT_PROMPT,
-    metric: str = "trajectory_accuracy",
+    feedback_key: str = "trajectory_accuracy",
     judge: Optional[
         Union[
             ModelClient,
@@ -47,7 +47,7 @@ def create_trajectory_llm_as_judge(
 ):
     scorer = _create_llm_as_judge_scorer(
         prompt=prompt,
-        metric=metric,
+        feedback_key=feedback_key,
         judge=judge,
         model=model,
         threshold=threshold,
@@ -87,9 +87,9 @@ def create_trajectory_llm_as_judge(
         else:
             formatted_rubric = ""
         return _run_evaluator(
-            run_name=f"trajectory_{metric}_llm_as_judge",
+            run_name=f"llm_as_{feedback_key}_judge",
             scorer=scorer,
-            feedback_key=metric,
+            feedback_key=feedback_key,
             outputs=formatted_outputs,
             reference_outputs=formatted_reference_outputs,
             inputs=formatted_inputs,

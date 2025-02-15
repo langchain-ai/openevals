@@ -22,11 +22,12 @@ Can you please evaluate the accuracy of the following output keys?
 {reference_outputs}
 </Expected Outputs>"""
 
+
 def json_match_evaluator(
     *,
     aggregator: Optional[Literal["average", "all"]] = None,
     list_aggregator: Literal["average", "all"] = "all",
-    rubric: Dict[str,str] = {},
+    rubric: Dict[str, str] = {},
     exclude_keys: list[str] = [],
     judge: Optional[
         Union[
@@ -35,7 +36,7 @@ def json_match_evaluator(
         ]
     ] = None,
     model: str = "openai:o3-mini",
-    use_reasoning: bool = True
+    use_reasoning: bool = True,
 ) -> SimpleEvaluator:
     """
     Create an evaluator to evaluate the accuracy of structured outputs.
@@ -51,10 +52,10 @@ def json_match_evaluator(
             Defaults to "all". If "all", the score for a single feedback key will be a combined and statement of the scores for
             that key across all elements of the list. If "average", the score for a single feedback key will be the
             average of the scores for that key across all elements of the list
-        rubric (Optional[Dict[str,str]]): The rubric to use for the judge. Each entry of the dict is a 
-            key/value pair where the key is the structured output key and the value is the criteria for the LLM to 
+        rubric (Optional[Dict[str,str]]): The rubric to use for the judge. Each entry of the dict is a
+            key/value pair where the key is the structured output key and the value is the criteria for the LLM to
             evaluate that key on against the reference output.
-        exclude_keys (Optional[list[str]]): The keys to exclude from the evaluation. Use this if there are 
+        exclude_keys (Optional[list[str]]): The keys to exclude from the evaluation. Use this if there are
             keys in your structured output you don't care about evaluating. Every key not in `exclude_keys` or in `rubric`
             will be evaluated for exact match with the reference output.
         judge (ModelClient or LangChainLikeModel): The judge to use for the evaluation.
@@ -102,7 +103,7 @@ def json_match_evaluator(
 
         for raw_key, value in outputs.items():
             if use_list_reducer:
-                key = raw_key[:raw_key.rfind("_")]
+                key = raw_key[: raw_key.rfind("_")]
             else:
                 key = raw_key
             if key in exclude_keys:
@@ -116,7 +117,7 @@ def json_match_evaluator(
                 scores[raw_key] = 0
             else:
                 key_criteria = rubric[key]
-                formatted_rubric += f"Key: {key}, Criteria: {key_criteria}\n" 
+                formatted_rubric += f"Key: {key}, Criteria: {key_criteria}\n"
                 if not use_reasoning:
                     json_schema["properties"][raw_key] = {
                         "type": "boolean",
@@ -140,7 +141,7 @@ def json_match_evaluator(
                     }
         for raw_key, value in reference_outputs.items():
             if use_list_reducer:
-                key = raw_key[:raw_key.rfind("_")]
+                key = raw_key[: raw_key.rfind("_")]
             else:
                 key = raw_key
             if key not in exclude_keys and raw_key not in outputs:
@@ -148,8 +149,15 @@ def json_match_evaluator(
 
         scorer = None
         if len(formatted_rubric) > 0:
-            output_keys = "\n".join([f"{key}: {outputs[key]}" for key in json_schema["properties"]])
-            expected_output_keys = "\n".join([f"{key}: {reference_outputs[key]}" for key in json_schema["properties"]])
+            output_keys = "\n".join(
+                [f"{key}: {outputs[key]}" for key in json_schema["properties"]]
+            )
+            expected_output_keys = "\n".join(
+                [
+                    f"{key}: {reference_outputs[key]}"
+                    for key in json_schema["properties"]
+                ]
+            )
             scorer = _create_llm_as_judge_scorer(
                 system=SYSTEM_PROMPT,
                 prompt=USER_PROMPT,
@@ -159,8 +167,7 @@ def json_match_evaluator(
             )
         else:
             formatted_rubric, output_keys, expected_output_keys = None, None, None
-            
-            
+
         def _scorer(
             *,
             scores: dict,
@@ -178,24 +185,56 @@ def json_match_evaluator(
 
             if use_list_reducer:
                 scores_aggregated_across_list = {}
-                keys = set([k[:k.rfind("_")] for k in scores.keys()])
+                keys = set([k[: k.rfind("_")] for k in scores.keys()])
                 if list_aggregator == "average":
                     for key in keys:
                         scores_aggregated_across_list[key] = sum(
-                            [(scores[k]['score'] if isinstance(scores[k], dict) else scores[k]) for k in scores if k[:k.rfind("_")] == key]
-                        ) / len([scores[k] for k in scores if k[:k.rfind("_")] == key])
+                            [
+                                (
+                                    scores[k]["score"]
+                                    if isinstance(scores[k], dict)
+                                    else scores[k]
+                                )
+                                for k in scores
+                                if k[: k.rfind("_")] == key
+                            ]
+                        ) / len([scores[k] for k in scores if k[: k.rfind("_")] == key])
                 elif list_aggregator == "all":
                     for key in keys:
-                        scores_aggregated_across_list[key] = 0 if 0 in [(scores[k]['score'] if isinstance(scores[k], dict) else scores[k]) for k in scores if k[:k.rfind("_")] == key] else 1
+                        scores_aggregated_across_list[key] = (
+                            0
+                            if 0
+                            in [
+                                (
+                                    scores[k]["score"]
+                                    if isinstance(scores[k], dict)
+                                    else scores[k]
+                                )
+                                for k in scores
+                                if k[: k.rfind("_")] == key
+                            ]
+                            else 1
+                        )
                 scores = scores_aggregated_across_list
 
             score = None
             if aggregator == "average":
-                score = sum([v['score'] if isinstance(v, dict) else v for v in scores.values()]) / len(scores)
+                score = sum(
+                    [v["score"] if isinstance(v, dict) else v for v in scores.values()]
+                ) / len(scores)
             elif aggregator == "all":
-                score = 0 if any([(v['score'] if isinstance(v, dict) else v) != 1 for v in scores.values()]) else 1
+                score = (
+                    0
+                    if any(
+                        [
+                            (v["score"] if isinstance(v, dict) else v) != 1
+                            for v in scores.values()
+                        ]
+                    )
+                    else 1
+                )
 
-            # If there is an aggregator, return a single result 
+            # If there is an aggregator, return a single result
             if score is not None:
                 return score
             else:
@@ -208,7 +247,7 @@ def json_match_evaluator(
                         return (ans["score"], ans["reasoning"])
                     return ans
                 return results
-        
+
         return _run_evaluator(
             run_name="structured_match_evaluator",
             scorer=_scorer,

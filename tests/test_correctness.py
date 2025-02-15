@@ -12,10 +12,10 @@ def test_llm_as_judge_correctness():
     outputs = {"answer": "George Washington"}
     llm_as_judge = create_llm_as_judge(
         prompt=CORRECTNESS_PROMPT,
-        metric="correctness",
+        feedback_key="correctness",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] == 1.0
+    assert eval_result["score"] == True
 
 
 @pytest.mark.langsmith
@@ -26,10 +26,10 @@ def test_llm_as_judge_correctness_not_correct():
     outputs = {"answer": "John Adams"}
     llm_as_judge = create_llm_as_judge(
         prompt=CORRECTNESS_PROMPT,
-        metric="correctness",
+        feedback_key="correctness",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] != 1.0
+    assert eval_result["score"] == False
 
 
 @pytest.mark.langsmith
@@ -40,9 +40,9 @@ def test_llm_as_judge_correctness_with_reference_outputs():
     outputs = {"answer": "Bzkeoei Ahbeijo"}
     llm_as_judge = create_llm_as_judge(
         prompt=CORRECTNESS_PROMPT,
-        metric="correctness",
+        feedback_key="correctness",
     )
     eval_result = llm_as_judge(
         inputs=inputs, outputs=outputs, reference_outputs={"answer": "Bzkeoei Ahbeijo"}
     )
-    assert eval_result["score"] == 1.0
+    assert eval_result["score"] == True

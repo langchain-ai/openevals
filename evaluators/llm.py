@@ -23,7 +23,6 @@ import json
 def _create_llm_as_judge_scorer(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
-    metric: Optional[str] = None,
     system: Optional[str] = None,
     schema: Optional[dict] = None,
     judge: Optional[
@@ -33,7 +32,7 @@ def _create_llm_as_judge_scorer(
         ]
     ] = None,
     model: str = "openai:o3-mini",
-    threshold: Optional[float] = None,
+    continuous: bool = False,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> Callable[..., Union[float, bool]]:
@@ -52,17 +51,13 @@ def _create_llm_as_judge_scorer(
             raise ValueError(
                 "`system` is only supported when `prompt` is a string template"
             )
-            
+
         if isinstance(outputs, dict):
             outputs = json.dumps(outputs)
         if isinstance(reference_outputs, dict):
             reference_outputs = json.dumps(reference_outputs)
         if isinstance(inputs, dict):
             inputs = json.dumps(inputs)
-
-        if threshold is not None and (threshold < 0 or threshold > 1):
-            raise ValueError("Threshold must be between 0 and 1")
-
 
         if isinstance(prompt, RunnableLike):
             formatted_prompt = prompt.invoke(
@@ -90,13 +85,12 @@ def _create_llm_as_judge_scorer(
                 **kwargs,
             )
 
-        
         if system is not None:
             messages = [
                 {"role": "system", "content": system},
                 *messages,
             ]
-        
+
         # Add few shot examples to the prompt
         if few_shot_examples:
             # Find the last user message to append examples to
@@ -129,34 +123,45 @@ def _create_llm_as_judge_scorer(
                 ]
             )
 
-        description = f"A numerical score measuring {metric}"
-        json_schema = schema if schema is not None else {
+        json_schema = (
+            schema
+            if schema is not None
+            else {
                 "type": "object",
                 "additionalProperties": False,
-        }
-        
+            }
+        )
+
         # Set the description for the score schema
-        description = f"The proportion of the criteria that are met for {metric}, a number from 0.0 to 1.0. 1.0 means all the criteria are met. 0.0 means none of the criteria are met."
-        score_schema = {
-            "type": "number",
-            "description": description,
-        }
+        if continuous:
+            description = "A number that represents the degree to which the criteria in the prompt are met, from 0.0 to 1.0. 1.0 means the criteria are met perfectly. 0.0 means none of the criteria are met."
+            score_schema = {
+                "type": "number",
+                "description": description,
+            }
+        else:
+            description = "A score that is true if criteria in the prompt are met, and false otherwise."
+            score_schema = {
+                "type": "boolean",
+                "description": description,
+            }
 
         # Add reasoning if passed
-        if use_reasoning and schema is None:
-            json_schema["properties"] = {
-                "reasoning": {
-                    "type": "string",
-                    "description": "A human-readable explanation of the score. You MUST end the reasoning with a sentence that says: Thus, the score should be: SCORE_YOU_ASSIGN. Where SCORE_YOU_ASSIGN is a single number between 0.0 and 1.0",
-                },
-                "score": score_schema,
-            }
-            json_schema["required"] = ["reasoning", "score"]
-        elif schema is None:
-            json_schema["properties"] = {
-                "score": score_schema,
-            }
-            json_schema["required"] = ["score"]
+        if schema is None:
+            if use_reasoning:
+                json_schema["properties"] = {
+                    "reasoning": {
+                        "type": "string",
+                        "description": "A human-readable explanation of the score. You MUST end the reasoning with a sentence that says: Thus, the score should be: SCORE_YOU_ASSIGN.",
+                    },
+                    "score": score_schema,
+                }
+                json_schema["required"] = ["reasoning", "score"]
+            else:
+                json_schema["properties"] = {
+                    "score": score_schema,
+                }
+                json_schema["required"] = ["score"]
 
         nonlocal judge
 
@@ -221,7 +226,7 @@ def _create_llm_as_judge_scorer(
 def create_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
-    metric: str = "quality",
+    feedback_key: str = "score",
     judge: Optional[
         Union[
             ModelClient,
@@ -231,17 +236,16 @@ def create_llm_as_judge(
     ] = None,
     system: Optional[str] = None,
     model: Optional[str] = None,
-    threshold: Optional[float] = None,
+    continuous: bool = False,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> SimpleEvaluator:
     scorer = _create_llm_as_judge_scorer(
         prompt=prompt,
-        metric=metric,
         judge=judge,
         system=system,
         model=model,
-        threshold=threshold,
+        continuous=continuous,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
     )
@@ -253,10 +257,15 @@ def create_llm_as_judge(
         reference_outputs: Optional[dict] = None,
         **kwargs,
     ) -> EvaluatorResult:
+        run_name = (
+            "llm_as_judge"
+            if feedback_key == "score"
+            else f"llm_as_{feedback_key}_judge"
+        )
         return _run_evaluator(
-            run_name=f"llm_as_{metric}_judge",
+            run_name=run_name,
             scorer=scorer,
-            feedback_key=metric,
+            feedback_key=feedback_key,
             inputs=inputs,
             outputs=outputs,
             reference_outputs=reference_outputs,

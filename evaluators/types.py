@@ -22,7 +22,7 @@ class SimpleEvaluator(Protocol):
         outputs: Any,
         reference_outputs: Optional[Any] = None,
         **kwargs,
-    ) -> bool: ...
+    ) -> EvaluatorResult | list[EvaluatorResult]: ...
 
 
 class ChatCompletionMessage(TypedDict):

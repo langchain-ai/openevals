@@ -23,15 +23,16 @@ import json
 def _create_llm_as_judge_scorer(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
-    metric: str,
+    metric: Optional[str] = None,
+    system: Optional[str] = None,
+    schema: Optional[dict] = None,
     judge: Optional[
         Union[
             ModelClient,
             LangChainLikeModel,
-            Callable[[list[ChatCompletionMessage]], float],
         ]
     ] = None,
-    model: Optional[str] = None,
+    model: str = "openai:o3-mini",
     threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
@@ -42,13 +43,26 @@ def _create_llm_as_judge_scorer(
 
     def get_score(
         *,
-        inputs: Optional[dict] = None,
-        outputs: dict,
-        reference_outputs: Optional[dict] = None,
+        inputs: Optional[Union[str, dict]] = None,
+        outputs: Union[str, dict],
+        reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ) -> EvaluatorResult:
+        if system is not None and not isinstance(prompt, str):
+            raise ValueError(
+                "`system` is only supported when `prompt` is a string template"
+            )
+            
+        if isinstance(outputs, dict):
+            outputs = json.dumps(outputs)
+        if isinstance(reference_outputs, dict):
+            reference_outputs = json.dumps(reference_outputs)
+        if isinstance(inputs, dict):
+            inputs = json.dumps(inputs)
+
         if threshold is not None and (threshold < 0 or threshold > 1):
             raise ValueError("Threshold must be between 0 and 1")
+
 
         if isinstance(prompt, RunnableLike):
             formatted_prompt = prompt.invoke(
@@ -75,6 +89,15 @@ def _create_llm_as_judge_scorer(
                 reference_outputs=reference_outputs,
                 **kwargs,
             )
+
+        
+        if system is not None:
+            messages = [
+                {"role": "system", "content": system},
+                *messages,
+            ]
+        
+        # Add few shot examples to the prompt
         if few_shot_examples:
             # Find the last user message to append examples to
             last_user_message_idx = None
@@ -105,11 +128,14 @@ def _create_llm_as_judge_scorer(
                     for example in few_shot_examples
                 ]
             )
-        json_schema = {
-            "type": "object",
-            "additionalProperties": False,
+
+        description = f"A numerical score measuring {metric}"
+        json_schema = schema if schema is not None else {
+                "type": "object",
+                "additionalProperties": False,
         }
-        # Make the output continuous or not
+        
+        # Set the description for the score schema
         description = f"The proportion of the criteria that are met for {metric}, a number from 0.0 to 1.0. 1.0 means all the criteria are met. 0.0 means none of the criteria are met."
         score_schema = {
             "type": "number",
@@ -117,7 +143,7 @@ def _create_llm_as_judge_scorer(
         }
 
         # Add reasoning if passed
-        if use_reasoning:
+        if use_reasoning and schema is None:
             json_schema["properties"] = {
                 "reasoning": {
                     "type": "string",
@@ -126,7 +152,7 @@ def _create_llm_as_judge_scorer(
                 "score": score_schema,
             }
             json_schema["required"] = ["reasoning", "score"]
-        else:
+        elif schema is None:
             json_schema["properties"] = {
                 "score": score_schema,
             }
@@ -137,7 +163,7 @@ def _create_llm_as_judge_scorer(
         if judge is None:
             from langchain.chat_models import init_chat_model
 
-            judge = init_chat_model(model=model or "openai:o3-mini")
+            judge = init_chat_model(model=model)
 
         if isinstance(judge, LangChainLikeModel):
             response = judge.with_structured_output(
@@ -147,10 +173,12 @@ def _create_llm_as_judge_scorer(
                     **json_schema,
                 }
             ).invoke(messages)
-            score = response["score"] if threshold is None else response["score"] > threshold
-            if use_reasoning:
-                return (score, response["reasoning"])
-            return score
+            if schema is None:
+                if use_reasoning:
+                    return (response["score"], response["reasoning"])
+                return response["score"]
+            else:
+                return response
         elif isinstance(judge, ModelClient):
             if model is None:
                 raise ValueError("`model` is required for non-LangChain clients")
@@ -180,16 +208,12 @@ def _create_llm_as_judge_scorer(
 
             response = invoke_llm(**params)
             parsed = json.loads(response.choices[0].message.content)
-            score = parsed["score"] if threshold is None else parsed["score"] > threshold
-            if use_reasoning:
-                return (score, parsed["reasoning"])
-            return score
-        else:
-            if model is not None:
-                raise ValueError(
-                    "`model` is not allowed when passing a raw function as the judge"
-                )
-            return judge(formatted_prompt)
+            if schema is None:
+                if use_reasoning:
+                    return (parsed["score"], parsed["reasoning"])
+                return parsed["score"]
+            else:
+                return parsed
 
     return get_score
 

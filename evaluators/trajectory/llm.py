@@ -1,3 +1,4 @@
+from __future__ import annotations
 from evaluators.llm import (
     _create_llm_as_judge_scorer,
     ChatCompletionMessage,
@@ -9,16 +10,21 @@ from evaluators.llm import (
     Union,
 )
 from evaluators.types import EvaluatorResult, FewShotExample
-from evaluators.utils import _chat_completion_messages_to_string, _run_evaluator
+from evaluators.utils import (
+    _chat_completion_messages_to_string,
+    _run_evaluator,
+    _normalize_to_openai_messages_list,
+)
+from typing import TYPE_CHECKING
 
 DEFAULT_PROMPT = """Grade the following agent trajectory:
 
 <trajectory>
 {outputs}
 </trajectory>
-{formatted_inputs_if_provided}
-{formatted_reference_outputs_if_provided}
-{formatted_rubric_if_provided}
+{inputs}
+{reference_outputs}
+{rubric}
 """
 
 
@@ -35,7 +41,7 @@ def create_trajectory_llm_as_judge(
         ]
     ] = None,
     model: Optional[str] = None,
-    continuous: bool = False,
+    threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ):
@@ -44,21 +50,28 @@ def create_trajectory_llm_as_judge(
         metric=metric,
         judge=judge,
         model=model,
-        continuous=continuous,
+        threshold=threshold,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
     )
 
+    if TYPE_CHECKING:
+        from langchain_core.messages import BaseMessage
+
     def _wrapped_evaluator(
         *,
         inputs: Optional[dict] = None,
-        outputs: list[ChatCompletionMessage] | dict,
-        reference_outputs: Optional[dict] = None,
+        outputs: Union[list[ChatCompletionMessage], list[BaseMessage], dict],
+        reference_outputs: Optional[
+            Union[list[ChatCompletionMessage], list[BaseMessage], dict]
+        ] = None,
         rubric: Optional[str] = None,
         **kwargs,
     ) -> EvaluatorResult:
+        outputs = _normalize_to_openai_messages_list(outputs)
+        reference_outputs = _normalize_to_openai_messages_list(reference_outputs)
         if reference_outputs:
-            formatted_reference_outputs = f"\nUse the following trajectory as an example reference when grading:\n<reference_trajectory>\n{reference_outputs}\n</reference_trajectory>\n"
+            formatted_reference_outputs = f"\nUse the following trajectory as an example reference when grading:\n<reference_trajectory>\n{_chat_completion_messages_to_string(reference_outputs)}\n</reference_trajectory>\n"
         else:
             formatted_reference_outputs = ""
         if inputs:
@@ -78,9 +91,9 @@ def create_trajectory_llm_as_judge(
             scorer=scorer,
             feedback_key=metric,
             outputs=formatted_outputs,
-            formatted_reference_outputs_if_provided=formatted_reference_outputs,
-            formatted_inputs_if_provided=formatted_inputs,
-            formatted_rubric_if_provided=formatted_rubric,
+            reference_outputs=formatted_reference_outputs,
+            inputs=formatted_inputs,
+            rubric=formatted_rubric,
             **kwargs,
         )
 

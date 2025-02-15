@@ -1,35 +1,63 @@
 # LangSmith Evaluators
 
 Much like unit tests in traditional software, evals are a hugely important part of bringing LLM applications to production.
-The goal of this package is to help provide a starting point for you to write evals for your LLM applications. It is not 
+The goal of this package is to help provide a starting point for you to write evals for your LLM applications. It is not
 intended to be a highly customizable framework, but rather a jumping off point before you get into more complicated evals specific to your application.
 To learn more about how to write more custom evals, please check out this [documentation](https://docs.smith.langchain.com/evaluation/how_to_guides/custom_evaluator).
 
+## Installation
+
+You can install the package as follows:
+
+```bash
+$ uv add langsmith-evaluators
+```
+
+For LLM-as-judge evaluators, you will also need an LLM client. You can either use [LangChain chat models](https://python.langchain.com/docs/integrations/chat/):
+
+```bash
+$ uv add langchain langchain_openai
+```
+
+Or an OpenAI client directly:
+
+```bash
+$ uv add openai
+```
+
 ## LLM-as-Judge Evaluators
 
-The core of this package is the `create_llm_as_judge` function, which creates a simple evaluator that uses an LLM to evaluate the quality of the outputs. The scoring is done 
-from 0 to 1, where 1 indicates a pass and 0 indicates a fail.
+The core of this package is the `create_llm_as_judge` function, which creates an evaluator that uses an LLM to evaluate the quality of the outputs.
 
-To use the `create_llm_as_judge` function, you need to provide a prompt and a model. The prompt is a string or a function that returns a string. The model can either
-be a string of `PROVIDER:MODEL` such as `openai:gpt-4o`, a LangChain-like model such as `ChatOpenAI(model="gpt-4o")`, or an OpenAI client along with a model name.
-
-The following example creates a simple evaluator that uses an LLM to evaluate how funny the outputs are:
+To use the `create_llm_as_judge` function, you need to provide a prompt and a model. Here's an example of a simple evaluator that uses an LLM to evaluate how funny an output is:
 
 ```python
 from langsmith.evaluators.llm_as_judge import create_llm_as_judge
 
 funny_evaluator = create_llm_as_judge(
-    # IMPORTANT: Your prompt can only contain the variables `inputs`, `outputs`, and `reference_outputs`
     prompt="Is this text funny? {outputs}",
-    model="openai:gpt-4o",
-    # reasoning defaults to True, and forces the model to use CoT
-    reasoning=True,
-    # continuous defaults to False, and forces the model to return either 0 or 1 instead of a score between 0 and 1
-    continuous=False,
+    metric="hilariousness",
+    # Optional, forces a binary output
+    threshold=0.5,
+    # Default, requires langchain and langchain_openai installation
+    model="openai:o3-mini",
+    # You can also pass an OpenAI client instance and model name
+    # model="o3-mini",
+    # judge=OpenAI(api_key="...")
 )
 ```
 
-You can then write a simple unit test with the evaluator as such:
+The prompt may be a string, LangChain prompt or a function that returns a string.
+
+The model can either be:
+
+- a string of `PROVIDER:MODEL` such as `openai:o3-mini`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://python.langchain.com/docs/how_to/chat_models_universal_init/)
+- a LangChain chat model instance such as `ChatOpenAI(model="o3-mini")`
+- a string along with a `judge` parameter set to an OpenAI client instance
+
+You may also omit the `model` parameter entirely, in which case the package will attempt to import `langchain_openai` and use OpenAI's `o3-mini` model.
+
+You can then [set up LangSmith's pytest runner](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) and run a simple eval:
 
 ```python
 import pytest
@@ -38,15 +66,13 @@ import pytest
 def test_funniness():
     inputs = "Tell me a joke"
     # These are fake outputs, in reality you would run your LLM-based system and get real outputs
-    outputs = "Why did the chicken cross the road? To get to the other side!" 
+    outputs = "Why did the chicken cross the road? To get to the other side!"
     eval_result = funny_evaluator(outputs=outputs)
     assert eval_result["score"] == 1
     assert eval_result["reasoning"] is not None
 ```
 
-### Aside: Using with Evaluate
-
-You can also use the evaluator with the [`evaluate`](https://docs.smith.langchain.com/evaluation#8-run-and-view-results) function from LangSmith:
+You can also use your created evaluator with LangSmith's [`evaluate`](https://docs.smith.langchain.com/evaluation#8-run-and-view-results) function:
 
 ```python
 from langsmith import Client
@@ -70,20 +96,26 @@ to be used out of the box for sanity checks during development, and should provi
 
 ### Prebuilt LLM-as-Judge's
 
-We offer a variety of prebuilt LLM-as-Judge evaluator prompts. You can import and use them as follows:
+We offer a variety of prebuilt LLM-as-a-judge evaluators in the form of prompts. You can import and use them as follows:
 
 ```python
-from langsmith.evaluators.prompts import *
+from langsmith.evaluators.prompts import CONCISENESS_PROMPT
 
 conciseness_evaluator = create_llm_as_judge(
     prompt=CONCISENESS_PROMPT,
-    model="openai:gpt-4o",
+    metric="conciseness",
 )
 ```
 
-### Prebuilt Trajectory Evaluator
+Notably, these prompts are simple strings. You can log them and make edits to them as needed.
 
-LangSmith also offers a pre-built evaluator for evaluating the trajectory of a conversation against an expected trajectory. You can import and use it as follows:
+The above example also omits the `threshold` parameter, in which case the evaluator will return a float between 0 and 1.
+
+If a prompt requires additional environment variables, you can pass them in by name when calling the created evaluator.
+
+### Prebuilt Trajectory Evaluators
+
+LangSmith also offers pre-built evaluators for evaluating the trajectory of a conversation against an expected trajectory. Here's an example of how to use the `exact_trajectory_match` evaluator:
 
 ```python
 from langsmith.evaluators.trajectory.exact import exact_trajectory_match
@@ -92,10 +124,10 @@ from langsmith.evaluators.trajectory.exact import exact_trajectory_match
 def test_exact_trajectory_match():
     inputs = {}
     outputs = [
-        ChatCompletionMessage(role="user", content="What is the weather in SF?"),
-        ChatCompletionMessage(
-            role="assistant",
-            tool_calls=[
+        {"role": "user", "content": "What is the weather in SF?"},
+        {
+            "role": "assistant",
+            "tool_calls": [
                 {
                     "function": {
                         "name": "get_weather",
@@ -103,17 +135,15 @@ def test_exact_trajectory_match():
                     }
                 }
             ],
-        ),
-        ChatCompletionMessage(role="tool", content="It's 80 degrees and sunny in SF."),
-        ChatCompletionMessage(
-            role="assistant", content="The weather in SF is 80 degrees andsunny."
-        ),
+        },
+        {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+        {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny."},
     ]
     reference_outputs = [
-        ChatCompletionMessage(role="user", content="What is the weather in SF?"),
-        ChatCompletionMessage(
-            role="assistant",
-            tool_calls=[
+        {"role": "user", "content": "What is the weather in SF?"},
+        {
+            "role": "assistant",
+            "tool_calls": [
                 {
                     "function": {
                         "name": "get_weather",
@@ -121,17 +151,58 @@ def test_exact_trajectory_match():
                     }
                 }
             ],
-        ),
-        ChatCompletionMessage(
-            role="tool", content="It's 80 degrees and sunny in San Francisco."
-        ),
-        ChatCompletionMessage(
-            role="assistant", content="The weather in SF is 80˚ and sunny."
-        ),
+        },
+        {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
+        {"role": "assistant", "content": "The weather in SF is 80˚ and sunny."},
     ]
     assert exact_trajectory_match(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
     ) == EvaluatorResult(key="trajectory_match", score=1.0)
+```
+
+There are other evaluators for checking partial trajectory matches (ensuring that a trajectory contains a subset and superset of tool calls compared to a reference trajectory),
+as well as an LLM-as-judge trajectory evaluator that uses an LLM to evaluate the trajectory:
+
+```python
+@pytest.mark.langsmith
+def test_trajectory_match():
+    evaluator = create_trajectory_llm_as_judge(prompt=DEFAULT_PROMPT)
+    inputs = {}
+    outputs = [
+        {"role": "user", "content": "What is the weather in SF?"},
+        {"role": "assistant", "tool_calls": [
+                {
+                    "function": {
+                        "name": "get_weather",
+                        "arguments": json.dumps({"city": "SF"}),
+                    }
+                }
+            ],
+        },
+        {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+        {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny."},
+    ]
+    reference_outputs = [
+        {"role": "user", "content": "What is the weather in SF?"},
+        {"role": "assistant", "tool_calls": [
+                {
+                    "function": {
+                        "name": "get_weather",
+                        "arguments": json.dumps({"city": "San Francisco"}),
+                    }
+                }
+            ],
+        },
+        {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
+        {"role": "assistant", "content": "The weather in SF is 80˚ and sunny."},
+    ]
+    eval_result = evaluator(
+        inputs=inputs,
+        outputs=outputs,
+        reference_outputs=reference_outputs,
+    )
+    assert eval_result["key"] == "trajectory_accuracy"
+    assert eval_result["score"] == 1.0
 ```
 
 ### Prebuilt Metric Evaluators

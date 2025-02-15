@@ -1,13 +1,17 @@
+from __future__ import annotations
 from evaluators.types import ChatCompletionMessage, EvaluatorResult
-from evaluators.utils import _run_evaluator
+from evaluators.utils import _run_evaluator, _normalize_to_openai_messages_list
 from evaluators.trajectory.utils import _is_trajectory_superset
-from typing import Any
+from typing import Any, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from langchain_core.messages import BaseMessage
 
 
 def trajectory_subset(
     *,
-    outputs: list[ChatCompletionMessage],
-    reference_outputs: list[ChatCompletionMessage],
+    outputs: Union[list[ChatCompletionMessage], list[BaseMessage], dict],
+    reference_outputs: Union[list[ChatCompletionMessage], list[BaseMessage], dict],
     **kwargs: Any,
 ) -> EvaluatorResult:
     """
@@ -21,6 +25,8 @@ def trajectory_subset(
     Returns:
         EvaluatorResult: Contains a score of 1.0 if trajectory (including called tools) matches, 0.0 otherwise
     """
+    outputs = _normalize_to_openai_messages_list(outputs)
+    reference_outputs = _normalize_to_openai_messages_list(reference_outputs)
 
     def get_score():
         if outputs is None or reference_outputs is None:

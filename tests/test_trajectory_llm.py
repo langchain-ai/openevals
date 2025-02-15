@@ -11,10 +11,8 @@ def test_trajectory_match():
     evaluator = create_trajectory_llm_as_judge(prompt=DEFAULT_PROMPT)
     inputs = {}
     outputs = [
-        ChatCompletionMessage(role="user", content="What is the weather in SF?"),
-        ChatCompletionMessage(
-            role="assistant",
-            tool_calls=[
+        {"role": "user", "content": "What is the weather in SF?"},
+        {"role": "assistant", "tool_calls": [
                 {
                     "function": {
                         "name": "get_weather",
@@ -22,17 +20,13 @@ def test_trajectory_match():
                     }
                 }
             ],
-        ),
-        ChatCompletionMessage(role="tool", content="It's 80 degrees and sunny in SF."),
-        ChatCompletionMessage(
-            role="assistant", content="The weather in SF is 80 degrees and sunny."
-        ),
+        },
+        {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+        {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny."},
     ]
     reference_outputs = [
-        ChatCompletionMessage(role="user", content="What is the weather in SF?"),
-        ChatCompletionMessage(
-            role="assistant",
-            tool_calls=[
+        {"role": "user", "content": "What is the weather in SF?"},
+        {"role": "assistant", "tool_calls": [
                 {
                     "function": {
                         "name": "get_weather",
@@ -40,13 +34,9 @@ def test_trajectory_match():
                     }
                 }
             ],
-        ),
-        ChatCompletionMessage(
-            role="tool", content="It's 80 degrees and sunny in San Francisco."
-        ),
-        ChatCompletionMessage(
-            role="assistant", content="The weather in SF is 80˚ and sunny."
-        ),
+        },
+        {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
+        {"role": "assistant", "content": "The weather in SF is 80˚ and sunny."},
     ]
     eval_result = evaluator(
         inputs=inputs,
@@ -54,7 +44,7 @@ def test_trajectory_match():
         reference_outputs=reference_outputs,
     )
     assert eval_result["key"] == "trajectory_accuracy"
-    assert eval_result["score"] is True
+    assert eval_result["score"] == 1.0
 
 
 @pytest.mark.langsmith

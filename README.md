@@ -1,13 +1,13 @@
 # LangSmith Evaluators
 
 Much like unit tests in traditional software, evals are a hugely important part of bringing LLM applications to production.
-The goal of this package is to help provide a starting point for you to write evals for your LLM applications. It is not 
+The goal of this package is to help provide a starting point for you to write evals for your LLM applications. It is not
 intended to be a highly customizable framework, but rather a jumping off point before you get into more complicated evals specific to your application.
 To learn more about how to write more custom evals, please check out this [documentation](https://docs.smith.langchain.com/evaluation/how_to_guides/custom_evaluator).
 
 ## LLM-as-Judge Evaluators
 
-The core of this package is the `create_llm_as_judge` function, which creates a simple evaluator that uses an LLM to evaluate the quality of the outputs. The scoring is done 
+The core of this package is the `create_llm_as_judge` function, which creates a simple evaluator that uses an LLM to evaluate the quality of the outputs. The scoring is done
 from 0 to 1, where 1 indicates a pass and 0 indicates a fail.
 
 To use the `create_llm_as_judge` function, you need to provide a prompt and a model. The prompt is a string or a function that returns a string. The model can either
@@ -38,7 +38,7 @@ import pytest
 def test_funniness():
     inputs = "Tell me a joke"
     # These are fake outputs, in reality you would run your LLM-based system and get real outputs
-    outputs = "Why did the chicken cross the road? To get to the other side!" 
+    outputs = "Why did the chicken cross the road? To get to the other side!"
     eval_result = funny_evaluator(outputs=outputs)
     assert eval_result["score"] == 1
     assert eval_result["reasoning"] is not None
@@ -92,10 +92,10 @@ from langsmith.evaluators.trajectory.exact import exact_trajectory_match
 def test_exact_trajectory_match():
     inputs = {}
     outputs = [
-        ChatCompletionMessage(role="user", content="What is the weather in SF?"),
-        ChatCompletionMessage(
-            role="assistant",
-            tool_calls=[
+        {"role": "user", "content": "What is the weather in SF?"},
+        {
+            "role": "assistant",
+            "tool_calls": [
                 {
                     "function": {
                         "name": "get_weather",
@@ -103,17 +103,15 @@ def test_exact_trajectory_match():
                     }
                 }
             ],
-        ),
-        ChatCompletionMessage(role="tool", content="It's 80 degrees and sunny in SF."),
-        ChatCompletionMessage(
-            role="assistant", content="The weather in SF is 80 degrees andsunny."
-        ),
+        },
+        {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+        {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny."},
     ]
     reference_outputs = [
-        ChatCompletionMessage(role="user", content="What is the weather in SF?"),
-        ChatCompletionMessage(
-            role="assistant",
-            tool_calls=[
+        {"role": "user", "content": "What is the weather in SF?"},
+        {
+            "role": "assistant",
+            "tool_calls": [
                 {
                     "function": {
                         "name": "get_weather",
@@ -121,13 +119,9 @@ def test_exact_trajectory_match():
                     }
                 }
             ],
-        ),
-        ChatCompletionMessage(
-            role="tool", content="It's 80 degrees and sunny in San Francisco."
-        ),
-        ChatCompletionMessage(
-            role="assistant", content="The weather in SF is 80˚ and sunny."
-        ),
+        },
+        {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
+        {"role": "assistant", "content": "The weather in SF is 80˚ and sunny."},
     ]
     assert exact_trajectory_match(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs

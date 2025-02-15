@@ -230,7 +230,7 @@ def create_llm_as_judge(
         ]
     ] = None,
     system: Optional[str] = None,
-    model: Optional[str] = None,
+    model: str = "openai:o3-mini",
     threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,

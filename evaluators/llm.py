@@ -129,6 +129,7 @@ def _create_llm_as_judge_scorer(
             else {
                 "type": "object",
                 "additionalProperties": False,
+                "strict": True,
             }
         )
 
@@ -234,8 +235,8 @@ def create_llm_as_judge(
             Callable[[list[ChatCompletionMessage]], float],
         ]
     ] = None,
+    model: str = "openai:o3-mini",
     system: Optional[str] = None,
-    model: Optional[str] = None,
     continuous: bool = False,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,

@@ -15,7 +15,8 @@ def test_llm_as_judge_conciseness():
         feedback_key="conciseness",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] == True
+    assert eval_result["score"]
+
 
 @pytest.mark.langsmith
 def test_llm_as_judge_conciseness_not_concise():
@@ -30,4 +31,4 @@ def test_llm_as_judge_conciseness_not_concise():
         feedback_key="conciseness",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] == False
+    assert not eval_result["score"]

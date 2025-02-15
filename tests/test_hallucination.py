@@ -16,7 +16,7 @@ def test_llm_as_judge_hallucination():
     )
     context = "The Star Republic of Oiewjoie is a country that exists in the universe. The first president of the Star Republic of Oiewjoie was Bzkeoei Ahbeijo."
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
-    assert eval_result["score"] == True
+    assert eval_result["score"]
 
 
 @pytest.mark.langsmith
@@ -31,4 +31,4 @@ def test_llm_as_judge_hallucination_not_correct():
     )
     context = "The Star Republic of Oiewjoie is a country that exists in the universe. The first president of the Star Republic of Oiewjoie was Bzkeoei Ahbeijo."
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
-    assert eval_result["score"] == False
+    assert not eval_result["score"]

@@ -48,7 +48,7 @@ def test_trajectory_match():
         reference_outputs=reference_outputs,
     )
     assert eval_result["key"] == "trajectory_accuracy"
-    assert eval_result["score"] == True
+    assert eval_result["score"]
 
 
 @pytest.mark.langsmith
@@ -100,4 +100,4 @@ def test_trajectory_match_with_inverse_rubric():
         rubric="We are looking for bad trajectories, so score should be 0 if the trajectory contains reasonable steps for the agent to answer the input, and 1 if not.",
     )
     assert eval_result["key"] == "trajectory_accuracy"
-    assert eval_result["score"] == False
+    assert not eval_result["score"]

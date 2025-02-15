@@ -15,7 +15,7 @@ def test_llm_as_judge_correctness():
         feedback_key="correctness",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] == True
+    assert eval_result["score"]
 
 
 @pytest.mark.langsmith
@@ -29,7 +29,7 @@ def test_llm_as_judge_correctness_not_correct():
         feedback_key="correctness",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] == False
+    assert not eval_result["score"]
 
 
 @pytest.mark.langsmith
@@ -45,4 +45,4 @@ def test_llm_as_judge_correctness_with_reference_outputs():
     eval_result = llm_as_judge(
         inputs=inputs, outputs=outputs, reference_outputs={"answer": "Bzkeoei Ahbeijo"}
     )
-    assert eval_result["score"] == True
+    assert eval_result["score"]

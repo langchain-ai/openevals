@@ -33,6 +33,7 @@ def create_trajectory_llm_as_judge(
     prompt: str
     | RunnableLike
     | Callable[..., list[ChatCompletionMessage]] = DEFAULT_PROMPT,
+    model: str = "openai:o3-mini",
     feedback_key: str = "trajectory_accuracy",
     judge: Optional[
         Union[
@@ -40,17 +41,15 @@ def create_trajectory_llm_as_judge(
             LangChainLikeModel,
         ]
     ] = None,
-    model: Optional[str] = None,
-    threshold: Optional[float] = None,
+    continuous: bool = False,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ):
     scorer = _create_llm_as_judge_scorer(
         prompt=prompt,
-        feedback_key=feedback_key,
         judge=judge,
         model=model,
-        threshold=threshold,
+        continuous=continuous,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
     )

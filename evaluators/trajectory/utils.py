@@ -5,10 +5,13 @@ from typing import Union
 
 
 def _normalize_tool_call(tool_call: dict) -> dict:
-    return {
-        "name": tool_call["function"]["name"],
-        "args": tool_call["function"]["arguments"],
-    }
+    if "function" in tool_call:
+        return {
+            "name": tool_call["function"]["name"],
+            "args": tool_call["function"]["arguments"],
+        }
+    else:
+        return tool_call
 
 
 def _extract_tool_calls(messages: list[ChatCompletionMessage]) -> list[dict]:

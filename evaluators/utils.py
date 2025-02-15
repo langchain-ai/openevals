@@ -1,10 +1,55 @@
-__all__ = ["_chat_completion_messages_to_string", "_run_evaluator"]
+from __future__ import annotations
+
 
 from langsmith import testing as t
 from langsmith.testing._internal import _TEST_CASE
-from typing import Any, Callable
+import functools
+from typing import Any, Callable, TYPE_CHECKING, Union
+
+__all__ = [
+    "_chat_completion_messages_to_string",
+    "_run_evaluator",
+    "_normalize_to_openai_messages_list",
+]
 
 from evaluators.types import ChatCompletionMessage, EvaluatorResult
+
+if TYPE_CHECKING:
+    from langchain_core.messages import BaseMessage
+
+
+@functools.lru_cache(maxsize=1)
+def _import_langchain_core() -> tuple:
+    from langchain_core.messages.utils import convert_to_openai_messages
+    from langchain_core.messages import BaseMessage
+
+    return BaseMessage, convert_to_openai_messages
+
+
+def _convert_to_openai_message(message: BaseMessage | dict) -> dict:
+    if isinstance(message, dict):
+        return message
+    else:
+        try:
+            BaseMessage, convert_to_openai_messages = _import_langchain_core()
+        except ImportError:
+            raise ValueError(
+                "Only messages in OpenAI format or LangChain BaseMessage are supported. If not passing messages in OpenAI format, you must install `langchain_core`."
+            )
+        if not isinstance(message, BaseMessage):
+            raise ValueError(f"Expected BaseMessage, got {type(message)}")
+        return convert_to_openai_messages([message])[0]
+
+
+def _normalize_to_openai_messages_list(
+    messages: Union[list[ChatCompletionMessage], list[BaseMessage], dict],
+) -> list[dict]:
+    if isinstance(messages, dict):
+        if "messages" in messages:
+            messages = messages["messages"]
+        else:
+            raise ValueError("if messages is a dict, it must contain a 'messages' key")
+    return [_convert_to_openai_message(message) for message in messages]
 
 
 def _run_evaluator(

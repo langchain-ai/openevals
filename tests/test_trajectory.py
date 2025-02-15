@@ -5,8 +5,10 @@ from evaluators.trajectory.strict import trajectory_strict_match
 
 from evaluators.types import EvaluatorResult, ChatCompletionMessage
 
-import pytest
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+
 import json
+import pytest
 
 
 @pytest.mark.langsmith
@@ -61,7 +63,7 @@ def test_trajectory_match(evaluator, feedback_key):
     ]
     assert evaluator(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
-    ) == EvaluatorResult(key=feedback_key, score=1.0)
+    ) == EvaluatorResult(key=feedback_key, score=1.0, comment=None)
 
 
 @pytest.mark.langsmith
@@ -138,7 +140,7 @@ def test_trajectory_with_different_tool_message_order(evaluator, feedback_key):
     ]
     assert evaluator(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
-    ) == EvaluatorResult(key=feedback_key, score=1.0)
+    ) == EvaluatorResult(key=feedback_key, score=1.0, comment=None)
 
 
 @pytest.mark.langsmith
@@ -220,7 +222,7 @@ def test_trajectory_with_different_message_count(evaluator, feedback_key, score)
     ]
     assert evaluator(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
-    ) == EvaluatorResult(key=feedback_key, score=score)
+    ) == EvaluatorResult(key=feedback_key, score=score, comment=None)
 
 
 @pytest.mark.langsmith
@@ -290,7 +292,7 @@ def test_trajectory_subset_tool_call(evaluator, feedback_key, score):
     ]
     assert evaluator(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
-    ) == EvaluatorResult(key=feedback_key, score=score)
+    ) == EvaluatorResult(key=feedback_key, score=score, comment=None)
 
 
 @pytest.mark.langsmith
@@ -345,7 +347,7 @@ def test_exact_matcher_with_different_called_tools(evaluator, feedback_key):
     ]
     assert evaluator(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
-    ) == EvaluatorResult(key=feedback_key, score=0.0)
+    ) == EvaluatorResult(key=feedback_key, score=0.0, comment=None)
 
 
 @pytest.mark.langsmith
@@ -418,7 +420,7 @@ def test_trajectory_with_extra_tool_calls(evaluator, feedback_key, score):
     ]
     assert evaluator(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
-    ) == EvaluatorResult(key=feedback_key, score=score)
+    ) == EvaluatorResult(key=feedback_key, score=score, comment=None)
 
 
 @pytest.mark.langsmith
@@ -491,4 +493,102 @@ def test_trajectory_with_subset_tool_calls(evaluator, feedback_key, score):
     ]
     assert evaluator(
         inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
-    ) == EvaluatorResult(key=feedback_key, score=score)
+    ) == EvaluatorResult(key=feedback_key, score=score, comment=None)
+
+
+@pytest.mark.langsmith
+@pytest.mark.parametrize(
+    "evaluator, feedback_key",
+    [
+        (trajectory_unordered_match, "trajectory_unordered_match"),
+        (trajectory_superset, "trajectory_superset"),
+        (trajectory_subset, "trajectory_subset"),
+        (trajectory_strict_match, "trajectory_strict_match"),
+    ],
+)
+def test_trajectory_match_with_langchain_messages(evaluator, feedback_key):
+    inputs = {}
+    outputs = [
+        HumanMessage(content="What is the weather in SF?"),
+        AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "id": "1234",
+                    "name": "get_weather",
+                    "args": {"city": "SF"},
+                }
+            ],
+        ),
+        ToolMessage(tool_call_id="1234", content="It's 80 degrees and sunny in SF."),
+        AIMessage(content="The weather in SF is 80 degrees and sunny."),
+    ]
+    reference_outputs = [
+        HumanMessage(content="What is the weather in SF?"),
+        AIMessage(
+            content="Let me check that for you!",
+            tool_calls=[
+                {
+                    "id": "4321",
+                    "name": "get_weather",
+                    "args": {"city": "San Francisco"},
+                }
+            ],
+        ),
+        ToolMessage(
+            tool_call_id="4321", content="It's 80 degrees and sunny in San Francisco."
+        ),
+        AIMessage(content="The weather in SF is 80˚ and sunny."),
+    ]
+    assert evaluator(
+        inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
+    ) == EvaluatorResult(key=feedback_key, score=1.0, comment=None)
+
+
+@pytest.mark.langsmith
+@pytest.mark.parametrize(
+    "evaluator, feedback_key",
+    [
+        (trajectory_unordered_match, "trajectory_unordered_match"),
+        (trajectory_superset, "trajectory_superset"),
+        (trajectory_subset, "trajectory_subset"),
+        (trajectory_strict_match, "trajectory_strict_match"),
+    ],
+)
+def test_trajectory_match_with_langchain_messages_failure(evaluator, feedback_key):
+    inputs = {}
+    outputs = [
+        HumanMessage(content="What is the weather in SF?"),
+        AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "id": "1234",
+                    "name": "get_weather",
+                    "args": {"city": "SF"},
+                }
+            ],
+        ),
+        ToolMessage(tool_call_id="1234", content="It's 80 degrees and sunny in SF."),
+        AIMessage(content="The weather in SF is 80 degrees and sunny."),
+    ]
+    reference_outputs = [
+        HumanMessage(content="What is the weather in SF?"),
+        AIMessage(
+            content="Let me check that for you!",
+            tool_calls=[
+                {
+                    "id": "4321",
+                    "name": "accuweather_forecast",
+                    "args": {"city": "San Francisco"},
+                }
+            ],
+        ),
+        ToolMessage(
+            tool_call_id="4321", content="It's 80 degrees and sunny in San Francisco."
+        ),
+        AIMessage(content="The weather in SF is 80˚ and sunny."),
+    ]
+    assert evaluator(
+        inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
+    ) == EvaluatorResult(key=feedback_key, score=0.0, comment=None)

@@ -558,6 +558,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "langchain" },
+    { name = "langchain-core" },
     { name = "langchain-openai" },
     { name = "openai" },
     { name = "pytest" },
@@ -573,6 +574,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "langchain", specifier = ">=0.3.18" },
+    { name = "langchain-core", specifier = ">=0.3.34" },
     { name = "langchain-openai", specifier = ">=0.3.5" },
     { name = "openai", specifier = ">=1.61.1" },
     { name = "pytest", specifier = ">=8.3.4" },

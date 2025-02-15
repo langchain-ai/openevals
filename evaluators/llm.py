@@ -162,7 +162,7 @@ def _create_llm_as_judge_scorer(
 
         if judge is None:
             from langchain.chat_models import init_chat_model
-
+            print(model)
             judge = init_chat_model(model=model)
 
         if isinstance(judge, LangChainLikeModel):
@@ -174,9 +174,10 @@ def _create_llm_as_judge_scorer(
                 }
             ).invoke(messages)
             if schema is None:
+                score = response["score"] if threshold is None else response["score"] > threshold
                 if use_reasoning:
-                    return (response["score"], response["reasoning"])
-                return response["score"]
+                    return (score, response["reasoning"])
+                return score
             else:
                 return response
         elif isinstance(judge, ModelClient):
@@ -209,9 +210,10 @@ def _create_llm_as_judge_scorer(
             response = invoke_llm(**params)
             parsed = json.loads(response.choices[0].message.content)
             if schema is None:
+                score = parsed["score"] if threshold is None else parsed["score"] > threshold
                 if use_reasoning:
-                    return (parsed["score"], parsed["reasoning"])
-                return parsed["score"]
+                    return (score, parsed["reasoning"])
+                return score
             else:
                 return parsed
 
@@ -229,7 +231,7 @@ def create_llm_as_judge(
             Callable[[list[ChatCompletionMessage]], float],
         ]
     ] = None,
-    model: Optional[str] = None,
+    model: str = "openai:o3-mini",
     threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,

@@ -24,8 +24,8 @@ funny_evaluator = create_llm_as_judge(
     model="openai:gpt-4o",
     # reasoning defaults to True, and forces the model to use CoT
     reasoning=True,
-    # continuous defaults to False, and forces the model to return either 0 or 1 instead of a score between 0 and 1
-    continuous=False,
+    # Set a threshold to make the output binary
+    threshold=0.5,
 )
 ```
 

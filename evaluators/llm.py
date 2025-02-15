@@ -32,7 +32,7 @@ def _create_llm_as_judge_scorer(
         ]
     ] = None,
     model: Optional[str] = None,
-    continuous: bool = False,
+    threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> Callable[..., Union[float, bool]]:
@@ -47,6 +47,9 @@ def _create_llm_as_judge_scorer(
         reference_outputs: Optional[dict] = None,
         **kwargs,
     ) -> EvaluatorResult:
+        if threshold is not None and (threshold < 0 or threshold > 1):
+            raise ValueError("Threshold must be between 0 and 1")
+
         if isinstance(prompt, RunnableLike):
             formatted_prompt = prompt.invoke(
                 inputs=inputs,
@@ -107,25 +110,18 @@ def _create_llm_as_judge_scorer(
             "additionalProperties": False,
         }
         # Make the output continuous or not
-        if continuous:
-            description = f"A continuous score from 0 to 1 measuring {metric}"
-            score_schema = {
-                "type": "number",
-                "description": description,
-            }
-        else:
-            description = f"A boolean of True or False. Only return True if the test case satisfies ALL the criteria for {metric}, i.e. the score = 1. If the score is less than 1 (by any amount), then return False. Only respond with True or False."
-            score_schema = {
-                "type": "boolean",
-                "description": description,
-            }
+        description = f"The proportion of the criteria that are met for {metric}, a number from 0.0 to 1.0. 1.0 means all the criteria are met. 0.0 means none of the criteria are met."
+        score_schema = {
+            "type": "number",
+            "description": description,
+        }
 
         # Add reasoning if passed
         if use_reasoning:
             json_schema["properties"] = {
                 "reasoning": {
                     "type": "string",
-                    "description": "A human-readable explanation of the score",
+                    "description": "A human-readable explanation of the score. You MUST end the reasoning with a sentence that says: Thus, the score should be: SCORE_YOU_ASSIGN. Where SCORE_YOU_ASSIGN is a single number between 0.0 and 1.0",
                 },
                 "score": score_schema,
             }
@@ -151,9 +147,10 @@ def _create_llm_as_judge_scorer(
                     **json_schema,
                 }
             ).invoke(messages)
+            score = response["score"] if threshold is None else response["score"] > threshold
             if use_reasoning:
-                return (response["score"], response["reasoning"])
-            return response["score"]
+                return (score, response["reasoning"])
+            return score
         elif isinstance(judge, ModelClient):
             if model is None:
                 raise ValueError("`model` is required for non-LangChain clients")
@@ -183,9 +180,10 @@ def _create_llm_as_judge_scorer(
 
             response = invoke_llm(**params)
             parsed = json.loads(response.choices[0].message.content)
+            score = parsed["score"] if threshold is None else parsed["score"] > threshold
             if use_reasoning:
-                return (parsed["score"], parsed["reasoning"])
-            return parsed["score"]
+                return (score, parsed["reasoning"])
+            return score
         else:
             if model is not None:
                 raise ValueError(
@@ -208,7 +206,7 @@ def create_llm_as_judge(
         ]
     ] = None,
     model: Optional[str] = None,
-    continuous: bool = False,
+    threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> SimpleEvaluator:
@@ -217,7 +215,7 @@ def create_llm_as_judge(
         metric=metric,
         judge=judge,
         model=model,
-        continuous=continuous,
+        threshold=threshold,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
     )

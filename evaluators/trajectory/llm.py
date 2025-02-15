@@ -41,7 +41,7 @@ def create_trajectory_llm_as_judge(
         ]
     ] = None,
     model: Optional[str] = None,
-    continuous: bool = False,
+    threshold: Optional[float] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ):
@@ -50,7 +50,7 @@ def create_trajectory_llm_as_judge(
         metric=metric,
         judge=judge,
         model=model,
-        continuous=continuous,
+        threshold=threshold,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
     )

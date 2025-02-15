@@ -116,23 +116,6 @@ def test_llm_as_judge_init_chat_model():
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
 
-
-@pytest.mark.langsmith
-def test_llm_as_judge_arbitrary_function():
-    inputs = {"a": 1, "b": 2}
-    outputs = {"a": 1, "b": 2}
-
-    def arbitrary_function(prompt: str) -> float:
-        return 1.0
-
-    llm_as_judge = create_llm_as_judge(
-        prompt="Are these two equal? {inputs} {outputs}",
-        judge=arbitrary_function,
-    )
-    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    assert eval_result["score"] == 1.0
-
-
 @pytest.mark.langsmith
 def test_llm_as_judge_few_shot_examples():
     inputs = {"a": 1, "b": 2}

@@ -110,25 +110,18 @@ def _create_llm_as_judge_scorer(
             "additionalProperties": False,
         }
         # Make the output continuous or not
-        if threshold is None:
-            description = f"A continuous score from 0 to 1 measuring the criteria for {metric}"
-            score_schema = {
-                "type": "number",
-                "description": description,
-            }
-        else:
-            description = f"A boolean of True or False. Return true if the example scores higher than {threshold} on the criteria of {metric}, measured on a scale from 0 to 1."
-            score_schema = {
-                "type": "boolean",
-                "description": description,
-            }
+        description = f"The proportion of the criteria that are met for {metric}, a number from 0.0 to 1.0. 1.0 means all the criteria are met. 0.0 means none of the criteria are met."
+        score_schema = {
+            "type": "number",
+            "description": description,
+        }
 
         # Add reasoning if passed
         if use_reasoning:
             json_schema["properties"] = {
                 "reasoning": {
                     "type": "string",
-                    "description": "A human-readable explanation of the score",
+                    "description": "A human-readable explanation of the score. You MUST end the reasoning with a sentence that says: Thus, the score should be: SCORE_YOU_ASSIGN. Where SCORE_YOU_ASSIGN is a single number between 0.0 and 1.0",
                 },
                 "score": score_schema,
             }
@@ -154,9 +147,10 @@ def _create_llm_as_judge_scorer(
                     **json_schema,
                 }
             ).invoke(messages)
+            score = response["score"] if threshold is None else response["score"] > threshold
             if use_reasoning:
-                return (response["score"], response["reasoning"])
-            return response["score"]
+                return (score, response["reasoning"])
+            return score
         elif isinstance(judge, ModelClient):
             if model is None:
                 raise ValueError("`model` is required for non-LangChain clients")
@@ -186,9 +180,10 @@ def _create_llm_as_judge_scorer(
 
             response = invoke_llm(**params)
             parsed = json.loads(response.choices[0].message.content)
+            score = parsed["score"] if threshold is None else parsed["score"] > threshold
             if use_reasoning:
-                return (parsed["score"], parsed["reasoning"])
-            return parsed["score"]
+                return (score, parsed["reasoning"])
+            return score
         else:
             if model is not None:
                 raise ValueError(

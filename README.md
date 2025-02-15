@@ -6,7 +6,53 @@ you can write more custom evals specific to your application.
 
 To learn more about how to write more custom evals, please check out this [documentation](https://docs.smith.langchain.com/evaluation/how_to_guides/custom_evaluator).
 
-## Setup
+## Quickstart
+
+To get started, run the following command to install dependencies:
+
+```bash
+$ pip install langeval langchain langchain_openai
+```
+
+This installs `langeval`, as well as `langchain` and `langchain_openai` which we will use for our LLM-as-judge evaluator.
+
+You can then [set up LangSmith's pytest runner](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) and run a simple eval:
+
+```python
+import pytest
+from langeval.evaluators.llm_as_judge import create_llm_as_judge
+from langeval.evaluators.prompts import CONCISENESS_PROMPT
+
+conciseness_evaluator = create_llm_as_judge(
+    prompt=CONCISENESS_PROMPT,
+)
+
+
+@pytest.mark.langsmith
+def test_conciseness():
+    inputs = "What color is the sky?"
+    # These are fake outputs, in reality you would run your LLM-based system and get real outputs
+    outputs = "Blue."
+    # outputs are formatted directly into the prompt
+    eval_result = conciseness_evaluator(outputs=outputs)
+    assert eval_result["score"] == 1
+    assert eval_result["comment"] is not None
+```
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Evaluators]
+  - [LLM-as-Judge]
+  - [Agent Trajectory]
+  - [Other]
+    - [Levenstein]
+    - [Embedding]
+- [LangSmith Integration]
+  - [Pytest]
+  - [Evaluate]
+
+## Installation
 
 To get started, run the following command to install this package:
 

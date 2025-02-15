@@ -67,6 +67,8 @@ You are an expert data labeler evaluating model outputs for conciseness. Your ta
   ...
 ```
 
+`metric` is the name of the metric you want to evaluate. This is passed to the model as part of the output schema and will also be your evaluator's feedback key in LangSmith.
+
 You can then [set up LangSmith's pytest runner](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) and run a simple eval:
 
 ```python

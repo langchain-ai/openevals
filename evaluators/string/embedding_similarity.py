@@ -5,7 +5,7 @@ from typing import Any
 
 
 def create_embedding_similarity_evaluator(
-    *, model: str, algorithm: str = "cosine"
+    *, model: str = "openai:text-embedding-3-small", algorithm: str = "cosine"
 ) -> SimpleEvaluator:
     """
     Create an evaluator that compares the actual output and reference output for similarity by text embedding distance.
@@ -28,7 +28,7 @@ def create_embedding_similarity_evaluator(
                 )
             from langchain.embeddings import init_embeddings
 
-            embeddings = init_embeddings(model=model)
+            embeddings = init_embeddings(model)
             received_embedding = embeddings.embed_query(outputs)
             expected_embedding = embeddings.embed_query(reference_outputs)
 
@@ -58,7 +58,7 @@ def create_embedding_similarity_evaluator(
 
         return _run_evaluator(
             run_name="embedding_similarity",
-            evaluator_fn=get_score,
+            scorer=get_score,
             feedback_key="embedding_similarity",
         )
 

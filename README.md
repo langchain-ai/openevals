@@ -352,7 +352,7 @@ Finally, if you would like to disable justifications for a given score, you can 
 
 ### Agent trajectory
 
-LangSmith also offers pre-built evaluators for evaluating the trajectory of an agent's execution against an expected one.
+`langmetrics` also includes prebuilt evaluators for evaluating the trajectory of an agent's execution against an expected one.
 You can format your agent's trajectory as a list of OpenAI format dicts or as a list of LangChain `BaseMessage` classes, and handles message formatting
 under the hood.
 
@@ -608,7 +608,7 @@ print(eval_result)
 
 ### Other
 
-LangSmith also provides prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:
+This package also contains prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:
 
 #### Exact match
 
@@ -679,7 +679,7 @@ print(result)
 ### Prebuilt extraction/tool call evaluators
 
 Two very common use cases for LLMs are extracting structured output from documents and tool calling. Both of these require the LLM
-to respond in a structured format. LangSmith provides a prebuilt evaluator to help you evaluate these use cases, and is flexible
+to respond in a structured format. This package provides a prebuilt evaluator to help you evaluate these use cases, and is flexible
 to work for a variety of extraction/tool calling use cases.
 
 #### Evaluating a single structured output

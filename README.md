@@ -414,6 +414,77 @@ print(result)
 }
 ```
 
+#### Unordered match
+
+The `trajectory_unordered_match` evaluator, compares two trajectories and ensures that they contain the same number of tool calls in any order. This is useful if you want to allow flexibility in how an agent obtains the proper information, but still do care that all information was retrieved.
+
+```python
+import json
+from langmetrics.evaluators.trajectory.unordered import trajectory_unordered_match
+
+inputs = {}
+outputs = [
+    {"role": "user", "content": "What is the weather in SF and is there anything fun happening?"},
+    {
+        "role": "assistant",
+        "tool_calls": [{
+            "function": {
+                "name": "get_weather",
+                "arguments": json.dumps({"city": "SF"}),
+            }
+        }],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    {
+        "role": "assistant",
+        "tool_calls": [{
+            "function": {
+                "name": "get_fun_activities",
+                "arguments": json.dumps({"city": "SF"}),
+            }
+        }],
+    },
+    {"role": "tool", "content": "Nothing fun is happening, you should stay indoors and read!"},
+    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny, but there is nothing fun happening."},
+]
+reference_outputs = [
+    {"role": "user", "content": "What is the weather in SF and is there anything fun happening?"},
+    {
+        "role": "assistant",
+        "tool_calls": [
+            {
+                "function": {
+                    "name": "get_fun_activities",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            },
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            },
+        ],
+    },
+    {"role": "tool", "content": "Nothing fun is happening, you should stay indoors and read!"},
+    { "role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    { "role": "assistant", "content": "In SF, it's 80˚ and sunny, but there is nothing fun happening."},
+]
+result = trajectory_unordered_match(
+    inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
+)
+
+print(result)
+```
+
+```
+{
+    'key': 'trajectory_unordered_match',
+    'score': 1.0,
+    'comment': None,
+}
+```
+
 #### Subset and superset match
 
 There are other evaluators for checking partial trajectory matches (ensuring that a trajectory contains a subset and superset of tool calls compared to a reference trajectory).
@@ -477,7 +548,7 @@ print(result)
 }
 ```
 
-### LLM-as-judge for trajectory
+#### LLM-as-judge for trajectory
 
 There is also an LLM-as-judge trajectory evaluator that uses an LLM to evaluate the trajectory. This allows for more flexibility in the trajectory comparison:
 

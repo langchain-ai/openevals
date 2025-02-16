@@ -584,7 +584,7 @@ print(result)
 
 This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method under the hood and calculates distance between two strings using cosine similarity.
 
-````python
+```python
 from langmetrics.evaluators.string.embedding_similarity import create_embedding_similarity_evaluator
 
 evaluator = create_embedding_similarity_evaluator()
@@ -604,8 +604,6 @@ print(result)
     'comment': None,
 }
 ```
-
-
 
 ### Prebuilt extraction/tool call evaluators
 
@@ -641,7 +639,7 @@ evaluator = json_match_evaluator(
 result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
 
 print(result)
-````
+```
 
 "b" will be 0, and "a" will be 1. Therefore, the final score will be 0.5.
 

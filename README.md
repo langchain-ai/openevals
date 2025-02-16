@@ -190,7 +190,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 
 The `prompt` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
 
-Though we suggest sticking to conventional `inputs`, `outputs`, and `reference_outputs` as variables when defining prompts, you can also require additional inputs. In this case, you would pass extra kwargs when calling your evaluator function. Here's an example:
+Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, you can also require additional variables. In this case, you would pass extra kwargs when calling your evaluator function. Here's an example:
 
 ```python
 from langmetrics.evaluators.llm import create_llm_as_judge
@@ -222,7 +222,7 @@ custom_prompt_evaluator(
 )
 ```
 
-For convenience, you can also use the following options will also modify the prompt:
+For convenience, the following options are also available:
 
 - `system`: a string that sets a system prompt for the judge model by adding a `system` message before other parts of the prompt.
 - `few_shot_examples`: a list of example dicts that are appended to the end of the prompt. This is useful for providing the judge model with examples of good and bad outputs. The required structure looks like this:

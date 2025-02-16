@@ -24,7 +24,7 @@ def test_llm_as_judge_conciseness_not_concise():
         "question": "How is the weather in San Francisco?",
     }
     outputs = {
-        "answer": "The current weather in San Francisco is sunny and 90 degrees."
+        "answer": "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
     }
     llm_as_judge = create_llm_as_judge(
         prompt=CONCISENESS_PROMPT,

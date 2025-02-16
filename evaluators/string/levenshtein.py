@@ -53,6 +53,6 @@ def levenshtein_distance(
 
     return _run_evaluator(
         run_name="levenshtein_distance",
-        evaluator_fn=get_score,
+        scorer=get_score,
         feedback_key="levenshtein_distance",
     )

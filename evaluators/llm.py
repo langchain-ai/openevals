@@ -33,6 +33,7 @@ def _create_llm_as_judge_scorer(
     ] = None,
     model: str = "openai:o3-mini",
     continuous: bool = False,
+    choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> Callable[..., Union[float, bool]]:
@@ -134,7 +135,14 @@ def _create_llm_as_judge_scorer(
         )
 
         # Set the description for the score schema
-        if continuous:
+        if choices:
+            description = "A number that represents the degree to which the criteria in the prompt are met."
+            score_schema = {
+                "type": "number",
+                "description": description,
+                "enum": choices,
+            }
+        elif continuous:
             description = "A number that represents the degree to which the criteria in the prompt are met, from 0.0 to 1.0. 1.0 means the criteria are met perfectly. 0.0 means none of the criteria are met."
             score_schema = {
                 "type": "number",
@@ -238,6 +246,7 @@ def create_llm_as_judge(
     model: str = "openai:o3-mini",
     system: Optional[str] = None,
     continuous: bool = False,
+    choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
 ) -> SimpleEvaluator:
@@ -247,6 +256,7 @@ def create_llm_as_judge(
         system=system,
         model=model,
         continuous=continuous,
+        choices=choices,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
     )

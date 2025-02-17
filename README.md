@@ -52,83 +52,32 @@ print(eval_result)
 }
 ```
 
-Some things to note:
-
-- All `langmetrics` evaluators return results in the format of the example above, or a list of results in some cases.
-- `CORRECTNESS_PROMPT` is just an f-string, so you can and should edit it as needed for your specific use case and evaluation criteria.
-  - `prompt` can also be a [LangChain prompt template](https://python.langchain.com/docs/concepts/prompt_templates/) (and can be pulled from the [LangSmith prompt hub](https://smith.langchain.com/hub/)) or a function that returns a list of formatted OpenAI messages. For more information, see [this section](#customizing-prompts).
-- By default, evaluators will score results as simply `True` or `False`. For more granular scoring, see [this section](#customizing-output-scores).
-- The default model used for LLM-as-judge evaluators is OpenAI's `o3-mini`. If you would like to use a different model, see [this section](#customizing-the-model).
-
-### Integrating with LangSmith
-
-For tracking experiments over time, you can log results to [LangSmith](https://smith.langchain.com/).
-
-First, follow [these instructions](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) to set up LangSmith's pytest runner,
-setting appropriate environment variables:
-
-```bash
-export LANGSMITH_API_KEY="your_langsmith_api_key"
-export LANGSMITH_TRACING="true"
-```
-
-Then, set up a file named `test_correctness.py` with the following contents:
-
-```python
-import pytest
-
-from langsmith import testing as t
-
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
-
-correctness_evaluator = create_llm_as_judge(
-    prompt=CORRECTNESS_PROMPT,
-    feedback_key="correctness",
-)
-
-@pytest.mark.langsmith
-def test_correctness():
-    inputs = "How much has the price of doodads changed in the past year?"
-    outputs = "Doodads have increased in price by 10% in the past year."
-    reference_outputs = "The price of doodads has decreased by 50% in the past year."
-    t.log_inputs({"question": inputs})
-    t.log_outputs({"answer": outputs})
-    t.log_reference_outputs({"answer": reference_outputs})
-
-    correctness_evaluator(
-        inputs=inputs,
-        outputs=outputs,
-        reference_outputs=reference_outputs
-    )
-```
-
-Note that when creating the evaluator, we've added a `feedback_key` parameter. This will be used to name the feedback in LangSmith.
-
-Now, run the eval with pytest:
-
-```bash
-pytest test_correctness.py --langsmith-output
-```
-
-Feedback from the prebuilt evaluator will be automatically logged in LangSmith as a table of results like this in your terminal:
-
-![Terminal results](./static/img/pytest_output.png)
-
-And you should also see the results in the experiment view in LangSmith:
-
-![LangSmith results](./static/img/langsmith_results.png)
+By default, LLM-as-judge evaluators will return a score of `True` or `False`. See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-scores), [model](#customizing-the-model), and [prompt](#customizing-prompts)!
 
 ## Table of Contents
 
 - [Installation](#installation)
 - [Evaluators](#evaluators)
   - [LLM-as-Judge](#llm-as-judge)
+    - [Correctness](#correctness)
+    - [Conciseness](#conciseness)
+    - [Hallucination](#hallucination)
+    - [Customizing prompts](#customizing-prompts)
+    - [Customizing the model](#customizing-the-model)
+    - [Customizing output scores](#customizing-output-scores)
   - [Agent Trajectory](#agent-trajectory)
+    - [Strict match](#strict-match)
+    - [Unordered match](#unordered-match)
+    - [Subset/superset match](#subset-and-superset-match)
+    - [LLM-as-judge for trajectory](#llm-as-judge-for-trajectory)
+  - [Extraction and tool calls](#extraction-and-tool-calls)
+    - [Evaluating a single structured output](#evaluating-a-single-structured-output)
+    - [Evaluating a list of structured outputs](#evaluating-a-list-of-structured-outputs)
   - [Other](#other)
     - [Exact Match](#exact-match)
     - [Levenshtein Distance](#levenshtein-distance)
     - [Embedding Similarity](#embedding-similarity)
+- [Python Async Support](#python-async-support)
 - [LangSmith Integration](#langsmith-integration)
   - [Pytest](#pytest)
   - [Evaluate](#evaluate)
@@ -186,9 +135,97 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
   ...
 ```
 
+#### Correctness
+
+`langmetrics` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
+
+```python
+from langmetrics.evaluators.llm import create_llm_as_judge
+from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+
+correctness_evaluator = create_llm_as_judge(
+    prompt=CORRECTNESS_PROMPT,
+)
+
+inputs = "How much has the price of doodads changed in the past year?"
+outputs = "Doodads have increased in price by 10% in the past year."
+reference_outputs = "The price of doodads has decreased by 50% in the past year."
+
+eval_result = correctness_evaluator(
+  inputs=inputs,
+  outputs=outputs,
+  reference_outputs=reference_outputs
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'correctness',
+    'score': False,
+    'comment': '...'
+}
+```
+
+#### Conciseness
+
+`langmetrics` includes a prebuilt prompt for `create_llm_as_judge` that scores the conciseness of an LLM's output. It takes `inputs` and `outputs` as parameters.
+
+```python
+from langmetrics.evaluators.llm import create_llm_as_judge
+from langmetrics.evaluators.prompts import CONCISENESS_PROMPT
+
+inputs = "How is the weather in San Francisco?"
+outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
+
+llm_as_judge = create_llm_as_judge(
+    prompt=CONCISENESS_PROMPT,
+    feedback_key="conciseness",
+)
+
+eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+```
+
+```
+{
+    'key': 'conciseness',
+    'score': False,
+    'comment': '...'
+}
+```
+
+#### Hallucination
+
+`langmetrics` includes a prebuilt prompt for `create_llm_as_judge` that scores the hallucination of an LLM's output. It takes `inputs`, `outputs`, and optionally, `context` as parameters.
+
+```python
+from langmetrics.evaluators.llm import create_llm_as_judge
+from langmetrics.evaluators.prompts import HALLUCINATION_PROMPT
+
+inputs = "What is a doodad?"
+outputs = "I know the answer. A doodad is a kitten."
+context = "A doodad is a self-replicating swarm of nanobots."
+
+llm_as_judge = create_llm_as_judge(
+    prompt=HALLUCINATION_PROMPT,
+    feedback_key="hallucination",
+)
+
+eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
+```
+
+```
+{
+    'key': 'hallucination',
+    'score': False,
+    'comment': '...'
+}
+```
+
 #### Customizing prompts
 
-The `prompt` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
+The `prompt` parameter for `create_llm_as_judge` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
 
 Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, you can also require additional variables. In this case, you would pass extra kwargs when calling your evaluator function. Here's an example:
 
@@ -606,6 +643,97 @@ print(eval_result)
 
 `create_trajectory_llm_as_judge` takes the same parameters as `create_llm_as_judge`, so you can customize the prompt and scoring output as needed. See the [LLM-as-judge section](#llm-as-judge) for more details.
 
+### Extraction and tool calls
+
+Two very common use cases for LLMs are extracting structured output from documents and tool calling. Both of these require the LLM
+to respond in a structured format. This package provides a prebuilt evaluator to help you evaluate these use cases, and is flexible
+to work for a variety of extraction/tool calling use cases.
+
+#### Evaluating a single structured output
+
+Here is a code example of how to evaluate a single structured output, with comments explaining every parameter:
+
+```python
+from langmetrics.evaluators.json import create_json_match_evaluator
+
+outputs = {"a": "Mango, Bananas", "b": 2, "c": [1,2,3]}
+reference_outputs = {"a": "Bananas, Mango", "b": 3, "c": [1,2,3]}
+evaluator = create_json_match_evaluator(
+    # How to aggregate the feedback keys. Can be "average", "all", or None
+    # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
+    aggregator="average",
+    # The criteria for the LLM judge to use for each key you want evaluated by the LLM
+    rubric={
+        "a": "Does the answer mention all the fruits in the reference answer?"
+    },
+    # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
+    exclude_keys=["c"],
+    # The provider and name of the model to use, defaults to openai:o3-mini
+    model="openai:o3-mini",
+    # Whether to force the model to reason about the keys in `rubric`. Defaults to True
+    use_reasoning=True
+)
+# Invoke the evaluator with the outputs and reference outputs
+result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+
+print(result)
+```
+
+"b" will be 0, and "a" will be 1. Therefore, the final score will be 0.5.
+
+```
+{
+    'key': 'structured_match_score',
+    'score': 0.5,
+    'comment': None,
+}
+```
+
+#### Evaluating a list of structured outputs
+
+Here is a code example of how to evaluate a list of structured outputs, with comments explaining every parameter:
+
+```python
+from langmetrics.evaluators.json import create_json_match_evaluator
+
+outputs = [
+    {"a": "Mango, Bananas", "b": 2},
+    {"a": "Apples", "b": 2, "c": [1,2,3]},
+]
+reference_outputs = [
+    {"a": "Bananas, Mango", "b": 2, "d": "Not in outputs"},
+    {"a": "Apples, Strawberries", "b": 2},
+]
+evaluator = create_json_match_evaluator(
+    # How to aggregate the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". If "all", the score for each key will be a combined and statement of the scores for that key across all elements of the list. If "average", the score for each key will be the average of the scores for that key across all elements of the list
+    list_aggregator="all",
+    # How to aggregate the feedback keys for each object in the list. Can be "average", "all", or None
+    # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
+    aggregator="average",
+    # The criteria for the LLM judge to use for each key you want evaluated by the LLM
+    rubric={
+        "a": "Does the answer mention all the fruits in the reference answer?"
+    },
+    # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
+    exclude_keys=["c"],
+    # The provider and name of the model to use, defaults to openai:o3-mini
+    model="openai:o3-mini",
+    # Whether to force the model to reason about the keys in `rubric`. Defaults to True
+    use_reasoning=True
+)
+result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+```
+
+"a" will be 0 since the reference answer doesn't mention all the fruits in the output for the second list element, "b" will be 1 since it exact matches in all elements of the list, and "d" will be 0 since it is missing from the outputs.
+
+```
+{
+    'key': 'structured_match_score',
+    'score': 0.3333333333333333,
+    'comment': None
+}
+```
+
 ### Other
 
 This package also contains prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:
@@ -676,129 +804,98 @@ print(result)
 }
 ```
 
-### Prebuilt extraction/tool call evaluators
+## Python Async Support
 
-Two very common use cases for LLMs are extracting structured output from documents and tool calling. Both of these require the LLM
-to respond in a structured format. This package provides a prebuilt evaluator to help you evaluate these use cases, and is flexible
-to work for a variety of extraction/tool calling use cases.
+All `langmetrics` evaluators support Python [asyncio](https://docs.python.org/3/library/asyncio.html). As a convention, evaluators that use a factory function will have `async` put immediately after `create_` in the function name (for example, `create_async_llm_as_judge`), and evaluators used directly will end in `async` (e.g. `trajectory_strict_match_async`).
 
-#### Evaluating a single structured output
-
-Here is a code example of how to evaluate a single structured output, with comments explaining every parameter:
+Here's an example of how to use the `create_async_llm_as_judge` evaluator asynchronously:
 
 ```python
-from langmetrics.evaluators.json import create_json_match_evaluator
+from langmetrics.evaluators.llm import create_async_llm_as_judge
 
-outputs = {"a": "Mango, Bananas", "b": 2, "c": [1,2,3]}
-reference_outputs = {"a": "Bananas, Mango", "b": 3, "c": [1,2,3]}
-evaluator = create_json_match_evaluator(
-    # How to aggregate the feedback keys. Can be "average", "all", or None
-    # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
-    aggregator="average",
-    # The criteria for the LLM judge to use for each key you want evaluated by the LLM
-    rubric={
-        "a": "Does the answer mention all the fruits in the reference answer?"
-    },
-    # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
-    exclude_keys=["c"],
-    # The provider and name of the model to use, defaults to openai:o3-mini
-    model="openai:o3-mini",
-    # Whether to force the model to reason about the keys in `rubric`. Defaults to True
-    use_reasoning=True
+evaluator = create_async_llm_as_judge(
+    prompt="What is the weather in {inputs}?",
 )
-# Invoke the evaluator with the outputs and reference outputs
-result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
 
-print(result)
+result = await evaluator(inputs="San Francisco")
 ```
 
-"b" will be 0, and "a" will be 1. Therefore, the final score will be 0.5.
-
-```
-{
-    'key': 'structured_match_score',
-    'score': 0.5,
-    'comment': None,
-}
-```
-
-Here is a code example of how to evaluate a list of structured outputs, with comments explaining every parameter:
+If you are using the OpenAI client directly, remember to pass in `AsyncOpenAI` as the `judge` parameter:
 
 ```python
-from langmetrics.evaluators.json import create_json_match_evaluator
+from openai import AsyncOpenAI
 
-outputs = [
-    {"a": "Mango, Bananas", "b": 2},
-    {"a": "Apples", "b": 2, "c": [1,2,3]},
-]
-reference_outputs = [
-    {"a": "Bananas, Mango", "b": 2, "d": "Not in outputs"},
-    {"a": "Apples, Strawberries", "b": 2},
-]
-evaluator = create_json_match_evaluator(
-    # How to aggregate the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". If "all", the score for each key will be a combined and statement of the scores for that key across all elements of the list. If "average", the score for each key will be the average of the scores for that key across all elements of the list
-    list_aggregator="all",
-    # How to aggregate the feedback keys for each object in the list. Can be "average", "all", or None
-    # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
-    aggregator="average",
-    # The criteria for the LLM judge to use for each key you want evaluated by the LLM
-    rubric={
-        "a": "Does the answer mention all the fruits in the reference answer?"
-    },
-    # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
-    exclude_keys=["c"],
-    # The provider and name of the model to use, defaults to openai:o3-mini
-    model="openai:o3-mini",
-    # Whether to force the model to reason about the keys in `rubric`. Defaults to True
-    use_reasoning=True
+evaluator = create_async_llm_as_judge(
+    prompt="What is the weather in {inputs}?",
+    judge=AsyncOpenAI(),
+    model="o3-mini",
 )
-result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
-```
 
-"a" will be 0 since the reference answer doesn't mention all the fruits in the output for the second list element, "b" will be 1 since it exact matches in all elements of the list, and "d" will be 0 since it is missing from the outputs.
-
-```
-{
-    'key': 'structured_match_score',
-    'score': 0.3333333333333333,
-    'comment': None
-}
+result = await evaluator(inputs="San Francisco")
 ```
 
 ## LangSmith Integration
 
+For tracking experiments over time, you can log evaluator results to [LangSmith](https://smith.langchain.com/), a platform for building production-grade LLM applications that includes tracing, evaluation, and experimentation tools.
+
+LangSmith currently offers two ways to run evals. We'll give a quick example of how to run evals using both.
+
 ### Pytest
 
-First, [set up LangSmith's pytest runner](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest). Then create a test file:
+First, follow [these instructions](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) to set up LangSmith's pytest runner,
+setting appropriate environment variables:
+
+```bash
+export LANGSMITH_API_KEY="your_langsmith_api_key"
+export LANGSMITH_TRACING="true"
+```
+
+Then, set up a file named `test_correctness.py` with the following contents:
 
 ```python
 import pytest
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CONCISENESS_PROMPT
 
 from langsmith import testing as t
 
-conciseness_evaluator = create_llm_as_judge(
-    prompt=CONCISENESS_PROMPT,
-    feedback_key="conciseness",
+from langmetrics.evaluators.llm import create_llm_as_judge
+from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+
+correctness_evaluator = create_llm_as_judge(
+    prompt=CORRECTNESS_PROMPT,
+    feedback_key="correctness",
 )
 
 @pytest.mark.langsmith
-def test_conciseness():
-    inputs = "What color is the sky?"
-    outputs = "Blue."
+def test_correctness():
+    inputs = "How much has the price of doodads changed in the past year?"
+    outputs = "Doodads have increased in price by 10% in the past year."
+    reference_outputs = "The price of doodads has decreased by 50% in the past year."
     t.log_inputs({"question": inputs})
     t.log_outputs({"answer": outputs})
-    eval_result = conciseness_evaluator(outputs=outputs)
-    assert eval_result["score"] == 1
-    assert eval_result["comment"] is not None
+    t.log_reference_outputs({"answer": reference_outputs})
+
+    correctness_evaluator(
+        inputs=inputs,
+        outputs=outputs,
+        reference_outputs=reference_outputs
+    )
 ```
 
-Run your eval like this to see results and log feedback to LangSmith:
+Note that when creating the evaluator, we've added a `feedback_key` parameter. This will be used to name the feedback in LangSmith.
+
+Now, run the eval with pytest:
 
 ```bash
-pytest --langsmith-output
+pytest test_correctness.py --langsmith-output
 ```
+
+Feedback from the prebuilt evaluator will be automatically logged in LangSmith as a table of results like this in your terminal:
+
+![Terminal results](./static/img/pytest_output.png)
+
+And you should also see the results in the experiment view in LangSmith:
+
+![LangSmith results](./static/img/langsmith_results.png)
 
 ### Evaluate
 

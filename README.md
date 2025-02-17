@@ -634,10 +634,10 @@ print(result)
 ```python
 from langmetrics.evaluators.string.levenshtein import levenshtein_distance
 
+inputs = "The correct answer"
 outputs = "The correct answer"
-reference_outputs = "The correct answer"
 result = levenshtein_distance(
-    outputs=outputs, reference_outputs=reference_outputs
+    inputs=inputs, outputs=outputs,
 )
 
 print(result)
@@ -661,8 +661,8 @@ from langmetrics.evaluators.string.embedding_similarity import create_embedding_
 evaluator = create_embedding_similarity_evaluator()
 
 result = evaluator(
-    outputs = "The weather is nice!",
-    reference_outputs = "The weather is very nice!"
+    inputs="The weather is nice!",
+    outputs="The weather is very nice!",
 )
 
 print(result)

@@ -400,13 +400,7 @@ def create_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "score",
-    judge: Optional[
-        Union[
-            ModelClient,
-            LangChainLikeModel,
-            Callable[[list[ChatCompletionMessage]], float],
-        ]
-    ] = None,
+    judge: Optional[Union[ModelClient, LangChainLikeModel]] = None,
     model: str = "openai:o3-mini",
     system: Optional[str] = None,
     continuous: bool = False,

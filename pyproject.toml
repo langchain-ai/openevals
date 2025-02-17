@@ -5,16 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "langchain>=0.3.18",
+    "langchain-openai>=0.3.6",
     "langsmith>=0.3.8",
     "rich>=13.9.4",
 ]
 
 [dependency-groups]
 dev = [
-    "langchain>=0.3.18",
-    "langchain-core>=0.3.34",
-    "langchain-openai>=0.3.5",
     "openai>=1.61.1",
     "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.3",
     "ruff>=0.9.5",
 ]

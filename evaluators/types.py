@@ -25,6 +25,17 @@ class SimpleEvaluator(Protocol):
     ) -> EvaluatorResult | list[EvaluatorResult]: ...
 
 
+class SimpleAsyncEvaluator(Protocol):
+    async def __call__(
+        self,
+        *,
+        inputs: Any,
+        outputs: Any,
+        reference_outputs: Optional[Any] = None,
+        **kwargs,
+    ) -> EvaluatorResult | list[EvaluatorResult]: ...
+
+
 class ChatCompletionMessage(TypedDict):
     content: list[Union[str, dict]]
     role: str

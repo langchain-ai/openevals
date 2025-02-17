@@ -9,6 +9,7 @@ from typing import Any, Callable, TYPE_CHECKING, Union
 __all__ = [
     "_chat_completion_messages_to_string",
     "_run_evaluator",
+    "_arun_evaluator",
     "_normalize_to_openai_messages_list",
 ]
 
@@ -52,6 +53,17 @@ def _normalize_to_openai_messages_list(
     return [_convert_to_openai_message(message) for message in messages]
 
 
+# Helper function to process individual scores
+def _process_score(key: str, value: Any) -> tuple[float, str | None]:
+    if isinstance(value, dict):
+        if set(value.keys()) == {"score", "reasoning"}:
+            return value["score"], value["reasoning"]
+        raise ValueError(
+            f"Expected a dictionary with keys 'score' and 'reasoning', but got {value}"
+        )
+    return value, None
+
+
 def _run_evaluator(
     *, run_name: str, scorer: Callable, feedback_key: str, **kwargs: Any
 ) -> EvaluatorResult | list[EvaluatorResult]:
@@ -59,22 +71,12 @@ def _run_evaluator(
         # Get the initial score
         score = scorer(**kwargs)
 
-        # Helper function to process individual scores
-        def process_score(key: str, value: Any) -> tuple[float, str | None]:
-            if isinstance(value, dict):
-                if set(value.keys()) == {"score", "reasoning"}:
-                    return value["score"], value["reasoning"]
-                raise ValueError(
-                    f"Expected a dictionary with keys 'score' and 'reasoning', but got {value}"
-                )
-            return value, None
-
         # Collect all results first
         results = []
         if isinstance(score, dict):
             # Handle dictionary of scores
             for key, value in score.items():
-                key_score, reasoning = process_score(key, value)
+                key_score, reasoning = _process_score(key, value)
                 results.append(
                     EvaluatorResult(key=key, score=key_score, comment=reasoning)
                 )
@@ -99,6 +101,48 @@ def _run_evaluator(
                 )
     else:
         results = _run_scorer()
+
+    # Return single result or list of results
+    return results[0] if len(results) == 1 else results
+
+
+async def _arun_evaluator(
+    *, run_name: str, scorer: Callable, feedback_key: str, **kwargs: Any
+) -> EvaluatorResult | list[EvaluatorResult]:
+    async def _arun_scorer():
+        # Get the initial score
+        score = await scorer(**kwargs)
+
+        # Collect all results first
+        results = []
+        if isinstance(score, dict):
+            # Handle dictionary of scores
+            for key, value in score.items():
+                key_score, reasoning = _process_score(key, value)
+                results.append(
+                    EvaluatorResult(key=key, score=key_score, comment=reasoning)
+                )
+        else:
+            # Handle single score
+            if isinstance(score, tuple):
+                score, reasoning = score
+            else:
+                reasoning = None
+            results.append(
+                EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
+            )
+        return results
+
+    # Log feedback if in test case
+    if _TEST_CASE.get():
+        with t.trace_feedback(name=run_name):
+            results = await _arun_scorer()
+            for result in results:
+                t.log_feedback(
+                    key=result["key"], score=result["score"], comment=result["comment"]
+                )
+    else:
+        results = await _arun_scorer()
 
     # Return single result or list of results
     return results[0] if len(results) == 1 else results

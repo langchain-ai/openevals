@@ -1,7 +1,13 @@
-from .json import json_match_evaluator, SYSTEM_PROMPT, USER_PROMPT
+from .json import (
+    create_json_match_evaluator,
+    create_async_json_match_evaluator,
+    SYSTEM_PROMPT,
+    USER_PROMPT,
+)
 
 __all__ = [
-    "json_match_evaluator",
+    "create_json_match_evaluator",
+    "create_async_json_match_evaluator",
     "SYSTEM_PROMPT",
     "USER_PROMPT",
 ]

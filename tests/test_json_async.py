@@ -1,13 +1,14 @@
-from evaluators.json import create_json_match_evaluator
+from evaluators.json import create_async_json_match_evaluator
 import pytest
 
 
 @pytest.mark.langsmith
-def test_json_match_base():
+@pytest.mark.asyncio
+async def test_json_match_base():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 2}
-    evaluator = create_json_match_evaluator()
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator()
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert len(result) == 2
     assert result[0]["key"] == "a"
     assert result[0]["score"] == 1.0
@@ -16,50 +17,57 @@ def test_json_match_base():
 
 
 @pytest.mark.langsmith
-def test_json_match_mix():
+@pytest.mark.asyncio
+async def test_json_match_mix():
     outputs = {"a": "Mango, Bananas", "b": 2}
     reference_outputs = {"a": "Bananas, Mango", "b": 3}
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         aggregator="average",
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0.5
 
 
 @pytest.mark.langsmith
-def test_json_match_average():
+@pytest.mark.asyncio
+async def test_json_match_average():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 3}
-    evaluator = create_json_match_evaluator(aggregator="average")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(aggregator="average")
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0.5
 
 
 @pytest.mark.langsmith
-def test_json_match_exclude():
+@pytest.mark.asyncio
+async def test_json_match_exclude():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 3}
-    evaluator = create_json_match_evaluator(aggregator="average", exclude_keys=["b"])
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(
+        aggregator="average", exclude_keys=["b"]
+    )
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
 
 
 @pytest.mark.langsmith
-def test_json_match_all():
+@pytest.mark.asyncio
+async def test_json_match_all():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 3}
-    evaluator = create_json_match_evaluator(aggregator="all")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(aggregator="all")
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
 
 
 @pytest.mark.langsmith
-def test_json_match_rubric():
+@pytest.mark.asyncio
+async def test_json_match_rubric():
     outputs = {
         "name": "Harrison Chase",
         "description": "CEO of LangChain, used to work at Kensho + Robust Intelligence.",
@@ -68,19 +76,20 @@ def test_json_match_rubric():
         "name": "Harrison Chase",
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         },
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
 
 
 @pytest.mark.langsmith
-def test_json_match_rubric_wrong():
+@pytest.mark.asyncio
+async def test_json_match_rubric_wrong():
     outputs = {
         "name": "Harrison Chase",
         "description": "CEO of LangChain, used to work at Kensho.",
@@ -89,55 +98,58 @@ def test_json_match_rubric_wrong():
         "name": "Harrison Chase",
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         },
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
 
 
 @pytest.mark.langsmith
-def test_json_match_rubric_with_reasoning():
+@pytest.mark.asyncio
+async def test_json_match_rubric_with_reasoning():
     outputs = {"description": "CEO of LangChain, used to work at Kensho."}
     reference_outputs = {
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."
     }
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         }
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
     assert result["comment"] is not None
 
 
 @pytest.mark.langsmith
-def test_json_match_rubric_without_reasoning():
+@pytest.mark.asyncio
+async def test_json_match_rubric_without_reasoning():
     outputs = {"description": "CEO of LangChain, used to work at Kensho."}
     reference_outputs = {
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."
     }
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         },
         use_reasoning=False,
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
     assert result["comment"] is None
 
 
 @pytest.mark.langsmith
-def test_json_match_rubric_with_reasoning_individual_key():
+@pytest.mark.asyncio
+async def test_json_match_rubric_with_reasoning_individual_key():
     outputs = {
         "name": "Harrison Chase",
         "description": "CEO of LangChain, used to work at Kensho.",
@@ -146,12 +158,12 @@ def test_json_match_rubric_with_reasoning_individual_key():
         "name": "Harrison Chase",
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         }
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert len(result) == 2
     assert result[0]["key"] == "name"
     assert result[0]["score"] == 1.0
@@ -161,7 +173,8 @@ def test_json_match_rubric_with_reasoning_individual_key():
 
 
 @pytest.mark.langsmith
-def test_json_match_list_all_none():
+@pytest.mark.asyncio
+async def test_json_match_list_all_none():
     outputs = [
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
@@ -170,8 +183,8 @@ def test_json_match_list_all_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
     ]
-    evaluator = create_json_match_evaluator()
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator()
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     result = sorted(result, key=lambda x: x["key"])
     assert len(result) == 2
     assert result[0]["key"] == "a"
@@ -181,7 +194,8 @@ def test_json_match_list_all_none():
 
 
 @pytest.mark.langsmith
-def test_json_match_list_average_none():
+@pytest.mark.asyncio
+async def test_json_match_list_average_none():
     outputs = [
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
@@ -190,8 +204,8 @@ def test_json_match_list_average_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 3},
     ]
-    evaluator = create_json_match_evaluator(list_aggregator="average")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(list_aggregator="average")
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     result = sorted(result, key=lambda x: x["key"])
     assert len(result) == 2
     assert result[0]["key"] == "a"
@@ -201,7 +215,8 @@ def test_json_match_list_average_none():
 
 
 @pytest.mark.langsmith
-def test_json_match_list_all_all():
+@pytest.mark.asyncio
+async def test_json_match_list_all_all():
     outputs = [
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
@@ -210,14 +225,15 @@ def test_json_match_list_all_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
     ]
-    evaluator = create_json_match_evaluator(aggregator="all")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(aggregator="all")
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
 
 
 @pytest.mark.langsmith
-def test_json_match_list_average_all():
+@pytest.mark.asyncio
+async def test_json_match_list_average_all():
     outputs = [
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
@@ -226,14 +242,17 @@ def test_json_match_list_average_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 3},
     ]
-    evaluator = create_json_match_evaluator(list_aggregator="average", aggregator="all")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(
+        list_aggregator="average", aggregator="all"
+    )
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
 
 
 @pytest.mark.langsmith
-def test_json_match_list_all_average():
+@pytest.mark.asyncio
+async def test_json_match_list_all_average():
     outputs = [
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
@@ -242,14 +261,15 @@ def test_json_match_list_all_average():
         {"a": 1, "b": 2},
         {"a": 2, "b": 2},
     ]
-    evaluator = create_json_match_evaluator(aggregator="average")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(aggregator="average")
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0.5
 
 
 @pytest.mark.langsmith
-def test_json_match_list_average_average():
+@pytest.mark.asyncio
+async def test_json_match_list_average_average():
     outputs = [
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
@@ -258,16 +278,17 @@ def test_json_match_list_average_average():
         {"a": 1, "b": 2},
         {"a": 1, "b": 3},
     ]
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0.75
 
 
 @pytest.mark.langsmith
-def test_json_match_list_mismatch_all_none():
+@pytest.mark.asyncio
+async def test_json_match_list_mismatch_all_none():
     outputs = [
         {"a": 1, "d": 2},
         {"a": 1, "b": 2},
@@ -276,8 +297,8 @@ def test_json_match_list_mismatch_all_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_json_match_evaluator()
-    results = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator()
+    results = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     results = sorted(results, key=lambda x: x["key"])
     assert len(results) == 4
     assert results[0]["key"] == "a"
@@ -291,7 +312,8 @@ def test_json_match_list_mismatch_all_none():
 
 
 @pytest.mark.langsmith
-def test_json_match_list_mismatch_average_none():
+@pytest.mark.asyncio
+async def test_json_match_list_mismatch_average_none():
     outputs = [
         {"a": 1, "d": 2},
         {"a": 1, "b": 2},
@@ -300,8 +322,8 @@ def test_json_match_list_mismatch_average_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_json_match_evaluator(list_aggregator="average")
-    results = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(list_aggregator="average")
+    results = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     results = sorted(results, key=lambda x: x["key"])
     assert len(results) == 4
     assert results[0]["key"] == "a"
@@ -315,7 +337,8 @@ def test_json_match_list_mismatch_average_none():
 
 
 @pytest.mark.langsmith
-def test_json_match_list_mismatch_all_all():
+@pytest.mark.asyncio
+async def test_json_match_list_mismatch_all_all():
     outputs = [
         {"a": 1, "d": 2},
         {"a": 1, "b": 2},
@@ -324,14 +347,15 @@ def test_json_match_list_mismatch_all_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_json_match_evaluator(aggregator="all")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(aggregator="all")
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
 
 
 @pytest.mark.langsmith
-def test_json_match_list_mismatch_average_all():
+@pytest.mark.asyncio
+async def test_json_match_list_mismatch_average_all():
     outputs = [
         {"a": 1, "d": 2},
         {"a": 1, "b": 2},
@@ -340,14 +364,17 @@ def test_json_match_list_mismatch_average_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_json_match_evaluator(list_aggregator="average", aggregator="all")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(
+        list_aggregator="average", aggregator="all"
+    )
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
 
 
 @pytest.mark.langsmith
-def test_json_match_list_mismatch_all_average():
+@pytest.mark.asyncio
+async def test_json_match_list_mismatch_all_average():
     outputs = [
         {"a": 1, "d": 2},
         {"a": 1, "b": 2},
@@ -356,14 +383,15 @@ def test_json_match_list_mismatch_all_average():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_json_match_evaluator(aggregator="average")
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    evaluator = create_async_json_match_evaluator(aggregator="average")
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0.25
 
 
 @pytest.mark.langsmith
-def test_json_match_list_mismatch_average_average():
+@pytest.mark.asyncio
+async def test_json_match_list_mismatch_average_average():
     outputs = [
         {"a": 1, "d": 2},
         {"a": 1, "b": 2},
@@ -372,29 +400,31 @@ def test_json_match_list_mismatch_average_average():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0.375
 
 
 @pytest.mark.langsmith
-def test_json_match_list_rubric():
+@pytest.mark.asyncio
+async def test_json_match_list_rubric():
     outputs = [{"a": "Strawberries, Melons, Bananas"}]
     reference_outputs = [{"a": "Bananas, Strawberries, Melons"}]
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         list_aggregator="average",
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
 
 
 @pytest.mark.langsmith
-def test_json_match_list_mismatch_output_missing():
+@pytest.mark.asyncio
+async def test_json_match_list_mismatch_output_missing():
     outputs = [
         {"a": 1, "b": 2, "d": 3},
         {"a": 1, "b": 2, "c": 3},
@@ -405,9 +435,9 @@ def test_json_match_list_mismatch_output_missing():
         {"a": 1, "b": 2, "c": 3},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_json_match_evaluator(
+    evaluator = create_async_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
-    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0.75

@@ -687,11 +687,11 @@ to work for a variety of extraction/tool calling use cases.
 Here is a code example of how to evaluate a single structured output, with comments explaining every parameter:
 
 ```python
-from langmetrics.evaluators.json import json_match_evaluator
+from langmetrics.evaluators.json import create_json_match_evaluator
 
 outputs = {"a": "Mango, Bananas", "b": 2, "c": [1,2,3]}
 reference_outputs = {"a": "Bananas, Mango", "b": 3, "c": [1,2,3]}
-evaluator = json_match_evaluator(
+evaluator = create_json_match_evaluator(
     # How to aggregate the feedback keys. Can be "average", "all", or None
     # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
     aggregator="average",
@@ -725,7 +725,7 @@ print(result)
 Here is a code example of how to evaluate a list of structured outputs, with comments explaining every parameter:
 
 ```python
-from langmetrics.evaluators.json import json_match_evaluator
+from langmetrics.evaluators.json import create_json_match_evaluator
 
 outputs = [
     {"a": "Mango, Bananas", "b": 2},
@@ -735,7 +735,7 @@ reference_outputs = [
     {"a": "Bananas, Mango", "b": 2, "d": "Not in outputs"},
     {"a": "Apples, Strawberries", "b": 2},
 ]
-evaluator = json_match_evaluator(
+evaluator = create_json_match_evaluator(
     # How to aggregate the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". If "all", the score for each key will be a combined and statement of the scores for that key across all elements of the list. If "average", the score for each key will be the average of the scores for that key across all elements of the list
     list_aggregator="all",
     # How to aggregate the feedback keys for each object in the list. Can be "average", "all", or None

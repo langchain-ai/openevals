@@ -55,8 +55,8 @@ def _normalize_to_openai_messages_list(
 # Helper function to process individual scores
 def _process_score(key: str, value: Any) -> tuple[float, str | None]:
     if isinstance(value, dict):
-        if set(value.keys()) == {"score", "reasoning"}:
-            return value["score"], value["reasoning"]
+        if "score" in value:
+            return value["score"], value.get("reasoning")
         raise ValueError(
             f"Expected a dictionary with keys 'score' and 'reasoning', but got {value}"
         )

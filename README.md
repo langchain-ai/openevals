@@ -131,6 +131,14 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
   A correct answer:
   - Provides accurate and complete information
   ...
+<input>
+{inputs}
+</input>
+
+<output>
+{outputs}
+</output>
+...
 ```
 
 #### Correctness

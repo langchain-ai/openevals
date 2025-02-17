@@ -205,7 +205,7 @@ from langmetrics.evaluators.prompts import HALLUCINATION_PROMPT
 
 inputs = "What is a doodad?"
 outputs = "I know the answer. A doodad is a kitten."
-context = "A doodad is a self-replicating swarm of nanobots."
+context = """A doodad is a self-replicating swarm of nanobots. They are extremely dangerous and should be avoided at all costs. Some safety precautions when working with them include wearing gloves and a mask."""
 
 llm_as_judge = create_llm_as_judge(
     prompt=HALLUCINATION_PROMPT,

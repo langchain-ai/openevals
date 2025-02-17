@@ -1,0 +1,33 @@
+{
+  "name": "@langchain/agentevals",
+  "packageManager": "yarn@4.3.1",
+  "scripts": {
+    "lint:eslint": "NODE_OPTIONS=--max-old-space-size=4096 eslint --cache --ext .ts,.js src/",
+    "lint:dpdm": "dpdm --exit-code circular:1 --no-warning --no-tree src/*.ts src/**/*.ts",
+    "lint": "yarn lint:eslint && yarn lint:dpdm",
+    "lint:fix": "yarn lint:eslint --fix && yarn lint:dpdm",
+    "format": "prettier --config .prettierrc --write \"src\"",
+    "format:check": "prettier --config .prettierrc --check \"src\"",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@langchain/openai": "^0.4.4",
+    "langchain": "^0.3.15"
+  },
+  "devDependencies": {
+    "@langchain/core": "^0.3.40",
+    "@langchain/scripts": "0.1.3",
+    "@tsconfig/recommended": "^1.0.8",
+    "dotenv": "^16.4.7",
+    "eslint": "^8.33.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jest": "^27.6.0",
+    "eslint-plugin-no-instanceof": "^1.0.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^3.5.1",
+    "typescript": "~5.1.6",
+    "vitest": "^3.0.5"
+  }
+}

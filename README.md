@@ -598,7 +598,9 @@ evaluator = create_trajectory_llm_as_judge(prompt=DEFAULT_PROMPT)
 inputs = {}
 outputs = [
     {"role": "user", "content": "What is the weather in SF?"},
-    {"role": "assistant", "tool_calls": [
+    {
+        "role": "assistant",
+        "tool_calls": [
             {
                 "function": {
                     "name": "get_weather",
@@ -612,7 +614,9 @@ outputs = [
 ]
 reference_outputs = [
     {"role": "user", "content": "What is the weather in SF?"},
-    {"role": "assistant", "tool_calls": [
+    {
+        "role": "assistant",
+        "tool_calls": [
             {
                 "function": {
                     "name": "get_weather",
@@ -722,6 +726,8 @@ evaluator = create_json_match_evaluator(
     use_reasoning=True
 )
 result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+
+print(result)
 ```
 
 "a" will be 0 since the reference answer doesn't mention all the fruits in the output for the second list element, "b" will be 1 since it exact matches in all elements of the list, and "d" will be 0 since it is missing from the outputs.

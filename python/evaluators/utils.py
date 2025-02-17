@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from langsmith import testing as t
 from langsmith.testing._internal import _TEST_CASE
 import functools

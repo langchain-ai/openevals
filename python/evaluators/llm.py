@@ -10,6 +10,7 @@ from evaluators.types import (
     FewShotExample,
 )
 
+from langchain.chat_models import init_chat_model
 from langsmith import traceable
 
 from typing import (
@@ -196,8 +197,6 @@ def _create_llm_as_judge_scorer(
         nonlocal judge
 
         if judge is None:
-            from langchain.chat_models import init_chat_model
-
             judge = init_chat_model(model=model)
 
         if isinstance(judge, LangChainLikeModel):
@@ -340,8 +339,6 @@ def _create_async_llm_as_judge_scorer(
         nonlocal judge
 
         if judge is None:
-            from langchain.chat_models import init_chat_model
-
             judge = init_chat_model(model=model)
 
         if isinstance(judge, LangChainLikeModel):

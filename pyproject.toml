@@ -1,23 +1,11 @@
 [project]
-name = "agentevals"
-version = "0.0.0"
-description = "Add your description here"
+authors = []
+license = { text = "MIT" }
+requires-python = "<4.0,>=3.9"
+dependencies = []
+name = "agentevals-monorepo"
+version = "0.0.1"
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "langchain>=0.3.18",
-    "langchain-openai>=0.3.6",
-    "langsmith>=0.3.8",
-    "rich>=13.9.4",
-]
 
-[dependency-groups]
-dev = [
-    "openai>=1.61.1",
-    "pytest>=8.3.4",
-    "pytest-asyncio>=0.25.3",
-    "ruff>=0.9.5",
-]
-
-[tool.setuptools.packages.find]
-include = ["evaluators*"]
+[tool.uv.sources]
+evaluators = { path = "./python/evaluators", editable = true }

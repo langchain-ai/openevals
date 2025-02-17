@@ -1,6 +1,7 @@
 import json
 from evaluators.types import EvaluatorResult, SimpleEvaluator, SimpleAsyncEvaluator
 from evaluators.utils import _run_evaluator, _arun_evaluator
+from langchain.embeddings import init_embeddings
 
 from typing import Any
 
@@ -59,8 +60,6 @@ def create_embedding_similarity_evaluator(
             outputs = json.dumps(outputs)
 
         def get_score():
-            from langchain.embeddings import init_embeddings
-
             embeddings = init_embeddings(model)
             received_embedding = embeddings.embed_query(inputs)
             expected_embedding = embeddings.embed_query(outputs)

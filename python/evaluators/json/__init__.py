@@ -1,4 +1,4 @@
-from .json import (
+from .match import (
     create_json_match_evaluator,
     create_async_json_match_evaluator,
     SYSTEM_PROMPT,

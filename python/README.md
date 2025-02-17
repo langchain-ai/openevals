@@ -1,17 +1,15 @@
-# 🦜⚖️ LangMetrics
+# ⚖️ OpenEvals
 
 Much like unit tests in traditional software, evals are a hugely important part of bringing LLM applications to production.
 The goal of this package is to help provide a starting point for you to write evals for your LLM applications, from which
 you can write more custom evals specific to your application.
 
-To learn more about how to write more custom evals, please check out this [documentation](https://docs.smith.langchain.com/evaluation/how_to_guides/custom_evaluator).
-
 ## Quickstart
 
-To get started, install `langmetrics`:
+To get started, install `openevals`:
 
 ```bash
-pip install langmetrics
+pip install openevals
 ```
 
 This quickstart will use an evaluator powered by OpenAI's `o3-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
@@ -23,8 +21,8 @@ export OPENAI_API_KEY="your_openai_api_key"
 Once you've done this, you can run your first eval:
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -84,13 +82,13 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
 
 ## Installation
 
-You can install `langmetrics` like this:
+You can install `openevals` like this:
 
 ```bash
-pip install langmetrics
+pip install openevals
 ```
 
-For LLM-as-judge evaluators, you will also need an LLM client. By default, `langmetrics` will use [LangChain chat model integrations](https://python.langchain.com/docs/integrations/chat/) and comes with `langchain_openai` installed by default. However, if you prefer, you may use the OpenAI client directly:
+For LLM-as-judge evaluators, you will also need an LLM client. By default, `openevals` will use [LangChain chat model integrations](https://python.langchain.com/docs/integrations/chat/) and comes with `langchain_openai` installed by default. However, if you prefer, you may use the OpenAI client directly:
 
 ```bash
 pip install openai
@@ -109,11 +107,11 @@ This package contains the `create_llm_as_judge` function, which takes a prompt a
 that handles formatting inputs, parsing the judge LLM's outputs into a score, and LangSmith tracing and result logging.
 
 To use the `create_llm_as_judge` function, you need to provide a prompt and a model. For prompts, LangSmith has some prebuilt prompts
-in the `langmetrics.evaluators.prompts` module that you can use out of the box. Here's an example:
+in the `openevals.evaluators.prompts` module that you can use out of the box. Here's an example:
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -137,11 +135,11 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 
 #### Correctness
 
-`langmetrics` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -170,11 +168,11 @@ print(eval_result)
 
 #### Conciseness
 
-`langmetrics` includes a prebuilt prompt for `create_llm_as_judge` that scores the conciseness of an LLM's output. It takes `inputs` and `outputs` as parameters.
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the conciseness of an LLM's output. It takes `inputs` and `outputs` as parameters.
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CONCISENESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CONCISENESS_PROMPT
 
 inputs = "How is the weather in San Francisco?"
 outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
@@ -197,11 +195,11 @@ eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
 
 #### Hallucination
 
-`langmetrics` includes a prebuilt prompt for `create_llm_as_judge` that scores the hallucination of an LLM's output. It takes `inputs`, `outputs`, and optionally, `context` as parameters.
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the hallucination of an LLM's output. It takes `inputs`, `outputs`, and optionally, `context` as parameters.
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import HALLUCINATION_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import HALLUCINATION_PROMPT
 
 inputs = "What is a doodad?"
 outputs = "I know the answer. A doodad is a kitten."
@@ -230,7 +228,7 @@ The `prompt` parameter for `create_llm_as_judge` may be an f-string, LangChain p
 Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, you can also require additional variables. In this case, you would pass extra kwargs when calling your evaluator function. Here's an example:
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.llm import create_llm_as_judge
 
 MY_CUSTOM_PROMPT = """
 Use the following context to help you evaluate for hallucinations in the output:
@@ -289,8 +287,8 @@ pip install langchain-anthropic
 ```
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CORRECTNESS_PROMPT
 
 anthropic_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -301,8 +299,8 @@ anthropic_evaluator = create_llm_as_judge(
 You can also directly pass a LangChain chat model instance as `judge`. Note that your chosen model must support [structured output](https://python.langchain.com/docs/integrations/chat/):
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CORRECTNESS_PROMPT
 
 anthropic_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -316,8 +314,8 @@ Finally, you can pass a model name as `model` and a `judge` parameter set to an 
 ```python
 from openai import OpenAI
 
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CORRECTNESS_PROMPT
 
 openai_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -338,7 +336,7 @@ These parameters are mutually exclusive. When using either of them, you should m
 For example, here's an example of how to define a less harsh definition of correctness that only penalizes incorrect answers by 50% if they are on-topic:
 
 ```python
-from langmetrics.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.llm import create_llm_as_judge
 
 MY_CUSTOM_PROMPT = """
 You are an expert data labeler evaluating model outputs for correctness. Your task is to assign a score based on the following rubric:
@@ -389,7 +387,7 @@ Finally, if you would like to disable justifications for a given score, you can 
 
 ### Agent trajectory
 
-`langmetrics` also includes prebuilt evaluators for evaluating the trajectory of an agent's execution against an expected one.
+`openevals` also includes prebuilt evaluators for evaluating the trajectory of an agent's execution against an expected one.
 You can format your agent's trajectory as a list of OpenAI format dicts or as a list of LangChain `BaseMessage` classes, and handles message formatting
 under the hood.
 
@@ -401,7 +399,7 @@ but requires that the selected tools at each step are the same.
 
 ```python
 import json
-from langmetrics.evaluators.trajectory.strict import trajectory_strict_match
+from openevals.evaluators.trajectory.strict import trajectory_strict_match
 
 inputs = {}
 outputs = [
@@ -457,7 +455,7 @@ The `trajectory_unordered_match` evaluator, compares two trajectories and ensure
 
 ```python
 import json
-from langmetrics.evaluators.trajectory.unordered import trajectory_unordered_match
+from openevals.evaluators.trajectory.unordered import trajectory_unordered_match
 
 inputs = {}
 outputs = [
@@ -528,8 +526,8 @@ There are other evaluators for checking partial trajectory matches (ensuring tha
 
 ```python
 import json
-from langmetrics.evaluators.trajectory.subset import trajectory_subset
-# from langmetrics.evaluators.trajectory.superset import trajectory_superset
+from openevals.evaluators.trajectory.subset import trajectory_subset
+# from openevals.evaluators.trajectory.superset import trajectory_superset
 
 inputs = {}
 outputs = [
@@ -591,7 +589,7 @@ There is also an LLM-as-judge trajectory evaluator that uses an LLM to evaluate 
 
 ```python
 import json
-from langmetrics.evaluators.trajectory.llm import create_trajectory_llm_as_judge, DEFAULT_PROMPT
+from openevals.evaluators.trajectory.llm import create_trajectory_llm_as_judge, DEFAULT_PROMPT
 
 # Also defaults to using OpenAI's o3-mini model through LangChain's ChatOpenAI class
 evaluator = create_trajectory_llm_as_judge(prompt=DEFAULT_PROMPT)
@@ -658,7 +656,7 @@ to work for a variety of extraction/tool calling use cases.
 Here is a code example of how to evaluate a single structured output, with comments explaining every parameter:
 
 ```python
-from langmetrics.evaluators.json import create_json_match_evaluator
+from openevals.evaluators.json import create_json_match_evaluator
 
 outputs = {"a": "Mango, Bananas", "b": 2, "c": [1,2,3]}
 reference_outputs = {"a": "Bananas, Mango", "b": 3, "c": [1,2,3]}
@@ -698,7 +696,7 @@ print(result)
 Here is a code example of how to evaluate a list of structured outputs, with comments explaining every parameter:
 
 ```python
-from langmetrics.evaluators.json import create_json_match_evaluator
+from openevals.evaluators.json import create_json_match_evaluator
 
 outputs = [
     {"a": "Mango, Bananas", "b": 2},
@@ -747,7 +745,7 @@ This package also contains prebuilt evaluators for calculating common metrics su
 #### Exact match
 
 ```python
-from langmetrics.evaluators.exact import exact_match
+from openevals.evaluators.exact import exact_match
 
 inputs = {"a": 1, "b": 2}
 outputs = {"a": 1, "b": 2}
@@ -766,7 +764,7 @@ print(result)
 #### Levenshtein distance
 
 ```python
-from langmetrics.evaluators.string.levenshtein import levenshtein_distance
+from openevals.evaluators.string.levenshtein import levenshtein_distance
 
 inputs = "The correct answer"
 outputs = "The correct answer"
@@ -790,7 +788,7 @@ print(result)
 This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method under the hood and calculates distance between two strings using cosine similarity.
 
 ```python
-from langmetrics.evaluators.string.embedding_similarity import create_embedding_similarity_evaluator
+from openevals.evaluators.string.embedding_similarity import create_embedding_similarity_evaluator
 
 evaluator = create_embedding_similarity_evaluator()
 
@@ -812,12 +810,12 @@ print(result)
 
 ## Python Async Support
 
-All `langmetrics` evaluators support Python [asyncio](https://docs.python.org/3/library/asyncio.html). As a convention, evaluators that use a factory function will have `async` put immediately after `create_` in the function name (for example, `create_async_llm_as_judge`), and evaluators used directly will end in `async` (e.g. `trajectory_strict_match_async`).
+All `openevals` evaluators support Python [asyncio](https://docs.python.org/3/library/asyncio.html). As a convention, evaluators that use a factory function will have `async` put immediately after `create_` in the function name (for example, `create_async_llm_as_judge`), and evaluators used directly will end in `async` (e.g. `trajectory_strict_match_async`).
 
 Here's an example of how to use the `create_async_llm_as_judge` evaluator asynchronously:
 
 ```python
-from langmetrics.evaluators.llm import create_async_llm_as_judge
+from openevals.evaluators.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
@@ -863,8 +861,8 @@ import pytest
 
 from langsmith import testing as t
 
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -909,8 +907,8 @@ Alternatively, you can [create a dataset in LangSmith](https://docs.smith.langch
 
 ```python
 from langsmith import Client
-from langmetrics.evaluators.llm import create_llm_as_judge
-from langmetrics.evaluators.prompts import CONCISENESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts import CONCISENESS_PROMPT
 
 client = Client()
 
@@ -928,3 +926,13 @@ experiment_results = client.evaluate(
     ]
 )
 ```
+
+### Custom code evals
+
+To learn more about how to write more custom code evals, please check out this [documentation](https://docs.smith.langchain.com/evaluation/how_to_guides/custom_evaluator).
+
+## Thank you!
+
+We hope that `openevals` helps make evaluating your LLM apps easier!
+
+If you have any questions, comments, or suggestions, please open an issue or reach out to us on X [@LangChainAI](https://x.com/langchainai).

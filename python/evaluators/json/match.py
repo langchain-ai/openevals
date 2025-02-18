@@ -17,7 +17,8 @@ for each key based on its own criteria - DO NOT convolute the scores of differen
 Also only evaluate the output vs. the reference output based on the criteria. DO NOT EVALUATE
 BASED ON ANYTHING ELSE. If the output does not match the reference output in some way that
 is not mentioned in the criteria that is not a problem and you should ignore those discrepancies.
-Only focus on finding discrepancies based on the criteria.
+Only focus on finding discrepancies based on the criteria. If there is a None value being compared
+to a non-None value, you should assign a score of 0.
 """
 
 USER_PROMPT = """Please evaluate the accuracy of the following output keys according to these criteria:
@@ -37,6 +38,7 @@ def _prepare_parameters(
     rubric: Dict[str, str],
     exclude_keys: list[str],
     use_reasoning: bool,
+    list_match_mode: Literal["superset", "subset", "same_elements", "ordered"] = "same_elements",
 ):
     json_schema = {
         "type": "object",
@@ -50,21 +52,115 @@ def _prepare_parameters(
     scores = {}
     formatted_rubric = ""
     use_list_reducer = False
+    
     if isinstance(outputs, list):
         use_list_reducer = True
         if not isinstance(reference_outputs, list):
             raise ValueError(
                 "If outputs is a list, reference_outputs must also be a list"
             )
+            
+        # Create mapping dictionaries
         outputs_to_use = {}
-        for i in range(len(outputs)):
-            for key, value in outputs[i].items():
-                outputs_to_use[f"{key}_{i}"] = value
-        outputs = outputs_to_use
         reference_outputs_to_use = {}
-        for i in range(len(reference_outputs)):
-            for key, value in reference_outputs[i].items():
-                reference_outputs_to_use[f"{key}_{i}"] = value
+        
+        if list_match_mode == "ordered":
+            # Outputs/Reference outputs must be in the same order
+            for i in range(len(outputs)):
+                for key, value in outputs[i].items():
+                    outputs_to_use[f"{key}_{i}"] = value
+            for i in range(len(reference_outputs)):
+                for key, value in reference_outputs[i].items():
+                    reference_outputs_to_use[f"{key}_{i}"] = value
+
+        elif list_match_mode == "superset":
+            # Match each reference output to the best matching output
+            available_outputs = list(range(len(outputs)))
+            matched_references = set()
+            
+            for i, ref_item in enumerate(reference_outputs):
+                best_match_score = -1
+                
+                # Try each available output item
+                for out_idx in available_outputs:
+                    output_item = outputs[out_idx]
+                    
+                    # Calculate match score based on exact matches of keys
+                    match_score = 0
+                    for key in ref_item:
+                        if key in output_item and key not in exclude_keys and key not in rubric:
+                            match_score += int(ref_item[key] == output_item[key])
+                    
+                    # If this is the best match so far, update
+                    if match_score > best_match_score:
+                        best_match_score = match_score
+                        best_match_idx = out_idx
+                
+                # If we found a match, use it
+                if best_match_idx is not None:
+                    for key, value in outputs[best_match_idx].items():
+                        outputs_to_use[f"{key}_{i}"] = value
+                    
+                    for key, value in ref_item.items():
+                        reference_outputs_to_use[f"{key}_{i}"] = value
+                    
+                    # Remove the used output from available options
+                    available_outputs.remove(best_match_idx)
+                    matched_references.add(i)
+                else:
+                    # There were extra reference items
+                    for key, value in ref_item.items():
+                        reference_outputs_to_use[f"{key}_{i}"] = value
+
+        else:  # "same_items" or "subset"
+            # Match each output to the best matching reference
+            available_references = list(range(len(reference_outputs)))
+            matched_outputs = set()
+            
+            for i, output_item in enumerate(outputs):
+                best_match_idx = None
+                best_match_score = -1
+                
+                # Try each available reference item
+                for ref_idx in available_references:
+                    ref_item = reference_outputs[ref_idx]
+                    
+                    # Calculate match score based on exact matches of keys
+                    match_score = 0
+                    for key in output_item:
+                        if key in ref_item and key not in exclude_keys and key not in rubric:
+                            match_score += int(output_item[key] == ref_item[key])
+                    
+                    # If this is the best match so far, update
+                    if match_score > best_match_score:
+                        best_match_score = match_score
+                        best_match_idx = ref_idx
+                
+                # If we found a match, use it
+                if best_match_idx is not None:
+                    for key, value in output_item.items():
+                        outputs_to_use[f"{key}_{i}"] = value
+                    
+                    for key, value in reference_outputs[best_match_idx].items():
+                        reference_outputs_to_use[f"{key}_{i}"] = value
+                    
+                    # Remove the used reference from available options
+                    available_references.remove(best_match_idx)
+                    matched_outputs.add(i)
+                else:
+                    # There were extra output items
+                    for key, value in output_item.items():
+                        outputs_to_use[f"{key}_{i}"] = value
+            
+            # For "same_elements" mode: penalize unmatched references
+            if list_match_mode == "same_elements":
+                for ref_idx in available_references:
+                    ref_item = reference_outputs[ref_idx]
+                    dummy_idx = len(outputs) + available_references.index(ref_idx)
+                    for key, value in ref_item.items():
+                        reference_outputs_to_use[f"{key}_{dummy_idx}"] = value
+        
+        outputs = outputs_to_use
         reference_outputs = reference_outputs_to_use
 
     for raw_key, value in outputs.items():
@@ -105,6 +201,7 @@ def _prepare_parameters(
                     "required": ["score", "reasoning"],
                     "additionalProperties": False,
                 }
+                
     for raw_key, value in reference_outputs.items():
         if use_list_reducer:
             key = raw_key[: raw_key.rfind("_")]
@@ -131,60 +228,87 @@ def _aggregate_results(
     list_aggregator: Literal["average", "all"],
 ) -> dict:
     if use_list_reducer:
-        scores_aggregated_across_list = {}
-        keys = set([k[: k.rfind("_")] for k in scores.keys()])
-        if list_aggregator == "average":
-            for key in keys:
-                scores_aggregated_across_list[key] = sum(
-                    [
-                        (
-                            float(scores[k]["score"])
-                            if isinstance(scores[k], dict)
-                            else scores[k]
-                        )
-                        for k in scores
-                        if k[: k.rfind("_")] == key
-                    ]
-                ) / len([scores[k] for k in scores if k[: k.rfind("_")] == key])
-        elif list_aggregator == "all":
-            for key in keys:
-                scores_aggregated_across_list[key] = (
-                    0
-                    if 0
-                    in [
-                        (
-                            float(scores[k]["score"])
-                            if isinstance(scores[k], dict)
-                            else scores[k]
-                        )
-                        for k in scores
-                        if k[: k.rfind("_")] == key
-                    ]
-                    else 1
-                )
-        scores = scores_aggregated_across_list
+        # First group scores by index
+        index_grouped_scores = {}
+        for k, v in scores.items():
+            index = k[k.rfind("_")+1:]
+            if index not in index_grouped_scores:
+                index_grouped_scores[index] = {}
+            base_key = k[:k.rfind("_")]
+            index_grouped_scores[index][base_key] = v
+        
+        # Apply aggregator to each index group first
+        if aggregator == "average":
+            index_scores = {}
+            for index, group in index_grouped_scores.items():
+                if group:  # Skip empty groups
+                    total = sum(float(v["score"]) if isinstance(v, dict) else v for v in group.values())
+                    index_scores[index] = total / len(group)
+        elif aggregator == "all":
+            index_scores = {}
+            for index, group in index_grouped_scores.items():
+                if group:  # Skip empty groups
+                    has_non_one = any((float(v["score"]) if isinstance(v, dict) else v) != 1 for v in group.values())
+                    index_scores[index] = 0 if has_non_one else 1
+        else:
+            # If no aggregator, keep original structure but grouped by index
+            index_scores = index_grouped_scores
 
-    score = None
+        # Then apply list_aggregator across indices
+        if list_aggregator == "average":
+            if all(isinstance(v, (int, float)) for v in index_scores.values()):
+                score = sum(index_scores.values()) / len(index_scores) if index_scores else 0
+                return score
+            else:
+                # For complex structures, do deeper aggregation
+                scores_aggregated_across_list = {}
+                for _, group in index_scores.items():
+                    for key, value in group.items():
+                        if key not in scores_aggregated_across_list:
+                            scores_aggregated_across_list[key] = []
+                        scores_aggregated_across_list[key].append(value)
+
+                # Average across indices for each key
+                result = {}
+                for key, values in scores_aggregated_across_list.items():
+                    if values:
+                        result[key] = sum([(v['score'] if isinstance(v, dict) else v) for v in values]) / len(values)
+
+                return result
+        elif list_aggregator == "all":
+            if all(isinstance(v, (int, float)) for v in index_scores.values()):
+                score = 0 if any(v != 1 for v in index_scores.values()) else 1
+                return score
+            else:
+                # For complex structures, do deeper aggregation
+                scores_aggregated_across_list = {}
+                for _, group in index_scores.items():
+                    for key, value in group.items():
+                        if key not in scores_aggregated_across_list:
+                            scores_aggregated_across_list[key] = []
+                        scores_aggregated_across_list[key].append(value)
+                
+                # Apply 'all' aggregation across indices for each key
+                result = {}
+                for key, values in scores_aggregated_across_list.items():
+                    result[key] = 0 if any(v != 1 for v in values) else 1
+                
+                return result
+
+    # Handle non-list case or fallback
     if aggregator == "average":
         score = sum(
-            [float(v["score"]) if isinstance(v, dict) else v for v in scores.values()]
-        ) / len(scores)
+            float(v["score"]) if isinstance(v, dict) else v for v in scores.values()
+        ) / len(scores) if scores else 0
+        return score
     elif aggregator == "all":
-        score = (
-            0
-            if any(
-                [
-                    (float(v["score"]) if isinstance(v, dict) else v) != 1
-                    for v in scores.values()
-                ]
-            )
-            else 1
-        )
-
-    # If there is an aggregator, return a single result
-    if score is not None:
+        score = 0 if any(
+            (float(v["score"]) if isinstance(v, dict) else v) != 1
+            for v in scores.values()
+        ) else 1
         return score
     else:
+        # No aggregator, return scores as-is
         results = {}
         for key, value in scores.items():
             results[key] = value
@@ -210,6 +334,7 @@ def create_json_match_evaluator(
     ] = None,
     model: str = "openai:o3-mini",
     use_reasoning: bool = True,
+    list_match_mode: Literal["superset", "subset", "same_elements", "ordered"] = "same_elements",
 ) -> SimpleEvaluator:
     """
     Create an evaluator to evaluate the accuracy of structured outputs.
@@ -234,6 +359,11 @@ def create_json_match_evaluator(
         judge (ModelClient or BaseChatModel): The judge to use for the evaluation.
         model (str): The model to use for the evaluation.
         use_reasoning (bool): Whether to use reasoning for the keys in `rubric`. Defaults to True.
+        match_mode (Literal["subset_of_output", "subset_of_reference", "exact"]): The mode to use for the evaluation.
+            Defaults to "exact". If "exact", the evaluation will match every element of the outputs with a corresponding 
+            element of the reference outputs and vice versa. If "subset_of_reference", the evaluation will match every element
+            of the outputs with a corresponding element of the reference outputs. If "subset_of_output", the evaluation will match
+            every element of the reference outputs with a corresponding element of the outputs.
 
     Returns:
         A function that takes in outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults.
@@ -266,6 +396,7 @@ def create_json_match_evaluator(
                 rubric=rubric,
                 exclude_keys=exclude_keys,
                 use_reasoning=use_reasoning,
+                list_match_mode=list_match_mode
             )
 
             scorer = None
@@ -332,6 +463,7 @@ def create_async_json_match_evaluator(
     ] = None,
     model: str = "openai:o3-mini",
     use_reasoning: bool = True,
+    list_match_mode: Literal["superset", "subset", "same_elements", "ordered"] = "same_elements",
 ) -> SimpleAsyncEvaluator:
     """
     Create an evaluator to evaluate the accuracy of structured outputs.
@@ -356,6 +488,11 @@ def create_async_json_match_evaluator(
         judge (ModelClient or BaseChatModel): The judge to use for the evaluation.
         model (str): The model to use for the evaluation.
         use_reasoning (bool): Whether to use reasoning for the keys in `rubric`. Defaults to True.
+        match_mode (Literal["subset_of_output", "subset_of_reference", "exact"]): The mode to use for the evaluation.
+            Defaults to "exact". If "exact", the evaluation will match every element of the outputs with a corresponding 
+            element of the reference outputs and vice versa. If "subset_of_reference", the evaluation will match every element
+            of the outputs with a corresponding element of the reference outputs. If "subset_of_output", the evaluation will match
+            every element of the reference outputs with a corresponding element of the outputs.
 
     Returns:
         A function that takes in outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults.
@@ -388,6 +525,7 @@ def create_async_json_match_evaluator(
                 rubric=rubric,
                 exclude_keys=exclude_keys,
                 use_reasoning=use_reasoning,
+                list_match_mode=list_match_mode,
             )
 
             scorer = None

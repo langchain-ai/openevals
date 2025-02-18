@@ -6,7 +6,9 @@ from typing import Any
 
 def _scorer(outputs: Any, reference_outputs: Any) -> float:
     if outputs is None or reference_outputs is None:
-        raise ValueError("Levenshtein distance requires both outputs and reference_outputs")
+        raise ValueError(
+            "Levenshtein distance requires both outputs and reference_outputs"
+        )
     if not isinstance(outputs, str):
         outputs = json.dumps(outputs)
     if not isinstance(reference_outputs, str):

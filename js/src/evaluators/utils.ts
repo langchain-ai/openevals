@@ -15,6 +15,7 @@ export const _convertToOpenAIMessage = (
   message: BaseMessage | ChatCompletionMessage
 ): ChatCompletionMessage => {
   if (isBaseMessage(message)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return _convertMessagesToOpenAIParams([message])[0] as any;
   } else {
     return message;

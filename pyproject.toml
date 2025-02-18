@@ -6,6 +6,3 @@ dependencies = []
 name = "openevals-monorepo"
 version = "0.0.1"
 readme = "README.md"
-
-[tool.uv.sources]
-evaluators = { path = "./python/evaluators", editable = true }

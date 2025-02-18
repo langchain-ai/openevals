@@ -14,7 +14,9 @@ def _scorer(outputs: Any, reference_outputs: Any) -> bool:
     return outputs_json == reference_outputs_json
 
 
-def exact_match(*, outputs: Any, reference_outputs: Any, **kwargs: Any) -> EvaluatorResult:
+def exact_match(
+    *, outputs: Any, reference_outputs: Any, **kwargs: Any
+) -> EvaluatorResult:
     """
     Performs exact matching between input and reference output values.
 

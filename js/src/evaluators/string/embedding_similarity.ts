@@ -1,6 +1,7 @@
+import { Embeddings } from "@langchain/core/embeddings";
+
 import { EvaluatorResult } from "../types.js";
 import { _runEvaluator } from "../utils.js";
-import { Embeddings } from "@langchain/core/embeddings";
 
 // Helper functions for vector calculations
 const handleEmbeddingOutputs = (

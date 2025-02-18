@@ -1,9 +1,10 @@
 import * as ls from "langsmith/vitest";
-import { OpenAI } from "openai";
-
 import { expect } from "vitest";
-import { createLLMAsJudge } from "../llm.js";
+
+import { OpenAI } from "openai";
 import { ChatOpenAI } from "@langchain/openai";
+
+import { createLLMAsJudge } from "../llm.js";
 
 ls.describe("llm as judge", () => {
   ls.test(

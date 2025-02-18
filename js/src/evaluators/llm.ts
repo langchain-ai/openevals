@@ -48,6 +48,7 @@ function appendFewShotExamples({
 
   const actualIdx = messages.length - 1 - lastUserMessageIdx;
 
+  // eslint-disable-next-line no-param-reassign
   messages[actualIdx].content +=
     "\n\n" +
     fewShotExamples
@@ -177,7 +178,7 @@ export const _createLLMAsJudgeScorer = (params: {
     referenceOutputs?: unknown;
     [key: string]: unknown;
   }): Promise<SingleResultScorerReturnType> => {
-    let { inputs, outputs, referenceOutputs, ...rest } = params;
+    const { inputs, outputs, referenceOutputs, ...rest } = params;
 
     if (system && typeof prompt !== "string") {
       throw new Error(

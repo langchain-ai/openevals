@@ -52,7 +52,9 @@ def create_embedding_similarity_evaluator(
         *, outputs: Any, reference_outputs: Any, **kwargs: Any
     ) -> EvaluatorResult:
         if outputs is None or reference_outputs is None:
-            raise ValueError("Embedding similarity requires both outputs and reference_outputs")
+            raise ValueError(
+                "Embedding similarity requires both outputs and reference_outputs"
+            )
 
         if not isinstance(outputs, str):
             outputs = json.dumps(outputs)
@@ -101,7 +103,9 @@ def create_async_embedding_similarity_evaluator(
         *, outputs: Any, reference_outputs: Any, **kwargs: Any
     ) -> EvaluatorResult:
         if outputs is None or reference_outputs is None:
-            raise ValueError("Embedding similarity requires both outputs and reference_outputs")
+            raise ValueError(
+                "Embedding similarity requires both outputs and reference_outputs"
+            )
 
         if not isinstance(outputs, str):
             outputs = json.dumps(outputs)

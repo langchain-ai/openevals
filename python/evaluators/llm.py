@@ -435,11 +435,16 @@ def create_llm_as_judge(
 
     Example:
         ```python
+        from openevals.evaluators.llm import create_llm_as_judge
+
         evaluator = create_llm_as_judge(
             prompt="Rate the quality of this response from 0 to 1: {outputs}",
             continuous=True
         )
-        result = evaluator(inputs={}, outputs={"response": "Hello world"})
+        result = evaluator(
+            inputs={"question": "What color is the sky?"},
+            outputs={"response": "Blue"},
+        )
         ```
     """
     scorer = _create_llm_as_judge_scorer(
@@ -517,11 +522,16 @@ def create_async_llm_as_judge(
 
     Example:
         ```python
+        from openevals.evaluators.llm import create_async_llm_as_judge
+
         evaluator = create_async_llm_as_judge(
             prompt="Rate the quality of this response from 0 to 1: {outputs}",
             continuous=True
         )
-        result = await evaluator(inputs={}, outputs={"response": "Hello world"})
+        result = await evaluator(
+            inputs={"question": "What color is the sky?"},
+            outputs={"response": "Blue"},
+        )
         ```
     """
     scorer = _create_async_llm_as_judge_scorer(

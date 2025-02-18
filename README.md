@@ -468,7 +468,7 @@ console.log(evalResult);
 
 The `prompt` parameter for `create_llm_as_judge` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
 
-Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, you can also require additional variables. In this case, you would pass extra kwargs when calling your evaluator function. Here's an example:
+Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, you can also require additional variables. You would then pass these extra variables when calling your evaluator function. Here's an example:
 
 <details open>
 <summary>Python</summary>
@@ -510,6 +510,22 @@ custom_prompt_evaluator(
 
 ```ts
 import { createLLMAsJudge } from "openevals";
+
+const MY_CUSTOM_PROMPT = `
+Use the following context to help you evaluate for hallucinations in the output:
+
+<context>
+{context}
+</context>
+
+<input>
+{inputs}
+</input>
+
+<output>
+{outputs}
+</output>
+`;
 
 const customPromptEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
@@ -598,8 +614,7 @@ npm install @langchain/anthropic
 ```
 
 ```ts
-import { createLLMAsJudge } from "openevals";
-import { CORRECTNESS_PROMPT } from "openevals";
+import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const anthropicEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
@@ -683,6 +698,7 @@ const openaiEvaluator = createLLMAsJudge({
   judge: new OpenAI(),
 });
 ```
+</details>
 
 #### Customizing output scores
 

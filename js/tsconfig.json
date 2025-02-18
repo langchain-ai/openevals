@@ -21,16 +21,12 @@
     "strict": true
   },
   "include": [
-    "langchain/src/**/*",
-    "langchain-core/src/**/*",
-    "libs/*/src/**/*",
+    "src/**/*",
   ],
   "exclude": [
     "node_modules",
     "**/dist/",
     "docs",
-    "langchain/dist/",
-    "langchain-core/dist/",
-    "libs/*/dist/",
+    "dist/",
   ]
 }

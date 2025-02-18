@@ -1,7 +1,10 @@
 {
-  "name": "@langchain/agentevals",
+  "name": "openevals",
+  "version": "0.0.0",
   "packageManager": "yarn@4.3.1",
+  "type": "module",
   "scripts": {
+    "build": "yarn lc_build --create-entrypoints --pre --tree-shaking",
     "lint:eslint": "NODE_OPTIONS=--max-old-space-size=4096 eslint --cache --ext .ts,.js src/",
     "lint:dpdm": "dpdm --exit-code circular:1 --no-warning --no-tree src/*.ts src/**/*.ts",
     "lint": "yarn lint:eslint && yarn lint:dpdm",
@@ -12,7 +15,11 @@
   },
   "dependencies": {
     "@langchain/openai": "^0.4.4",
-    "langchain": "^0.3.15"
+    "langchain": "^0.3.18",
+    "langsmith": "^0.3.10-rc.1"
+  },
+  "peerDependencies": {
+    "@langchain/core": "^0.3.40"
   },
   "devDependencies": {
     "@langchain/core": "^0.3.40",
@@ -26,8 +33,28 @@
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-no-instanceof": "^1.0.1",
     "eslint-plugin-prettier": "^4.2.1",
+    "openai": "^4.85.1",
     "prettier": "^3.5.1",
     "typescript": "~5.1.6",
     "vitest": "^3.0.5"
+  },
+  "files": [
+    "dist/",
+    "index.cjs",
+    "index.js",
+    "index.d.ts",
+    "index.d.cts"
+  ],
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./index.d.ts",
+        "require": "./index.d.cts",
+        "default": "./index.d.ts"
+      },
+      "import": "./index.js",
+      "require": "./index.cjs"
+    },
+    "./package.json": "./package.json"
   }
 }

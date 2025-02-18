@@ -1210,11 +1210,11 @@ vitest run test_correctness.eval.ts
 
 Feedback from the prebuilt evaluator will be automatically logged in LangSmith as a table of results like this in your terminal (if you've set up your reporter):
 
-![Terminal results](./static/img/pytest_output.png)
+![Terminal results](/static/img/pytest_output.png)
 
 And you should also see the results in the experiment view in LangSmith:
 
-![LangSmith results](./static/img/langsmith_results.png)
+![LangSmith results](/static/img/langsmith_results.png)
 
 ### Evaluate
 

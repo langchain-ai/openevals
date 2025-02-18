@@ -24,7 +24,7 @@ def _scorer(
             "Strict trajectory match requires both outputs and reference_outputs"
         )
     if len(outputs) != len(reference_outputs):
-        return 0.0
+        return False
     exact_match = True
     for output, reference_output in zip(outputs, reference_outputs):
         if output["role"] != reference_output["role"]:

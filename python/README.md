@@ -126,7 +126,7 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
   - [Agent evals](#agent-evals)
 - [Python Async Support](#python-async-support)
 - [LangSmith Integration](#langsmith-integration)
-  - [Pytest](#pytest)
+  - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
   - [Evaluate](#evaluate)
 
 ## Installation
@@ -1108,7 +1108,7 @@ For tracking experiments over time, you can log evaluator results to [LangSmith]
 
 LangSmith currently offers two ways to run evals: a [pytest](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) (Python) or [Vitest/Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest) integration and the `evaluate` function. We'll give a quick example of how to run evals using both.
 
-### Pytest/Vitest
+### Pytest or Vitest/Jest
 
 First, follow [these instructions](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) to set up LangSmith's pytest runner,
 or these to set up [Vitest or Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest), setting appropriate environment variables:
@@ -1189,7 +1189,7 @@ ls.describe("Correctness", () => {
     }
   }, async ({ inputs, referenceOutputs }) => {
     const outputs = "Doodads have increased in price by 10% in the past year.";
-    t.logOutputs({ answer: outputs });
+    ls.logOutputs({ answer: outputs });
 
     await correctnessEvaluator({
       inputs,

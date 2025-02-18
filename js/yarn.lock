@@ -3304,9 +3304,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:^0.3.10-rc.1":
-  version: 0.3.10-rc.1
-  resolution: "langsmith@npm:0.3.10-rc.1"
+"langsmith@npm:^0.3.10":
+  version: 0.3.10
+  resolution: "langsmith@npm:0.3.10"
   dependencies:
     "@types/uuid": "npm:^10.0.0"
     chalk: "npm:^4.1.2"
@@ -3320,7 +3320,7 @@ __metadata:
   peerDependenciesMeta:
     openai:
       optional: true
-  checksum: 10c0/00a8e392623d5a9b7e9f269946c3ef076e3082fb0e0fc94b6aa27ad5d357ea17291075f95c919a233ca0136b9f827666a870cdfdb7902546f9d6737b7929f794
+  checksum: 10c0/36b41d24590d3aa8a9df2a75553e53c9a12973d0800358beb31abaeb60f4eb1a30293db115b568bc6a49d211eb7d2afbfd134a513e0b0e1bf9bb85448da7a885
   languageName: node
   linkType: hard
 
@@ -3802,7 +3802,7 @@ __metadata:
     eslint-plugin-no-instanceof: "npm:^1.0.1"
     eslint-plugin-prettier: "npm:^4.2.1"
     langchain: "npm:^0.3.18"
-    langsmith: "npm:^0.3.10-rc.1"
+    langsmith: "npm:^0.3.10"
     openai: "npm:^4.85.1"
     prettier: "npm:^3.5.1"
     typescript: "npm:~5.1.6"

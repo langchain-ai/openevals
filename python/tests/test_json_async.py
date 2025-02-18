@@ -1,4 +1,4 @@
-from evaluators.json import create_async_json_match_evaluator
+from openevals.evaluators.json import create_async_json_match_evaluator
 import pytest
 
 
@@ -440,35 +440,26 @@ async def test_json_match_list_mismatch_output_missing():
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 5/6
+    assert result["score"] == 5 / 6
+
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_exact_extra_reference():
-    outputs = [
-        {"a": 1},
-        {"a": 1}
-    ]
-    reference_outputs = [
-        {"a": 1},
-        {"a": 1},
-        {"a": 1}
-    ]
+    outputs = [{"a": 1}, {"a": 1}]
+    reference_outputs = [{"a": 1}, {"a": 1}, {"a": 1}]
     evaluator = create_async_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 2/3
+    assert result["score"] == 2 / 3
+
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_exact_extra_output():
-    outputs = [
-        {"a": 1},
-        {"a": 1},
-        {"a": 1}
-    ]
+    outputs = [{"a": 1}, {"a": 1}, {"a": 1}]
     reference_outputs = [
         {"a": 1},
         {"a": 1},
@@ -478,36 +469,28 @@ async def test_json_match_mode_exact_extra_output():
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 2/3
+    assert result["score"] == 2 / 3
+
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_exact_unordered():
-    outputs = [
-        {"a": 1, "d": 2, "e": 2},
-        {"b": 1},
-        {"c": 1}
-    ]
-    reference_outputs = [
-        {"b": 1, "d": 2, "e": 2},
-        {"a": 1},
-        {"c": 1}
-    ]
+    outputs = [{"a": 1, "d": 2, "e": 2}, {"b": 1}, {"c": 1}]
+    reference_outputs = [{"b": 1, "d": 2, "e": 2}, {"a": 1}, {"c": 1}]
     evaluator = create_async_json_match_evaluator(
-        list_aggregator="average", aggregator="average", exclude_keys=["d", "e"],
+        list_aggregator="average",
+        aggregator="average",
+        exclude_keys=["d", "e"],
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
 
+
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_subset_outputs():
-    outputs = [
-        {"a": 1},
-        {"b": 1},
-        {"c": 1}
-    ]
+    outputs = [{"a": 1}, {"b": 1}, {"c": 1}]
     reference_outputs = [
         {"b": 1},
         {"a": 1},
@@ -527,17 +510,14 @@ async def test_json_match_mode_subset_reference():
         {"a": 1},
         {"b": 1},
     ]
-    reference_outputs = [
-        {"b": 1},
-        {"c": 1},
-        {"a": 1}
-    ]
+    reference_outputs = [{"b": 1}, {"c": 1}, {"a": 1}]
     evaluator = create_async_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="subset"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
+
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
@@ -546,16 +526,14 @@ async def test_json_match_mode_order_wrong():
         {"a": 1},
         {"b": 1},
     ]
-    reference_outputs = [
-        {"b": 1},
-        {"a": 1}
-    ]
+    reference_outputs = [{"b": 1}, {"a": 1}]
     evaluator = create_async_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="ordered"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
+
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
@@ -571,8 +549,10 @@ async def test_json_match_mode_order():
         {"d": 1},
     ]
     evaluator = create_async_json_match_evaluator(
-        list_aggregator="average", aggregator="average", list_match_mode="ordered",
+        list_aggregator="average",
+        aggregator="average",
+        list_match_mode="ordered",
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 2/3
+    assert result["score"] == 2 / 3

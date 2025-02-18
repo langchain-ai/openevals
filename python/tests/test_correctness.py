@@ -1,7 +1,7 @@
 import pytest
 
-from evaluators.llm import create_llm_as_judge
-from evaluators.prompts.correctness import CORRECTNESS_PROMPT
+from openevals.evaluators.llm import create_llm_as_judge
+from openevals.evaluators.prompts.correctness import CORRECTNESS_PROMPT
 
 
 @pytest.mark.langsmith

@@ -1,5 +1,5 @@
-from evaluators.types import EvaluatorResult
-from evaluators.utils import _run_evaluator, _arun_evaluator
+from openevals.evaluators.types import EvaluatorResult
+from openevals.evaluators.utils import _run_evaluator, _arun_evaluator
 
 import json
 from typing import Any

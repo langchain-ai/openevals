@@ -1,4 +1,5 @@
-from evaluators.llm import create_llm_as_judge
+from openevals.evaluators.llm import create_llm_as_judge
+
 from openai import OpenAI
 import pytest
 from langchain_openai import ChatOpenAI

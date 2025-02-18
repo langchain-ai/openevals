@@ -1,6 +1,10 @@
 import json
-from evaluators.types import EvaluatorResult, SimpleEvaluator, SimpleAsyncEvaluator
-from evaluators.utils import _run_evaluator, _arun_evaluator
+from openevals.evaluators.types import (
+    EvaluatorResult,
+    SimpleEvaluator,
+    SimpleAsyncEvaluator,
+)
+from openevals.evaluators.utils import _run_evaluator, _arun_evaluator
 from langchain.embeddings import init_embeddings
 
 from typing import Any

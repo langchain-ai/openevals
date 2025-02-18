@@ -1,5 +1,5 @@
-from evaluators.exact import exact_match, exact_match_async
-from evaluators.types import EvaluatorResult
+from openevals.evaluators.exact import exact_match, exact_match_async
+from openevals.evaluators.types import EvaluatorResult
 
 import pytest
 

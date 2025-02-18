@@ -1,6 +1,6 @@
 from __future__ import annotations
-from evaluators.utils import _run_evaluator, _arun_evaluator
-from evaluators.types import (
+from openevals.evaluators.utils import _run_evaluator, _arun_evaluator
+from openevals.evaluators.types import (
     EvaluatorResult,
     SimpleEvaluator,
     SimpleAsyncEvaluator,

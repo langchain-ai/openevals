@@ -1,4 +1,4 @@
-from evaluators.json import create_json_match_evaluator
+from openevals.evaluators.json import create_json_match_evaluator
 import pytest
 
 
@@ -410,33 +410,24 @@ def test_json_match_list_mismatch_output_missing():
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 5/6
+    assert result["score"] == 5 / 6
+
 
 @pytest.mark.langsmith
 def test_json_match_mode_exact_extra_reference():
-    outputs = [
-        {"a": 1},
-        {"a": 1}
-    ]
-    reference_outputs = [
-        {"a": 1},
-        {"a": 1},
-        {"a": 1}
-    ]
+    outputs = [{"a": 1}, {"a": 1}]
+    reference_outputs = [{"a": 1}, {"a": 1}, {"a": 1}]
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 2/3
+    assert result["score"] == 2 / 3
+
 
 @pytest.mark.langsmith
 def test_json_match_mode_exact_extra_output():
-    outputs = [
-        {"a": 1},
-        {"a": 1},
-        {"a": 1}
-    ]
+    outputs = [{"a": 1}, {"a": 1}, {"a": 1}]
     reference_outputs = [
         {"a": 1},
         {"a": 1},
@@ -446,34 +437,26 @@ def test_json_match_mode_exact_extra_output():
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 2/3
+    assert result["score"] == 2 / 3
+
 
 @pytest.mark.langsmith
 def test_json_match_mode_exact_unordered():
-    outputs = [
-        {"a": 1, "d": 2, "e": 2},
-        {"b": 1},
-        {"c": 1}
-    ]
-    reference_outputs = [
-        {"b": 1, "d": 2, "e": 2},
-        {"a": 1},
-        {"c": 1}
-    ]
+    outputs = [{"a": 1, "d": 2, "e": 2}, {"b": 1}, {"c": 1}]
+    reference_outputs = [{"b": 1, "d": 2, "e": 2}, {"a": 1}, {"c": 1}]
     evaluator = create_json_match_evaluator(
-        list_aggregator="average", aggregator="average", exclude_keys=["d", "e"],
+        list_aggregator="average",
+        aggregator="average",
+        exclude_keys=["d", "e"],
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
 
+
 @pytest.mark.langsmith
 def test_json_match_mode_subset_outputs():
-    outputs = [
-        {"a": 1},
-        {"b": 1},
-        {"c": 1}
-    ]
+    outputs = [{"a": 1}, {"b": 1}, {"c": 1}]
     reference_outputs = [
         {"b": 1},
         {"a": 1},
@@ -492,11 +475,7 @@ def test_json_match_mode_subset_reference():
         {"a": 1},
         {"b": 1},
     ]
-    reference_outputs = [
-        {"b": 1},
-        {"c": 1},
-        {"a": 1}
-    ]
+    reference_outputs = [{"b": 1}, {"c": 1}, {"a": 1}]
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="subset"
     )
@@ -504,22 +483,21 @@ def test_json_match_mode_subset_reference():
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
 
+
 @pytest.mark.langsmith
 def test_json_match_mode_order_wrong():
     outputs = [
         {"a": 1},
         {"b": 1},
     ]
-    reference_outputs = [
-        {"b": 1},
-        {"a": 1}
-    ]
+    reference_outputs = [{"b": 1}, {"a": 1}]
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="ordered"
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
+
 
 @pytest.mark.langsmith
 def test_json_match_mode_order_right():
@@ -527,10 +505,7 @@ def test_json_match_mode_order_right():
         {"a": 1},
         {"b": 1},
     ]
-    reference_outputs = [
-        {"a": 1},
-        {"b": 1}
-    ]
+    reference_outputs = [{"a": 1}, {"b": 1}]
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="ordered"
     )
@@ -538,23 +513,24 @@ def test_json_match_mode_order_right():
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
 
+
 @pytest.mark.langsmith
-def test_json_match_mode_order_wrong():
+def test_json_match_mode_order_wrong_language():
     outputs = [
         {"a": 1, "c": "The Dog"},
         {"b": 1},
     ]
-    reference_outputs = [
-        {"b": 1},
-        {"a": 1, "c": "El Perro"}
-    ]
+    reference_outputs = [{"b": 1}, {"a": 1, "c": "El Perro"}]
     evaluator = create_json_match_evaluator(
-        list_aggregator="average", aggregator="average", list_match_mode="ordered",
+        list_aggregator="average",
+        aggregator="average",
+        list_match_mode="ordered",
         rubric={"c": "Are the answers the same, language independent?"},
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
+
 
 @pytest.mark.langsmith
 def test_json_match_mode_order():
@@ -569,8 +545,10 @@ def test_json_match_mode_order():
         {"d": 1},
     ]
     evaluator = create_json_match_evaluator(
-        list_aggregator="average", aggregator="average", list_match_mode="ordered",
+        list_aggregator="average",
+        aggregator="average",
+        list_match_mode="ordered",
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 2/3
+    assert result["score"] == 2 / 3

@@ -1,4 +1,4 @@
-from evaluators.string.embedding_similarity import (
+from openevals.evaluators.string.embedding_similarity import (
     create_embedding_similarity_evaluator,
     create_async_embedding_similarity_evaluator,
 )

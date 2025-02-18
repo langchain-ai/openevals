@@ -12,7 +12,7 @@ __all__ = [
     "_normalize_to_openai_messages_list",
 ]
 
-from evaluators.types import ChatCompletionMessage, EvaluatorResult
+from openevals.evaluators.types import ChatCompletionMessage, EvaluatorResult
 
 if TYPE_CHECKING:
     from langchain_core.messages import BaseMessage

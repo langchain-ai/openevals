@@ -1,6 +1,6 @@
 [project]
 name = "openevals"
-version = "0.0.1-rc.2"
+version = "0.0.1-rc.3"
 license = {text = "MIT"}
 description = "Add your description here"
 readme = "README.md"
@@ -14,6 +14,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mypy>=1.15.0",
     "openai>=1.61.1",
     "pytest>=8.3.4",
     "pytest-asyncio>=0.25.3",
@@ -21,7 +22,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["evaluators*"]
+include = ["openevals*"]
 
 [tool.pytest.ini_options]
 addopts = [

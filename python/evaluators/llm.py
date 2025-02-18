@@ -1,3 +1,4 @@
+from __future__ import annotations
 from evaluators.utils import _run_evaluator, _arun_evaluator
 from evaluators.types import (
     EvaluatorResult,
@@ -10,19 +11,16 @@ from evaluators.types import (
 )
 
 from langchain.chat_models import init_chat_model
+from langchain_core.language_models.chat_models import BaseChatModel
 from langsmith import traceable
 
 from typing import (
     Callable,
     Optional,
     Union,
-    TYPE_CHECKING,
 )
 
 import json
-
-if TYPE_CHECKING:
-    from langchain_core.language_models.chat_models import BaseChatModel
 
 
 def _append_few_shot_examples(

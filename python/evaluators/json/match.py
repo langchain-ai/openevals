@@ -1,4 +1,4 @@
-from typing import Literal, Optional, Dict, Any, Union, TYPE_CHECKING
+from typing import Literal, Optional, Dict, Any, Union
 from evaluators.types import EvaluatorResult, SimpleEvaluator, SimpleAsyncEvaluator
 from evaluators.utils import _run_evaluator, _arun_evaluator
 from evaluators.llm import (
@@ -6,9 +6,7 @@ from evaluators.llm import (
     _create_async_llm_as_judge_scorer,
     ModelClient,
 )
-
-if TYPE_CHECKING:
-    from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.language_models.chat_models import BaseChatModel
 
 
 SYSTEM_PROMPT = """You are an LLM that evaluates the accuracy of structured outputs.

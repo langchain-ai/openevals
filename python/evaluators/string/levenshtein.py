@@ -60,11 +60,14 @@ def levenshtein_distance(
     def get_score():
         return _scorer(outputs, reference_outputs)
 
-    return _run_evaluator(
+    res = _run_evaluator(
         run_name="levenshtein_distance",
         scorer=get_score,
         feedback_key="levenshtein_distance",
     )
+    if isinstance(res, list):
+        return res[0]
+    return res
 
 
 async def levenshtein_distance_async(
@@ -85,8 +88,11 @@ async def levenshtein_distance_async(
     async def get_score():
         return _scorer(outputs, reference_outputs)
 
-    return await _arun_evaluator(
+    res = await _arun_evaluator(
         run_name="levenshtein_distance",
         scorer=get_score,
         feedback_key="levenshtein_distance",
     )
+    if isinstance(res, list):
+        return res[0]
+    return res

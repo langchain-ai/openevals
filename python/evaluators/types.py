@@ -18,7 +18,7 @@ class SimpleEvaluator(Protocol):
     def __call__(
         self,
         *,
-        inputs: Any,
+        inputs: Optional[Any] = None,
         outputs: Any,
         reference_outputs: Optional[Any] = None,
         **kwargs,
@@ -29,7 +29,7 @@ class SimpleAsyncEvaluator(Protocol):
     async def __call__(
         self,
         *,
-        inputs: Any,
+        inputs: Optional[Any] = None,
         outputs: Any,
         reference_outputs: Optional[Any] = None,
         **kwargs,
@@ -66,9 +66,6 @@ class ModelClient(Protocol):
 
 @runtime_checkable
 class RunnableLike(Protocol):
-    def invoke(self, **kwargs) -> ChatCompletion: ...
+    def invoke(self, messages: Any, **kwargs) -> Any: ...
 
-
-@runtime_checkable
-class LangChainLikeModel(Protocol):
-    def with_structured_output(self, **kwargs) -> RunnableLike: ...
+    async def ainvoke(self, messages: Any, **kwargs) -> Any: ...

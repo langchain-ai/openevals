@@ -4,7 +4,6 @@ from evaluators.types import (
     SimpleEvaluator,
     SimpleAsyncEvaluator,
     RunnableLike,
-    LangChainLikeModel,
     ModelClient,
     ChatCompletionMessage,
     FewShotExample,
@@ -17,9 +16,13 @@ from typing import (
     Callable,
     Optional,
     Union,
+    TYPE_CHECKING,
 )
 
 import json
+
+if TYPE_CHECKING:
+    from langchain_core.language_models.chat_models import BaseChatModel
 
 
 def _append_few_shot_examples(
@@ -61,7 +64,7 @@ def _construct_output_schema(
     continuous: bool = False,
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
-) -> dict:
+) -> tuple[dict, str]:
     json_schema = (
         schema
         if schema is not None
@@ -120,7 +123,7 @@ def _create_llm_as_judge_scorer(
     judge: Optional[
         Union[
             ModelClient,
-            LangChainLikeModel,
+            BaseChatModel,
         ]
     ] = None,
     model: str = "openai:o3-mini",
@@ -135,7 +138,7 @@ def _create_llm_as_judge_scorer(
         outputs: Union[str, dict],
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
-    ) -> EvaluatorResult:
+    ):
         if system is not None and not isinstance(prompt, str):
             raise ValueError(
                 "`system` is only supported when `prompt` is a string template"
@@ -199,7 +202,7 @@ def _create_llm_as_judge_scorer(
         if judge is None:
             judge = init_chat_model(model=model)
 
-        if isinstance(judge, LangChainLikeModel):
+        if isinstance(judge, BaseChatModel):
             response = judge.with_structured_output(
                 {
                     "title": "score",
@@ -209,8 +212,8 @@ def _create_llm_as_judge_scorer(
             ).invoke(messages)
             if schema is None:
                 if use_reasoning:
-                    return (response["score"], response["reasoning"])
-                return response["score"]
+                    return (response["score"], response["reasoning"])  # type: ignore
+                return response["score"]  # type: ignore
             else:
                 return response
         elif isinstance(judge, ModelClient):
@@ -241,15 +244,15 @@ def _create_llm_as_judge_scorer(
                 return judge.chat.completions.create(**params)
 
             response = invoke_llm(**params)
-            parsed = json.loads(response.choices[0].message.content)
+            parsed = json.loads(response.choices[0].message.content)  # type: ignore
             if schema is None:
                 if use_reasoning:
-                    return (parsed["score"], parsed["reasoning"])
-                return parsed["score"]
+                    return (parsed["score"], parsed["reasoning"])  # type: ignore
+                return parsed["score"]  # type: ignore
             else:
                 return parsed
         else:
-            raise ValueError("`judge` must be a ModelClient or LangChainLikeModel")
+            raise ValueError("`judge` must be a ModelClient or BaseChatModel")
 
     return get_score
 
@@ -262,7 +265,7 @@ def _create_async_llm_as_judge_scorer(
     judge: Optional[
         Union[
             ModelClient,
-            LangChainLikeModel,
+            BaseChatModel,
         ]
     ] = None,
     model: str = "openai:o3-mini",
@@ -277,7 +280,7 @@ def _create_async_llm_as_judge_scorer(
         outputs: Union[str, dict],
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
-    ) -> EvaluatorResult:
+    ):
         if system is not None and not isinstance(prompt, str):
             raise ValueError(
                 "`system` is only supported when `prompt` is a string template"
@@ -341,7 +344,7 @@ def _create_async_llm_as_judge_scorer(
         if judge is None:
             judge = init_chat_model(model=model)
 
-        if isinstance(judge, LangChainLikeModel):
+        if isinstance(judge, BaseChatModel):
             response = await judge.with_structured_output(
                 {
                     "title": "score",
@@ -351,8 +354,8 @@ def _create_async_llm_as_judge_scorer(
             ).ainvoke(messages)
             if schema is None:
                 if use_reasoning:
-                    return (response["score"], response["reasoning"])
-                return response["score"]
+                    return (response["score"], response["reasoning"])  # type: ignore
+                return response["score"]  # type: ignore
             else:
                 return response
         elif isinstance(judge, ModelClient):
@@ -383,15 +386,15 @@ def _create_async_llm_as_judge_scorer(
                 return await judge.chat.completions.create(**params)
 
             response = await ainvoke_llm(**params)
-            parsed = json.loads(response.choices[0].message.content)
+            parsed = json.loads(response.choices[0].message.content)  # type: ignore
             if schema is None:
                 if use_reasoning:
-                    return (parsed["score"], parsed["reasoning"])
-                return parsed["score"]
+                    return (parsed["score"], parsed["reasoning"])  # type: ignore
+                return parsed["score"]  # type: ignore
             else:
                 return parsed
         else:
-            raise ValueError("`judge` must be a ModelClient or LangChainLikeModel")
+            raise ValueError("`judge` must be a ModelClient or BaseChatModel")
 
     return aget_score
 
@@ -400,7 +403,7 @@ def create_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "score",
-    judge: Optional[Union[ModelClient, LangChainLikeModel]] = None,
+    judge: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: str = "openai:o3-mini",
     system: Optional[str] = None,
     continuous: bool = False,
@@ -416,7 +419,7 @@ def create_llm_as_judge(
             that returns a list of chat messages.
         feedback_key: Key used to store the evaluation result, defaults to "score".
         judge: The LLM used for evaluation. Can be an OpenAI client),
-            or a LangChainLikeModel. If an OpenAI client, must specify "model" as well.
+            or a BaseChatModel. If an OpenAI client, must specify "model" as well.
             If omitted, "model" will be used to instantiate a LangChain model instance
             by model string.
         model: Model identifier to use. Defaults to "openai:o3-mini". If "judge" is an OpenAI client,
@@ -470,7 +473,7 @@ def create_llm_as_judge(
             if feedback_key == "score"
             else f"llm_as_{feedback_key}_judge"
         )
-        return _run_evaluator(
+        res = _run_evaluator(
             run_name=run_name,
             scorer=scorer,
             feedback_key=feedback_key,
@@ -479,15 +482,18 @@ def create_llm_as_judge(
             reference_outputs=reference_outputs,
             **kwargs,
         )
+        if isinstance(res, list):
+            return res[0]
+        return res  # type: ignore
 
-    return _wrapped_evaluator
+    return _wrapped_evaluator  # type: ignore
 
 
 def create_async_llm_as_judge(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "score",
-    judge: Optional[Union[ModelClient, LangChainLikeModel]] = None,
+    judge: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: str = "openai:o3-mini",
     system: Optional[str] = None,
     continuous: bool = False,
@@ -503,7 +509,7 @@ def create_async_llm_as_judge(
             that returns a list of chat messages.
         feedback_key: Key used to store the evaluation result, defaults to "score".
         judge: The LLM used for evaluation. Can be an OpenAI client),
-            or a LangChainLikeModel. If an OpenAI client, must specify "model" as well.
+            or a BaseChatModel. If an OpenAI client, must specify "model" as well.
             If omitted, "model" will be used to instantiate a LangChain model instance
             by model string.
         model: Model identifier to use. Defaults to "openai:o3-mini". If "judge" is an OpenAI client,
@@ -557,7 +563,7 @@ def create_async_llm_as_judge(
             if feedback_key == "score"
             else f"llm_as_{feedback_key}_judge"
         )
-        return await _arun_evaluator(
+        res = await _arun_evaluator(
             run_name=run_name,
             scorer=scorer,
             feedback_key=feedback_key,
@@ -566,5 +572,8 @@ def create_async_llm_as_judge(
             reference_outputs=reference_outputs,
             **kwargs,
         )
+        if isinstance(res, list):
+            return res[0]
+        return res
 
-    return _wrapped_evaluator
+    return _wrapped_evaluator  # type: ignore

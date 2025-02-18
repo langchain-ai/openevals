@@ -26,9 +26,11 @@ def _import_langchain_core() -> tuple:
     return BaseMessage, convert_to_openai_messages
 
 
-def _convert_to_openai_message(message: BaseMessage | dict) -> dict:
+def _convert_to_openai_message(
+    message: ChatCompletionMessage | BaseMessage | dict,
+) -> ChatCompletionMessage:
     if isinstance(message, dict):
-        return message
+        return message  # type: ignore
     else:
         try:
             BaseMessage, convert_to_openai_messages = _import_langchain_core()
@@ -43,7 +45,7 @@ def _convert_to_openai_message(message: BaseMessage | dict) -> dict:
 
 def _normalize_to_openai_messages_list(
     messages: Union[list[ChatCompletionMessage], list[BaseMessage], dict],
-) -> list[dict]:
+) -> list[ChatCompletionMessage]:
     if isinstance(messages, dict):
         if "messages" in messages:
             messages = messages["messages"]
@@ -152,13 +154,14 @@ def _chat_completion_messages_to_string(messages: list[ChatCompletionMessage]) -
         content = message.get("content", "")  # Handle None content
 
         # Handle tool/function calls
+        tool_calls = message.get("tool_calls") or []
         if message.get("tool_calls", None):
             tool_calls_str = "\n".join(
                 f"<tool_call>\n"
                 f"<name>{call.get('function', {}).get('name', '')}</name>\n"
                 f"<arguments>{call.get('function', {}).get('arguments', '')}</arguments>\n"
                 f"</tool_call>"
-                for call in message.get("tool_calls")
+                for call in tool_calls
             )
             content = f"{content}\n{tool_calls_str}" if content else tool_calls_str
 

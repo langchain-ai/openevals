@@ -1,12 +1,15 @@
-from typing import Literal, Optional, Dict, Any, Union
+from typing import Literal, Optional, Dict, Any, Union, TYPE_CHECKING
 from evaluators.types import EvaluatorResult, SimpleEvaluator, SimpleAsyncEvaluator
 from evaluators.utils import _run_evaluator, _arun_evaluator
 from evaluators.llm import (
     _create_llm_as_judge_scorer,
     _create_async_llm_as_judge_scorer,
     ModelClient,
-    LangChainLikeModel,
 )
+
+if TYPE_CHECKING:
+    from langchain_core.language_models.chat_models import BaseChatModel
+
 
 SYSTEM_PROMPT = """You are an LLM that evaluates the accuracy of structured outputs.
 Make sure to evaluate each key the users ask you to evaluate separately. Assign the score
@@ -202,7 +205,7 @@ def create_json_match_evaluator(
     judge: Optional[
         Union[
             ModelClient,
-            LangChainLikeModel,
+            BaseChatModel,
         ]
     ] = None,
     model: str = "openai:o3-mini",
@@ -228,7 +231,7 @@ def create_json_match_evaluator(
         exclude_keys (Optional[list[str]]): The keys to exclude from the evaluation. Use this if there are
             keys in your structured output you don't care about evaluating. Every key not in `exclude_keys` or in `rubric`
             will be evaluated for exact match with the reference output.
-        judge (ModelClient or LangChainLikeModel): The judge to use for the evaluation.
+        judge (ModelClient or BaseChatModel): The judge to use for the evaluation.
         model (str): The model to use for the evaluation.
         use_reasoning (bool): Whether to use reasoning for the keys in `rubric`. Defaults to True.
 
@@ -324,7 +327,7 @@ def create_async_json_match_evaluator(
     judge: Optional[
         Union[
             ModelClient,
-            LangChainLikeModel,
+            BaseChatModel,
         ]
     ] = None,
     model: str = "openai:o3-mini",
@@ -350,7 +353,7 @@ def create_async_json_match_evaluator(
         exclude_keys (Optional[list[str]]): The keys to exclude from the evaluation. Use this if there are
             keys in your structured output you don't care about evaluating. Every key not in `exclude_keys` or in `rubric`
             will be evaluated for exact match with the reference output.
-        judge (ModelClient or LangChainLikeModel): The judge to use for the evaluation.
+        judge (ModelClient or BaseChatModel): The judge to use for the evaluation.
         model (str): The model to use for the evaluation.
         use_reasoning (bool): Whether to use reasoning for the keys in `rubric`. Defaults to True.
 

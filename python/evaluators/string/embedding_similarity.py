@@ -72,13 +72,16 @@ def create_embedding_similarity_evaluator(
 
             return similarity
 
-        return _run_evaluator(
+        res = _run_evaluator(
             run_name="embedding_similarity",
             scorer=get_score,
             feedback_key="embedding_similarity",
         )
+        if isinstance(res, list):
+            return res[0]
+        return res
 
-    return wrapped_evaluator
+    return wrapped_evaluator  # type: ignore
 
 
 def create_async_embedding_similarity_evaluator(
@@ -125,10 +128,13 @@ def create_async_embedding_similarity_evaluator(
 
             return similarity
 
-        return await _arun_evaluator(
+        res = await _arun_evaluator(
             run_name="embedding_similarity",
             scorer=get_score,
             feedback_key="embedding_similarity",
         )
+        if isinstance(res, list):
+            return res[0]
+        return res
 
-    return wrapped_evaluator
+    return wrapped_evaluator  # type: ignore

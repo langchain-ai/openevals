@@ -33,7 +33,7 @@ def create_embedding_similarity_evaluator(
     *, model: str = "openai:text-embedding-3-small", algorithm: str = "cosine"
 ) -> SimpleEvaluator:
     """
-    Create an evaluator that compares the actual output and reference output for similarity by text embedding distance.
+    Create an evaluator that compares outputs and reference outputs for similarity by text embedding distance.
 
     Args:
         model (str): The model to use for embedding similarity
@@ -49,20 +49,20 @@ def create_embedding_similarity_evaluator(
         )
 
     def wrapped_evaluator(
-        *, inputs: Any, outputs: Any, **kwargs: Any
+        *, outputs: Any, reference_outputs: Any, **kwargs: Any
     ) -> EvaluatorResult:
-        if inputs is None or outputs is None:
-            raise ValueError("Embedding similarity requires both inputs and outputs")
+        if outputs is None or reference_outputs is None:
+            raise ValueError("Embedding similarity requires both outputs and reference_outputs")
 
-        if not isinstance(inputs, str):
-            inputs = json.dumps(inputs)
         if not isinstance(outputs, str):
             outputs = json.dumps(outputs)
+        if not isinstance(reference_outputs, str):
+            reference_outputs = json.dumps(reference_outputs)
 
         def get_score():
             embeddings = init_embeddings(model)
-            received_embedding = embeddings.embed_query(inputs)
-            expected_embedding = embeddings.embed_query(outputs)
+            received_embedding = embeddings.embed_query(outputs)
+            expected_embedding = embeddings.embed_query(reference_outputs)
 
             similarity = _handle_embedding_outputs(
                 algorithm, received_embedding, expected_embedding
@@ -98,22 +98,22 @@ def create_async_embedding_similarity_evaluator(
         )
 
     async def wrapped_evaluator(
-        *, inputs: Any, outputs: Any, **kwargs: Any
+        *, outputs: Any, reference_outputs: Any, **kwargs: Any
     ) -> EvaluatorResult:
-        if inputs is None or outputs is None:
-            raise ValueError("Embedding similarity requires both inputs and outputs")
+        if outputs is None or reference_outputs is None:
+            raise ValueError("Embedding similarity requires both outputs and reference_outputs")
 
-        if not isinstance(inputs, str):
-            inputs = json.dumps(inputs)
         if not isinstance(outputs, str):
             outputs = json.dumps(outputs)
+        if not isinstance(reference_outputs, str):
+            reference_outputs = json.dumps(reference_outputs)
 
         async def get_score():
             from langchain.embeddings import init_embeddings
 
             embeddings = init_embeddings(model)
-            received_embedding = await embeddings.aembed_query(inputs)
-            expected_embedding = await embeddings.aembed_query(outputs)
+            received_embedding = await embeddings.aembed_query(outputs)
+            expected_embedding = await embeddings.aembed_query(reference_outputs)
 
             similarity = _handle_embedding_outputs(
                 algorithm, received_embedding, expected_embedding

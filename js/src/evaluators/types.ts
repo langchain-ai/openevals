@@ -32,6 +32,7 @@ export type ChatCompletionMessage = {
   role: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tool_calls?: Record<string, any>[];
+  tool_call_id?: string;
 };
 
 export type ChatCompletion = {

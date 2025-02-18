@@ -253,7 +253,7 @@ export const _createLLMAsJudgeScorer = (params: {
     });
 
     if (!judge) {
-      judge = await initChatModel(model ?? "openai:o3-mini");
+      judge = await initChatModel(model);
     }
 
     let response;
@@ -355,7 +355,17 @@ export const _createLLMAsJudgeScorer = (params: {
  * });
  * ```
  */
-export const createLLMAsJudge = (params: {
+export const createLLMAsJudge = ({
+  prompt,
+  feedbackKey = "score",
+  model = "openai:o3-mini",
+  system,
+  judge,
+  continuous = false,
+  choices,
+  useReasoning = true,
+  fewShotExamples,
+}: {
   prompt:
     | string
     | RunnableInterface
@@ -371,22 +381,26 @@ export const createLLMAsJudge = (params: {
   useReasoning?: boolean;
   fewShotExamples?: FewShotExample[];
 }) => {
-  const scorer = _createLLMAsJudgeScorer(params);
-  const _wrappedEvaluator = (inputs: {
+  const scorer = _createLLMAsJudgeScorer({
+    prompt,
+    judge,
+    model,
+    system,
+    continuous,
+    choices,
+    useReasoning,
+    fewShotExamples,
+  });
+
+  const _wrappedEvaluator = async (inputs: {
     inputs: unknown;
     outputs: unknown;
     referenceOutputs?: unknown;
+    [key: string]: unknown;
   }) => {
     const runName =
-      params.feedbackKey === undefined
-        ? "llm_as_judge"
-        : `llm_as_${params.feedbackKey}_judge`;
-    return _runEvaluator(
-      runName,
-      scorer,
-      params.feedbackKey ?? "score",
-      inputs
-    );
+      feedbackKey !== "score" ? "llm_as_judge" : `llm_as_${feedbackKey}_judge`;
+    return _runEvaluator(runName, scorer, feedbackKey, inputs);
   };
   return _wrappedEvaluator;
 };

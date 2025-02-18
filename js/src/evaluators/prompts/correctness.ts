@@ -1,4 +1,4 @@
-CORRECTNESS_PROMPT = """You are an expert data labeler evaluating model outputs for correctness. Your task is to assign a score based on the following rubric:
+export const CORRECTNESS_PROMPT = `You are an expert data labeler evaluating model outputs for correctness. Your task is to assign a score based on the following rubric:
 
 <Rubric>
   A correct answer:
@@ -40,4 +40,4 @@ If available, you may use the reference outputs below to help you evaluate the c
 <reference_outputs>
 {reference_outputs}
 </reference_outputs>
-"""
+`;

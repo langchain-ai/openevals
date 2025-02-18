@@ -4,15 +4,15 @@ from evaluators.utils import _run_evaluator, _arun_evaluator
 from typing import Any
 
 
-def _scorer(inputs: Any, outputs: Any) -> float:
-    if inputs is None or outputs is None:
-        raise ValueError("Levenshtein distance requires both inputs and outputs")
-    if not isinstance(inputs, str):
-        inputs = json.dumps(inputs)
+def _scorer(outputs: Any, reference_outputs: Any) -> float:
+    if outputs is None or reference_outputs is None:
+        raise ValueError("Levenshtein distance requires both outputs and reference_outputs")
     if not isinstance(outputs, str):
         outputs = json.dumps(outputs)
+    if not isinstance(reference_outputs, str):
+        reference_outputs = json.dumps(reference_outputs)
     # Create a matrix of size (m+1)x(n+1) where m and n are the string lengths
-    m, n = len(inputs), len(outputs)
+    m, n = len(outputs), len(reference_outputs)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
 
     # Initialize first row and column
@@ -24,7 +24,7 @@ def _scorer(inputs: Any, outputs: Any) -> float:
     # Fill the matrix
     for i in range(1, m + 1):
         for j in range(1, n + 1):
-            if inputs[i - 1] == outputs[j - 1]:
+            if outputs[i - 1] == reference_outputs[j - 1]:
                 dp[i][j] = dp[i - 1][j - 1]
             else:
                 dp[i][j] = min(
@@ -41,14 +41,14 @@ def _scorer(inputs: Any, outputs: Any) -> float:
 
 
 def levenshtein_distance(
-    *, inputs: Any, outputs: Any, **kwargs: Any
+    *, outputs: Any, reference_outputs: Any, **kwargs: Any
 ) -> EvaluatorResult:
     """
     Evaluates the actual output and reference output for similarity by Levenshtein distance.
 
     Args:
-        inputs (Any): Inputs to compare
         outputs (Any): Outputs to compare
+        reference_outputs (Any): Reference outputs to compare
 
     Returns:
         EvaluatorResult: Contains match result with score between 0.0 and 1.0, where 1.0 indicates
@@ -56,7 +56,7 @@ def levenshtein_distance(
     """
 
     def get_score():
-        return _scorer(inputs, outputs)
+        return _scorer(outputs, reference_outputs)
 
     return _run_evaluator(
         run_name="levenshtein_distance",
@@ -66,14 +66,14 @@ def levenshtein_distance(
 
 
 async def levenshtein_distance_async(
-    *, inputs: Any, outputs: Any, **kwargs: Any
+    *, outputs: Any, reference_outputs: Any, **kwargs: Any
 ) -> EvaluatorResult:
     """
     Evaluates the actual output and reference output for similarity by Levenshtein distance.
 
     Args:
-        inputs (Any): Inputs to compare
         outputs (Any): Outputs to compare
+        reference_outputs (Any): Reference outputs to compare
 
     Returns:
         EvaluatorResult: Contains match result with score between 0.0 and 1.0, where 1.0 indicates
@@ -81,7 +81,7 @@ async def levenshtein_distance_async(
     """
 
     async def get_score():
-        return _scorer(inputs, outputs)
+        return _scorer(outputs, reference_outputs)
 
     return await _arun_evaluator(
         run_name="levenshtein_distance",

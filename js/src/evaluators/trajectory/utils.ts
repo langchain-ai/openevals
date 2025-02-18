@@ -29,7 +29,7 @@ function _extractToolCalls(
   return toolCalls;
 }
 
-export function isTrajectorySuperset(
+export function _isTrajectorySuperset(
   outputs: ChatCompletionMessage[],
   referenceOutputs: ChatCompletionMessage[]
 ): boolean {
@@ -60,4 +60,33 @@ export function isTrajectorySuperset(
     }
   }
   return true;
+}
+
+export function _chatCompletionMessagesToString(
+  messages: ChatCompletionMessage[]
+): string {
+  function formatMessage(message: ChatCompletionMessage): string {
+    let content = message.content ?? "";
+
+    // Handle tool/function calls
+    if (message.tool_calls) {
+      const toolCallsStr = message.tool_calls
+        .map((call) => {
+          const func = call.function ?? {};
+          return `<tool_call>\n<name>${func.name ?? ""}</name>\n<arguments>${func.arguments ?? ""}</arguments>\n</tool_call>`;
+        })
+        .join("\n");
+
+      content = content ? `${content}\n${toolCallsStr}` : toolCallsStr;
+    }
+
+    // Handle tool call results
+    if (message.tool_call_id) {
+      content = `<tool_result>\n<id>${message.tool_call_id}</id>\n<content>${content}</content>\n</tool_result>`;
+    }
+
+    return `<${message.role ?? ""}>\n${content}\n</${message.role ?? ""}>`;
+  }
+
+  return messages.map(formatMessage).join("\n\n");
 }

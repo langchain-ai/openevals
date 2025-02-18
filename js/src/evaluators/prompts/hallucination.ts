@@ -1,4 +1,4 @@
-HALLUCINATION_PROMPT = """You are an expert data labeler evaluating model outputs for hallucinations. Your task is to assign a score based on the following rubric:
+export const HALLUCINATION_PROMPT = `You are an expert data labeler evaluating model outputs for hallucinations. Your task is to assign a score based on the following rubric:
 
 <Rubric>
   A response without hallucinations:
@@ -40,4 +40,4 @@ If available, you may also use the reference outputs below to help you identify 
 <reference_outputs>
 {reference_outputs}
 </reference_outputs>
-"""
+`;

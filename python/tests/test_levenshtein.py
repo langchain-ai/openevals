@@ -8,9 +8,9 @@ import pytest
 
 @pytest.mark.langsmith
 def test_levenshtein():
-    inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
-    res = levenshtein_distance(inputs=inputs, outputs=outputs)
+    reference_outputs = {"a": 1, "b": 2}
+    res = levenshtein_distance(outputs=outputs, reference_outputs=reference_outputs)
     assert res["key"] == "levenshtein_distance"
     assert res["score"] == 1.0
     assert res["comment"] is None
@@ -18,9 +18,9 @@ def test_levenshtein():
 
 @pytest.mark.langsmith
 def test_levenshtein_with_different_values():
-    inputs = {"a": 1, "b": 2}
-    outputs = {"a": 1, "b": 3}
-    res = levenshtein_distance(inputs=inputs, outputs=outputs)
+    outputs = {"a": 1, "b": 2}
+    reference_outputs = {"a": 1, "b": 3}
+    res = levenshtein_distance(outputs=outputs, reference_outputs=reference_outputs)
     assert res["key"] == "levenshtein_distance"
     assert res["score"] < 1.0
     assert res["comment"] is None
@@ -29,9 +29,9 @@ def test_levenshtein_with_different_values():
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_levenshtein_async():
-    inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
-    res = await levenshtein_distance_async(inputs=inputs, outputs=outputs)
+    reference_outputs = {"a": 1, "b": 2}
+    res = await levenshtein_distance_async(outputs=outputs, reference_outputs=reference_outputs)
     assert res["key"] == "levenshtein_distance"
     assert res["score"] == 1.0
     assert res["comment"] is None
@@ -40,9 +40,9 @@ async def test_levenshtein_async():
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_levenshtein_with_different_values_async():
-    inputs = {"a": 1, "b": 2}
-    outputs = {"a": 1, "b": 3}
-    res = await levenshtein_distance_async(inputs=inputs, outputs=outputs)
+    outputs = {"a": 1, "b": 2}
+    reference_outputs = {"a": 1, "b": 3}
+    res = await levenshtein_distance_async(outputs=outputs, reference_outputs=reference_outputs)
     assert res["key"] == "levenshtein_distance"
     assert res["score"] < 1.0
     assert res["comment"] is None

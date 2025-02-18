@@ -1,24 +1,24 @@
 import { _runEvaluator } from "./utils.js";
 
-const _scorer = (params: { inputs: unknown; outputs: unknown }) => {
-  const { inputs, outputs } = params;
-  if (inputs === null || outputs === null) {
-    throw new Error("Exact match requires both inputs and outputs");
+const _scorer = (params: { outputs: unknown; referenceOutputs: unknown }) => {
+  const { outputs, referenceOutputs } = params;
+  if (outputs === null || referenceOutputs === null) {
+    throw new Error("Exact match requires both outputs and referenceOutputs");
   }
-  const inputsJson = JSON.stringify(inputs, null, 2);
   const outputsJson = JSON.stringify(outputs, null, 2);
-  return inputsJson === outputsJson;
+  const referenceOutputsJson = JSON.stringify(referenceOutputs, null, 2);
+  return outputsJson === referenceOutputsJson;
 };
 
 /**
  * Performs exact matching between input and output values.
- * @param inputs Inputs to compare
- * @param outputs Outputs to compare
+ * @param outputs outputs to compare
+ * @param referenceOutputs Reference outputs to compare
  * @returns
  */
 export const exactMatch = async (params: {
-  inputs: unknown;
   outputs: unknown;
+  referenceOutputs: unknown;
 }) => {
   return _runEvaluator("exact_match", _scorer, "exact_match", params);
 };

@@ -755,9 +755,9 @@ This package also contains prebuilt evaluators for calculating common metrics su
 ```python
 from openevals.evaluators.exact import exact_match
 
-inputs = {"a": 1, "b": 2}
 outputs = {"a": 1, "b": 2}
-result = exact_match(inputs=inputs, outputs=outputs)
+reference_outputs = {"a": 1, "b": 2}
+result = exact_match(outputs=outputs, reference_outputs=reference_outputs)
 
 print(result)
 ```
@@ -774,10 +774,10 @@ print(result)
 ```python
 from openevals.evaluators.string.levenshtein import levenshtein_distance
 
-inputs = "The correct answer"
 outputs = "The correct answer"
+reference_outputs = "The correct answer"
 result = levenshtein_distance(
-    inputs=inputs, outputs=outputs,
+    outputs=outputs, reference_outputs=reference_outputs,
 )
 
 print(result)
@@ -801,8 +801,8 @@ from openevals.evaluators.string.embedding_similarity import create_embedding_si
 evaluator = create_embedding_similarity_evaluator()
 
 result = evaluator(
-    inputs="The weather is nice!",
     outputs="The weather is very nice!",
+    reference_outputs="The weather is very nice!",
 )
 
 print(result)

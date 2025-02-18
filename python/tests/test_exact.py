@@ -6,18 +6,18 @@ import pytest
 
 @pytest.mark.langsmith
 def test_exact_matcher():
-    inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
-    assert exact_match(inputs=inputs, outputs=outputs) == EvaluatorResult(
+    reference_outputs = {"a": 1, "b": 2}
+    assert exact_match(outputs=outputs, reference_outputs=reference_outputs) == EvaluatorResult(
         key="exact_match", score=True, comment=None
     )
 
 
 @pytest.mark.langsmith
 def test_exact_matcher_with_different_values():
-    inputs = {"a": 1, "b": 2}
-    outputs = {"a": 1, "b": 3}
-    assert exact_match(inputs=inputs, outputs=outputs) == EvaluatorResult(
+    outputs = {"a": 1, "b": 2}
+    reference_outputs = {"a": 1, "b": 3}
+    assert exact_match(outputs=outputs, reference_outputs=reference_outputs) == EvaluatorResult(
         key="exact_match", score=False, comment=None
     )
 
@@ -25,9 +25,9 @@ def test_exact_matcher_with_different_values():
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_exact_matcher_async():
-    inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
-    assert await exact_match_async(inputs=inputs, outputs=outputs) == EvaluatorResult(
+    reference_outputs = {"a": 1, "b": 2}
+    assert await exact_match_async(outputs=outputs, reference_outputs=reference_outputs) == EvaluatorResult(
         key="exact_match", score=True, comment=None
     )
 
@@ -35,8 +35,8 @@ async def test_exact_matcher_async():
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_exact_matcher_with_different_values_async():
-    inputs = {"a": 1, "b": 2}
-    outputs = {"a": 1, "b": 3}
-    assert await exact_match_async(inputs=inputs, outputs=outputs) == EvaluatorResult(
+    outputs = {"a": 1, "b": 2}
+    reference_outputs = {"a": 1, "b": 3}
+    assert await exact_match_async(outputs=outputs, reference_outputs=reference_outputs) == EvaluatorResult(
         key="exact_match", score=False, comment=None
     )

@@ -1,4 +1,4 @@
-CONCISENESS_PROMPT = """You are an expert data labeler evaluating model outputs for conciseness. Your task is to assign a score based on the following rubric:
+export const CONCISENESS_PROMPT = `You are an expert data labeler evaluating model outputs for conciseness. Your task is to assign a score based on the following rubric:
 
 <Rubric>
   A perfectly concise answer:
@@ -36,4 +36,4 @@ CONCISENESS_PROMPT = """You are an expert data labeler evaluating model outputs 
 <output>
 {outputs}
 </output>
-"""
+`;

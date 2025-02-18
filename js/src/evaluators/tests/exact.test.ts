@@ -7,11 +7,12 @@ ls.describe("exact matcher", () => {
   ls.test(
     "matches identical inputs and outputs",
     {
-      inputs: { a: 1, b: 2 },
+      inputs: {},
     },
-    async ({ inputs }) => {
+    async () => {
       const outputs = { a: 1, b: 2 };
-      expect(await exactMatch({ inputs, outputs })).toEqual({
+      const referenceOutputs = { a: 1, b: 2 };
+      expect(await exactMatch({ outputs, referenceOutputs })).toEqual({
         key: "exact_match",
         score: true,
       });
@@ -21,11 +22,12 @@ ls.describe("exact matcher", () => {
   ls.test(
     "fails with different values",
     {
-      inputs: { a: 1, b: 2 },
+      inputs: {},
     },
-    async ({ inputs }) => {
-      const outputs = { a: 1, b: 3 };
-      expect(await exactMatch({ inputs, outputs })).toEqual({
+    async () => {
+      const outputs = { a: 1, b: 2 };
+      const referenceOutputs = { a: 1, b: 3 };
+      expect(await exactMatch({ outputs, referenceOutputs })).toEqual({
         key: "exact_match",
         score: false,
       });

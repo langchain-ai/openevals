@@ -44,7 +44,7 @@ def _prepare_parameters(
         "superset", "subset", "same_elements", "ordered"
     ] = "same_elements",
 ):
-    json_schema = {
+    json_schema: dict = {
         "type": "object",
         "title": "structured_match_score",
         "description": "Scores measuring the accuracy of structured outputs",
@@ -238,10 +238,10 @@ def _aggregate_results(
     use_list_reducer: bool,
     aggregator: Optional[Literal["average", "all"]],
     list_aggregator: Literal["average", "all"],
-) -> dict:
+) -> dict | float | tuple:
     if use_list_reducer:
         # First group scores by index
-        index_grouped_scores = {}
+        index_grouped_scores: dict = {}
         for k, v in scores.items():
             index = k[k.rfind("_") + 1 :]
             if index not in index_grouped_scores:
@@ -283,7 +283,7 @@ def _aggregate_results(
                 return score
             else:
                 # For complex structures, do deeper aggregation
-                scores_aggregated_across_list = {}
+                scores_aggregated_across_list: dict = {}
                 for _, group in index_scores.items():
                     for key, value in group.items():
                         if key not in scores_aggregated_across_list:
@@ -414,10 +414,10 @@ def create_json_match_evaluator(
             *,
             outputs: Any,
             reference_outputs: Any,
-            rubric: Optional[str] = None,
-            exclude_keys: Optional[list[str]] = None,
-            use_reasoning: Optional[bool] = None,
-        ) -> Union[float, bool, dict]:
+            rubric: Dict[str, str] = {},
+            exclude_keys: list[str] = [],
+            use_reasoning: bool = True,
+        ) -> dict | float | tuple:
             (
                 outputs,
                 reference_outputs,
@@ -545,10 +545,10 @@ def create_async_json_match_evaluator(
             *,
             outputs: Any,
             reference_outputs: Any,
-            rubric: Optional[str] = None,
-            exclude_keys: Optional[list[str]] = None,
-            use_reasoning: Optional[bool] = None,
-        ) -> Union[float, bool, dict]:
+            rubric: Dict[str, str] = {},
+            exclude_keys: list[str] = [],
+            use_reasoning: bool = True,
+        ) -> dict | float | tuple:
             (
                 outputs,
                 reference_outputs,

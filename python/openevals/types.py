@@ -14,7 +14,7 @@ class EvaluatorResult(TypedDict):
     comment: Optional[str]
 
 
-class SimpleEvaluator(Protocol):
+class SimpleEvaluatorNormal(Protocol):
     def __call__(
         self,
         *,
@@ -25,7 +25,18 @@ class SimpleEvaluator(Protocol):
     ) -> EvaluatorResult | list[EvaluatorResult]: ...
 
 
-class SimpleAsyncEvaluator(Protocol):
+class SimpleEvaluatorJson(Protocol):
+    def __call__(
+        self,
+        *,
+        outputs: Any,
+        reference_outputs: Any,
+        **kwargs,
+    ) -> EvaluatorResult | list[EvaluatorResult]: ...
+
+SimpleEvaluator = Union[SimpleEvaluatorNormal, SimpleEvaluatorJson]
+
+class SimpleAsyncEvaluatorNormal(Protocol):
     async def __call__(
         self,
         *,
@@ -35,6 +46,16 @@ class SimpleAsyncEvaluator(Protocol):
         **kwargs,
     ) -> EvaluatorResult | list[EvaluatorResult]: ...
 
+class SimpleAsyncEvaluatorJson(Protocol):
+    async def __call__(
+        self,
+        *,
+        outputs: Any,
+        reference_outputs: Any,
+        **kwargs,
+    ) -> EvaluatorResult | list[EvaluatorResult]: ...
+
+SimpleAsyncEvaluator = Union[SimpleAsyncEvaluatorNormal, SimpleAsyncEvaluatorJson]
 
 class ChatCompletionMessage(TypedDict):
     content: list[Union[str, dict]]

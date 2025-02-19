@@ -1,4 +1,4 @@
-from openevals.evaluators.json import create_async_json_match_evaluator
+from openevals.json import create_async_json_match_evaluator
 import pytest
 
 

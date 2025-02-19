@@ -1,6 +1,6 @@
 # ⚖️ OpenEvals
 
-Much like unit tests in traditional software, evals are a hugely important part of bringing LLM applications to production.
+Much like tests in traditional software, evals are a hugely important part of bringing LLM applications to production.
 The goal of this package is to help provide a starting point for you to write evals for your LLM applications, from which
 you can write more custom evals specific to your application.
 
@@ -38,8 +38,8 @@ Once you've done this, you can run your first eval:
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -180,14 +180,14 @@ This package contains the `create_llm_as_judge` function, which takes a prompt a
 that handles formatting inputs, parsing the judge LLM's outputs into a score, and LangSmith tracing and result logging.
 
 To use the `create_llm_as_judge` function, you need to provide a prompt and a model. For prompts, LangSmith has some prebuilt prompts
-in the `openevals.evaluators.prompts` module that you can use out of the box. Here's an example:
+in the `openevals.prompts` module that you can use out of the box. Here's an example:
 
 <details open>
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -261,6 +261,8 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 
 </details>
 
+By convention, we generally suggest sticking to `inputs`, `outputs`, and `reference_outputs` as the names of the parameters for LLM-as-judge evaluators, but these will be directly formatted into the prompt so you can use any variable names you want.
+
 #### Correctness
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
@@ -269,8 +271,8 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -340,8 +342,8 @@ console.log(evalResult);
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CONCISENESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CONCISENESS_PROMPT
 
 inputs = "How is the weather in San Francisco?"
 outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
@@ -405,8 +407,8 @@ console.log(evalResult);
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import HALLUCINATION_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import HALLUCINATION_PROMPT
 
 inputs = "What is a doodad?"
 outputs = "I know the answer. A doodad is a kitten."
@@ -473,7 +475,7 @@ Though we suggest sticking to conventional names (`inputs`, `outputs`, and `refe
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
+from openevals.llm import create_llm_as_judge
 
 MY_CUSTOM_PROMPT = """
 Use the following context to help you evaluate for hallucinations in the output:
@@ -594,8 +596,8 @@ pip install langchain-anthropic
 ```
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
 
 anthropic_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -628,8 +630,8 @@ You can also directly pass a LangChain chat model instance as `judge`. Note that
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
 from langchain_anthropic import ChatAnthropic
 
 anthropic_evaluator = create_llm_as_judge(
@@ -668,8 +670,8 @@ pip install openai
 ```python
 from openai import OpenAI
 
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
 
 openai_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -714,7 +716,7 @@ For example, here's an example of how to define a less harsh definition of corre
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.llm import create_llm_as_judge
+from openevals.llm import create_llm_as_judge
 
 MY_CUSTOM_PROMPT = """
 You are an expert data labeler evaluating model outputs for correctness. Your task is to assign a score based on the following rubric:
@@ -828,7 +830,7 @@ to work for a variety of extraction/tool calling use cases.
 Here is a code example of how to evaluate a single structured output, with comments explaining every parameter:
 
 ```python
-from openevals.evaluators.json import create_json_match_evaluator
+from openevals.json import create_json_match_evaluator
 
 outputs = {"a": "Mango, Bananas", "b": 2, "c": [1,2,3]}
 reference_outputs = {"a": "Bananas, Mango", "b": 3, "c": [1,2,3]}
@@ -868,7 +870,7 @@ print(result)
 Here is a code example of how to evaluate a list of structured outputs, with comments explaining every parameter:
 
 ```python
-from openevals.evaluators.json import create_json_match_evaluator
+from openevals.json import create_json_match_evaluator
 
 outputs = [
     {"a": "Mango, Bananas", "b": 2},
@@ -920,7 +922,7 @@ This package also contains prebuilt evaluators for calculating common metrics su
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.exact import exact_match
+from openevals.exact import exact_match
 
 outputs = {"a": 1, "b": 2}
 reference_outputs = {"a": 1, "b": 2}
@@ -964,7 +966,7 @@ console.log(result);
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.string.levenshtein import levenshtein_distance
+from openevals.string.levenshtein import levenshtein_distance
 
 outputs = "The correct answer"
 reference_outputs = "The correct answer"
@@ -1013,7 +1015,7 @@ This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/
 <summary>Python</summary>
 
 ```python
-from openevals.evaluators.string.embedding_similarity import create_embedding_similarity_evaluator
+from openevals.string.embedding_similarity import create_embedding_similarity_evaluator
 
 evaluator = create_embedding_similarity_evaluator()
 
@@ -1079,7 +1081,7 @@ All `openevals` evaluators support Python [asyncio](https://docs.python.org/3/li
 Here's an example of how to use the `create_async_llm_as_judge` evaluator asynchronously:
 
 ```python
-from openevals.evaluators.llm import create_async_llm_as_judge
+from openevals.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
@@ -1129,8 +1131,8 @@ import pytest
 
 from langsmith import testing as t
 
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CORRECTNESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
@@ -1225,8 +1227,8 @@ Alternatively, you can [create a dataset in LangSmith](https://docs.smith.langch
 
 ```python
 from langsmith import Client
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts import CONCISENESS_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CONCISENESS_PROMPT
 
 client = Client()
 

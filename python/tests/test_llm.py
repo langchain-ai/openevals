@@ -1,4 +1,4 @@
-from openevals.evaluators.llm import create_llm_as_judge
+from openevals.llm import create_llm_as_judge
 
 from openai import OpenAI
 import pytest

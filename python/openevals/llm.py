@@ -1,6 +1,6 @@
 from __future__ import annotations
-from openevals.evaluators.utils import _run_evaluator, _arun_evaluator
-from openevals.evaluators.types import (
+from openevals.utils import _run_evaluator, _arun_evaluator
+from openevals.types import (
     EvaluatorResult,
     SimpleEvaluator,
     SimpleAsyncEvaluator,
@@ -436,7 +436,7 @@ def create_llm_as_judge(
 
     Example:
         ```python
-        from openevals.evaluators.llm import create_llm_as_judge
+        from openevals.llm import create_llm_as_judge
 
         evaluator = create_llm_as_judge(
             prompt="Rate the quality of this response from 0 to 1: {outputs}",
@@ -526,7 +526,7 @@ def create_async_llm_as_judge(
 
     Example:
         ```python
-        from openevals.evaluators.llm import create_async_llm_as_judge
+        from openevals.llm import create_async_llm_as_judge
 
         evaluator = create_async_llm_as_judge(
             prompt="Rate the quality of this response from 0 to 1: {outputs}",

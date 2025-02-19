@@ -1,7 +1,7 @@
 import pytest
 
-from openevals.evaluators.llm import create_llm_as_judge
-from openevals.evaluators.prompts.hallucination import HALLUCINATION_PROMPT
+from openevals.llm import create_llm_as_judge
+from openevals.prompts.hallucination import HALLUCINATION_PROMPT
 
 
 @pytest.mark.langsmith

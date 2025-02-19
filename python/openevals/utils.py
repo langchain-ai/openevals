@@ -3,7 +3,7 @@ from __future__ import annotations
 from langsmith import testing as t
 from langsmith.testing._internal import _TEST_CASE
 import functools
-from typing import Any, Callable, TYPE_CHECKING, Union
+from typing import Any, Callable, TYPE_CHECKING, Union, Optional
 
 __all__ = [
     "_chat_completion_messages_to_string",
@@ -12,7 +12,7 @@ __all__ = [
     "_normalize_to_openai_messages_list",
 ]
 
-from openevals.evaluators.types import ChatCompletionMessage, EvaluatorResult
+from openevals.types import ChatCompletionMessage, EvaluatorResult
 
 if TYPE_CHECKING:
     from langchain_core.messages import BaseMessage
@@ -44,8 +44,10 @@ def _convert_to_openai_message(
 
 
 def _normalize_to_openai_messages_list(
-    messages: Union[list[ChatCompletionMessage], list[BaseMessage], dict],
+    messages: Optional[Union[list[ChatCompletionMessage], list[BaseMessage], dict]],
 ) -> list[ChatCompletionMessage]:
+    if messages is None:
+        return []
     if isinstance(messages, dict):
         if "messages" in messages:
             messages = messages["messages"]

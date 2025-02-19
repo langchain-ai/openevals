@@ -1,4 +1,4 @@
-from openevals.evaluators.string.levenshtein import (
+from openevals.string.levenshtein import (
     levenshtein_distance,
     levenshtein_distance_async,
 )

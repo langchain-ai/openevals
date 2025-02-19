@@ -1,11 +1,11 @@
 from typing import Literal, Optional, Dict, Any, Union
-from openevals.evaluators.types import (
+from openevals.types import (
     EvaluatorResult,
     SimpleEvaluator,
     SimpleAsyncEvaluator,
 )
-from openevals.evaluators.utils import _run_evaluator, _arun_evaluator
-from openevals.evaluators.llm import (
+from openevals.utils import _run_evaluator, _arun_evaluator
+from openevals.llm import (
     _create_llm_as_judge_scorer,
     _create_async_llm_as_judge_scorer,
     ModelClient,

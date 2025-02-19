@@ -113,7 +113,7 @@ def test_json_match_rubric_with_reasoning():
         model="openai:o3-mini",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
-        }
+        },
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
@@ -155,7 +155,7 @@ def test_json_match_rubric_with_reasoning_individual_key():
         model="openai:o3-mini",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
-        }
+        },
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert len(result) == 2

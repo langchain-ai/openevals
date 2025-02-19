@@ -221,7 +221,7 @@ def _create_llm_as_judge_scorer(
             if model is None:
                 raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
             if model.startswith("openai:"):
-                model = model[len("openai:"):]
+                model = model[len("openai:") :]
             params = {
                 "messages": messages,
                 "model": model,
@@ -368,7 +368,7 @@ def _create_async_llm_as_judge_scorer(
             if model is None:
                 raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
             if model.startswith("openai:"):
-                model = model[len("openai:"):]
+                model = model[len("openai:") :]
             params = {
                 "messages": messages,
                 "model": model,

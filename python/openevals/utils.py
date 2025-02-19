@@ -53,7 +53,7 @@ def _normalize_to_openai_messages_list(
             messages = messages["messages"]
         else:
             raise ValueError("if messages is a dict, it must contain a 'messages' key")
-    return [_convert_to_openai_message(message) for message in messages]
+    return [_convert_to_openai_message(message) for message in messages]  # type: ignore
 
 
 # Helper function to process individual scores

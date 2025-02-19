@@ -576,8 +576,6 @@ few_shot_examples = [
 ]
 ```
 
-These will be appended to the end of the final user message in the prompt.
-
 </details>
 
 <details open>
@@ -585,15 +583,17 @@ These will be appended to the end of the final user message in the prompt.
 
 ```ts
 const fewShotExamples = [
-    {
-        inputs: "What color is the sky?",
-        outputs: "The sky is red.",
-        reasoning: "The sky is red because it is early evening.",
-        score: 1,
-    }
+  {
+      inputs: "What color is the sky?",
+      outputs: "The sky is red.",
+      reasoning: "The sky is red because it is early evening.",
+      score: 1,
+  }
 ]
 ```
 </details>
+
+These will be appended to the end of the final user message in the prompt.
 
 #### Customizing the model
 

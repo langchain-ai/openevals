@@ -576,8 +576,6 @@ few_shot_examples = [
 ]
 ```
 
-These will be appended to the end of the final user message in the prompt.
-
 </details>
 
 <details>
@@ -594,6 +592,8 @@ const fewShotExamples = [
 ]
 ```
 </details>
+
+These will be appended to the end of the final user message in the prompt.
 
 #### Customizing the model
 

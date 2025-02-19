@@ -2,6 +2,14 @@ index.cjs
 index.js
 index.d.ts
 index.d.cts
+llm.cjs
+llm.js
+llm.d.ts
+llm.d.cts
+types.cjs
+types.js
+types.d.ts
+types.d.cts
 node_modules
 dist
 .yarn

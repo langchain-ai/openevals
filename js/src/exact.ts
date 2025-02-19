@@ -5,8 +5,28 @@ const _scorer = (params: { outputs: unknown; referenceOutputs: unknown }) => {
   if (outputs === null || referenceOutputs === null) {
     throw new Error("Exact match requires both outputs and referenceOutputs");
   }
-  const outputsJson = JSON.stringify(outputs, null, 2);
-  const referenceOutputsJson = JSON.stringify(referenceOutputs, null, 2);
+
+  const processNestedStructures = (value: unknown): unknown => {
+    if (value === undefined) {
+      return null; // Convert undefined to null for consistent handling
+    }
+    if (Array.isArray(value)) {
+      return value.map(processNestedStructures);
+    }
+    if (typeof value === "object" && value !== null) {
+      return Object.fromEntries(
+        Object.entries(value)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([k, v]) => [k, processNestedStructures(v)])
+      );
+    }
+    return value;
+  };
+
+  const outputsJson = JSON.stringify(processNestedStructures(outputs));
+  const referenceOutputsJson = JSON.stringify(
+    processNestedStructures(referenceOutputs)
+  );
   return outputsJson === referenceOutputsJson;
 };
 

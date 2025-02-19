@@ -20,6 +20,21 @@ ls.describe("exact matcher", () => {
   );
 
   ls.test(
+    "matches different order of inputs and outputs",
+    {
+      inputs: {},
+    },
+    async () => {
+      const outputs = { a: 1, b: 2 };
+      const referenceOutputs = { b: 2, a: 1 };
+      expect(await exactMatch({ outputs, referenceOutputs })).toEqual({
+        key: "exact_match",
+        score: true,
+      });
+    }
+  );
+
+  ls.test(
     "fails with different values",
     {
       inputs: {},

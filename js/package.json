@@ -1,6 +1,6 @@
 {
   "name": "openevals",
-  "version": "0.0.1-rc.2",
+  "version": "0.0.1-rc.5",
   "packageManager": "yarn@4.3.1",
   "type": "module",
   "scripts": {
@@ -46,7 +46,15 @@
     "index.cjs",
     "index.js",
     "index.d.ts",
-    "index.d.cts"
+    "index.d.cts",
+    "llm.cjs",
+    "llm.js",
+    "llm.d.ts",
+    "llm.d.cts",
+    "types.cjs",
+    "types.js",
+    "types.d.ts",
+    "types.d.cts"
   ],
   "exports": {
     ".": {
@@ -57,6 +65,24 @@
       },
       "import": "./index.js",
       "require": "./index.cjs"
+    },
+    "./llm": {
+      "types": {
+        "import": "./llm.d.ts",
+        "require": "./llm.d.cts",
+        "default": "./llm.d.ts"
+      },
+      "import": "./llm.js",
+      "require": "./llm.cjs"
+    },
+    "./types": {
+      "types": {
+        "import": "./types.d.ts",
+        "require": "./types.d.cts",
+        "default": "./types.d.ts"
+      },
+      "import": "./types.js",
+      "require": "./types.cjs"
     },
     "./package.json": "./package.json"
   }

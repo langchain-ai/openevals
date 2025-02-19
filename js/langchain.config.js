@@ -13,6 +13,8 @@ export const config = {
   internals: [/node\:/, /js-tiktoken/, /langsmith/],
   entrypoints: {
     index: "index",
+    llm: "llm",
+    types: "types",
   },
   tsConfigPath: resolve("./tsconfig.json"),
   packageSuffix: "core",

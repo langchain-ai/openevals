@@ -111,9 +111,10 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
 - [Installation](#installation)
 - [Evaluators](#evaluators)
   - [LLM-as-Judge](#llm-as-judge)
-    - [Correctness](#correctness)
-    - [Conciseness](#conciseness)
-    - [Hallucination](#hallucination)
+    - [Prebuilt prompts](#prebuilt-prompts)
+      - [Correctness](#correctness)
+      - [Conciseness](#conciseness)
+      - [Hallucination](#hallucination)
     - [Customizing prompts](#customizing-prompts)
     - [Customizing the model](#customizing-the-model)
     - [Customizing output scores](#customizing-output-scores)
@@ -124,7 +125,6 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
     - [Exact Match](#exact-match)
     - [Levenshtein Distance](#levenshtein-distance)
     - [Embedding Similarity](#embedding-similarity)
-  - [Custom code evals](#custom-code-evals)
   - [Agent evals](#agent-evals)
 - [Python Async Support](#python-async-support)
 - [LangSmith Integration](#langsmith-integration)
@@ -266,6 +266,8 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 </details>
 
 By convention, we generally suggest sticking to `inputs`, `outputs`, and `reference_outputs` as the names of the parameters for LLM-as-judge evaluators, but these will be directly formatted into the prompt so you can use any variable names you want.
+
+### Prebuilt prompts
 
 #### Correctness
 
@@ -1076,11 +1078,6 @@ console.log(result);
 }
 ```
 </details>
-
-
-### Custom code evals
-
-To learn more about how to write more custom code evals, please check out this [documentation](https://docs.smith.langchain.com/evaluation/how_to_guides/custom_evaluator).
 
 ### Agent evals
 

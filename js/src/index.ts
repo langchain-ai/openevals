@@ -1,10 +1,10 @@
-export { exactMatch } from "./evaluators/exact.js";
-export { createEmbeddingSimilarityEvaluator } from "./evaluators/string/embedding_similarity.js";
-export { levenshteinDistance } from "./evaluators/string/levenshtein.js";
-export { createLLMAsJudge } from "./evaluators/llm.js";
+export { exactMatch } from "./exact.js";
+export { createEmbeddingSimilarityEvaluator } from "./string/embedding_similarity.js";
+export { levenshteinDistance } from "./string/levenshtein.js";
+export { createLLMAsJudge } from "./llm.js";
 
-export { HALLUCINATION_PROMPT } from "./evaluators/prompts/hallucination.js";
-export { CORRECTNESS_PROMPT } from "./evaluators/prompts/correctness.js";
-export { CONCISENESS_PROMPT } from "./evaluators/prompts/conciseness.js";
+export { HALLUCINATION_PROMPT } from "./prompts/hallucination.js";
+export { CORRECTNESS_PROMPT } from "./prompts/correctness.js";
+export { CONCISENESS_PROMPT } from "./prompts/conciseness.js";
 
-export * from "./evaluators/types.js";
+export * from "./types.js";

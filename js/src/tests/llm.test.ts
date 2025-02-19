@@ -18,7 +18,7 @@ ls.describe("llm as judge", () => {
       const evaluator = createLLMAsJudge({
         prompt: "Are these two equal? {inputs} {outputs}",
         judge: client,
-        model: "gpt-4o-mini",
+        model: "openai:o3-mini",
       });
       const result = await evaluator({ inputs, outputs });
       expect(result).toBeDefined();
@@ -38,7 +38,7 @@ ls.describe("llm as judge", () => {
       const evaluator = createLLMAsJudge({
         prompt: "Are these two equal? {inputs} {outputs}",
         judge: client,
-        model: "gpt-4o-mini",
+        model: "openai:o3-mini",
         useReasoning: false,
       });
       const result = await evaluator({ inputs, outputs });
@@ -59,7 +59,7 @@ ls.describe("llm as judge", () => {
       const evaluator = createLLMAsJudge({
         prompt: "Are these two equal? {inputs} {outputs}",
         judge: client,
-        model: "gpt-4o-mini",
+        model: "openai:o3-mini",
       });
       const result = await evaluator({ inputs, outputs });
       expect(result).toBeDefined();
@@ -79,7 +79,7 @@ ls.describe("llm as judge", () => {
       const evaluator = createLLMAsJudge({
         prompt: "How equal are these two? {inputs} {outputs}",
         judge: client,
-        model: "gpt-4o-mini",
+        model: "openai:o3-mini",
         continuous: true,
       });
       const result = await evaluator({ inputs, outputs });
@@ -143,6 +143,7 @@ ls.describe("llm as judge", () => {
           },
           { inputs: { a: 1, b: 3 }, outputs: { a: 1, b: 2 }, score: 1.0 },
         ],
+        model: "openai:gpt-4o-mini",
       });
       const result = await evaluator({ inputs, outputs });
       expect(result).toBeDefined();

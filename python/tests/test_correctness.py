@@ -13,6 +13,7 @@ def test_llm_as_judge_correctness():
     llm_as_judge = create_llm_as_judge(
         prompt=CORRECTNESS_PROMPT,
         feedback_key="correctness",
+        model="openai:o3-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
@@ -27,6 +28,7 @@ def test_llm_as_judge_correctness_not_correct():
     llm_as_judge = create_llm_as_judge(
         prompt=CORRECTNESS_PROMPT,
         feedback_key="correctness",
+        model="openai:o3-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
@@ -41,6 +43,7 @@ def test_llm_as_judge_correctness_with_reference_outputs():
     llm_as_judge = create_llm_as_judge(
         prompt=CORRECTNESS_PROMPT,
         feedback_key="correctness",
+        model="openai:o3-mini",
     )
     eval_result = llm_as_judge(
         inputs=inputs, outputs=outputs, reference_outputs={"answer": "Bzkeoei Ahbeijo"}

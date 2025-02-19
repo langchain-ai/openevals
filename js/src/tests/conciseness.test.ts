@@ -19,6 +19,7 @@ ls.describe("LLM Judge Conciseness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CONCISENESS_PROMPT,
         feedbackKey: "conciseness",
+        model: "openai:o3-mini",
       });
 
       const evalResult = await llmAsJudge({ inputs, outputs });
@@ -42,6 +43,7 @@ ls.describe("LLM Judge Conciseness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CONCISENESS_PROMPT,
         feedbackKey: "conciseness",
+        model: "openai:o3-mini",
       });
 
       const evalResult = await llmAsJudge({ inputs, outputs });

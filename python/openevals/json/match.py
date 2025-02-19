@@ -365,7 +365,7 @@ def create_json_match_evaluator(
             BaseChatModel,
         ]
     ] = None,
-    model: str = "openai:o3-mini",
+    model: Optional[str] = None,
     use_reasoning: bool = True,
     list_match_mode: Literal[
         "superset", "subset", "same_elements", "ordered"
@@ -496,7 +496,7 @@ def create_async_json_match_evaluator(
             BaseChatModel,
         ]
     ] = None,
-    model: str = "openai:o3-mini",
+    model: Optional[str] = None,
     use_reasoning: bool = True,
     list_match_mode: Literal[
         "superset", "subset", "same_elements", "ordered"

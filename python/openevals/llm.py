@@ -124,7 +124,7 @@ def _create_llm_as_judge_scorer(
             BaseChatModel,
         ]
     ] = None,
-    model: str = "openai:o3-mini",
+    model: Optional[str] = None,
     continuous: bool = False,
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
@@ -196,8 +196,11 @@ def _create_llm_as_judge_scorer(
         )
 
         nonlocal judge
+        nonlocal model
 
         if judge is None:
+            if model is None:
+                raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
@@ -216,7 +219,9 @@ def _create_llm_as_judge_scorer(
                 return response
         elif isinstance(judge, ModelClient):
             if model is None:
-                raise ValueError("`model` is required for non-LangChain clients")
+                raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
+            if model.startswith("openai:"):
+                model = model[len("openai:"):]
             params = {
                 "messages": messages,
                 "model": model,
@@ -266,7 +271,7 @@ def _create_async_llm_as_judge_scorer(
             BaseChatModel,
         ]
     ] = None,
-    model: str = "openai:o3-mini",
+    model: Optional[str] = None,
     continuous: bool = False,
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
@@ -338,8 +343,11 @@ def _create_async_llm_as_judge_scorer(
         )
 
         nonlocal judge
+        nonlocal model
 
         if judge is None:
+            if model is None:
+                raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
@@ -358,7 +366,9 @@ def _create_async_llm_as_judge_scorer(
                 return response
         elif isinstance(judge, ModelClient):
             if model is None:
-                raise ValueError("`model` is required for non-LangChain clients")
+                raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
+            if model.startswith("openai:"):
+                model = model[len("openai:"):]
             params = {
                 "messages": messages,
                 "model": model,
@@ -402,7 +412,7 @@ def create_llm_as_judge(
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "score",
     judge: Optional[Union[ModelClient, BaseChatModel]] = None,
-    model: str = "openai:o3-mini",
+    model: Optional[str] = None,
     system: Optional[str] = None,
     continuous: bool = False,
     choices: Optional[list[float]] = None,
@@ -420,7 +430,7 @@ def create_llm_as_judge(
             or a BaseChatModel. If an OpenAI client, must specify "model" as well.
             If omitted, "model" will be used to instantiate a LangChain model instance
             by model string.
-        model: Model identifier to use. Defaults to "openai:o3-mini". If "judge" is an OpenAI client,
+        model: Model identifier to use. If "judge" is an OpenAI client,
             this argument should be a model name directly. If "judge" is omitted, must be a valid
             LangChain model identifier. See `init_chat_model` docs for more details:
             https://python.langchain.com/docs/how_to/chat_models_universal_init/.
@@ -492,7 +502,7 @@ def create_async_llm_as_judge(
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "score",
     judge: Optional[Union[ModelClient, BaseChatModel]] = None,
-    model: str = "openai:o3-mini",
+    model: Optional[str] = None,
     system: Optional[str] = None,
     continuous: bool = False,
     choices: Optional[list[float]] = None,
@@ -510,7 +520,7 @@ def create_async_llm_as_judge(
             or a BaseChatModel. If an OpenAI client, must specify "model" as well.
             If omitted, "model" will be used to instantiate a LangChain model instance
             by model string.
-        model: Model identifier to use. Defaults to "openai:o3-mini". If "judge" is an OpenAI client,
+        model: Model identifier to use. If "judge" is an OpenAI client,
             this argument should be a model name directly. If "judge" is omitted, must be a valid
             LangChain model identifier. See `init_chat_model` docs for more details:
             https://python.langchain.com/docs/how_to/chat_models_universal_init/.

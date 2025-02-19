@@ -19,6 +19,7 @@ ls.describe("LLM Judge Correctness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CORRECTNESS_PROMPT,
         feedbackKey: "correctness",
+        model: "openai:o3-mini",
       });
 
       const evalResult = await llmAsJudge({ inputs, outputs });
@@ -41,6 +42,7 @@ ls.describe("LLM Judge Correctness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CORRECTNESS_PROMPT,
         feedbackKey: "correctness",
+        model: "openai:o3-mini",
       });
 
       const evalResult = await llmAsJudge({ inputs, outputs });
@@ -62,6 +64,7 @@ ls.describe("LLM Judge Correctness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CORRECTNESS_PROMPT,
         feedbackKey: "correctness",
+        model: "openai:o3-mini",
       });
 
       const evalResult = await llmAsJudge({

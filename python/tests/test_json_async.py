@@ -7,7 +7,7 @@ import pytest
 async def test_json_match_base():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 2}
-    evaluator = create_async_json_match_evaluator()
+    evaluator = create_async_json_match_evaluator(model="openai:o3-mini")
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert len(result) == 2
     assert result[0]["key"] == "a"
@@ -22,6 +22,7 @@ async def test_json_match_mix():
     outputs = {"a": "Mango, Bananas", "b": 2}
     reference_outputs = {"a": "Bananas, Mango", "b": 3}
     evaluator = create_async_json_match_evaluator(
+        model="openai:o3-mini",
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         aggregator="average",
     )
@@ -35,7 +36,9 @@ async def test_json_match_mix():
 async def test_json_match_average():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 3}
-    evaluator = create_async_json_match_evaluator(aggregator="average")
+    evaluator = create_async_json_match_evaluator(
+         aggregator="average"
+    )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0.5
@@ -47,7 +50,7 @@ async def test_json_match_exclude():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 3}
     evaluator = create_async_json_match_evaluator(
-        aggregator="average", exclude_keys=["b"]
+         aggregator="average", exclude_keys=["b"]
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
@@ -59,7 +62,9 @@ async def test_json_match_exclude():
 async def test_json_match_all():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 3}
-    evaluator = create_async_json_match_evaluator(aggregator="all")
+    evaluator = create_async_json_match_evaluator(
+         aggregator="all"
+    )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
@@ -77,6 +82,7 @@ async def test_json_match_rubric():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
     evaluator = create_async_json_match_evaluator(
+        model="openai:o3-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
@@ -99,6 +105,7 @@ async def test_json_match_rubric_wrong():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
     evaluator = create_async_json_match_evaluator(
+        model="openai:o3-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
@@ -117,6 +124,7 @@ async def test_json_match_rubric_with_reasoning():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."
     }
     evaluator = create_async_json_match_evaluator(
+        model="openai:o3-mini",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         }
@@ -135,6 +143,7 @@ async def test_json_match_rubric_without_reasoning():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."
     }
     evaluator = create_async_json_match_evaluator(
+        model="openai:o3-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
@@ -159,6 +168,7 @@ async def test_json_match_rubric_with_reasoning_individual_key():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
     evaluator = create_async_json_match_evaluator(
+        model="openai:o3-mini",
         rubric={
             "description": "Is the correct title and company mentioned, as well as all previous companies?"
         }
@@ -183,7 +193,7 @@ async def test_json_match_list_all_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
     ]
-    evaluator = create_async_json_match_evaluator()
+    evaluator = create_async_json_match_evaluator(model="openai:o3-mini")
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     result = sorted(result, key=lambda x: x["key"])
     assert len(result) == 2
@@ -204,7 +214,9 @@ async def test_json_match_list_average_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 3},
     ]
-    evaluator = create_async_json_match_evaluator(list_aggregator="average")
+    evaluator = create_async_json_match_evaluator(
+         list_aggregator="average"
+    )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     result = sorted(result, key=lambda x: x["key"])
     assert len(result) == 2
@@ -225,7 +237,9 @@ async def test_json_match_list_all_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
     ]
-    evaluator = create_async_json_match_evaluator(aggregator="all")
+    evaluator = create_async_json_match_evaluator(
+         aggregator="all"
+    )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 1
@@ -243,7 +257,7 @@ async def test_json_match_list_average_all():
         {"a": 1, "b": 3},
     ]
     evaluator = create_async_json_match_evaluator(
-        list_aggregator="average", aggregator="all"
+         list_aggregator="average", aggregator="all"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
@@ -261,7 +275,9 @@ async def test_json_match_list_all_average():
         {"a": 1, "b": 2},
         {"a": 2, "b": 2},
     ]
-    evaluator = create_async_json_match_evaluator(aggregator="average")
+    evaluator = create_async_json_match_evaluator(
+         aggregator="average"
+    )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
@@ -279,7 +295,7 @@ async def test_json_match_list_average_average():
         {"a": 1, "b": 3},
     ]
     evaluator = create_async_json_match_evaluator(
-        list_aggregator="average", aggregator="average"
+         list_aggregator="average", aggregator="average"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
@@ -297,7 +313,7 @@ async def test_json_match_list_mismatch_all_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_async_json_match_evaluator()
+    evaluator = create_async_json_match_evaluator(model="openai:o3-mini")
     results = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     results = sorted(results, key=lambda x: x["key"])
     assert len(results) == 4
@@ -322,7 +338,9 @@ async def test_json_match_list_mismatch_average_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_async_json_match_evaluator(list_aggregator="average")
+    evaluator = create_async_json_match_evaluator(
+         list_aggregator="average"
+    )
     results = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     results = sorted(results, key=lambda x: x["key"])
     assert len(results) == 4
@@ -347,7 +365,9 @@ async def test_json_match_list_mismatch_all_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_async_json_match_evaluator(aggregator="all")
+    evaluator = create_async_json_match_evaluator(
+         aggregator="all"
+    )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
@@ -365,7 +385,7 @@ async def test_json_match_list_mismatch_average_all():
         {"a": 1, "b": 2, "c": 3},
     ]
     evaluator = create_async_json_match_evaluator(
-        list_aggregator="average", aggregator="all"
+         list_aggregator="average", aggregator="all"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
@@ -383,7 +403,9 @@ async def test_json_match_list_mismatch_all_average():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_async_json_match_evaluator(aggregator="average")
+    evaluator = create_async_json_match_evaluator(
+         aggregator="average"
+    )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 0
@@ -401,7 +423,7 @@ async def test_json_match_list_mismatch_average_average():
         {"a": 1, "b": 2, "c": 3},
     ]
     evaluator = create_async_json_match_evaluator(
-        list_aggregator="average", aggregator="average"
+         list_aggregator="average", aggregator="average"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
@@ -414,6 +436,7 @@ async def test_json_match_list_rubric():
     outputs = [{"a": "Strawberries, Melons, Bananas"}]
     reference_outputs = [{"a": "Bananas, Strawberries, Melons"}]
     evaluator = create_async_json_match_evaluator(
+        model="openai:o3-mini",
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         list_aggregator="average",
     )
@@ -436,7 +459,7 @@ async def test_json_match_list_mismatch_output_missing():
         {"a": 1, "b": 2, "c": 3},
     ]
     evaluator = create_async_json_match_evaluator(
-        list_aggregator="average", aggregator="average"
+         list_aggregator="average", aggregator="average"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
@@ -449,7 +472,7 @@ async def test_json_match_mode_exact_extra_reference():
     outputs = [{"a": 1}, {"a": 1}]
     reference_outputs = [{"a": 1}, {"a": 1}, {"a": 1}]
     evaluator = create_async_json_match_evaluator(
-        list_aggregator="average", aggregator="average"
+         list_aggregator="average", aggregator="average"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
@@ -465,6 +488,7 @@ async def test_json_match_mode_exact_extra_output():
         {"a": 1},
     ]
     evaluator = create_async_json_match_evaluator(
+        
         list_aggregator="average", aggregator="average"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -478,6 +502,7 @@ async def test_json_match_mode_exact_unordered():
     outputs = [{"a": 1, "d": 2, "e": 2}, {"b": 1}, {"c": 1}]
     reference_outputs = [{"b": 1, "d": 2, "e": 2}, {"a": 1}, {"c": 1}]
     evaluator = create_async_json_match_evaluator(
+        
         list_aggregator="average",
         aggregator="average",
         exclude_keys=["d", "e"],
@@ -496,6 +521,7 @@ async def test_json_match_mode_subset_outputs():
         {"a": 1},
     ]
     evaluator = create_async_json_match_evaluator(
+        
         list_aggregator="average", aggregator="average", list_match_mode="superset"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -512,6 +538,7 @@ async def test_json_match_mode_subset_reference():
     ]
     reference_outputs = [{"b": 1}, {"c": 1}, {"a": 1}]
     evaluator = create_async_json_match_evaluator(
+        
         list_aggregator="average", aggregator="average", list_match_mode="subset"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -528,6 +555,7 @@ async def test_json_match_mode_order_wrong():
     ]
     reference_outputs = [{"b": 1}, {"a": 1}]
     evaluator = create_async_json_match_evaluator(
+        
         list_aggregator="average", aggregator="average", list_match_mode="ordered"
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)

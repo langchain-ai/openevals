@@ -43,6 +43,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
+    model="openai:o3-mini",
 )
 
 inputs = "How much has the price of doodads changed in the past year?"
@@ -76,6 +77,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
+  model: "openai:o3-mini",
 });
 
 const inputs = "How much has the price of doodads changed in the past year?"
@@ -191,6 +193,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
+    model="openai:o3-mini",
 )
 ```
 </details>
@@ -203,6 +206,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
+  model: "openai:o3-mini",
 });
 ```
 
@@ -277,6 +281,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
+    model="openai:o3-mini",
 )
 
 inputs = "How much has the price of doodads changed in the past year?"
@@ -310,6 +315,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
+  model: "openai:o3-mini",
 });
 
 const inputs = "How much has the price of doodads changed in the past year?"
@@ -351,6 +357,7 @@ outputs = "Thanks for asking! The current weather in San Francisco is sunny and 
 llm_as_judge = create_llm_as_judge(
     prompt=CONCISENESS_PROMPT,
     feedback_key="conciseness",
+    model="openai:o3-mini",
 )
 
 eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -376,6 +383,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   prompt: CONCISENESS_PROMPT,
   feedbackKey: "conciseness",
+  model: "openai:o3-mini",
 });
 
 const inputs = "How is the weather in San Francisco?"
@@ -417,6 +425,7 @@ context = "A doodad is a self-replicating swarm of nanobots. They are extremely 
 llm_as_judge = create_llm_as_judge(
     prompt=HALLUCINATION_PROMPT,
     feedback_key="hallucination",
+    model="openai:o3-mini",
 )
 
 eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
@@ -441,6 +450,7 @@ import { createLLMAsJudge, HALLUCINATION_PROMPT } from "openevals";
 const hallucinationEvaluator = createLLMAsJudge({
   prompt: HALLUCINATION_PROMPT,
   feedbackKey: "hallucination",
+  model: "openai:o3-mini",
 });
 
 const inputs = "What is a doodad?"
@@ -495,6 +505,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 custom_prompt_evaluator = create_llm_as_judge(
     prompt=MY_CUSTOM_PROMPT,
+    model="openai:o3-mini",
 )
 
 custom_prompt_evaluator(
@@ -530,6 +541,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 const customPromptEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
+  model: "openai:o3-mini",
 });
 
 const inputs = "What color is the sky?"
@@ -583,8 +595,8 @@ const fewShotExamples = [
 
 #### Customizing the model
 
-If you don't pass in a `model` or `judge` parameter when creating your evaluator, the `create_llm_as_judge` function will default to OpenAI's `o3-mini` model
-through LangChain's `ChatOpenAI` class, using the `langchain_openai` package. However, there are a few ways you can customize the model used for evaluation.
+If you don't pass in a `judge` parameter when creating your evaluator, the `create_llm_as_judge` function will default to OpenAI's `o3-mini` model
+through LangChain's `ChatOpenAI` class, using the `langchain_openai`/`@langchain/openai` package. However, there are a few ways you can customize the model used for evaluation.
 
 You can pass a string formatted as `PROVIDER:MODEL` (e.g. `model=anthropic:claude-3-5-sonnet-latest`) as the `model`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://python.langchain.com/docs/how_to/chat_models_universal_init/). This requires you to install the appropriate LangChain integration package installed. Here's an example:
 
@@ -744,6 +756,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 evaluator = create_llm_as_judge(
     prompt=MY_CUSTOM_PROMPT,
     choices=[0.0, 0.5, 1.0],
+    model="openai:o3-mini",
 )
 
 result = evaluator(
@@ -797,6 +810,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 const customEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
   choices: [0.0, 0.5, 1.0],
+  model: "openai:o3-mini",
 });
 
 const result = await customEvaluator({
@@ -844,7 +858,7 @@ evaluator = create_json_match_evaluator(
     },
     # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
     exclude_keys=["c"],
-    # The provider and name of the model to use, defaults to openai:o3-mini
+    # The provider and name of the model to use
     model="openai:o3-mini",
     # Whether to force the model to reason about the keys in `rubric`. Defaults to True
     use_reasoning=True
@@ -892,7 +906,7 @@ evaluator = create_json_match_evaluator(
     },
     # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
     exclude_keys=["c"],
-    # The provider and name of the model to use, defaults to openai:o3-mini
+    # The provider and name of the model to use
     model="openai:o3-mini",
     # Whether to force the model to reason about the keys in `rubric`. Defaults to True
     use_reasoning=True
@@ -1085,6 +1099,7 @@ from openevals.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
+    model="openai:o3-mini",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -1137,6 +1152,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
+    model="openai:o3-mini",
 )
 
 @pytest.mark.langsmith
@@ -1178,6 +1194,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
+  model: "openai:o3-mini",
 });
 
 
@@ -1235,6 +1252,7 @@ client = Client()
 conciseness_evaluator = create_llm_as_judge(
     prompt=CONCISENESS_PROMPT,
     feedback_key="conciseness",
+    model="openai:o3-mini",
 )
 
 experiment_results = client.evaluate(
@@ -1259,10 +1277,11 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   prompt: CONCISENESS_PROMPT,
   feedbackKey: "conciseness",
+  model: "openai:o3-mini",
 });
 
 await evaluate(
-  (inputs) => "What color is the sky?"),
+  (inputs) => "What color is the sky?",
   {
     data: datasetName,
     evaluators: [concisenessEvaluator],

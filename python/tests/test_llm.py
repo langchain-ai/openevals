@@ -114,7 +114,7 @@ def test_llm_as_judge_init_chat_model():
     outputs = {"a": 1, "b": 2}
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
-        model="openai:gpt-4o-mini",
+        model="openai:o3-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
@@ -130,6 +130,7 @@ def test_llm_as_judge_few_shot_examples():
             {"inputs": {"a": 1, "b": 2}, "outputs": {"a": 1, "b": 2}, "score": 0.0},
             {"inputs": {"a": 1, "b": 3}, "outputs": {"a": 1, "b": 2}, "score": 1.0},
         ],
+        model="openai:o3-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]

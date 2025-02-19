@@ -254,6 +254,11 @@ export const _createLLMAsJudgeScorer = (params: {
     });
 
     if (!judge) {
+      if (!model) {
+        throw new Error(
+          "`model` string is required (e.g. 'openai:o3-mini') when `judge` is not provided"
+        );
+      }
       judge = await initChatModel(model);
     }
 
@@ -276,12 +281,16 @@ export const _createLLMAsJudgeScorer = (params: {
       }
     } else {
       if (!model) {
-        throw new Error("`model` is required for non-LangChain clients");
+        throw new Error(
+          "`model` string is required (e.g. 'openai:o3-mini') when `judge` is an OpenAI client"
+        );
       }
 
       const params: Record<string, unknown> = {
         messages: normalizedMessages,
-        model,
+        model: model.startsWith("openai:")
+          ? model.slice("openai:".length)
+          : model,
         response_format: {
           type: "json_schema",
           json_schema: {
@@ -328,7 +337,7 @@ export const _createLLMAsJudgeScorer = (params: {
  * @param params.judge The LLM used for evaluation. Can be an OpenAI client or a LangChain model.
  *                     If using OpenAI client, must specify "model" parameter.
  *                     If omitted, "model" will be used to instantiate a LangChain model instance.
- * @param params.model Model identifier to use. Defaults to "openai:o3-mini".
+ * @param params.model Model identifier to use.
  *                     If "judge" is an OpenAI client, this should be a model name directly.
  *                     If "judge" is omitted, must be a valid LangChain model identifier.
  * @param params.system Optional system message to prepend to the prompt
@@ -359,7 +368,7 @@ export const _createLLMAsJudgeScorer = (params: {
 export const createLLMAsJudge = ({
   prompt,
   feedbackKey = "score",
-  model = "openai:o3-mini",
+  model,
   system,
   judge,
   continuous = false,

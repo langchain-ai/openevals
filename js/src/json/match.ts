@@ -119,8 +119,8 @@ function _prepareParameters({
             const availableReferences = Array.from(Array(referenceOutputs.length).keys());
             const matchedOutputs = new Set<number>();
 
-            outputs.forEach((outputItem: any, i: number) => {
-                let bestMatchIdx: number | null = null;
+            outputs.forEach((outputItem, i) => {
+                let bestMatchIdx: number | undefined;
                 let bestMatchScore = -1;
 
                 availableReferences.forEach(refIdx => {

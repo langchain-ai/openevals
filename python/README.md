@@ -18,14 +18,6 @@ pip install openevals
 ```
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```bash
-npm install openevals @langchain/core
-```
-</details>
-
 This quickstart will use an evaluator powered by OpenAI's `o3-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
 
 ```bash
@@ -69,41 +61,6 @@ print(eval_result)
 ```
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const correctnessEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  model: "openai:o3-mini",
-});
-
-const inputs = "How much has the price of doodads changed in the past year?"
-// These are fake outputs, in reality you would run your LLM-based system to get real outputs
-const outputs = "Doodads have increased in price by 10% in the past year."
-const referenceOutputs = "The price of doodads has decreased by 50% in the past year."
-
-// When calling an LLM-as-judge evaluator, parameters are formatted directly into the prompt
-const evalResult = await correctnessEvaluator({
-  inputs,
-  outputs,
-  referenceOutputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'score',
-    score: false,
-    comment: '...'
-}
-```
-</details>
-
 By default, LLM-as-judge evaluators will return a score of `True` or `False`. See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-scores), [model](#customizing-the-model), and [prompt](#customizing-prompts)!
 
 ## Table of Contents
@@ -143,14 +100,6 @@ pip install openevals
 ```
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```bash
-npm install openevals @langchain/core
-```
-</details>
-
 For LLM-as-judge evaluators, you will also need an LLM client. By default, `openevals` will use [LangChain chat model integrations](https://python.langchain.com/docs/integrations/chat/) and comes with `langchain_openai` installed by default. However, if you prefer, you may use the OpenAI client directly:
 
 <details open>
@@ -158,14 +107,6 @@ For LLM-as-judge evaluators, you will also need an LLM client. By default, `open
 
 ```bash
 pip install openai
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```bash
-npm install openai
 ```
 </details>
 
@@ -198,20 +139,6 @@ correctness_evaluator = create_llm_as_judge(
 ```
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const correctnessEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  model: "openai:o3-mini",
-});
-```
-
-</details>
-
 Note that `CORRECTNESS_PROMPT` is a simple f-string that you can log and edit as needed for your specific use case:
 
 <details open>
@@ -237,32 +164,6 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 </output>
 ...
 ```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-console.log(CORRECTNESS_PROMPT);
-```
-
-```
-You are an expert data labeler evaluating model outputs for correctness. Your task is to assign a score based on the following rubric:
-
-<Rubric>
-  A correct answer:
-  - Provides accurate and complete information
-  ...
-<input>
-{inputs}
-</input>
-
-<output>
-{outputs}
-</output>
-...
-```
-
 </details>
 
 By convention, we generally suggest sticking to `inputs`, `outputs`, and `reference_outputs` as the names of the parameters for LLM-as-judge evaluators, but these will be directly formatted into the prompt so you can use any variable names you want.
@@ -308,40 +209,6 @@ print(eval_result)
 ```
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const correctnessEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  feedbackKey: "correctness",
-  model: "openai:o3-mini",
-});
-
-const inputs = "How much has the price of doodads changed in the past year?"
-const outputs = "Doodads have increased in price by 10% in the past year."
-const referenceOutputs = "The price of doodads has decreased by 50% in the past year."
-
-const evalResult = await correctnessEvaluator({
-  inputs,
-  outputs,
-  referenceOutputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'correctness',
-    score: false,
-    comment: '...'
-}
-```
-</details>
-
 #### Conciseness
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the conciseness of an LLM's output. It takes `inputs` and `outputs` as parameters.
@@ -376,39 +243,6 @@ print(eval_result)
 ```
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
-
-const concisenessEvaluator = createLLMAsJudge({
-  prompt: CONCISENESS_PROMPT,
-  feedbackKey: "conciseness",
-  model: "openai:o3-mini",
-});
-
-const inputs = "How is the weather in San Francisco?"
-const outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
-
-const evalResult = await concisenessEvaluator({
-  inputs,
-  outputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'conciseness',
-    score: false,
-    comment: '...'
-}
-```
-
-</details>
-
 #### Hallucination
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the hallucination of an LLM's output. It takes `inputs`, `outputs`, and optionally, `context` as parameters.
@@ -441,40 +275,6 @@ eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
 }
 ```
 
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, HALLUCINATION_PROMPT } from "openevals";
-
-const hallucinationEvaluator = createLLMAsJudge({
-  prompt: HALLUCINATION_PROMPT,
-  feedbackKey: "hallucination",
-  model: "openai:o3-mini",
-});
-
-const inputs = "What is a doodad?"
-const outputs = "I know the answer. A doodad is a kitten."
-const context = "A doodad is a self-replicating swarm of nanobots. They are extremely dangerous and should be avoided at all costs. Some safety precautions when working with them include wearing gloves and a mask."
-
-const evalResult = await hallucinationEvaluator({
-  inputs,
-  outputs,
-  context,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'hallucination',
-    score: false,
-    comment: '...'
-}
-```
 </details>
 
 #### Customizing prompts
@@ -519,44 +319,6 @@ custom_prompt_evaluator(
 
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge } from "openevals";
-
-const MY_CUSTOM_PROMPT = `
-Use the following context to help you evaluate for hallucinations in the output:
-
-<context>
-{context}
-</context>
-
-<input>
-{inputs}
-</input>
-
-<output>
-{outputs}
-</output>
-`;
-
-const customPromptEvaluator = createLLMAsJudge({
-  prompt: MY_CUSTOM_PROMPT,
-  model: "openai:o3-mini",
-});
-
-const inputs = "What color is the sky?"
-const outputs = "The sky is red."
-
-const evalResult = await customPromptEvaluator({
-  inputs,
-  outputs,
-});
-```
-</details>
-
-
 For convenience, the following options are also available:
 
 - `system`: a string that sets a system prompt for the judge model by adding a `system` message before other parts of the prompt.
@@ -576,21 +338,6 @@ few_shot_examples = [
 ]
 ```
 
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-const fewShotExamples = [
-    {
-        inputs: "What color is the sky?",
-        outputs: "The sky is red.",
-        reasoning: "The sky is red because it is early evening.",
-        score: 1,
-    }
-]
-```
 </details>
 
 These will be appended to the end of the final user message in the prompt.
@@ -621,23 +368,6 @@ anthropic_evaluator = create_llm_as_judge(
 
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```bash
-npm install @langchain/anthropic
-```
-
-```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const anthropicEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  model: "anthropic:claude-3-5-sonnet-latest",
-});
-```
-</details>
-
 You can also directly pass a LangChain chat model instance as `judge`. Note that your chosen model must support [structured output](https://python.langchain.com/docs/integrations/chat/):
 
 <details open>
@@ -654,20 +384,6 @@ anthropic_evaluator = create_llm_as_judge(
 )
 ```
 
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-import { ChatAnthropic } from "@langchain/anthropic";
-
-const anthropicEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  judge: new ChatAnthropic({ model: "claude-3-5-sonnet-latest", temperature: 0.5 }),
-});
-```
 </details>
 
 This is useful in scenarios where you need to initialize your model with specific parameters, such as `temperature` or alternate URLs if using models through a service like Azure.
@@ -694,25 +410,6 @@ openai_evaluator = create_llm_as_judge(
 )
 ```
 
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```bash
-npm install openai
-```
-
-```ts
-import { OpenAI } from "openai";
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const openaiEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  model: "gpt-4o-mini",
-  judge: new OpenAI(),
-});
-```
 </details>
 
 #### Customizing output scores
@@ -778,59 +475,6 @@ print(result)
 }
 ```
 
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge } from "openevals";
-
-const MY_CUSTOM_PROMPT = `
-You are an expert data labeler evaluating model outputs for correctness. Your task is to assign a score based on the following rubric:
-
-<Rubric>
-  Assign a score of 0, .5, or 1 based on the following criteria:
-  - 0: The answer is incorrect and does not mention doodads
-  - 0.5: The answer mentions doodads but is otherwise incorrect
-  - 1: The answer is correct and mentions doodads
-</Rubric>
-
-<input>
-{inputs}
-</input>
-
-<output>
-{outputs}
-</output>
-
-<reference_outputs>
-{reference_outputs}
-</reference_outputs>
-`;
-
-const customEvaluator = createLLMAsJudge({
-  prompt: MY_CUSTOM_PROMPT,
-  choices: [0.0, 0.5, 1.0],
-  model: "openai:o3-mini",
-});
-
-const result = await customEvaluator({
-  inputs: "What is the current price of doodads?",
-  outputs: "The price of doodads is $10.",
-  reference_outputs: "The price of doodads is $15.",
-});
-
-console.log(result);
-```
-
-```
-{
-    'key': 'score',
-    'score': 0.5,
-    'comment': 'The provided answer mentioned doodads but was incorrect.'
-}
-```
 </details>
 
 Finally, if you would like to disable justifications for a given score, you can set `use_reasoning=False` when creating your evaluator.
@@ -960,77 +604,9 @@ print(result)
 ```
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { exactMatch } from "openevals";
-
-const outputs = { a: 1, b: 2 };
-const referenceOutputs = { a: 1, b: 2 };
-const result = exactMatch(outputs, referenceOutputs);
-
-console.log(result);
-```
-
-```
-{
-    key: "equal",
-    score: true,
-}
-```
-</details>
-
-#### Levenshtein distance
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.string.levenshtein import levenshtein_distance
-
-outputs = "The correct answer"
-reference_outputs = "The correct answer"
-result = levenshtein_distance(
-    outputs=outputs, reference_outputs=reference_outputs,
-)
-
-print(result)
-```
-
-```
-{
-    'key': 'levenshtein_distance',
-    'score': 0.0,
-    'comment': None,
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { levenshteinDistance } from "openevals";
-
-const outputs = "The correct answer";
-const referenceOutputs = "The correct answer";
-const result = levenshteinDistance(outputs, referenceOutputs);
-
-console.log(result);
-```
-
-```
-{
-    key: "levenshtein_distance",
-    score: 0,
-}
-```
-</details>
-
 #### Embedding similarity
 
-This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method (for Python) or takes a LangChain embeddings client directly (for TypeScript) and calculates distance between two strings using cosine similarity.
+This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method and calculates distance between two strings using cosine similarity.
 
 <details open>
 <summary>Python</summary>
@@ -1053,33 +629,6 @@ print(result)
     'key': 'embedding_similarity',
     'score': 0.9147273943905653,
     'comment': None,
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createEmbeddingSimilarityEvaluator } from "openevals";
-import { OpenAIEmbeddings } from "@langchain/openai";
-
-const evaluator = createEmbeddingSimilarityEvaluator({
-  embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
-});
-
-const result = await evaluator(
-    outputs="The weather is nice!",
-    referenceOutputs="The weather is very nice!",
-);
-
-console.log(result);
-```
-
-```
-{
-    key: "embedding_similarity",
-    score: 0.9147273943905653,
 }
 ```
 </details>
@@ -1182,53 +731,6 @@ pytest test_correctness.py --langsmith-output
 ```
 </details>
 
-<details>
-<summary>TypeScript</summary>
-
-Then, set up a file named `test_correctness.eval.ts` with the following contents:
-
-```ts
-import * as ls from "langsmith/vitest";
-// import * as ls from "langsmith/jest";
-
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const correctnessEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  feedbackKey: "correctness",
-  model: "openai:o3-mini",
-});
-
-
-ls.describe("Correctness", () => {
-  ls.test("incorrect answer", {
-    inputs: {
-      question: "How much has the price of doodads changed in the past year?"
-    },
-    referenceOutputs: {
-      answer: "The price of doodads has decreased by 50% in the past year."
-    }
-  }, async ({ inputs, referenceOutputs }) => {
-    const outputs = "Doodads have increased in price by 10% in the past year.";
-    ls.logOutputs({ answer: outputs });
-
-    await correctnessEvaluator({
-      inputs,
-      outputs,
-      referenceOutputs,
-    });
-  });
-});
-```
-Note that when creating the evaluator, we've added a `feedback_key` parameter. This will be used to name the feedback in LangSmith.
-
-Now, run the eval with your runner of choice:
-
-```bash
-vitest run test_correctness.eval.ts
-```
-</details>
-
 Feedback from the prebuilt evaluator will be automatically logged in LangSmith as a table of results like this in your terminal (if you've set up your reporter):
 
 ![Terminal results](/static/img/pytest_output.png)
@@ -1267,29 +769,6 @@ experiment_results = client.evaluate(
 )
 ```
 
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { evaluate } from "langsmith/evaluation";
-import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
-
-const concisenessEvaluator = createLLMAsJudge({
-  prompt: CONCISENESS_PROMPT,
-  feedbackKey: "conciseness",
-  model: "openai:o3-mini",
-});
-
-await evaluate(
-  (inputs) => "What color is the sky?",
-  {
-    data: datasetName,
-    evaluators: [concisenessEvaluator],
-  }
-);
-```
 </details>
 
 ## Thank you!

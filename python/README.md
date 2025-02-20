@@ -119,8 +119,8 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
     - [Customizing the model](#customizing-the-model)
     - [Customizing output scores](#customizing-output-scores)
   - [Extraction and tool calls](#extraction-and-tool-calls)
-    - [Evaluating a single structured output](#evaluating-a-single-structured-output)
-    - [Evaluating a list of structured outputs](#evaluating-a-list-of-structured-outputs)
+    - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
+    - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
   - [Other](#other)
     - [Exact Match](#exact-match)
     - [Levenshtein Distance](#levenshtein-distance)
@@ -841,29 +841,32 @@ Two very common use cases for LLMs are extracting structured output from documen
 to respond in a structured format. This package provides a prebuilt evaluator to help you evaluate these use cases, and is flexible
 to work for a variety of extraction/tool calling use cases.
 
-#### Evaluating a single structured output
+You can use the `create_json_match_evaluator` evaluator in two ways:
+1. To perform an exact match of the outputs to reference outputs
+2. Using LLM-as-a-judge to evaluate the outputs based on a provided rubric.
 
-Here is a code example of how to evaluate a single structured output, with comments explaining every parameter:
+#### Evaluating structured output with exact match
+
+Use exact match evaluation when there is a clear right or wrong answer. A common scenario is text extraction from images or PDFs where you expect specific values.
 
 ```python
 from openevals.json import create_json_match_evaluator
 
-outputs = {"a": "Mango, Bananas", "b": 2, "c": [1,2,3]}
-reference_outputs = {"a": "Bananas, Mango", "b": 3, "c": [1,2,3]}
+outputs = [
+    {"a": "Mango, Bananas", "b": 2},
+    {"a": "Apples", "b": 2, "c": [1,2,3]},
+]
+reference_outputs = [
+    {"a": "Mango, Bananas", "b": 2},
+    {"a": "Apples", "b": 2, "c": [1,2,4]},
+]
 evaluator = create_json_match_evaluator(
-    # How to aggregate the feedback keys. Can be "average", "all", or None
-    # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
-    aggregator="average",
-    # The criteria for the LLM judge to use for each key you want evaluated by the LLM
-    rubric={
-        "a": "Does the answer mention all the fruits in the reference answer?"
-    },
-    # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
-    exclude_keys=["c"],
-    # The provider and name of the model to use
-    model="openai:o3-mini",
-    # Whether to force the model to reason about the keys in `rubric`. Defaults to True
-    use_reasoning=True
+    # How to aggregate feedback keys in each element of the list: "average", "all", or None
+    # "average" returns the average score. "all" returns 1 only if all keys score 1; otherwise, it returns 0. None returns individual feedback chips for each key
+    aggregator="all",
+    # Remove if evaluating a single structured output. This aggregates the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". "all" returns 1 if each element of the list is 1; if any score is not 1, it returns 0. "average" returns the average of the scores from each element. 
+    list_aggregator="average",
+    exclude_keys=["a"],
 )
 # Invoke the evaluator with the outputs and reference outputs
 result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -871,7 +874,9 @@ result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
 print(result)
 ```
 
-"b" will be 0, and "a" will be 1. Therefore, the final score will be 0.5.
+For the first element, "b" will be 1 and the aggregator will return a score of 1
+For the second element, "b" will be 1, "c" will be 0 and the aggregator will return a score of 0
+Therefore, the list aggregator will return a final score of 0.5.
 
 ```
 {
@@ -881,9 +886,9 @@ print(result)
 }
 ```
 
-#### Evaluating a list of structured outputs
+#### Evaluating structured output with LLM-as-a-Judge
 
-Here is a code example of how to evaluate a list of structured outputs, with comments explaining every parameter:
+Use LLM-as-a-judge to evaluate structured output or tools calls when the criteria is more subjective (for example the output is a kind of fruit or mentions all the fruits). 
 
 ```python
 from openevals.json import create_json_match_evaluator
@@ -897,20 +902,18 @@ reference_outputs = [
     {"a": "Apples, Strawberries", "b": 2},
 ]
 evaluator = create_json_match_evaluator(
-    # How to aggregate the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". If "all", the score for each key will be a combined and statement of the scores for that key across all elements of the list. If "average", the score for each key will be the average of the scores for that key across all elements of the list
-    list_aggregator="all",
-    # How to aggregate the feedback keys for each object in the list. Can be "average", "all", or None
-    # If None, feedback chips for each key (in this case "a" and "b") will be returned, else a single feedback chip will be returned with the key "structured_match_score"
+    # How to aggregate feedback keys in each element of the list: "average", "all", or None
+    # "average" returns the average score. "all" returns 1 only if all keys score 1; otherwise, it returns 0. None returns individual feedback chips for each key
     aggregator="average",
-    # The criteria for the LLM judge to use for each key you want evaluated by the LLM
+    # Remove if evaluating a single structured output. This aggregates the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". "all" returns 1 if each element of the list is 1; if any score is not 1, it returns 0. "average" returns the average of the scores from each element. 
+    list_aggregator="all",
     rubric={
         "a": "Does the answer mention all the fruits in the reference answer?"
     },
-    # The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
-    exclude_keys=["c"],
     # The provider and name of the model to use
     model="openai:o3-mini",
     # Whether to force the model to reason about the keys in `rubric`. Defaults to True
+    # Note that this is not currently supported if there is an aggregator specified 
     use_reasoning=True
 )
 result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -918,12 +921,14 @@ result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
 print(result)
 ```
 
-"a" will be 0 since the reference answer doesn't mention all the fruits in the output for the second list element, "b" will be 1 since it exact matches in all elements of the list, and "d" will be 0 since it is missing from the outputs.
+For the first element, "a" will be 1  since both Mango and Bananas are in the reference output, "b" will be 1 and "d" will be 0. The aggregator will return an average score of 0.6. 
+For the second element, "a" will be 0 since the reference output doesn't mention all the fruits in the output,  "b" will be 1. The aggregator will return a score of 0.5. 
+Therefore, the list aggregator will return a final score of 0. 
 
 ```
 {
     'key': 'structured_match_score',
-    'score': 0.3333333333333333,
+    'score': 0,
     'comment': None
 }
 ```

@@ -412,7 +412,7 @@ export const createJsonMatchEvaluator = ({
                 listMatchMode,
             });
 
-            let scorerFn: ((params: any) => any) | null = null;
+            let scorerFn: ((params: any) => any) | undefined;
             let outputKeys, expectedOutputKeys;
             if (Object.keys(formattedRubric ?? {}).length > 0) {
                 outputKeys = Object.keys(jsonSchema.properties)

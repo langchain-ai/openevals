@@ -78,7 +78,7 @@ function _prepareParameters({
             const availableOutputs = Array.from(Array(outputs.length).keys());
             const matchedReferences = new Set<number>();
 
-            referenceOutputs.forEach((refItem: any, i: number) => {
+            referenceOutputs.forEach((refItem, i) => {
                 let bestMatchScore = -1;
                 let bestMatchIdx: number | null = null;
 

@@ -80,7 +80,7 @@ function _prepareParameters({
 
             referenceOutputs.forEach((refItem, i) => {
                 let bestMatchScore = -1;
-                let bestMatchIdx: number | null = null;
+                let bestMatchIdx: number | undefined;
 
                 availableOutputs.forEach(outIdx => {
                     const outputItem = outputs[outIdx];

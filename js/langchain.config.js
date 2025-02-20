@@ -10,7 +10,15 @@ function abs(relativePath) {
 }
 
 export const config = {
-  internals: [/node\:/, /js-tiktoken/, /langsmith/],
+  internals: [
+    /node\:/,
+    /js-tiktoken/,
+    /langsmith/,
+    /\@langchain\/core\/runnables/,
+    /\@langchain\/core\/prompts/,
+    /\@langchain\/core\/messages/,
+    /langchain\/chat_models\/universal/,
+  ],
   entrypoints: {
     index: "index",
     llm: "llm",

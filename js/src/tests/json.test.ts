@@ -2,7 +2,6 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 
 import { OpenAI } from "openai";
-import { ChatOpenAI } from "@langchain/openai";
 
 import { createJsonMatchEvaluator } from "../json/match.js";
 

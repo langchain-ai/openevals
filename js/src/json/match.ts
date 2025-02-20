@@ -1,7 +1,7 @@
-import { ModelClient } from "./types/model-client";
-import { BaseChatModel } from "./types/base-chat-model";
+import { ModelClient } from "../types.js";
 import { _createLLMAsJudgeScorer } from "../llm.js";
 import { _runEvaluator } from "../utils.js";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 type AggregatorType = "average" | "all" | undefined;
 type ListMatchMode = "superset" | "subset" | "same_elements" | "ordered";
@@ -39,12 +39,12 @@ function _prepareParameters({
   useReasoning: boolean;
   listMatchMode: ListMatchMode;
 }): {
-    processedOutputs: any;
-    processedReferenceOutputs: any;
-    jsonSchema: any;
-    scores: Record<string, any>;
-    formattedRubric: string;
-    useListReducer: boolean;
+  processedOutputs: any;
+  processedReferenceOutputs: any;
+  jsonSchema: any;
+  scores: Record<string, any>;
+  formattedRubric: string;
+  useListReducer: boolean;
 } {
   const jsonSchema: Record<string, any> = {
     type: "object",

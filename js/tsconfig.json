@@ -28,5 +28,6 @@
     "**/dist/",
     "docs",
     "dist/",
+    "src/**/*.test.ts"
   ]
 }

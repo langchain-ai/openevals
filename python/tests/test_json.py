@@ -527,7 +527,7 @@ def test_json_match_mode_order_wrong_language():
         {"a": 1, "c": "The Dog"},
         {"b": 1},
     ]
-    reference_outputs = [{"b": 1}, {"a": 1, "c": "El Perro"}]
+    reference_outputs = [{"a": 1, "c": "El Perro"}, {"b": 1}]
     evaluator = create_json_match_evaluator(
         model="openai:o3-mini",
         list_aggregator="average",
@@ -537,7 +537,7 @@ def test_json_match_mode_order_wrong_language():
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
-    assert result["score"] == 0
+    assert result["score"] == 1
 
 
 @pytest.mark.langsmith

@@ -5,8 +5,29 @@ import { OpenAI } from "openai";
 import { ChatOpenAI } from "@langchain/openai";
 
 import { createLLMAsJudge } from "../llm.js";
+import * as hub from "langchain/hub";
 
 ls.describe("llm as judge", () => {
+  ls.test(
+    "prompt hub prompt",
+    {
+      inputs: { a: 1, b: 2 },
+    },
+    async ({ inputs }) => {
+      const outputs = { a: 1, b: 2 };
+      const client = new OpenAI();
+      const evaluator = createLLMAsJudge({
+        prompt: await hub.pull("langchain-ai/equality-1-message"),
+        judge: client,
+        model: "openai:o3-mini",
+      });
+      const result = await evaluator({ inputs, outputs });
+      expect(result).toBeDefined();
+      expect(result.score).toBeDefined();
+      expect(result.comment).toBeDefined();
+    }
+  );
+
   ls.test(
     "llm as judge OpenAI",
     {

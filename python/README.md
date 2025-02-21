@@ -489,7 +489,7 @@ You can use the `create_json_match_evaluator` evaluator in two ways:
 1. To perform an exact match of the outputs to reference outputs
 2. Using LLM-as-a-judge to evaluate the outputs based on a provided rubric.
 
-#### 1. Exact match
+#### Evaluating structured output with exact match
 
 Use exact match evaluation when there is a clear right or wrong answer. A common scenario is text extraction from images or PDFs where you expect specific values.
 
@@ -530,7 +530,7 @@ Therefore, the list aggregator will return a final score of 0.5.
 }
 ```
 
-#### Using LLM-as-a-judge
+#### Evaluating structured output with LLM-as-a-Judge
 
 Use LLM-as-a-judge to evaluate structured output or tools calls when the criteria is more subjective (for example the output is a kind of fruit or mentions all the fruits). 
 

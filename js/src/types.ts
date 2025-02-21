@@ -39,6 +39,7 @@ export type ChatCompletion = {
   choices: { message: ChatCompletionMessage }[];
 };
 
+// Few shot example type for evaluator prompts
 export type FewShotExample = {
   inputs: unknown;
   outputs: unknown;

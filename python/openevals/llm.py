@@ -22,6 +22,12 @@ from typing import (
 
 import json
 
+from openevals.prompts import (
+    CORRECTNESS_PROMPT,
+    CONCISENESS_PROMPT,
+    HALLUCINATION_PROMPT,
+)
+
 
 def _append_few_shot_examples(
     *,
@@ -158,6 +164,21 @@ def _create_llm_as_judge_scorer(
             )
             messages = formatted_prompt.messages
         elif isinstance(prompt, str):
+            if prompt == CORRECTNESS_PROMPT:
+                if any([x is None for x in [inputs, outputs, reference_outputs]]):
+                    raise ValueError(
+                        "CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs"
+                    )
+            if prompt == CONCISENESS_PROMPT:
+                if any([x is None for x in [inputs, outputs]]):
+                    raise ValueError(
+                        "CONCISENESS_PROMPT requires inputs and outputs"
+                    )
+            if prompt == HALLUCINATION_PROMPT:
+                if any([x is None for x in [inputs, outputs]]) or 'context' not in kwargs:
+                    raise ValueError(
+                        "HALLUCINATION_PROMPT requires inputs, outputs, and context"
+                    )
             formatted_prompt = prompt.format(
                 inputs=inputs,
                 outputs=outputs,

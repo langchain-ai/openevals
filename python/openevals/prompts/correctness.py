@@ -35,7 +35,7 @@ CORRECTNESS_PROMPT = """You are an expert data labeler evaluating model outputs 
 {outputs}
 </output>
 
-If available, you may use the reference outputs below to help you evaluate the correctness of the response:
+Use the reference outputs below to help you evaluate the correctness of the response:
 
 <reference_outputs>
 {reference_outputs}

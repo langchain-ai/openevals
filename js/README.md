@@ -68,7 +68,7 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
     - [Customizing the model](#customizing-the-model)
     - [Customizing output scores](#customizing-output-scores)
   - [Extraction and tool calls](#extraction-and-tool-calls)
-   - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
+    - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
   - [Other](#other)
     - [Exact Match](#exact-match)

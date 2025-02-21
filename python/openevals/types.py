@@ -66,7 +66,7 @@ class ChatCompletionMessage(TypedDict):
 class ChatCompletion(TypedDict):
     choices: list[dict]
 
-
+# Few shot example type for evaluator prompts
 class FewShotExample(TypedDict):
     inputs: Any
     outputs: Any

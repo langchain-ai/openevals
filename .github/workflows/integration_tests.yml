@@ -1,0 +1,112 @@
+name: Integration Tests CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  changed_files:
+    runs-on: ubuntu-latest
+    outputs:
+      python_changed: ${{ steps.changed-files.outputs.python_any_changed }}
+      js_changed: ${{ steps.changed-files.outputs.js_any_changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files_yaml: |
+            python:
+              - 'python/**'
+            js:
+              - 'js/**'
+
+  python_integration_test:
+    name: Python Integration Test
+    needs: changed_files
+    if: >
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' && (
+        contains(github.event.pull_request.labels.*.name, 'release') ||
+        needs.changed_files.outputs.python_changed == 'true'
+      )) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.run-python-tests == 'true')
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.6.2"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "./python/.python-version"
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv sync
+          uv sync --group dev
+        shell: bash
+        working-directory: python
+          
+      - name: Run integration tests
+        env:
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: uv run pytest tests
+        shell: bash
+        working-directory: python
+
+  js_integration_test:
+    name: JS Integration Test
+    needs: changed_files
+    if: >
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' && (
+        contains(github.event.pull_request.labels.*.name, 'release') ||
+        needs.changed_files.outputs.js_changed == 'true'
+      )) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.run-js-tests == 'true')
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: js
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+          cache: "yarn"
+          cache-dependency-path: "js/yarn.lock"
+
+      - name: Install Yarn dependencies
+        run: yarn install
+        shell: bash
+        working-directory: js
+
+
+      - name: Run JS integration tests
+        env:
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: yarn test src/string/tests src/tests
+        shell: bash
+        working-directory: js

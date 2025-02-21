@@ -87,7 +87,7 @@ def _construct_output_schema(
             "enum": choices,
         }
     elif continuous:
-        description = "A number that represents the degree to which the criteria in the prompt are met, from 0.0 to 1.0. 1.0 means the criteria are met perfectly. 0.0 means none of the criteria are met."
+        description = "A number that represents the degree to which the criteria in the prompt are met, from 0.0 to 1.0. 1.0 means the criteria are met perfectly. 0.0 means none of the criteria are met, 0.5 means exactly half of the criteria are met."
         score_schema = {
             "type": "number",
             "description": description,
@@ -326,6 +326,21 @@ def _create_async_llm_as_judge_scorer(
             )
             messages = formatted_prompt.messages
         elif isinstance(prompt, str):
+            if prompt == CORRECTNESS_PROMPT:
+                if any([x is None for x in [inputs, outputs, reference_outputs]]):
+                    raise ValueError(
+                        "CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs"
+                    )
+            if prompt == CONCISENESS_PROMPT:
+                if any([x is None for x in [inputs, outputs]]):
+                    raise ValueError(
+                        "CONCISENESS_PROMPT requires inputs and outputs"
+                    )
+            if prompt == HALLUCINATION_PROMPT:
+                if any([x is None for x in [inputs, outputs]]) or 'context' not in kwargs:
+                    raise ValueError(
+                        "HALLUCINATION_PROMPT requires inputs, outputs, and context"
+                    )
             formatted_prompt = prompt.format(
                 inputs=inputs,
                 outputs=outputs,

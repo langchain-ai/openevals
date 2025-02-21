@@ -12,8 +12,11 @@ ls.describe("LLM Judge Correctness", () => {
       inputs: {
         question: "Who was the first president of the United States?",
       },
+      referenceOutputs: {
+        answer: "George Washington",
+      },
     },
-    async ({ inputs }) => {
+    async ({ inputs, referenceOutputs }) => {
       const outputs = { answer: "George Washington" };
 
       const llmAsJudge = createLLMAsJudge({
@@ -22,7 +25,11 @@ ls.describe("LLM Judge Correctness", () => {
         model: "openai:o3-mini",
       });
 
-      const evalResult = await llmAsJudge({ inputs, outputs });
+      
+      await expect(
+        llmAsJudge({ inputs, outputs })
+      ).rejects.toThrow("CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs");
+      const evalResult = await llmAsJudge({ inputs, outputs, referenceOutputs });
       expect(evalResult.score).toBeTruthy();
     }
   );
@@ -33,8 +40,11 @@ ls.describe("LLM Judge Correctness", () => {
       inputs: {
         question: "Who was the first president of the United States?",
       },
+      referenceOutputs: {
+        answer: "George Washington",
+      },
     },
-    async ({ inputs }) => {
+    async ({ inputs, referenceOutputs }) => {
       const outputs = {
         answer: "John Adams",
       };
@@ -45,34 +55,8 @@ ls.describe("LLM Judge Correctness", () => {
         model: "openai:o3-mini",
       });
 
-      const evalResult = await llmAsJudge({ inputs, outputs });
+      const evalResult = await llmAsJudge({ inputs, outputs, referenceOutputs });
       expect(evalResult.score).toBeFalsy();
-    }
-  );
-
-  ls.test(
-    "should pass correctness check for correct answer with reference outputs",
-    {
-      inputs: {
-        question:
-          "Who was the first president of the Star Republic of Oiewjoie?",
-      },
-    },
-    async ({ inputs }) => {
-      const outputs = { answer: "Bzkeoei Ahbeijo" };
-      const referenceOutputs = { answer: "Bzkeoei Ahbeijo" };
-      const llmAsJudge = createLLMAsJudge({
-        prompt: CORRECTNESS_PROMPT,
-        feedbackKey: "correctness",
-        model: "openai:o3-mini",
-      });
-
-      const evalResult = await llmAsJudge({
-        inputs,
-        outputs,
-        referenceOutputs,
-      });
-      expect(evalResult.score).toBeTruthy();
     }
   );
 });

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from openevals.utils import _run_evaluator, _arun_evaluator
+from openevals.utils import _run_evaluator, _arun_evaluator, _normalize_to_openai_messages_list
 from openevals.types import (
     EvaluatorResult,
     SimpleEvaluator,
@@ -157,12 +157,14 @@ def _create_llm_as_judge_scorer(
 
         if isinstance(prompt, RunnableLike):
             formatted_prompt = prompt.invoke(
-                inputs=inputs,
-                outputs=outputs,
-                reference_outputs=reference_outputs,
-                **kwargs,
+                input = {
+                    "inputs": inputs,
+                    "outputs": outputs,
+                    "reference_outputs": reference_outputs,
+                    **kwargs,
+                }
             )
-            messages = formatted_prompt.messages
+            messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
         elif isinstance(prompt, str):
             if prompt == CORRECTNESS_PROMPT:
                 if any([x is None for x in [inputs, outputs, reference_outputs]]):
@@ -319,12 +321,14 @@ def _create_async_llm_as_judge_scorer(
 
         if isinstance(prompt, RunnableLike):
             formatted_prompt = await prompt.ainvoke(
-                inputs=inputs,
-                outputs=outputs,
-                reference_outputs=reference_outputs,
-                **kwargs,
+                input = {
+                    "inputs": inputs,
+                    "outputs": outputs,
+                    "reference_outputs": reference_outputs,
+                    **kwargs,
+                }
             )
-            messages = formatted_prompt.messages
+            messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
         elif isinstance(prompt, str):
             if prompt == CORRECTNESS_PROMPT:
                 if any([x is None for x in [inputs, outputs, reference_outputs]]):

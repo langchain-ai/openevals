@@ -1,9 +1,9 @@
 import * as ls from "langsmith/vitest";
-
+import { evaluate } from "langsmith/evaluation";
 import { expect } from "vitest";
 import { exactMatch } from "../exact.js";
 
-ls.describe("exact matcher", () => {
+ls.describe("exact match", () => {
   ls.test(
     "matches identical inputs and outputs",
     {
@@ -46,6 +46,28 @@ ls.describe("exact matcher", () => {
         key: "exact_match",
         score: false,
       });
+    }
+  );
+
+  ls.test(
+    "test works with evaluate",
+    {
+      inputs: { dataset: "exact match" },
+    },
+    async ({ inputs }) => {
+      const evaluator = exactMatch;
+      const result = await evaluate(
+        (inputs) => inputs,
+        {
+          data: inputs.dataset,
+          evaluators: [
+            evaluator
+          ]
+        }
+      )
+      expect(result).toBeDefined();
+      expect(result.results.length).toBeGreaterThan(0);
+      expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
     }
   );
 });

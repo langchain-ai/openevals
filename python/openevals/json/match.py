@@ -403,6 +403,10 @@ def create_json_match_evaluator(
     Returns:
         A function that takes in outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults.
     """
+    if not judge and not model and len(rubric) != 0:
+        raise ValueError("When passing rubric, either judge or model must be provided")
+    if len(rubric) == 0 and (judge or model):
+        raise ValueError("When not passing rubric, either judge or model must be provided")
 
     def wrapped_evaluator(
         *,
@@ -534,6 +538,10 @@ def create_async_json_match_evaluator(
     Returns:
         A function that takes in outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults.
     """
+    if not judge and not model and len(rubric) != 0:
+        raise ValueError("When passing rubric, either judge or model must be provided")
+    if len(rubric) == 0 and (judge or model):
+        raise ValueError("When not passing rubric, either judge or model must be provided")
 
     async def wrapped_evaluator(
         *,

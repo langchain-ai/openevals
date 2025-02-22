@@ -431,12 +431,18 @@ export const createJsonMatchEvaluator = ({
   useReasoning?: boolean;
   listMatchMode?: ListMatchMode;
 }) => {
+  if ((judge || model) && Object.keys(rubric).length === 0) {
+    throw new Error("rubric must be provided if judge or model is provided");
+  } else if ((! judge) && (! model) && Object.keys(rubric).length !== 0) {
+    throw new Error("judge or model must be provided if rubric is provided");
+  }
+
   const wrappedEvaluator = async ({
     outputs,
     referenceOutputs,
   }: {
     outputs: any;
-    referenceOutputs: any;
+    referenceOutputs?: any;
   }) => {
     async function scorer({
       outputs,

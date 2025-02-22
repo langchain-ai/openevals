@@ -1,6 +1,6 @@
 import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
-
+import { evaluate } from "langsmith/evaluation";
 import { OpenAIEmbeddings } from "@langchain/openai";
 
 import { createEmbeddingSimilarityEvaluator } from "../embedding_similarity.js";
@@ -35,6 +35,30 @@ ls.describe("Embedding Similarity Tests", () => {
 
       expect(res.key).toBe("embedding_similarity");
       expect(res.score).toBeLessThan(1.0);
+    }
+  );
+
+  ls.test(
+    "test works with evaluate",
+    {
+      inputs: { dataset: "exact match" },
+    },
+    async ({ inputs }) => {
+      const evaluator = createEmbeddingSimilarityEvaluator({
+        embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
+      });;
+      const result = await evaluate(
+        (inputs) => inputs,
+        {
+          data: inputs.dataset,
+          evaluators: [
+            evaluator
+          ]
+        }
+      )
+      expect(result).toBeDefined();
+      expect(result.results.length).toBeGreaterThan(0);
+      expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
     }
   );
 });

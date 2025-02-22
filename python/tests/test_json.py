@@ -1,4 +1,5 @@
 from openevals.json import create_json_match_evaluator
+from langsmith import Client
 import pytest
 
 
@@ -560,3 +561,28 @@ def test_json_match_mode_order():
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 2 / 3
+
+
+@pytest.mark.langsmith
+def test_works_with_evaluate():
+    client = Client()
+    evaluator = create_json_match_evaluator()
+    res = client.evaluate(
+        lambda x: x,
+        data="json",
+        evaluators=[
+            evaluator
+        ]
+    )
+    for r in res:
+        assert r['evaluation_results']['results'][0].score is not None
+
+@pytest.mark.langsmith
+def test_error_no_rubric():
+    with pytest.raises(ValueError):
+        create_json_match_evaluator(model="openai:o3-mini")
+
+@pytest.mark.langsmith
+def test_error_no_model():
+    with pytest.raises(ValueError):
+        create_json_match_evaluator(rubric={"a": "foo"})

@@ -1,5 +1,6 @@
 import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
+import { evaluate } from "langsmith/evaluation";
 
 import { OpenAI } from "openai";
 
@@ -14,11 +15,7 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs;
-      const client = new OpenAI();
-      const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
-      });
+      const evaluator = createJsonMatchEvaluator({});
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
       expect(result.length).toBe(2);
@@ -61,10 +58,7 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "average",
       });
       const result = await evaluator({ outputs, referenceOutputs });
@@ -82,10 +76,7 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "average",
         excludeKeys: ["b"],
       });
@@ -104,10 +95,7 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "all",
       });
       const result = await evaluator({ outputs, referenceOutputs });
@@ -296,14 +284,10 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
-      const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
-      });
+      const evaluator = createJsonMatchEvaluator({});
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.length).toBe(2);
@@ -332,15 +316,12 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.length).toBe(2);
@@ -369,15 +350,12 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "all",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -403,16 +381,13 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "all",
         listAggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -438,15 +413,12 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -472,16 +444,13 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "average",
         listAggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -507,14 +476,10 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
-      const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
-      });
+      const evaluator = createJsonMatchEvaluator({});
       let result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       result = result.sort((a, b) => a.key.localeCompare(b.key));
       expect(result).toBeDefined();
@@ -548,15 +513,12 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
       });
       let result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       result = result.sort((a, b) => a.key.localeCompare(b.key));
       expect(result).toBeDefined();
@@ -590,15 +552,12 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "all",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -624,16 +583,13 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "all",
         listAggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -659,15 +615,12 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -693,16 +646,13 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         aggregator: "average",
         listAggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -731,7 +681,7 @@ ls.describe("json", () => {
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("a");
@@ -759,16 +709,13 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -786,16 +733,13 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -813,16 +757,13 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -840,17 +781,14 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
         excludeKeys: ["d", "e"],
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -868,17 +806,14 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
         listMatchMode: "superset",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -896,17 +831,14 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
         listMatchMode: "subset",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -924,17 +856,14 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
         listMatchMode: "subset",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -952,17 +881,14 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
         listMatchMode: "ordered",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -980,17 +906,14 @@ ls.describe("json", () => {
     },
     async ({ inputs, referenceOutputs }) => {
       const outputs = inputs.inputs;
-      const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
-        judge: client,
-        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
         listMatchMode: "ordered",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -1014,12 +937,12 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
-        rubric: { c: "Are the answers the same, language independent?" },
+        rubric: { c: "Are the answers the same meaning, even if they are different languages?" },
         listMatchMode: "ordered",
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
@@ -1048,11 +971,74 @@ ls.describe("json", () => {
       });
       const result = await evaluator({
         outputs,
-        referenceOutputs: referenceOutputs.referenceOutputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
       expect(result.key).toBe("structured_match_score");
       expect(result.score).toBe(2 / 3);
     }
   );
+
+  ls.test(
+    "test json works with evaluate",
+    {
+      inputs: { dataset: "exact match" },
+    },
+    async ({ inputs }) => {
+      const evaluator = createJsonMatchEvaluator({
+        aggregator: "average",
+      });
+      const result = await evaluate(
+        (inputs) => inputs,
+        {
+          data: inputs.dataset,
+          evaluators: [
+            evaluator
+          ]
+        }
+      )
+      expect(result).toBeDefined();
+      expect(result.results.length).toBeGreaterThan(0);
+      expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
+    }
+  );
+
+  ls.test(
+    "test json throws error no rubric",
+    {
+      inputs: { inputs: [{ a: 1 }, { a: 1 }, { a: 1 }] },
+      referenceOutputs: {
+        referenceOutputs: [{ a: 1 }, { a: 1 }],
+      },
+    },
+    async ({ inputs, referenceOutputs }) => {
+      const client = new OpenAI();
+      expect(() => {
+        createJsonMatchEvaluator({
+          judge: client,
+          model: "openai:o3-mini",
+          aggregator: "all",
+        });
+      }).toThrow();
+    }
+  );
+
+  ls.test(
+    "test json throws error no model",
+    {
+      inputs: { inputs: [{ a: 1 }, { a: 1 }, { a: 1 }] },
+      referenceOutputs: {
+        referenceOutputs: [{ a: 1 }, { a: 1 }],
+      },
+    },
+    async ({ inputs, referenceOutputs }) => {
+      expect(() => {
+        createJsonMatchEvaluator({
+          rubric: {a: "foo"},
+          aggregator: "all",
+        });
+      }).toThrow();
+    }
+  );
 });
+

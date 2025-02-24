@@ -88,7 +88,7 @@ You can install `openevals` like this:
 npm install openevals @langchain/core
 ```
 
-For LLM-as-judge evaluators, you will also need an LLM client. By default, `openevals` will use [LangChain chat model integrations](https://python.langchain.com/docs/integrations/chat/) and comes with `langchain_openai` installed by default. However, if you prefer, you may use the OpenAI client directly:
+For LLM-as-judge evaluators, you will also need an LLM client. By default, `openevals` will use [LangChain chat model integrations](https://js.langchain.com/docs/integrations/chat/) and comes with `langchain_openai` installed by default. However, if you prefer, you may use the OpenAI client directly:
 
 ```bash
 npm install openai
@@ -103,10 +103,10 @@ LangSmith's pytest integration for running evals, which is documented [here](htt
 
 One common way to evaluate an LLM app's outputs is to use another LLM as a judge. This is generally a good starting point for evals.
 
-This package contains the `create_llm_as_judge` function, which takes a prompt and a model as input, and returns an evaluator function
+This package contains the `createLLMAsJudge` function, which takes a prompt and a model as input, and returns an evaluator function
 that handles formatting inputs, parsing the judge LLM's outputs into a score, and LangSmith tracing and result logging.
 
-To use the `create_llm_as_judge` function, you need to provide a prompt and a model. For prompts, LangSmith has some prebuilt prompts
+To use the `createLLMAsJudge` function, you need to provide a prompt and a model. For prompts, LangSmith has some prebuilt prompts
 in the `openevals.prompts` module that you can use out of the box. Here's an example:
 
 ```ts
@@ -140,7 +140,6 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 </output>
 ...
 ```
-
 
 By convention, we generally suggest sticking to `inputs`, `outputs`, and `referenceOutputs` as the names of the parameters for LLM-as-judge evaluators, but these will be directly formatted into the prompt so you can use any variable names you want.
 
@@ -295,10 +294,10 @@ For convenience, the following options are also available:
 ```ts
 const fewShotExamples = [
   {
-      inputs: "What color is the sky?",
-      outputs: "The sky is red.",
-      reasoning: "The sky is red because it is early evening.",
-      score: 1,
+    inputs: "What color is the sky?",
+    outputs: "The sky is red.",
+    reasoning: "The sky is red because it is early evening.",
+    score: 1,
   }
 ]
 ```
@@ -307,10 +306,7 @@ These will be appended to the end of the final user message in the prompt.
 
 #### Customizing the model
 
-If you don't pass in a `judge` parameter when creating your evaluator, the `createLLMAsJudge` function will default to OpenAI's `o3-mini` model
-through LangChain's `ChatOpenAI` class, using the `langchain_openai`/`@langchain/openai` package. However, there are a few ways you can customize the model used for evaluation.
-
-You can pass a string formatted as `PROVIDER:MODEL` (e.g. `model=anthropic:claude-3-5-sonnet-latest`) as the `model`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://python.langchain.com/docs/how_to/chat_models_universal_init/). This requires you to install the appropriate LangChain integration package installed. Here's an example:
+There are a few ways you can customize the model used for evaluation. You can pass a string formatted as `PROVIDER:MODEL` (e.g. `model=anthropic:claude-3-5-sonnet-latest`) as the `model`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://js.langchain.com/docs/how_to/chat_models_universal_init/). This requires you to install the appropriate LangChain integration package installed. Here's an example:
 
 ```bash
 npm install @langchain/anthropic
@@ -325,7 +321,7 @@ const anthropicEvaluator = createLLMAsJudge({
 });
 ```
 
-You can also directly pass a LangChain chat model instance as `judge`. Note that your chosen model must support [structured output](https://python.langchain.com/docs/integrations/chat/):
+You can also directly pass a LangChain chat model instance as `judge`. Note that your chosen model must support [structured output](https://js.langchain.com/docs/integrations/chat/):
 
 
 ```ts
@@ -584,7 +580,7 @@ console.log(result);
 
 #### Embedding similarity
 
-This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method (for Python) or takes a LangChain embeddings client directly (for TypeScript) and calculates distance between two strings using cosine similarity.
+This evaluator uses a LangChain embeddings client directly and calculates distance between two strings using cosine similarity.
 
 ```ts
 import { createEmbeddingSimilarityEvaluator } from "openevals";
@@ -615,15 +611,47 @@ If you are building an agent, the evals in this repo are useful for evaluating s
 
 However, if you want to get started with more in-depth evals that take into account the entire trajectory of an agent, please check out the [`agentevals`](https://github.com/langchain-ai/agentevals) package.
 
+## Python Async Support
+
+All `openevals` evaluators support Python [asyncio](https://docs.python.org/3/library/asyncio.html). As a convention, evaluators that use a factory function will have `async` put immediately after `create_` in the function name (for example, `create_async_llm_as_judge`), and evaluators used directly will end in `async` (e.g. `exact_match_async`).
+
+Here's an example of how to use the `create_async_llm_as_judge` evaluator asynchronously:
+
+```python
+from openevals.llm import create_async_llm_as_judge
+
+evaluator = create_async_llm_as_judge(
+    prompt="What is the weather in {inputs}?",
+    model="openai:o3-mini",
+)
+
+result = await evaluator(inputs="San Francisco")
+```
+
+If you are using the OpenAI client directly, remember to pass in `AsyncOpenAI` as the `judge` parameter:
+
+```python
+from openai import AsyncOpenAI
+
+evaluator = create_async_llm_as_judge(
+    prompt="What is the weather in {inputs}?",
+    judge=AsyncOpenAI(),
+    model="o3-mini",
+)
+
+result = await evaluator(inputs="San Francisco")
+```
+
 ## LangSmith Integration
 
 For tracking experiments over time, you can log evaluator results to [LangSmith](https://smith.langchain.com/), a platform for building production-grade LLM applications that includes tracing, evaluation, and experimentation tools.
 
-LangSmith currently offers two ways to run evals with JS: a [Vitest/Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest) integration and the `evaluate` function. We'll give a quick example of how to run evals using both.
+LangSmith currently offers two ways to run evals: a [pytest](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) (Python) or [Vitest/Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest) integration and the `evaluate` function. We'll give a quick example of how to run evals using both.
 
-### Vitest/Jest
+### Pytest or Vitest/Jest
 
-First, follow [these instructions](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest) to set up LangSmith's Vitest or Jest runner, setting appropriate environment variables:
+First, follow [these instructions](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) to set up LangSmith's pytest runner,
+or these to set up [Vitest or Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest), setting appropriate environment variables:
 
 ```bash
 export LANGSMITH_API_KEY="your_langsmith_api_key"
@@ -684,7 +712,6 @@ And you should also see the results in the experiment view in LangSmith:
 ### Evaluate
 
 Alternatively, you can [create a dataset in LangSmith](https://docs.smith.langchain.com/evaluation/concepts#dataset-curation) and use your created evaluators with LangSmith's [`evaluate`](https://docs.smith.langchain.com/evaluation#8-run-and-view-results) function:
-
 
 ```ts
 import { evaluate } from "langsmith/evaluation";

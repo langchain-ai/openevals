@@ -597,10 +597,7 @@ These will be appended to the end of the final user message in the prompt.
 
 #### Customizing the model
 
-If you don't pass in a `judge` parameter when creating your evaluator, the `create_llm_as_judge` function will default to OpenAI's `o3-mini` model
-through LangChain's `ChatOpenAI` class, using the `langchain_openai`/`@langchain/openai` package. However, there are a few ways you can customize the model used for evaluation.
-
-You can pass a string formatted as `PROVIDER:MODEL` (e.g. `model=anthropic:claude-3-5-sonnet-latest`) as the `model`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://python.langchain.com/docs/how_to/chat_models_universal_init/). This requires you to install the appropriate LangChain integration package installed. Here's an example:
+There are a few ways you can customize the model used for evaluation. You can pass a string formatted as `PROVIDER:MODEL` (e.g. `model=anthropic:claude-3-5-sonnet-latest`) as the `model`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://python.langchain.com/docs/how_to/chat_models_universal_init/). This requires you to install the appropriate LangChain integration package installed. Here's an example:
 
 <details open>
 <summary>Python</summary>

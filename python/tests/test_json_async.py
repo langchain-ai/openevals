@@ -569,8 +569,10 @@ async def test_json_match_mode_order():
 async def test_works_with_aevaluate():
     client = Client()
     evaluator = create_async_json_match_evaluator()
+    async def target(x):
+        return x
     res = await client.aevaluate(
-        lambda x: x,
+        target,
         data="json",
         evaluators=[
             evaluator

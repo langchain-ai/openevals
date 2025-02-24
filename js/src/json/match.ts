@@ -433,7 +433,7 @@ export const createJsonMatchEvaluator = ({
 }) => {
   if ((judge || model) && Object.keys(rubric).length === 0) {
     throw new Error("rubric must be provided if judge or model is provided");
-  } else if ((! judge) && (! model) && Object.keys(rubric).length !== 0) {
+  } else if (!judge && !model && Object.keys(rubric).length !== 0) {
     throw new Error("judge or model must be provided if rubric is provided");
   }
 

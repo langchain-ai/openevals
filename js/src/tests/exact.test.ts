@@ -56,18 +56,15 @@ ls.describe("exact match", () => {
     },
     async ({ inputs }) => {
       const evaluator = exactMatch;
-      const result = await evaluate(
-        (inputs) => inputs,
-        {
-          data: inputs.dataset,
-          evaluators: [
-            evaluator
-          ]
-        }
-      )
+      const result = await evaluate((inputs) => inputs, {
+        data: inputs.dataset,
+        evaluators: [evaluator],
+      });
       expect(result).toBeDefined();
       expect(result.results.length).toBeGreaterThan(0);
-      expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
+      expect(
+        result.results[0].evaluationResults.results[0].score
+      ).toBeDefined();
     }
   );
 });

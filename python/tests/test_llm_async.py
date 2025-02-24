@@ -187,8 +187,10 @@ async def test_async_llm_as_judge_with_evaluate():
         ],
         model="openai:o3-mini",
     )
+    async def target(x):
+        return x
     res = await client.aevaluate(
-        lambda x: x,
+        target,
         data="exact match",
         evaluators=[
             evaluator

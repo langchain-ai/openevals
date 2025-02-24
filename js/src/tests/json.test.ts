@@ -937,7 +937,9 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
-        rubric: { c: "Are the answers the same meaning, even if they are different languages?" },
+        rubric: {
+          c: "Are the answers the same meaning, even if they are different languages?",
+        },
         listMatchMode: "ordered",
       });
       const result = await evaluator({
@@ -988,18 +990,15 @@ ls.describe("json", () => {
       const evaluator = createJsonMatchEvaluator({
         aggregator: "average",
       });
-      const result = await evaluate(
-        (inputs) => inputs,
-        {
-          data: inputs.dataset,
-          evaluators: [
-            evaluator
-          ]
-        }
-      )
+      const result = await evaluate((inputs) => inputs, {
+        data: inputs.dataset,
+        evaluators: [evaluator],
+      });
       expect(result).toBeDefined();
       expect(result.results.length).toBeGreaterThan(0);
-      expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
+      expect(
+        result.results[0].evaluationResults.results[0].score
+      ).toBeDefined();
     }
   );
 
@@ -1034,11 +1033,10 @@ ls.describe("json", () => {
     async ({ inputs, referenceOutputs }) => {
       expect(() => {
         createJsonMatchEvaluator({
-          rubric: {a: "foo"},
+          rubric: { a: "foo" },
           aggregator: "all",
         });
       }).toThrow();
     }
   );
 });
-

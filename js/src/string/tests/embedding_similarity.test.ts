@@ -46,19 +46,16 @@ ls.describe("Embedding Similarity Tests", () => {
     async ({ inputs }) => {
       const evaluator = createEmbeddingSimilarityEvaluator({
         embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
-      });;
-      const result = await evaluate(
-        (inputs) => inputs,
-        {
-          data: inputs.dataset,
-          evaluators: [
-            evaluator
-          ]
-        }
-      )
+      });
+      const result = await evaluate((inputs) => inputs, {
+        data: inputs.dataset,
+        evaluators: [evaluator],
+      });
       expect(result).toBeDefined();
       expect(result.results.length).toBeGreaterThan(0);
-      expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
+      expect(
+        result.results[0].evaluationResults.results[0].score
+      ).toBeDefined();
     }
   );
 });

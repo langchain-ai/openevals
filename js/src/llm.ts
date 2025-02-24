@@ -221,9 +221,11 @@ export const _createLLMAsJudgeScorer = (params: {
     } else if (typeof prompt === "string") {
       if (prompt === CORRECTNESS_PROMPT) {
         if (
-          [stringifiedInputs, stringifiedOutputs, stringifiedReferenceOutputs].some(
-            (x) => x === null || x === undefined
-          )
+          [
+            stringifiedInputs,
+            stringifiedOutputs,
+            stringifiedReferenceOutputs,
+          ].some((x) => x === null || x === undefined)
         ) {
           throw new Error(
             "CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs"
@@ -231,14 +233,21 @@ export const _createLLMAsJudgeScorer = (params: {
         }
       }
       if (prompt === CONCISENESS_PROMPT) {
-        if ([stringifiedInputs, stringifiedOutputs].some((x) => x === null || x === undefined)) {
-          throw new Error(
-            "CONCISENESS_PROMPT requires inputs and outputs"
-          );
+        if (
+          [stringifiedInputs, stringifiedOutputs].some(
+            (x) => x === null || x === undefined
+          )
+        ) {
+          throw new Error("CONCISENESS_PROMPT requires inputs and outputs");
         }
       }
       if (prompt === HALLUCINATION_PROMPT) {
-        if ([stringifiedInputs, stringifiedOutputs].some((x) => x === null || x === undefined) || !("context" in stringifiedRest)) {
+        if (
+          [stringifiedInputs, stringifiedOutputs].some(
+            (x) => x === null || x === undefined
+          ) ||
+          !("context" in stringifiedRest)
+        ) {
           throw new Error(
             "HALLUCINATION_PROMPT requires inputs, outputs, and context"
           );

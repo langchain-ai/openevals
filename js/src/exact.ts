@@ -1,6 +1,6 @@
 import { _runEvaluator } from "./utils.js";
 
-const _scorer = (params: { outputs: unknown; referenceOutputs: unknown }) => {
+const _scorer = (params: { outputs: unknown; referenceOutputs?: unknown }) => {
   const { outputs, referenceOutputs } = params;
   if (outputs === null || referenceOutputs === null) {
     throw new Error("Exact match requires both outputs and referenceOutputs");
@@ -38,7 +38,7 @@ const _scorer = (params: { outputs: unknown; referenceOutputs: unknown }) => {
  */
 export const exactMatch = async (params: {
   outputs: unknown;
-  referenceOutputs: unknown;
+  referenceOutputs?: unknown;
 }) => {
   return _runEvaluator("exact_match", _scorer, "exact_match", params);
 };

@@ -25,11 +25,14 @@ ls.describe("LLM Judge Correctness", () => {
         model: "openai:o3-mini",
       });
 
-      
-      await expect(
-        llmAsJudge({ inputs, outputs })
-      ).rejects.toThrow("CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs");
-      const evalResult = await llmAsJudge({ inputs, outputs, referenceOutputs });
+      await expect(llmAsJudge({ inputs, outputs })).rejects.toThrow(
+        "CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs"
+      );
+      const evalResult = await llmAsJudge({
+        inputs,
+        outputs,
+        referenceOutputs,
+      });
       expect(evalResult.score).toBeTruthy();
     }
   );
@@ -55,7 +58,11 @@ ls.describe("LLM Judge Correctness", () => {
         model: "openai:o3-mini",
       });
 
-      const evalResult = await llmAsJudge({ inputs, outputs, referenceOutputs });
+      const evalResult = await llmAsJudge({
+        inputs,
+        outputs,
+        referenceOutputs,
+      });
       expect(evalResult.score).toBeFalsy();
     }
   );

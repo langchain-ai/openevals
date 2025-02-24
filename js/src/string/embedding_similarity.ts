@@ -55,7 +55,7 @@ export const createEmbeddingSimilarityEvaluator = ({
 
   return async (params: {
     outputs: unknown;
-    referenceOutputs: unknown;
+    referenceOutputs?: unknown;
   }): Promise<EvaluatorResult> => {
     const { outputs, referenceOutputs } = params;
     if (outputs == null || referenceOutputs == null) {

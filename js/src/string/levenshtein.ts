@@ -60,7 +60,7 @@ function scorer(outputs: unknown, referenceOutputs: unknown): number {
  */
 export async function levenshteinDistance(params: {
   outputs: unknown;
-  referenceOutputs: unknown;
+  referenceOutputs?: unknown;
 }): Promise<EvaluatorResult> {
   const { outputs, referenceOutputs } = params;
 

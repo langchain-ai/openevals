@@ -1,13 +1,13 @@
 from openevals.json import create_async_json_match_evaluator
 import pytest
-
+from langsmith import Client
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_base():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 2}
-    evaluator = create_async_json_match_evaluator(model="openai:o3-mini")
+    evaluator = create_async_json_match_evaluator()
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert len(result) == 2
     assert result[0]["key"] == "a"
@@ -189,7 +189,7 @@ async def test_json_match_list_all_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
     ]
-    evaluator = create_async_json_match_evaluator(model="openai:o3-mini")
+    evaluator = create_async_json_match_evaluator()
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     result = sorted(result, key=lambda x: x["key"])
     assert len(result) == 2
@@ -303,7 +303,7 @@ async def test_json_match_list_mismatch_all_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
-    evaluator = create_async_json_match_evaluator(model="openai:o3-mini")
+    evaluator = create_async_json_match_evaluator()
     results = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     results = sorted(results, key=lambda x: x["key"])
     assert len(results) == 4
@@ -563,3 +563,30 @@ async def test_json_match_mode_order():
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["key"] == "structured_match_score"
     assert result["score"] == 2 / 3
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_works_with_aevaluate():
+    client = Client()
+    evaluator = create_async_json_match_evaluator()
+    async def target(x):
+        return x
+    res = await client.aevaluate(
+        target,
+        data="json",
+        evaluators=[
+            evaluator
+        ]
+    )
+    async for r in res:
+        assert r['evaluation_results']['results'][0].score is not None
+
+@pytest.mark.langsmith
+def test_error_no_rubric():
+    with pytest.raises(ValueError):
+        create_async_json_match_evaluator(model="openai:o3-mini")
+
+@pytest.mark.langsmith
+def test_error_no_model():
+    with pytest.raises(ValueError):
+        create_async_json_match_evaluator(rubric={"a": "foo"})

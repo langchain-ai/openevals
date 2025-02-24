@@ -1,5 +1,6 @@
 import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
+import { evaluate } from "langsmith/evaluation";
 
 import { OpenAI } from "openai";
 import { ChatOpenAI } from "@langchain/openai";
@@ -170,6 +171,28 @@ ls.describe("llm as judge", () => {
       expect(result).toBeDefined();
       expect(result.score).toBe(false);
       expect(result.comment).toBeDefined();
+    }
+  );
+
+  ls.test(
+    "test llm as judge works with evaluate",
+    {
+      inputs: { dataset: "exact match" },
+    },
+    async ({ inputs }) => {
+      const evaluator = createLLMAsJudge({
+        prompt: "Are these two foo? {inputs} {outputs}",
+        model: "openai:o3-mini",
+      });
+      const result = await evaluate((inputs) => inputs, {
+        data: inputs.dataset,
+        evaluators: [evaluator],
+      });
+      expect(result).toBeDefined();
+      expect(result.results.length).toBeGreaterThan(0);
+      expect(
+        result.results[0].evaluationResults.results[0].score
+      ).toBeDefined();
     }
   );
 });

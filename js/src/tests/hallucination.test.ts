@@ -55,9 +55,9 @@ ls.describe("LLM Judge Hallucination", () => {
         model: "openai:o3-mini",
       });
 
-      await expect(
-        llmAsJudge({ inputs, outputs })
-      ).rejects.toThrow("HALLUCINATION_PROMPT requires inputs, outputs, and context");
+      await expect(llmAsJudge({ inputs, outputs })).rejects.toThrow(
+        "HALLUCINATION_PROMPT requires inputs, outputs, and context"
+      );
 
       const evalResult = await llmAsJudge({
         inputs,

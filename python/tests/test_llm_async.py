@@ -3,6 +3,7 @@ from openevals.llm import create_async_llm_as_judge
 from openai import AsyncOpenAI
 import pytest
 from langchain_openai import ChatOpenAI
+from langsmith import Client
 from langchain import hub as prompts
 
 @pytest.mark.langsmith
@@ -173,3 +174,27 @@ async def test_async_llm_as_judge_few_shot_examples():
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_async_llm_as_judge_with_evaluate():
+    client = Client()
+    evaluator = create_async_llm_as_judge(
+        prompt="Are these two foo? {inputs} {outputs}",
+        few_shot_examples=[
+            {"inputs": {"a": 1, "b": 2}, "outputs": {"a": 1, "b": 2}, "score": 0.0},
+            {"inputs": {"a": 1, "b": 3}, "outputs": {"a": 1, "b": 2}, "score": 1.0},
+        ],
+        model="openai:o3-mini",
+    )
+    async def target(x):
+        return x
+    res = await client.aevaluate(
+        target,
+        data="exact match",
+        evaluators=[
+            evaluator
+        ]
+    )
+    async for r in res:
+        assert r['evaluation_results']['results'][0].score is not None

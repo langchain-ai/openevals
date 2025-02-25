@@ -13,11 +13,8 @@ module.exports = {
   },
   plugins: ["@typescript-eslint", "no-instanceof", "eslint-plugin-jest"],
   ignorePatterns: [
-    "src/utils/@cfworker",
-    "src/utils/fast-json-patch",
-    "src/utils/js-sha1",
-    "src/utils/sax-js",
     ".eslintrc.cjs",
+    "**/tests/**",
     "scripts",
     "node_modules",
     "dist",

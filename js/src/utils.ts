@@ -67,7 +67,9 @@ export const processScore = (
   return [value] as const;
 };
 
-export type EvaluationResultType<O> = O extends MultiResultScorerReturnType | Promise<MultiResultScorerReturnType>
+export type EvaluationResultType<O> = O extends
+  | MultiResultScorerReturnType
+  | Promise<MultiResultScorerReturnType>
   ? SimpleEvaluationResult[]
   : SimpleEvaluationResult;
 
@@ -99,7 +101,11 @@ export const _runEvaluator = async <
         reasoning = score[1];
         score = score[0] as Awaited<O>;
       }
-      return { key: feedbackKey, score, comment: reasoning } as SimpleEvaluationResult;
+      return {
+        key: feedbackKey,
+        score,
+        comment: reasoning,
+      } as SimpleEvaluationResult;
     }
   };
 

@@ -128,7 +128,7 @@ ls.describe("json", () => {
         aggregator: "all",
         rubric: {
           description:
-            "Is the correct job title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as previous companies?",
         },
       });
       const result = await evaluator({ outputs, referenceOutputs });
@@ -160,7 +160,7 @@ ls.describe("json", () => {
         aggregator: "all",
         rubric: {
           description:
-            "Is the correct job title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as previous companies?",
         },
       });
       const result = await evaluator({ outputs, referenceOutputs });
@@ -189,7 +189,7 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         rubric: {
           description:
-            "Is the correct job title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as previous companies?",
         },
       });
       const result = await evaluator({ outputs, referenceOutputs });
@@ -219,7 +219,7 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         rubric: {
           description:
-            "Is the correct job title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as previous companies?",
         },
         useReasoning: false,
       });
@@ -252,7 +252,7 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         rubric: {
           description:
-            "Is the correct job title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as previous companies?",
         },
       });
       const result = await evaluator({ outputs, referenceOutputs });

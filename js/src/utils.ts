@@ -5,6 +5,8 @@ import {
   isInTestContext,
   SimpleEvaluationResult,
 } from "langsmith/utils/jestlike";
+import { getCurrentRunTree } from "langsmith/traceable";
+
 import {
   ChatCompletionMessage,
   MultiResultScorerReturnType,
@@ -83,7 +85,8 @@ export const _runEvaluator = async <
   runName: string,
   scorer: (params: T) => O,
   feedbackKey: string,
-  extra?: T
+  extra?: T,
+  ls_framework?: string
 ): Promise<EvaluationResultType<O>> => {
   const runScorer = async (params: T) => {
     let score = await scorer(params);
@@ -112,9 +115,23 @@ export const _runEvaluator = async <
   if (isInTestContext()) {
     const res = await wrapEvaluator(runScorer)(extra ?? ({} as T), {
       name: runName,
+      metadata: {
+        __ls_framework: ls_framework ?? "openevals",
+        __ls_evaluator: runName,
+        __ls_language: "js",
+      },
     });
     return res as EvaluationResultType<O>;
   } else {
+    try {
+      const currentRunTree = getCurrentRunTree();
+      currentRunTree.extra.metadata.__ls_framework =
+        ls_framework ?? "openevals";
+      currentRunTree.extra.metadata.__ls_evaluator = runName;
+      currentRunTree.extra.metadata.__ls_language = "js";
+    } catch (e) {
+      console.log(e);
+    }
     const res = await runScorer(extra ?? ({} as T));
     return res as EvaluationResultType<O>;
   }

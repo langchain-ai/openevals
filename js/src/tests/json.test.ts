@@ -1,5 +1,5 @@
 import * as ls from "langsmith/vitest";
-import { expect } from "vitest";
+import { expect, test } from "vitest";
 import { evaluate } from "langsmith/evaluation";
 
 import { OpenAI } from "openai";
@@ -983,26 +983,18 @@ ls.describe("json", () => {
     }
   );
 
-  ls.test(
-    "test json works with evaluate",
-    {
-      inputs: { dataset: "exact match" },
-    },
-    async ({ inputs }) => {
-      const evaluator = createJsonMatchEvaluator({
-        aggregator: "average",
-      });
-      const result = await evaluate((inputs) => inputs, {
-        data: inputs.dataset,
-        evaluators: [evaluator],
-      });
-      expect(result).toBeDefined();
-      expect(result.results.length).toBeGreaterThan(0);
-      expect(
-        result.results[0].evaluationResults.results[0].score
-      ).toBeDefined();
-    }
-  );
+  test("test json works with evaluate", async () => {
+    const evaluator = createJsonMatchEvaluator({
+      aggregator: "average",
+    });
+    const result = await evaluate((inputs) => inputs, {
+      data: "exact match",
+      evaluators: [evaluator],
+    });
+    expect(result).toBeDefined();
+    expect(result.results.length).toBeGreaterThan(0);
+    expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
+  });
 
   ls.test(
     "test json throws error no rubric",

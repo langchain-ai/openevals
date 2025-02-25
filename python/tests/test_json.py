@@ -74,7 +74,7 @@ def test_json_match_rubric():
         model="openai:o3-mini",
         aggregator="all",
         rubric={
-            "description": "Is the correct job title and company mentioned, as well as all previous companies?"
+            "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -96,7 +96,7 @@ def test_json_match_rubric_wrong():
         model="openai:o3-mini",
         aggregator="all",
         rubric={
-            "description": "Is the correct job title and company mentioned, as well as all previous companies?"
+            "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -113,7 +113,7 @@ def test_json_match_rubric_with_reasoning():
     evaluator = create_json_match_evaluator(
         model="openai:o3-mini",
         rubric={
-            "description": "Is the correct job title and company mentioned, as well as all previous companies?"
+            "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -132,7 +132,7 @@ def test_json_match_rubric_without_reasoning():
         model="openai:o3-mini",
         aggregator="all",
         rubric={
-            "description": "Is the correct job title and company mentioned, as well as all previous companies?"
+            "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
         use_reasoning=False,
     )
@@ -155,7 +155,7 @@ def test_json_match_rubric_with_reasoning_individual_key():
     evaluator = create_json_match_evaluator(
         model="openai:o3-mini",
         rubric={
-            "description": "Is the correct job title and company mentioned, as well as all previous companies?"
+            "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)

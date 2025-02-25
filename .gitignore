@@ -12,3 +12,4 @@ wheels/
 # JS
 node_modules/
 .env
+.eslintcache

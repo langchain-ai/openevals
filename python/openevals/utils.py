@@ -70,7 +70,7 @@ def _process_score(key: str, value: Any) -> tuple[float, str | None]:
 def _add_metadata_to_run_tree(run_name: str, framework: str | None = None):
     rt = get_current_run_tree()
     if rt is not None:
-        rt.metadata["__ls_framework"] = framework or "openevals"
+        rt.metadata["__ls_framework"] = framework
         rt.metadata["__ls_evaluator"] = run_name
         rt.metadata["__ls_language"] = "python"
 

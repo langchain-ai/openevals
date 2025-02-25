@@ -281,7 +281,7 @@ def _aggregate_results(
                     if index_scores
                     else 0
                 )
-                return { f"{score_key}:{aggregator}": score }
+                return {f"{score_key}:{aggregator}": score}
             else:
                 # For complex structures, do deeper aggregation
                 scores_aggregated_across_list: dict = {}
@@ -303,7 +303,7 @@ def _aggregate_results(
         elif list_aggregator == "all":
             if all(isinstance(v, (int, float)) for v in index_scores.values()):
                 score = 0 if any(v != 1 for v in index_scores.values()) else 1
-                return { f"{score_key}:{aggregator}": score }
+                return {f"{score_key}:{aggregator}": score}
             else:
                 # For complex structures, do deeper aggregation
                 scores_aggregated_across_list = {}
@@ -316,7 +316,9 @@ def _aggregate_results(
                 # Apply 'all' aggregation across indices for each key
                 result = {}
                 for key, values in scores_aggregated_across_list.items():
-                    result[f"{score_key}:{key}"] = 0 if any(v != 1 for v in values) else 1
+                    result[f"{score_key}:{key}"] = (
+                        0 if any(v != 1 for v in values) else 1
+                    )
 
                 return result
 
@@ -330,7 +332,7 @@ def _aggregate_results(
             if scores
             else 0
         )
-        return { f"{score_key}:{aggregator}": score }
+        return {f"{score_key}:{aggregator}": score}
     elif aggregator == "all":
         score = (
             0
@@ -340,7 +342,7 @@ def _aggregate_results(
             )
             else 1
         )
-        return { f"{score_key}:{aggregator}": score }
+        return {f"{score_key}:{aggregator}": score}
     else:
         # No aggregator, return scores as-is
         results = {}
@@ -402,7 +404,9 @@ def create_json_match_evaluator(
     if not judge and not model and len(rubric) != 0:
         raise ValueError("When passing rubric, either judge or model must be provided")
     if len(rubric) == 0 and (judge or model):
-        raise ValueError("When not passing rubric, either judge or model must be provided")
+        raise ValueError(
+            "When not passing rubric, either judge or model must be provided"
+        )
 
     def wrapped_evaluator(
         *,
@@ -480,7 +484,7 @@ def create_json_match_evaluator(
             exclude_keys=exclude_keys,
             use_reasoning=use_reasoning,
             **kwargs,
-        )
+        )  # type: ignore
 
     return wrapped_evaluator
 
@@ -538,7 +542,9 @@ def create_async_json_match_evaluator(
     if not judge and not model and len(rubric) != 0:
         raise ValueError("When passing rubric, either judge or model must be provided")
     if len(rubric) == 0 and (judge or model):
-        raise ValueError("When not passing rubric, either judge or model must be provided")
+        raise ValueError(
+            "When not passing rubric, either judge or model must be provided"
+        )
 
     async def wrapped_evaluator(
         *,

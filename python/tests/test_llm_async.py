@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from langsmith import Client
 from langchain import hub as prompts
 
+
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_prompt_hub_works():
@@ -21,6 +22,7 @@ async def test_prompt_hub_works():
     assert eval_result["score"] is not None
     assert eval_result["comment"] is not None
 
+
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_prompt_hub_works_one_message():
@@ -35,6 +37,7 @@ async def test_prompt_hub_works_one_message():
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
     assert eval_result["comment"] is not None
+
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
@@ -175,6 +178,7 @@ async def test_async_llm_as_judge_few_shot_examples():
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
 
+
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_async_llm_as_judge_with_evaluate():
@@ -187,14 +191,10 @@ async def test_async_llm_as_judge_with_evaluate():
         ],
         model="openai:o3-mini",
     )
+
     async def target(x):
         return x
-    res = await client.aevaluate(
-        target,
-        data="exact match",
-        evaluators=[
-            evaluator
-        ]
-    )
+
+    res = await client.aevaluate(target, data="exact match", evaluators=[evaluator])
     async for r in res:
-        assert r['evaluation_results']['results'][0].score is not None
+        assert r["evaluation_results"]["results"][0].score is not None

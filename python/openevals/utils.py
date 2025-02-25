@@ -105,7 +105,9 @@ def _run_evaluator(
                     )
             else:
                 t.log_feedback(
-                    key=results["key"], score=results["score"], comment=results["comment"]
+                    key=results["key"],
+                    score=results["score"],
+                    comment=results["comment"],
                 )
     else:
         results = _run_scorer()
@@ -152,7 +154,9 @@ async def _arun_evaluator(
                     )
             else:
                 t.log_feedback(
-                    key=results["key"], score=results["score"], comment=results["comment"]
+                    key=results["key"],
+                    score=results["score"],
+                    comment=results["comment"],
                 )
     else:
         results = await _arun_scorer()

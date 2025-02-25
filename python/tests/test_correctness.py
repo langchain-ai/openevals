@@ -16,9 +16,14 @@ def test_llm_as_judge_correctness():
         feedback_key="correctness",
         model="openai:o3-mini",
     )
-    with pytest.raises(ValueError, match="CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs"):
+    with pytest.raises(
+        ValueError,
+        match="CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs",
+    ):
         eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    eval_result = llm_as_judge(inputs=inputs, outputs=outputs, reference_outputs=reference_outputs)
+    eval_result = llm_as_judge(
+        inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
+    )
     assert eval_result["score"]
 
 
@@ -34,5 +39,7 @@ def test_llm_as_judge_correctness_not_correct():
         feedback_key="correctness",
         model="openai:o3-mini",
     )
-    eval_result = llm_as_judge(inputs=inputs, outputs=outputs, reference_outputs=reference_outputs)
+    eval_result = llm_as_judge(
+        inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
+    )
     assert not eval_result["score"]

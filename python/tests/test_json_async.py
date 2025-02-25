@@ -2,6 +2,7 @@ from openevals.json import create_async_json_match_evaluator
 import pytest
 from langsmith import Client
 
+
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_base():
@@ -564,27 +565,26 @@ async def test_json_match_mode_order():
     assert result[0]["key"] == "json_match:average"
     assert result[0]["score"] == 2 / 3
 
+
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_works_with_aevaluate():
     client = Client()
     evaluator = create_async_json_match_evaluator()
+
     async def target(x):
         return x
-    res = await client.aevaluate(
-        target,
-        data="json",
-        evaluators=[
-            evaluator
-        ]
-    )
+
+    res = await client.aevaluate(target, data="json", evaluators=[evaluator])
     async for r in res:
-        assert r['evaluation_results']['results'][0].score is not None
+        assert r["evaluation_results"]["results"][0].score is not None
+
 
 @pytest.mark.langsmith
 def test_error_no_rubric():
     with pytest.raises(ValueError):
         create_async_json_match_evaluator(model="openai:o3-mini")
+
 
 @pytest.mark.langsmith
 def test_error_no_model():

@@ -567,20 +567,16 @@ def test_json_match_mode_order():
 def test_works_with_evaluate():
     client = Client()
     evaluator = create_json_match_evaluator()
-    res = client.evaluate(
-        lambda x: x,
-        data="json",
-        evaluators=[
-            evaluator
-        ]
-    )
+    res = client.evaluate(lambda x: x, data="json", evaluators=[evaluator])
     for r in res:
-        assert r['evaluation_results']['results'][0].score is not None
+        assert r["evaluation_results"]["results"][0].score is not None
+
 
 @pytest.mark.langsmith
 def test_error_no_rubric():
     with pytest.raises(ValueError):
         create_json_match_evaluator(model="openai:o3-mini")
+
 
 @pytest.mark.langsmith
 def test_error_no_model():

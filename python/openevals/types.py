@@ -1,5 +1,6 @@
 from typing import (
     Any,
+    NotRequired,
     Optional,
     Protocol,
     TypedDict,
@@ -34,7 +35,9 @@ class SimpleEvaluatorJson(Protocol):
         **kwargs,
     ) -> EvaluatorResult | list[EvaluatorResult]: ...
 
+
 SimpleEvaluator = Union[SimpleEvaluatorNormal, SimpleEvaluatorJson]
+
 
 class SimpleAsyncEvaluatorNormal(Protocol):
     async def __call__(
@@ -46,6 +49,7 @@ class SimpleAsyncEvaluatorNormal(Protocol):
         **kwargs,
     ) -> EvaluatorResult | list[EvaluatorResult]: ...
 
+
 class SimpleAsyncEvaluatorJson(Protocol):
     async def __call__(
         self,
@@ -55,16 +59,19 @@ class SimpleAsyncEvaluatorJson(Protocol):
         **kwargs,
     ) -> EvaluatorResult | list[EvaluatorResult]: ...
 
+
 SimpleAsyncEvaluator = Union[SimpleAsyncEvaluatorNormal, SimpleAsyncEvaluatorJson]
 
+
 class ChatCompletionMessage(TypedDict):
-    content: list[Union[str, dict]]
+    content: Union[str, list[dict]]
     role: str
-    tool_calls: Optional[list[dict]]
+    tool_calls: NotRequired[Optional[list[dict]]]
 
 
 class ChatCompletion(TypedDict):
     choices: list[dict]
+
 
 # Few shot example type for evaluator prompts
 class FewShotExample(TypedDict):
@@ -87,6 +94,6 @@ class ModelClient(Protocol):
 
 @runtime_checkable
 class RunnableLike(Protocol):
-    def invoke(self, messages: Any, **kwargs) -> Any: ...
+    def invoke(self, **kwargs) -> Any: ...
 
-    async def ainvoke(self, messages: Any, **kwargs) -> Any: ...
+    async def ainvoke(self, **kwargs) -> Any: ...

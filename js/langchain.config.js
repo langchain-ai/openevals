@@ -23,6 +23,7 @@ export const config = {
     index: "index",
     llm: "llm",
     types: "types",
+    utils: "utils",
   },
   tsConfigPath: resolve("./tsconfig.json"),
   packageSuffix: "core",

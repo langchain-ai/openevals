@@ -54,7 +54,11 @@
     "types.cjs",
     "types.js",
     "types.d.ts",
-    "types.d.cts"
+    "types.d.cts",
+    "utils.cjs",
+    "utils.js",
+    "utils.d.ts",
+    "utils.d.cts"
   ],
   "exports": {
     ".": {
@@ -83,6 +87,15 @@
       },
       "import": "./types.js",
       "require": "./types.cjs"
+    },
+    "./utils": {
+      "types": {
+        "import": "./utils.d.ts",
+        "require": "./utils.d.cts",
+        "default": "./utils.d.ts"
+      },
+      "import": "./utils.js",
+      "require": "./utils.cjs"
     },
     "./package.json": "./package.json"
   }

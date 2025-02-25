@@ -234,11 +234,12 @@ def _prepare_parameters(
 
 def _aggregate_results(
     *,
+    score_key: str,
     scores: dict,
     use_list_reducer: bool,
     aggregator: Optional[Literal["average", "all"]],
     list_aggregator: Literal["average", "all"],
-) -> dict | float | tuple:
+) -> dict:
     if use_list_reducer:
         # First group scores by index
         index_grouped_scores: dict = {}
@@ -280,7 +281,7 @@ def _aggregate_results(
                     if index_scores
                     else 0
                 )
-                return score
+                return { f"{score_key}:{aggregator}": score }
             else:
                 # For complex structures, do deeper aggregation
                 scores_aggregated_across_list: dict = {}
@@ -294,7 +295,7 @@ def _aggregate_results(
                 result = {}
                 for key, values in scores_aggregated_across_list.items():
                     if values:
-                        result[key] = sum(
+                        result[f"{score_key}:{key}"] = sum(
                             [(v["score"] if isinstance(v, dict) else v) for v in values]
                         ) / len(values)
 
@@ -302,7 +303,7 @@ def _aggregate_results(
         elif list_aggregator == "all":
             if all(isinstance(v, (int, float)) for v in index_scores.values()):
                 score = 0 if any(v != 1 for v in index_scores.values()) else 1
-                return score
+                return { f"{score_key}:{aggregator}": score }
             else:
                 # For complex structures, do deeper aggregation
                 scores_aggregated_across_list = {}
@@ -315,7 +316,7 @@ def _aggregate_results(
                 # Apply 'all' aggregation across indices for each key
                 result = {}
                 for key, values in scores_aggregated_across_list.items():
-                    result[key] = 0 if any(v != 1 for v in values) else 1
+                    result[f"{score_key}:{key}"] = 0 if any(v != 1 for v in values) else 1
 
                 return result
 
@@ -329,7 +330,7 @@ def _aggregate_results(
             if scores
             else 0
         )
-        return score
+        return { f"{score_key}:{aggregator}": score }
     elif aggregator == "all":
         score = (
             0
@@ -339,17 +340,12 @@ def _aggregate_results(
             )
             else 1
         )
-        return score
+        return { f"{score_key}:{aggregator}": score }
     else:
         # No aggregator, return scores as-is
         results = {}
         for key, value in scores.items():
-            results[key] = value
-        if len(results) == 1:
-            ans = list(results.values())[0]
-            if isinstance(ans, dict):
-                return (float(ans["score"]), ans["reasoning"])
-            return ans
+            results[f"{score_key}:{key}"] = value
         return results
 
 
@@ -380,7 +376,7 @@ def create_json_match_evaluator(
             the outputs or the reference_outputs or both. If "average", will return a single EvaluatorResult that
             is the average of the feedback for each key in the outputs/reference_outputs. If "all", will return
             a single EvaluatorResult that is a combined and statement of the feedback for each key in the outputs/reference_outputs.
-            If "all"/"average" the feedback key returned will be called "structured_match_score
+            If "all"/"average" the feedback key returned will be called "json_match"
         list_aggregator (Literal["average", "all"]): The aggregation method to use when evaluating a list of outputs.
             Defaults to "all". If "all", the score for a single feedback key will be a combined and statement of the scores for
             that key across all elements of the list. If "average", the score for a single feedback key will be the
@@ -413,7 +409,7 @@ def create_json_match_evaluator(
         outputs: Any,
         reference_outputs: Any,
         **kwargs,
-    ) -> EvaluatorResult | list[EvaluatorResult]:
+    ) -> list[EvaluatorResult]:
         def _scorer(
             *,
             outputs: Any,
@@ -467,6 +463,7 @@ def create_json_match_evaluator(
                 scores.update(llm_scores)
 
             return _aggregate_results(
+                score_key="json_match",
                 scores=scores,
                 use_list_reducer=use_list_reducer,
                 aggregator=aggregator,
@@ -474,9 +471,9 @@ def create_json_match_evaluator(
             )
 
         return _run_evaluator(
-            run_name="structured_match_evaluator",
+            run_name="json_match_evaluator",
             scorer=_scorer,
-            feedback_key="structured_match_score",
+            feedback_key="json_match",
             rubric=rubric,
             outputs=outputs,
             reference_outputs=reference_outputs,
@@ -602,6 +599,7 @@ def create_async_json_match_evaluator(
                 scores.update(llm_scores)
 
             return _aggregate_results(
+                score_key="json_match",
                 scores=scores,
                 use_list_reducer=use_list_reducer,
                 aggregator=aggregator,

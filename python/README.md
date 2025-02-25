@@ -10,13 +10,9 @@ If you are looking for evals specific to evaluating LLM agents, please check out
 
 To get started, install `openevals`:
 
-<details open>
-<summary>Python</summary>
-
 ```bash
 pip install openevals
 ```
-</details>
 
 This quickstart will use an evaluator powered by OpenAI's `o3-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
 
@@ -25,9 +21,6 @@ export OPENAI_API_KEY="your_openai_api_key"
 ```
 
 Once you've done this, you can run your first eval:
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
@@ -59,7 +52,6 @@ print(eval_result)
     'comment': 'The provided answer stated that doodads increased in price by 10%, which conflicts with the reference output...'
 }
 ```
-</details>
 
 By default, LLM-as-judge evaluators will return a score of `True` or `False`. See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-scores), [model](#customizing-the-model), and [prompt](#customizing-prompts)!
 
@@ -92,23 +84,15 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
 
 You can install `openevals` like this:
 
-<details open>
-<summary>Python</summary>
-
 ```bash
 pip install openevals
 ```
-</details>
 
 For LLM-as-judge evaluators, you will also need an LLM client. By default, `openevals` will use [LangChain chat model integrations](https://python.langchain.com/docs/integrations/chat/) and comes with `langchain_openai` installed by default. However, if you prefer, you may use the OpenAI client directly:
-
-<details open>
-<summary>Python</summary>
 
 ```bash
 pip install openai
 ```
-</details>
 
 It is also helpful to be familiar with some [evaluation concepts](https://docs.smith.langchain.com/evaluation/concepts) and
 LangSmith's pytest integration for running evals, which is documented [here](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest).
@@ -125,9 +109,6 @@ that handles formatting inputs, parsing the judge LLM's outputs into a score, an
 To use the `create_llm_as_judge` function, you need to provide a prompt and a model. For prompts, LangSmith has some prebuilt prompts
 in the `openevals.prompts` module that you can use out of the box. Here's an example:
 
-<details open>
-<summary>Python</summary>
-
 ```python
 from openevals.llm import create_llm_as_judge
 from openevals.prompts import CORRECTNESS_PROMPT
@@ -137,12 +118,8 @@ correctness_evaluator = create_llm_as_judge(
     model="openai:o3-mini",
 )
 ```
-</details>
 
 Note that `CORRECTNESS_PROMPT` is a simple f-string that you can log and edit as needed for your specific use case:
-
-<details open>
-<summary>Python</summary>
 
 ```python
 print(CORRECTNESS_PROMPT)
@@ -164,7 +141,6 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 </output>
 ...
 ```
-</details>
 
 By convention, we generally suggest sticking to `inputs`, `outputs`, and `reference_outputs` as the names of the parameters for LLM-as-judge evaluators, but these will be directly formatted into the prompt so you can use any variable names you want.
 
@@ -173,9 +149,6 @@ By convention, we generally suggest sticking to `inputs`, `outputs`, and `refere
 #### Correctness
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
@@ -207,14 +180,10 @@ print(eval_result)
     'comment': '...'
 }
 ```
-</details>
 
 #### Conciseness
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the conciseness of an LLM's output. It takes `inputs` and `outputs` as parameters.
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
@@ -241,14 +210,10 @@ print(eval_result)
     'comment': '...'
 }
 ```
-</details>
 
 #### Hallucination
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the hallucination of an LLM's output. It takes `inputs`, `outputs`, and optionally, `context` as parameters.
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
@@ -275,16 +240,11 @@ eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
 }
 ```
 
-</details>
-
 #### Customizing prompts
 
 The `prompt` parameter for `create_llm_as_judge` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
 
 Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, you can also require additional variables. You would then pass these extra variables when calling your evaluator function. Here's an example:
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
@@ -317,15 +277,10 @@ custom_prompt_evaluator(
 )
 ```
 
-</details>
-
 For convenience, the following options are also available:
 
 - `system`: a string that sets a system prompt for the judge model by adding a `system` message before other parts of the prompt.
 - `few_shot_examples`: a list of example dicts that are appended to the end of the prompt. This is useful for providing the judge model with examples of good and bad outputs. The required structure looks like this:
-
-<details open>
-<summary>Python</summary>
 
 ```python
 few_shot_examples = [
@@ -336,18 +291,12 @@ few_shot_examples = [
         "score": 1,
     }
 ]
-```
-
-</details>
 
 These will be appended to the end of the final user message in the prompt.
 
 #### Customizing the model
 
 There are a few ways you can customize the model used for evaluation. You can pass a string formatted as `PROVIDER:MODEL` (e.g. `model=anthropic:claude-3-5-sonnet-latest`) as the `model`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://python.langchain.com/docs/how_to/chat_models_universal_init/). This requires you to install the appropriate LangChain integration package installed. Here's an example:
-
-<details open>
-<summary>Python</summary>
 
 ```bash
 pip install langchain-anthropic
@@ -363,12 +312,7 @@ anthropic_evaluator = create_llm_as_judge(
 )
 ```
 
-</details>
-
 You can also directly pass a LangChain chat model instance as `judge`. Note that your chosen model must support [structured output](https://python.langchain.com/docs/integrations/chat/):
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
@@ -381,14 +325,9 @@ anthropic_evaluator = create_llm_as_judge(
 )
 ```
 
-</details>
-
 This is useful in scenarios where you need to initialize your model with specific parameters, such as `temperature` or alternate URLs if using models through a service like Azure.
 
 Finally, you can pass a model name as `model` and a `judge` parameter set to an OpenAI client instance:
-
-<details open>
-<summary>Python</summary>
 
 ```bash
 pip install openai
@@ -407,8 +346,6 @@ openai_evaluator = create_llm_as_judge(
 )
 ```
 
-</details>
-
 #### Customizing output scores
 
 There are two fields you can set to customize the output of your evaluator:
@@ -419,9 +356,6 @@ There are two fields you can set to customize the output of your evaluator:
 These parameters are mutually exclusive. When using either of them, you should make sure that your prompt is grounded in information on what specific scores mean - the prebuilt ones in this repo do not have this information!
 
 For example, here's an example of how to define a less harsh definition of correctness that only penalizes incorrect answers by 50% if they are on-topic:
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
@@ -472,8 +406,6 @@ print(result)
 }
 ```
 
-</details>
-
 Finally, if you would like to disable justifications for a given score, you can set `use_reasoning=False` when creating your evaluator.
 
 ### Extraction and tool calls
@@ -485,6 +417,8 @@ to work for a variety of extraction/tool calling use cases.
 You can use the `create_json_match_evaluator` evaluator in two ways:
 1. To perform an exact match of the outputs to reference outputs
 2. Using LLM-as-a-judge to evaluate the outputs based on a provided rubric.
+
+Note that this evaluator may return multiple scores based on key and aggregation strategy, so the result will be an array of scores rather than a single one.
 
 #### Evaluating structured output with exact match
 
@@ -521,7 +455,7 @@ Therefore, the list aggregator will return a final score of 0.5.
 
 ```
 {
-    'key': 'structured_match_score',
+    'key': 'json_match:all',
     'score': 0.5,
     'comment': None,
 }
@@ -568,7 +502,7 @@ Therefore, the list aggregator will return a final score of 0.
 
 ```
 {
-    'key': 'structured_match_score',
+    'key': 'json_match:a',
     'score': 0,
     'comment': None
 }
@@ -579,9 +513,6 @@ Therefore, the list aggregator will return a final score of 0.
 This package also contains prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:
 
 #### Exact match
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.exact import exact_match
@@ -599,14 +530,10 @@ print(result)
     'score': True,
 }
 ```
-</details>
 
 #### Embedding similarity
 
 This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method and calculates distance between two strings using cosine similarity.
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from openevals.string.embedding_similarity import create_embedding_similarity_evaluator
@@ -628,7 +555,6 @@ print(result)
     'comment': None,
 }
 ```
-</details>
 
 ### Agent evals
 
@@ -683,10 +609,6 @@ export LANGSMITH_API_KEY="your_langsmith_api_key"
 export LANGSMITH_TRACING="true"
 ```
 
-
-<details open>
-<summary>Python</summary>
-
 Then, set up a file named `test_correctness.py` with the following contents:
 
 ```python
@@ -726,7 +648,6 @@ Now, run the eval with pytest:
 ```bash
 pytest test_correctness.py --langsmith-output
 ```
-</details>
 
 Feedback from the prebuilt evaluator will be automatically logged in LangSmith as a table of results like this in your terminal (if you've set up your reporter):
 
@@ -739,9 +660,6 @@ And you should also see the results in the experiment view in LangSmith:
 ### Evaluate
 
 Alternatively, you can [create a dataset in LangSmith](https://docs.smith.langchain.com/evaluation/concepts#dataset-curation) and use your created evaluators with LangSmith's [`evaluate`](https://docs.smith.langchain.com/evaluation#8-run-and-view-results) function:
-
-<details open>
-<summary>Python</summary>
 
 ```python
 from langsmith import Client
@@ -765,8 +683,6 @@ experiment_results = client.evaluate(
     ]
 )
 ```
-
-</details>
 
 ## Thank you!
 

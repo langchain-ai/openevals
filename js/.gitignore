@@ -10,6 +10,10 @@ types.cjs
 types.js
 types.d.ts
 types.d.cts
+utils.cjs
+utils.js
+utils.d.ts
+utils.d.cts
 node_modules
 dist
 .yarn

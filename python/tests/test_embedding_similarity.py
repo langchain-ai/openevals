@@ -55,33 +55,25 @@ async def test_embedding_similarity_with_different_values_async():
     assert res["score"] < 1.0
     assert res["comment"] is None
 
+
 @pytest.mark.langsmith
 def test_embedding_similarity_evaluate():
     client = Client()
     evaluator = create_embedding_similarity_evaluator()
-    res = client.evaluate(
-        lambda x: x,
-        data="json",
-        evaluators=[
-            evaluator
-        ]
-    )
+    res = client.evaluate(lambda x: x, data="json", evaluators=[evaluator])
     for r in res:
-        assert r['evaluation_results']['results'][0].score is not None
+        assert r["evaluation_results"]["results"][0].score is not None
+
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_embedding_similarity_aevaluate():
     client = Client()
+
     async def target(inputs):
         return inputs
+
     evaluator = create_async_embedding_similarity_evaluator()
-    res = await client.aevaluate(
-        target,
-        data="json",
-        evaluators=[
-            evaluator
-        ]
-    )
+    res = await client.aevaluate(target, data="json", evaluators=[evaluator])
     async for r in res:
-        assert r['evaluation_results']['results'][0].score is not None
+        assert r["evaluation_results"]["results"][0].score is not None

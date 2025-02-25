@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from langsmith import Client
 from langchain import hub as prompts
 
+
 @pytest.mark.langsmith
 def test_prompt_hub_works():
     inputs = {"a": 1, "b": 2}
@@ -20,6 +21,7 @@ def test_prompt_hub_works():
     assert eval_result["score"] is not None
     assert eval_result["comment"] is not None
 
+
 @pytest.mark.langsmith
 def test_prompt_hub_works_one_message():
     inputs = {"a": 1, "b": 2}
@@ -33,6 +35,7 @@ def test_prompt_hub_works_one_message():
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
     assert eval_result["comment"] is not None
+
 
 @pytest.mark.langsmith
 def test_llm_as_judge_openai():
@@ -164,6 +167,7 @@ def test_llm_as_judge_few_shot_examples():
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
 
+
 @pytest.mark.langsmith
 def test_llm_as_judge_with_evaluate():
     client = Client()
@@ -175,12 +179,6 @@ def test_llm_as_judge_with_evaluate():
         ],
         model="openai:o3-mini",
     )
-    res = client.evaluate(
-        lambda x: x,
-        data="exact match",
-        evaluators=[
-            evaluator
-        ]
-    )
+    res = client.evaluate(lambda x: x, data="exact match", evaluators=[evaluator])
     for r in res:
-        assert r['evaluation_results']['results'][0].score is not None
+        assert r["evaluation_results"]["results"][0].score is not None

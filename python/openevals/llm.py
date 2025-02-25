@@ -1,5 +1,9 @@
 from __future__ import annotations
-from openevals.utils import _run_evaluator, _arun_evaluator, _normalize_to_openai_messages_list
+from openevals.utils import (
+    _run_evaluator,
+    _arun_evaluator,
+    _normalize_to_openai_messages_list,
+)
 from openevals.types import (
     EvaluatorResult,
     SimpleEvaluator,
@@ -46,7 +50,7 @@ def _append_few_shot_examples(
             "Appending few-shot examples requires a user message in the provided prompt"
         )
 
-    messages[last_user_message_idx]["content"] += "\n\n" + "\n".join(
+    messages[last_user_message_idx]["content"] += "\n\n" + "\n".join(  # type: ignore
         [
             f"<example>\n<input>{example['inputs']}</input>\n<output>{example['outputs']}</output>"
             + (
@@ -157,7 +161,7 @@ def _create_llm_as_judge_scorer(
 
         if isinstance(prompt, RunnableLike):
             formatted_prompt = prompt.invoke(
-                input = {
+                input={
                     "inputs": inputs,
                     "outputs": outputs,
                     "reference_outputs": reference_outputs,
@@ -173,11 +177,12 @@ def _create_llm_as_judge_scorer(
                     )
             if prompt == CONCISENESS_PROMPT:
                 if any([x is None for x in [inputs, outputs]]):
-                    raise ValueError(
-                        "CONCISENESS_PROMPT requires inputs and outputs"
-                    )
+                    raise ValueError("CONCISENESS_PROMPT requires inputs and outputs")
             if prompt == HALLUCINATION_PROMPT:
-                if any([x is None for x in [inputs, outputs]]) or 'context' not in kwargs:
+                if (
+                    any([x is None for x in [inputs, outputs]])
+                    or "context" not in kwargs
+                ):
                     raise ValueError(
                         "HALLUCINATION_PROMPT requires inputs, outputs, and context"
                     )
@@ -233,7 +238,7 @@ def _create_llm_as_judge_scorer(
                     "description": description,
                     **json_schema,
                 }
-            ).invoke(messages)
+            ).invoke(messages)  # type: ignore
             if schema is None:
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore
@@ -269,7 +274,7 @@ def _create_llm_as_judge_scorer(
             def invoke_llm(**params):
                 return judge.chat.completions.create(**params)
 
-            response = invoke_llm(**params)
+            response = invoke_llm(**params)  # type: ignore
             parsed = json.loads(response.choices[0].message.content)  # type: ignore
             if schema is None:
                 if use_reasoning:
@@ -321,7 +326,7 @@ def _create_async_llm_as_judge_scorer(
 
         if isinstance(prompt, RunnableLike):
             formatted_prompt = await prompt.ainvoke(
-                input = {
+                input={
                     "inputs": inputs,
                     "outputs": outputs,
                     "reference_outputs": reference_outputs,
@@ -337,11 +342,12 @@ def _create_async_llm_as_judge_scorer(
                     )
             if prompt == CONCISENESS_PROMPT:
                 if any([x is None for x in [inputs, outputs]]):
-                    raise ValueError(
-                        "CONCISENESS_PROMPT requires inputs and outputs"
-                    )
+                    raise ValueError("CONCISENESS_PROMPT requires inputs and outputs")
             if prompt == HALLUCINATION_PROMPT:
-                if any([x is None for x in [inputs, outputs]]) or 'context' not in kwargs:
+                if (
+                    any([x is None for x in [inputs, outputs]])
+                    or "context" not in kwargs
+                ):
                     raise ValueError(
                         "HALLUCINATION_PROMPT requires inputs, outputs, and context"
                     )
@@ -397,7 +403,7 @@ def _create_async_llm_as_judge_scorer(
                     "description": description,
                     **json_schema,
                 }
-            ).ainvoke(messages)
+            ).ainvoke(messages)  # type: ignore
             if schema is None:
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore
@@ -433,7 +439,7 @@ def _create_async_llm_as_judge_scorer(
             async def ainvoke_llm(**params):
                 return await judge.chat.completions.create(**params)
 
-            response = await ainvoke_llm(**params)
+            response = await ainvoke_llm(**params)  # type: ignore
             parsed = json.loads(response.choices[0].message.content)  # type: ignore
             if schema is None:
                 if use_reasoning:

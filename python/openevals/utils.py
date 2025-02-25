@@ -75,38 +75,45 @@ def _run_evaluator(
         score = scorer(**kwargs)
 
         # Collect all results first
-        results = []
         if isinstance(score, dict):
+            results = []
             # Handle dictionary of scores
             for key, value in score.items():
                 key_score, reasoning = _process_score(key, value)
                 results.append(
                     EvaluatorResult(key=key, score=key_score, comment=reasoning)
                 )
+            return results
         else:
             # Handle single score
             if isinstance(score, tuple):
                 score, reasoning = score
             else:
                 reasoning = None
-            results.append(
-                EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
-            )
-        return results
+            return EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
 
     # Log feedback if in test case
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             results = _run_scorer()
-            for result in results:
+            if isinstance(results, list):
+                for result in results:
+                    t.log_feedback(
+                        key=result["key"],
+                        score=result["score"],
+                        comment=result["comment"],
+                    )
+            else:
                 t.log_feedback(
-                    key=result["key"], score=result["score"], comment=result["comment"]
+                    key=results["key"],
+                    score=results["score"],
+                    comment=results["comment"],
                 )
     else:
         results = _run_scorer()
 
     # Return single result or list of results
-    return results[0] if len(results) == 1 else results
+    return results
 
 
 async def _arun_evaluator(
@@ -117,38 +124,45 @@ async def _arun_evaluator(
         score = await scorer(**kwargs)
 
         # Collect all results first
-        results = []
         if isinstance(score, dict):
+            results = []
             # Handle dictionary of scores
             for key, value in score.items():
                 key_score, reasoning = _process_score(key, value)
                 results.append(
                     EvaluatorResult(key=key, score=key_score, comment=reasoning)
                 )
+            return results
         else:
             # Handle single score
             if isinstance(score, tuple):
                 score, reasoning = score
             else:
                 reasoning = None
-            results.append(
-                EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
-            )
-        return results
+            return EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
 
     # Log feedback if in test case
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             results = await _arun_scorer()
-            for result in results:
+            if isinstance(results, list):
+                for result in results:
+                    t.log_feedback(
+                        key=result["key"],
+                        score=result["score"],
+                        comment=result["comment"],
+                    )
+            else:
                 t.log_feedback(
-                    key=result["key"], score=result["score"], comment=result["comment"]
+                    key=results["key"],
+                    score=results["score"],
+                    comment=results["comment"],
                 )
     else:
         results = await _arun_scorer()
 
     # Return single result or list of results
-    return results[0] if len(results) == 1 else results
+    return results
 
 
 def _chat_completion_messages_to_string(messages: list[ChatCompletionMessage]) -> str:

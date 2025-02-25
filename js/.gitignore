@@ -12,5 +12,4 @@ types.d.ts
 types.d.cts
 node_modules
 dist
-.yarn/*
-!.yarn/releases
+.yarn

@@ -842,6 +842,8 @@ You can use the `create_json_match_evaluator` evaluator in two ways:
 1. To perform an exact match of the outputs to reference outputs
 2. Using LLM-as-a-judge to evaluate the outputs based on a provided rubric.
 
+Note that this evaluator may return multiple scores based on key and aggregation strategy, so the result will be an array of scores rather than a single one.
+
 #### Evaluating structured output with exact match
 
 Use exact match evaluation when there is a clear right or wrong answer. A common scenario is text extraction from images or PDFs where you expect specific values.
@@ -879,11 +881,13 @@ For the second element, "b" will be 1, "c" will be 0 and the aggregator will ret
 Therefore, the list aggregator will return a final score of 0.5.
 
 ```
-{
-    'key': 'structured_match_score',
+[
+  {
+    'key': 'json_match:all',
     'score': 0.5,
     'comment': None,
-}
+  }
+]
 ```
 
 </details>
@@ -933,11 +937,13 @@ For the second element, "b" will be 1, "c" will be 0 and the aggregator will ret
 Therefore, the list aggregator will return a final score of 0.5.
 
 ```
-{
-    'key': 'structured_match_score',
+[
+  {
+    'key': 'json_match:all',
     'score': 0.5,
     'comment': None,
-}
+  }
+]
 ```
 </details>
 
@@ -985,11 +991,13 @@ For the second element, "a" will be 0 since the reference output doesn't mention
 Therefore, the list aggregator will return a final score of 0. 
 
 ```
-{
-    'key': 'structured_match_score',
+[
+  {
+    'key': 'json_match:a',
     'score': 0,
     'comment': None
-}
+  }
+]
 ```
 
 </details>
@@ -1045,9 +1053,9 @@ Therefore, the list aggregator will return a final score of 0.
 
 ```
 {
-    'key': 'structured_match_score',
-    'score': 0,
-    'comment': None
+  'key': 'json_match:a',
+  'score': 0,
+  'comment': None
 }
 ```
 

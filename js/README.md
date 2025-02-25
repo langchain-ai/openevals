@@ -421,9 +421,11 @@ Two very common use cases for LLMs are extracting structured output from documen
 to respond in a structured format. This package provides a prebuilt evaluator to help you evaluate these use cases, and is flexible
 to work for a variety of extraction/tool calling use cases.
 
-You can use the `create_json_match_evaluator` evaluator in two ways:
+You can use the `createJsonMatchEvaluator` evaluator in two ways:
 1. To perform an exact match of the outputs to reference outputs
 2. Using LLM-as-a-judge to evaluate the outputs based on a provided rubric.
+
+Note that this evaluator may return multiple scores based on key and aggregation strategy, so the result will be an array of scores rather than a single one.
 
 #### Evaluating structured output with exact match
 
@@ -472,7 +474,7 @@ Therefore, the list aggregator will return a final score of 0.5.
 
 ```
 {
-    'key': 'structured_match_score',
+    'key': 'json_match:all',
     'score': 0.5,
     'comment': None,
 }
@@ -530,7 +532,7 @@ Therefore, the list aggregator will return a final score of 0.
 
 ```
 {
-    'key': 'structured_match_score',
+    'key': 'json_match:a',
     'score': 0,
     'comment': None
 }

@@ -67,7 +67,9 @@ export const processScore = (
   return [value] as const;
 };
 
-export type EvaluationResultType<O> = O extends MultiResultScorerReturnType
+export type EvaluationResultType<O> = O extends
+  | MultiResultScorerReturnType
+  | Promise<MultiResultScorerReturnType>
   ? SimpleEvaluationResult[]
   : SimpleEvaluationResult;
 
@@ -87,23 +89,23 @@ export const _runEvaluator = async <
     let score = await scorer(params);
     let reasoning;
 
-    const results = [];
     if (!Array.isArray(score) && typeof score === "object") {
+      const results = [];
       for (const [key, value] of Object.entries(score)) {
         const [keyScore, reasoning] = processScore(key, value);
         results.push({ key, score: keyScore, comment: reasoning });
       }
+      return results;
     } else {
       if (Array.isArray(score)) {
         reasoning = score[1];
         score = score[0] as Awaited<O>;
       }
-      results.push({ key: feedbackKey, score, comment: reasoning });
-    }
-    if (results.length === 1) {
-      return results[0] as SimpleEvaluationResult;
-    } else {
-      return results as SimpleEvaluationResult[];
+      return {
+        key: feedbackKey,
+        score,
+        comment: reasoning,
+      } as SimpleEvaluationResult;
     }
   };
 

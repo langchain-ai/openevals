@@ -1,10 +1,13 @@
-import { ModelClient } from "../types.js";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+
+import { ModelClient, MultiResultScorerReturnType } from "../types.js";
 import { _createLLMAsJudgeScorer } from "../llm.js";
 import { _runEvaluator } from "../utils.js";
-import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 type AggregatorType = "average" | "all" | undefined;
 type ListMatchMode = "superset" | "subset" | "same_elements" | "ordered";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RecordStringAny = Record<string, any>;
 
 const SYSTEM_PROMPT = `You are an LLM that evaluates the accuracy of structured outputs.
 Make sure to evaluate each key the users ask you to evaluate separately. Assign the score
@@ -32,34 +35,34 @@ function _prepareParameters({
   useReasoning,
   listMatchMode = "same_elements",
 }: {
-  outputs: Record<string, any>[];
-  referenceOutputs: Record<string, any>[];
+  outputs: RecordStringAny[];
+  referenceOutputs: RecordStringAny[];
   rubric: Record<string, string>;
   excludeKeys: string[];
   useReasoning: boolean;
   listMatchMode: ListMatchMode;
 }): {
-  processedOutputs: any;
-  processedReferenceOutputs: any;
-  jsonSchema: any;
-  scores: Record<string, any>;
+  processedOutputs: RecordStringAny;
+  processedReferenceOutputs: RecordStringAny;
+  jsonSchema: RecordStringAny;
+  scores: RecordStringAny;
   formattedRubric: string;
   useListReducer: boolean;
 } {
-  const jsonSchema: Record<string, any> = {
+  const jsonSchema: RecordStringAny = {
     type: "object",
-    title: "structured_match_score",
+    title: "json_match",
     description: "Scores measuring the accuracy of structured outputs",
     properties: {},
     required: [],
     additionalProperties: false,
   };
 
-  let scores: Record<string, any> = {};
+  const scores: RecordStringAny = {};
   let formattedRubric = "";
   let useListReducer = false;
-  let processedOutputs: Record<string, any> = {};
-  let processedReferenceOutputs: Record<string, any> = {};
+  let processedOutputs: RecordStringAny = {};
+  let processedReferenceOutputs: RecordStringAny = {};
 
   if (Array.isArray(outputs)) {
     useListReducer = true;
@@ -69,8 +72,8 @@ function _prepareParameters({
       );
     }
 
-    let outputsToUse: Record<string, any> = {};
-    let referenceOutputsToUse: Record<string, any> = {};
+    const outputsToUse: RecordStringAny = {};
+    const referenceOutputsToUse: RecordStringAny = {};
 
     if (listMatchMode === "ordered") {
       outputs.forEach((output, i) => {
@@ -272,14 +275,16 @@ function _aggregateResults({
   useListReducer,
   aggregator,
   listAggregator,
+  scoreKey,
 }: {
-  scores: Record<string, any>;
+  scores: RecordStringAny;
   useListReducer: boolean;
   aggregator: AggregatorType;
   listAggregator: "average" | "all";
-}): Record<string, any> | number | [number, string] {
+  scoreKey: string;
+}): MultiResultScorerReturnType {
   if (useListReducer) {
-    const indexGroupedScores: Record<string, Record<string, any>> = {};
+    const indexGroupedScores: Record<string, RecordStringAny> = {};
 
     Object.entries(scores).forEach(([k, v]) => {
       const index = k.substring(k.lastIndexOf("_") + 1);
@@ -291,7 +296,7 @@ function _aggregateResults({
       indexGroupedScores[index][baseKey] = v;
     });
 
-    let indexScores: Record<string, any> = {};
+    let indexScores: RecordStringAny = {};
 
     if (aggregator === "average") {
       Object.entries(indexGroupedScores).forEach(([index, group]) => {
@@ -319,14 +324,16 @@ function _aggregateResults({
 
     if (listAggregator === "average") {
       if (Object.values(indexScores).every((v) => typeof v === "number")) {
-        return Object.keys(indexScores).length
+        const score = Object.keys(indexScores).length
           ? Object.values(indexScores).reduce(
               (a, b) => Number(a) + Number(b),
               0
             ) / Object.keys(indexScores).length
           : 0;
+        return { [[scoreKey, aggregator].join(":")]: score };
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const scoresAggregatedAcrossList: Record<string, any[]> = {};
       Object.values(indexScores).forEach((group) => {
         Object.entries(group).forEach(([key, value]) => {
@@ -340,7 +347,7 @@ function _aggregateResults({
       const result: Record<string, number> = {};
       Object.entries(scoresAggregatedAcrossList).forEach(([key, values]) => {
         if (values.length) {
-          result[key] =
+          result[[scoreKey, key].join(":")] =
             values.reduce(
               (sum, v) =>
                 sum + (typeof v === "object" ? Number(v.score) : Number(v)),
@@ -352,9 +359,16 @@ function _aggregateResults({
       return result;
     } else if (listAggregator === "all") {
       if (Object.values(indexScores).every((v) => typeof v === "number")) {
-        return Object.values(indexScores).some((v) => v !== 1) ? 0 : 1;
+        return {
+          [[scoreKey, aggregator].join(":")]: Object.values(indexScores).some(
+            (v) => v !== 1
+          )
+            ? 0
+            : 1,
+        };
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const scoresAggregatedAcrossList: Record<string, any[]> = {};
       Object.values(indexScores).forEach((group) => {
         Object.entries(group).forEach(([key, value]) => {
@@ -367,7 +381,7 @@ function _aggregateResults({
 
       const result: Record<string, number> = {};
       Object.entries(scoresAggregatedAcrossList).forEach(([key, values]) => {
-        result[key] = values.some((v) => v !== 1) ? 0 : 1;
+        result[[scoreKey, key].join(":")] = values.some((v) => v !== 1) ? 0 : 1;
       });
 
       return result;
@@ -375,43 +389,67 @@ function _aggregateResults({
   }
 
   if (aggregator === "average") {
-    return Object.keys(scores).length
+    const score = Object.keys(scores).length
       ? Object.values(scores).reduce(
           (sum, v) =>
             sum + (typeof v === "object" ? Number(v.score) : Number(v)),
           0
         ) / Object.keys(scores).length
       : 0;
+    return { [[scoreKey, aggregator].join(":")]: score };
   } else if (aggregator === "all") {
-    return Object.values(scores).some(
+    const score = Object.values(scores).some(
       (v) => (typeof v === "object" ? Number(v.score) : Number(v)) !== 1
     )
       ? 0
       : 1;
+    return { [[scoreKey, aggregator].join(":")]: score };
   } else {
-    const results: Record<string, any> = {};
+    const results: RecordStringAny = {};
     Object.entries(scores).forEach(([key, value]) => {
       if (typeof value === "object") {
-        results[key] = {
+        results[[scoreKey, key].join(":")] = {
           score: Number(value.score),
           reasoning: value.reasoning,
         };
       } else {
-        results[key] = Number(value);
+        results[[scoreKey, key].join(":")] = Number(value);
       }
     });
-
-    if (Object.keys(results).length === 1) {
-      const ans = Object.values(results)[0];
-      if (typeof ans === "object") {
-        return [Number(ans.score), ans.reasoning];
-      }
-      return Number(ans);
-    }
     return results;
   }
 }
 
+/**
+ * Create an evaluator to evaluate the accuracy of structured outputs.
+ *
+ * @param options The configuration options
+ * @param options.aggregator - The aggregation method to use for combining the keys of each structured object.
+ *        If undefined, will return a single EvaluatorResult for each key that appears in either
+ *        the outputs or the reference_outputs or both. If "average", will return a single EvaluatorResult that
+ *        is the average of the feedback for each key. If "all", will return a single EvaluatorResult that
+ *        is a combined AND statement of the feedback for each key. If "all"/"average" the feedback key
+ *        returned will be called "json_match"
+ * @param options.listAggregator - The aggregation method to use when evaluating a list of outputs.
+ *        Defaults to "all". If "all", the score for a single feedback key will be a combined AND statement
+ *        of the scores for that key across all elements of the list. If "average", the score will be the
+ *        average of the scores for that key across all elements of the list
+ * @param options.rubric - The rubric to use for the judge. Each entry is a key/value pair where the key
+ *        is the structured output key and the value is the criteria for the LLM to evaluate that key
+ *        against the reference output
+ * @param options.excludeKeys - The keys to exclude from the evaluation. Use this if there are keys in your
+ *        structured output you don't care about evaluating. Every key not in excludeKeys or rubric will be
+ *        evaluated for exact match with the reference output
+ * @param options.judge - The judge to use for the evaluation
+ * @param options.model - The model to use for the evaluation
+ * @param options.useReasoning - Whether to use reasoning for the keys in rubric. Defaults to true
+ * @param options.listMatchMode - The mode to use for matching list elements. Defaults to "same_elements".
+ *        If "same_elements", matches every element of outputs with reference_outputs and vice versa.
+ *        If "subset", matches elements of outputs with reference_outputs.
+ *        If "superset", matches elements of reference_outputs with outputs.
+ *        If "ordered", matches elements by their index position
+ * @returns A function that takes outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults
+ */
 export const createJsonMatchEvaluator = ({
   aggregator,
   listAggregator = "all",
@@ -441,7 +479,9 @@ export const createJsonMatchEvaluator = ({
     outputs,
     referenceOutputs,
   }: {
-    outputs: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    outputs?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     referenceOutputs?: any;
   }) => {
     async function scorer({
@@ -451,12 +491,14 @@ export const createJsonMatchEvaluator = ({
       excludeKeys = [],
       useReasoning = true,
     }: {
-      outputs: any;
-      referenceOutputs: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      outputs?: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      referenceOutputs?: any;
       rubric?: Record<string, string>;
       excludeKeys?: string[];
       useReasoning?: boolean;
-    }): Promise<Record<string, any> | number | [any, any]> {
+    }): Promise<MultiResultScorerReturnType> {
       const {
         processedOutputs,
         processedReferenceOutputs,
@@ -473,8 +515,10 @@ export const createJsonMatchEvaluator = ({
         listMatchMode,
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let scorerFn: ((params: any) => any) | undefined;
-      let outputKeys, expectedOutputKeys;
+      let outputKeys;
+      let expectedOutputKeys;
       if (Object.keys(formattedRubric ?? {}).length > 0) {
         outputKeys = Object.keys(jsonSchema.properties)
           .map((key) => `${key}: ${processedOutputs[key]}`)
@@ -502,6 +546,7 @@ export const createJsonMatchEvaluator = ({
       }
 
       return _aggregateResults({
+        scoreKey: "json_match",
         scores,
         useListReducer,
         aggregator,
@@ -509,18 +554,13 @@ export const createJsonMatchEvaluator = ({
       });
     }
 
-    return _runEvaluator(
-      "structured_match_evaluator",
-      scorer,
-      "structured_match_score",
-      {
-        outputs,
-        referenceOutputs,
-        rubric,
-        excludeKeys,
-        useReasoning,
-      }
-    );
+    return _runEvaluator("json_match_evaluator", scorer, "json_match", {
+      outputs,
+      referenceOutputs,
+      rubric,
+      excludeKeys,
+      useReasoning,
+    });
   };
 
   return wrappedEvaluator;

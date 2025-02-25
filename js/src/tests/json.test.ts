@@ -19,9 +19,9 @@ ls.describe("json", () => {
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
       expect(result.length).toBe(2);
-      expect(result[0].key).toBe("a");
+      expect(result[0].key).toBe("json_match:a");
       expect(result[0].score).toBe(1.0);
-      expect(result[1].key).toBe("b");
+      expect(result[1].key).toBe("json_match:b");
       expect(result[1].score).toBe(1.0);
     }
   );
@@ -45,8 +45,8 @@ ls.describe("json", () => {
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0.5);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(0.5);
     }
   );
 
@@ -63,8 +63,8 @@ ls.describe("json", () => {
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0.5);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(0.5);
     }
   );
 
@@ -82,8 +82,8 @@ ls.describe("json", () => {
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1.0);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(1.0);
     }
   );
 
@@ -100,8 +100,8 @@ ls.describe("json", () => {
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0);
+      expect(result[0].key).toBe("json_match:all");
+      expect(result[0].score).toBe(0);
     }
   );
 
@@ -128,13 +128,13 @@ ls.describe("json", () => {
         aggregator: "all",
         rubric: {
           description:
-            "Is the correct title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as all previous companies?",
         },
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1);
+      expect(result[0].key).toBe("json_match:all");
+      expect(result[0].score).toBe(1);
     }
   );
 
@@ -160,13 +160,13 @@ ls.describe("json", () => {
         aggregator: "all",
         rubric: {
           description:
-            "Is the correct title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as all previous companies?",
         },
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0);
+      expect(result[0].key).toBe("json_match:all");
+      expect(result[0].score).toBe(0);
     }
   );
 
@@ -189,14 +189,14 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         rubric: {
           description:
-            "Is the correct title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as all previous companies?",
         },
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0);
-      expect(result.comment).toBeDefined();
+      expect(result[0].key).toBe("json_match:description");
+      expect(result[0].score).toBe(0);
+      expect(result[0].comment).toBeDefined();
     }
   );
 
@@ -219,15 +219,15 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         rubric: {
           description:
-            "Is the correct title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as all previous companies?",
         },
         useReasoning: false,
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0);
-      expect(result.comment).toBeUndefined();
+      expect(result[0].key).toBe("json_match:description");
+      expect(result[0].score).toBe(0);
+      expect(result[0].comment).toBeUndefined();
     }
   );
 
@@ -252,15 +252,15 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         rubric: {
           description:
-            "Is the correct title and company mentioned, as well as all previous companies?",
+            "Is the correct job title and company mentioned, as well as all previous companies?",
         },
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
       expect(result.length).toBe(2);
-      expect(result[0].key).toBe("name");
+      expect(result[0].key).toBe("json_match:name");
       expect(result[0].score).toBe(1.0);
-      expect(result[1].key).toBe("description");
+      expect(result[1].key).toBe("json_match:description");
       expect(result[1].score).toBe(0);
       expect(result[1].comment).toBeDefined();
     }
@@ -291,9 +291,9 @@ ls.describe("json", () => {
       });
       expect(result).toBeDefined();
       expect(result.length).toBe(2);
-      expect(result[0].key).toBe("a");
+      expect(result[0].key).toBe("json_match:a");
       expect(result[0].score).toBe(1.0);
-      expect(result[1].key).toBe("b");
+      expect(result[1].key).toBe("json_match:b");
       expect(result[1].score).toBe(1.0);
     }
   );
@@ -325,9 +325,9 @@ ls.describe("json", () => {
       });
       expect(result).toBeDefined();
       expect(result.length).toBe(2);
-      expect(result[0].key).toBe("a");
+      expect(result[0].key).toBe("json_match:a");
       expect(result[0].score).toBe(1.0);
-      expect(result[1].key).toBe("b");
+      expect(result[1].key).toBe("json_match:b");
       expect(result[1].score).toBe(0.5);
     }
   );
@@ -358,8 +358,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1.0);
+      expect(result[0].key).toBe("json_match:all");
+      expect(result[0].score).toBe(1.0);
     }
   );
 
@@ -390,8 +390,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0.5);
+      expect(result[0].key).toBe("json_match:all");
+      expect(result[0].score).toBe(0.5);
     }
   );
 
@@ -421,8 +421,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0.0);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(0.0);
     }
   );
 
@@ -453,8 +453,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0.75);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(0.75);
     }
   );
 
@@ -484,13 +484,13 @@ ls.describe("json", () => {
       result = result.sort((a, b) => a.key.localeCompare(b.key));
       expect(result).toBeDefined();
       expect(result.length).toBe(4);
-      expect(result[0].key).toBe("a");
+      expect(result[0].key).toBe("json_match:a");
       expect(result[0].score).toBe(1.0);
-      expect(result[1].key).toBe("b");
+      expect(result[1].key).toBe("json_match:b");
       expect(result[1].score).toBe(0);
-      expect(result[2].key).toBe("c");
+      expect(result[2].key).toBe("json_match:c");
       expect(result[2].score).toBe(0);
-      expect(result[3].key).toBe("d");
+      expect(result[3].key).toBe("json_match:d");
       expect(result[3].score).toBe(0);
     }
   );
@@ -523,13 +523,13 @@ ls.describe("json", () => {
       result = result.sort((a, b) => a.key.localeCompare(b.key));
       expect(result).toBeDefined();
       expect(result.length).toBe(4);
-      expect(result[0].key).toBe("a");
+      expect(result[0].key).toBe("json_match:a");
       expect(result[0].score).toBe(1.0);
-      expect(result[1].key).toBe("b");
+      expect(result[1].key).toBe("json_match:b");
       expect(result[1].score).toBe(0.5);
-      expect(result[2].key).toBe("c");
+      expect(result[2].key).toBe("json_match:c");
       expect(result[2].score).toBe(0);
-      expect(result[3].key).toBe("d");
+      expect(result[3].key).toBe("json_match:d");
       expect(result[3].score).toBe(0);
     }
   );
@@ -560,8 +560,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0);
+      expect(result[0].key).toBe("json_match:all");
+      expect(result[0].score).toBe(0);
     }
   );
 
@@ -592,8 +592,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0);
+      expect(result[0].key).toBe("json_match:all");
+      expect(result[0].score).toBe(0);
     }
   );
 
@@ -623,8 +623,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(0);
     }
   );
 
@@ -655,8 +655,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0.5);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(0.5);
     }
   );
 
@@ -684,8 +684,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("a");
-      expect(result.score).toBe(1);
+      expect(result[0].key).toBe("json_match:a");
+      expect(result[0].score).toBe(1);
     }
   );
 
@@ -718,8 +718,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(5 / 6);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(5 / 6);
     }
   );
 
@@ -742,8 +742,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(2 / 3);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(2 / 3);
     }
   );
 
@@ -766,8 +766,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(2 / 3);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(2 / 3);
     }
   );
 
@@ -791,8 +791,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(1);
     }
   );
 
@@ -816,8 +816,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(1);
     }
   );
 
@@ -841,8 +841,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(1);
     }
   );
 
@@ -866,8 +866,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(1);
     }
   );
 
@@ -891,8 +891,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(0);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(0);
     }
   );
 
@@ -916,8 +916,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(1);
     }
   );
 
@@ -947,8 +947,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(1);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(1);
     }
   );
 
@@ -968,7 +968,9 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
-        rubric: { c: "Are the answers the same, language independent?" },
+        rubric: {
+          c: "Are the answers the same meaning, even if they are different languages?",
+        },
         listMatchMode: "ordered",
       });
       const result = await evaluator({
@@ -976,8 +978,8 @@ ls.describe("json", () => {
         referenceOutputs: referenceOutputs?.referenceOutputs,
       });
       expect(result).toBeDefined();
-      expect(result.key).toBe("structured_match_score");
-      expect(result.score).toBe(2 / 3);
+      expect(result[0].key).toBe("json_match:average");
+      expect(result[0].score).toBe(2 / 3);
     }
   );
 

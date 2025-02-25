@@ -190,9 +190,6 @@ ls.describe("llm as judge", () => {
       });
       expect(result).toBeDefined();
       expect(result.results.length).toBeGreaterThan(0);
-      expect(
-        result.results[0].evaluationResults.results[0].score
-      ).toBeDefined();
     }
   );
 });

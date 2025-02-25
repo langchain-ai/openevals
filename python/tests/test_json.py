@@ -534,7 +534,9 @@ def test_json_match_mode_order_wrong_language():
         list_aggregator="average",
         aggregator="average",
         list_match_mode="ordered",
-        rubric={"c": "Are the answers the same, language independent?"},
+        rubric={
+            "c": "Are the answers the same meaning, even if they are different languages?"
+        },
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result[0]["key"] == "json_match:average"

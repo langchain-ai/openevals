@@ -968,7 +968,9 @@ ls.describe("json", () => {
         model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
-        rubric: { c: "Are the answers the same, language independent?" },
+        rubric: {
+          c: "Are the answers the same meaning, even if they are different languages?",
+        },
         listMatchMode: "ordered",
       });
       const result = await evaluator({

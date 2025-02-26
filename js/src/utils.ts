@@ -129,9 +129,7 @@ export const _runEvaluator = async <
         ls_framework ?? "openevals";
       currentRunTree.extra.metadata.__ls_evaluator = runName;
       currentRunTree.extra.metadata.__ls_language = "js";
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
     const res = await runScorer(extra ?? ({} as T));
     return res as EvaluationResultType<O>;
   }

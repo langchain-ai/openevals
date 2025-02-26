@@ -8,7 +8,7 @@ If you are looking for evals specific to evaluating LLM agents, please check out
 
 ## Quickstart
 
-**Note:** If you'd like to watch a video walkthrough, check out the video below:
+**Note:** If you'd like to watch a video walkthrough, click the image below:
 
 [![Video quickstart](https://img.youtube.com/vi/J-F30jRyhoA/0.jpg)](https://www.youtube.com/watch?v=J-F30jRyhoA)
 

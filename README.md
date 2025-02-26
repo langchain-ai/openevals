@@ -6,12 +6,9 @@ you can write more custom evals specific to your application.
 
 If you are looking for evals specific to evaluating LLM agents, please check out [`agentevals`](https://github.com/langchain-ai/agentevals).
 
-## Quickstart
+[![Video quickstart](https://img.youtube.com/vi/J-F30jRyhoA/0.jpg)](https://www.youtube.com/watch?v=J-F30jRyhoA)
 
-<details>
-<summary>Video</summary>
-<video src="https://www.youtube.com/watch?v=J-F30jRyhoA" controls />
-</details>
+## Quickstart
 
 To get started, install `openevals`:
 

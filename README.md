@@ -4,14 +4,13 @@ Much like tests in traditional software, evals are a hugely important part of br
 The goal of this package is to help provide a starting point for you to write evals for your LLM applications, from which
 you can write more custom evals specific to your application.
 
-<details open>
-<summary>Video Quickstart</summary>
-[![Video quickstart](https://img.youtube.com/vi/J-F30jRyhoA/0.jpg)](https://www.youtube.com/watch?v=J-F30jRyhoA)
-</details>
-
 If you are looking for evals specific to evaluating LLM agents, please check out [`agentevals`](https://github.com/langchain-ai/agentevals).
 
 ## Quickstart
+
+**Note:** If you'd like to watch a video walkthrough, check out the video below:
+
+[![Video quickstart](https://img.youtube.com/vi/J-F30jRyhoA/0.jpg)](https://www.youtube.com/watch?v=J-F30jRyhoA)
 
 To get started, install `openevals`:
 

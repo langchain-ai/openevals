@@ -130,6 +130,7 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
     - [Levenshtein Distance](#levenshtein-distance)
     - [Embedding Similarity](#embedding-similarity)
   - [Agent evals](#agent-evals)
+  - [Creating your own](#creating-your-own)
 - [Python Async Support](#python-async-support)
 - [LangSmith Integration](#langsmith-integration)
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
@@ -1220,6 +1221,170 @@ console.log(result);
 If you are building an agent, the evals in this repo are useful for evaluating specific outputs from your agent against references.
 
 However, if you want to get started with more in-depth evals that take into account the entire trajectory of an agent, please check out the [`agentevals`](https://github.com/langchain-ai/agentevals) package.
+
+### Creating your own
+
+If there are metrics that you want to evaluate that are not covered by any of the above, you can create your own evaluator as well that interacts well with the rest of the `openevals` ecosystem.
+
+#### Evaluator interface
+
+The first thing to note that all evaluators should accept a subset of the following parameters:
+
+- `inputs`: The inputs to your app.
+- `outputs`: The outputs from your app.
+- `reference_outputs` (Python) or `referenceOutputs` (TypeScript): The reference outputs to evaluate against.
+
+These parameters can be any value, but should always accept a dict of some kind.
+
+Not all evaluators will use all of these parameters, but they are there to ensure consistency across all evaluators.
+Your evaluator may take more parameters as well (e.g. for LLM-as-judge evaluators whose prompts can require additional variables), but for simplicity it's best to stick to the three listed above.
+
+If your evaluator requires additional configuration, you should use a factory function to create your evaluator. These should be named `create_<evaluator_name>` (for example, `create_llm_as_judge`).
+
+The return values should be a dict (or, if your evaluator evaluates multiple metrics, an list of dicts) with the following keys:
+
+- `key`: A string representing the name of the metric you are evaluating.
+- `score`: A boolean or number representing the score for the given key.
+- `comment`: A string representing the comment for the given key.
+
+And that's it! Those are the only restrictions.
+
+#### Logging to LangSmith
+
+If you are using LangSmith to track experiments, you should also wrap the internals of your evaluator in the `_run_evaluator`/`_arun_evaluator` (Python) or `runEvaluator` (TypeScript) method. This ensures that the evaluator results are logged to LangSmith properly for supported runners.
+
+This method takes a `scorer` function as part of its input that returns either:
+
+- A single boolean or number, representing the score for the given key.
+- A tuple that contains the score as its first element and a `comment` justifying the score as its second element.
+
+#### Example
+
+Here's an example of how you might define a very simple custom evaluator. It only takes into account the outputs of your app and compares them against a regex pattern. It uses a factory function to create the evaluator, since `regex` is an extra param.
+
+<details open>
+<summary>Python</summary>
+
+```python
+import json
+import re
+from typing import Any
+
+from openevals.types import (
+    EvaluatorResult,
+    SimpleEvaluator,
+)
+from openevals.utils import _run_evaluator
+
+
+def create_regex_evaluator(
+    *, regex: str
+) -> SimpleEvaluator:
+    """
+    Matches a regex pattern against the output.
+
+    Args:
+        regex (str): The regex pattern to match against the output.
+
+    Returns:
+        EvaluatorResult
+    """
+
+    regex = re.compile(regex)
+
+    # Tolerate `inputs` and `reference_outputs` as kwargs, though they're unused
+    def wrapped_evaluator(
+        *, outputs: Any, **kwargs: Any
+    ) -> EvaluatorResult:
+
+        # Tolerate `outputs` being a dict, but convert to string for regex matching
+        if not isinstance(outputs, str):
+            outputs = json.dumps(outputs)
+
+        def get_score():
+            return regex.match(outputs) is not None
+
+        res = _run_evaluator(
+            run_name="regex_match",
+            scorer=get_score,
+            feedback_key="regex_match",
+        )
+        return res
+
+    return wrapped_evaluator
+```
+
+```python
+evaluator = create_regex_evaluator(regex=r"some string")
+result = evaluator(outputs="this contains some string")
+```
+
+```
+{
+    'key': 'regex_match',
+    'score': True,
+    'comment': None,
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { EvaluatorResult } from "openevals/types";
+import { _runEvaluator } from "openevals/utils";
+
+/**
+ * Creates an evaluator that compares the actual output and reference output for similarity by text embedding distance.
+ * @param {Object} options - The configuration options
+ * @param {Embeddings} options.embeddings - The embeddings model to use for similarity comparison
+ * @param {('cosine'|'dot_product')} [options.algorithm='cosine'] - The algorithm to use for embedding similarity
+ * @returns An evaluator that returns a score representing the embedding similarity
+ */
+export const createRegexEvaluator = ({
+  regex,
+}: {
+  regex: RegExp;
+}) => {
+  return async (params: {
+    outputs: string | Record<string, unknown>;
+  }): Promise<EvaluatorResult> => {
+    const { outputs } = params;
+
+    // Tolerate `outputs` being an object, but convert to string for regex matching
+    const outputString =
+      typeof outputs === "string" ? outputs : JSON.stringify(outputs);
+
+    const getScore = async (): Promise<boolean> => {
+      return regex.test(outputString);
+    };
+
+    return _runEvaluator(
+      "regex_match",
+      getScore,
+      "regex_match"
+    );
+  };
+};
+```
+
+```ts
+const evaluator = createRegexEvaluator({
+  regex: /some string/,
+});
+
+const result = await evaluator({ outputs: "this text contains some string" });
+```
+
+```
+{
+  key: "regex_match",
+  score: true,
+}
+```
+</details>
 
 ## Python Async Support
 

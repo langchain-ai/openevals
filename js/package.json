@@ -1,6 +1,6 @@
 {
   "name": "openevals",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "packageManager": "yarn@3.5.1",
   "type": "module",
   "scripts": {

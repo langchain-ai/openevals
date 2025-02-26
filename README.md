@@ -8,7 +8,7 @@ If you are looking for evals specific to evaluating LLM agents, please check out
 
 ## Quickstart
 
-**Note:** If you'd like to watch a video walkthrough, click the image below:
+**Note:** If you'd like to follow along with a video walkthrough, click the image below:
 
 [![Video quickstart](https://img.youtube.com/vi/J-F30jRyhoA/0.jpg)](https://www.youtube.com/watch?v=J-F30jRyhoA)
 
@@ -173,8 +173,7 @@ npm install openai
 ```
 </details>
 
-It is also helpful to be familiar with some [evaluation concepts](https://docs.smith.langchain.com/evaluation/concepts) and
-LangSmith's pytest integration for running evals, which is documented [here](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest).
+It is also helpful to be familiar with some [evaluation concepts](https://docs.smith.langchain.com/evaluation/concepts).
 
 ## Evaluators
 

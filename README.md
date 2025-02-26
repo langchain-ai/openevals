@@ -8,6 +8,11 @@ If you are looking for evals specific to evaluating LLM agents, please check out
 
 ## Quickstart
 
+<details>
+<summary>Video</summary>
+<video src="https://www.youtube.com/watch?v=J-F30jRyhoA" controls />
+</details>
+
 To get started, install `openevals`:
 
 <details open>

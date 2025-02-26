@@ -94,8 +94,7 @@ For LLM-as-judge evaluators, you will also need an LLM client. By default, `open
 pip install openai
 ```
 
-It is also helpful to be familiar with some [evaluation concepts](https://docs.smith.langchain.com/evaluation/concepts) and
-LangSmith's pytest integration for running evals, which is documented [here](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest).
+It is also helpful to be familiar with some [evaluation concepts](https://docs.smith.langchain.com/evaluation/concepts).
 
 ## Evaluators
 

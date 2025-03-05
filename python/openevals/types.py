@@ -1,12 +1,12 @@
 from typing import (
     Any,
-    NotRequired,
     Optional,
     Protocol,
-    TypedDict,
     Union,
     runtime_checkable,
 )
+
+from typing_extensions import NotRequired, TypedDict
 
 
 class EvaluatorResult(TypedDict):

@@ -12,6 +12,7 @@ from openevals.types import (
     ModelClient,
     ChatCompletionMessage,
     FewShotExample,
+    ScoreType,
 )
 
 from langchain.chat_models import init_chat_model
@@ -19,6 +20,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langsmith import traceable
 
 from typing import (
+    Awaitable,
     Callable,
     Optional,
     Union,
@@ -139,7 +141,7 @@ def _create_llm_as_judge_scorer(
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
-) -> SimpleEvaluator:
+) -> Callable[..., ScoreType]:
     def get_score(
         *,
         inputs: Optional[Union[str, dict]] = None,
@@ -304,7 +306,7 @@ def _create_async_llm_as_judge_scorer(
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
-) -> SimpleAsyncEvaluator:
+) -> Callable[..., Union[Awaitable[ScoreType], ScoreType]]:
     async def aget_score(
         *,
         inputs: Optional[Union[str, dict]] = None,

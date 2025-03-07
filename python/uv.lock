@@ -884,6 +884,15 @@ wheels = [
 ]
 
 [[package]]
+name = "nodeenv"
+version = "1.9.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/16/fc88b08840de0e0a72a2f9d8c6bae36be573e475a6326ae854bcc549fc45/nodeenv-1.9.1.tar.gz", hash = "sha256:6ec12890a2dab7946721edbfbcd91f3319c6ccc9aec47be7c7e6b7011ee6645f", size = 47437 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl", hash = "sha256:ba11c9782d29c27c70ffbdda2d7415098754709be8a7056d79a737cd901155c9", size = 22314 },
+]
+
+[[package]]
 name = "numpy"
 version = "1.26.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1029,6 +1038,7 @@ dependencies = [
 dev = [
     { name = "mypy" },
     { name = "openai" },
+    { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
@@ -1046,6 +1056,7 @@ requires-dist = [
 dev = [
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "openai", specifier = ">=1.61.1" },
+    { name = "pyright", specifier = ">=1.1.396" },
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "pytest-asyncio", specifier = ">=0.25.3" },
     { name = "ruff", specifier = ">=0.9.5" },
@@ -1358,6 +1369,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/7c/2d/c3338d48ea6cc0feb8446d8e6937e1408088a72a39937982cc6111d17f84/pygments-2.19.1.tar.gz", hash = "sha256:61c16d2a8576dc0649d9f39e089b5f02bcd27fba10d8fb4dcc28173f7a45151f", size = 4968581 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8a/0b/9fcc47d19c48b59121088dd6da2488a49d5f72dacf8262e2790a1d2c7d15/pygments-2.19.1-py3-none-any.whl", hash = "sha256:9ea1544ad55cecf4b8242fab6dd35a93bbce657034b0611ee383099054ab6d8c", size = 1225293 },
+]
+
+[[package]]
+name = "pyright"
+version = "1.1.396"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nodeenv" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bd/73/f20cb1dea1bdc1774e7f860fb69dc0718c7d8dea854a345faec845eb086a/pyright-1.1.396.tar.gz", hash = "sha256:142901f5908f5a0895be3d3befcc18bedcdb8cc1798deecaec86ef7233a29b03", size = 3814400 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/80/be/ecb7cfb42d242b7ee764b52e6ff4782beeec00e3b943a3ec832b281f9da6/pyright-1.1.396-py3-none-any.whl", hash = "sha256:c635e473095b9138c471abccca22b9fedbe63858e0b40d4fc4b67da041891844", size = 5689355 },
 ]
 
 [[package]]

@@ -9,9 +9,12 @@ from typing import (
 from typing_extensions import NotRequired, TypedDict
 
 
+ScoreType = Union[float, bool]
+
+
 class EvaluatorResult(TypedDict):
     key: str
-    score: Union[float, bool]
+    score: ScoreType
     comment: Optional[str]
 
 

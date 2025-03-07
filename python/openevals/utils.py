@@ -2,28 +2,24 @@ from __future__ import annotations
 
 from langsmith import testing as t, get_current_run_tree
 from langsmith.testing._internal import _TEST_CASE
-import functools
 from typing import Any, Callable, TYPE_CHECKING, Union, Optional
+
+from openevals.types import ChatCompletionMessage, EvaluatorResult
+
+from langchain_core.messages.utils import convert_to_openai_messages
+from langchain_core.messages import BaseMessage
 
 __all__ = [
     "_chat_completion_messages_to_string",
     "_run_evaluator",
     "_arun_evaluator",
     "_normalize_to_openai_messages_list",
+    "_normalize_final_app_outputs_as_string",
 ]
 
-from openevals.types import ChatCompletionMessage, EvaluatorResult
 
 if TYPE_CHECKING:
     from langchain_core.messages import BaseMessage
-
-
-@functools.lru_cache(maxsize=1)
-def _import_langchain_core() -> tuple:
-    from langchain_core.messages.utils import convert_to_openai_messages
-    from langchain_core.messages import BaseMessage
-
-    return BaseMessage, convert_to_openai_messages
 
 
 def _convert_to_openai_message(
@@ -32,15 +28,9 @@ def _convert_to_openai_message(
     if isinstance(message, dict):
         return message  # type: ignore
     else:
-        try:
-            BaseMessage, convert_to_openai_messages = _import_langchain_core()
-        except ImportError:
-            raise ValueError(
-                "Only messages in OpenAI format or LangChain BaseMessage are supported. If not passing messages in OpenAI format, you must install `langchain_core`."
-            )
         if not isinstance(message, BaseMessage):
             raise ValueError(f"Expected BaseMessage, got {type(message)}")
-        return convert_to_openai_messages([message])[0]
+        return convert_to_openai_messages([message])[0]  # type: ignore
 
 
 def _normalize_to_openai_messages_list(
@@ -215,3 +205,16 @@ def _chat_completion_messages_to_string(messages: list[ChatCompletionMessage]) -
         return f"<{message.get('role', '')}>\n{content}\n</{message.get('role', '')}>"
 
     return "\n\n".join(format_message(message) for message in messages)
+
+
+def _normalize_final_app_outputs_as_string(outputs: Union[str, dict]) -> str:
+    if isinstance(outputs, str):
+        return outputs
+    elif isinstance(outputs, dict):
+        if "messages" not in outputs or not isinstance(outputs["messages"], list):
+            raise ValueError(
+                f"Expected a dictionary with a 'messages' key with a list of messages, but got {outputs}"
+            )
+        return outputs["messages"][-1]["content"]
+    else:
+        raise ValueError(f"Expected str or dict, got {type(outputs)}")

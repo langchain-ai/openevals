@@ -30,7 +30,6 @@ def _parse_pyright_output(stdout: bytes) -> Tuple[bool, str]:
         score = len(errors) == 0
         return (score, json.dumps(errors))
     except json.JSONDecodeError:
-        print(stdout.decode())
         return (False, f"Failed to parse Pyright output: {stdout.decode()}")
 
 
@@ -100,7 +99,7 @@ async def _analyze_with_pyright_async(
 def create_pyright_evaluator(
     *,
     pyright_cli_args: list[str] = [],
-    code_extraction_strategy: Literal["all", "llm"] = "all",
+    code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], str]] = None,
     client: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
@@ -129,7 +128,7 @@ def create_pyright_evaluator(
 def create_async_pyright_evaluator(
     *,
     pyright_cli_args: list[str] = [],
-    code_extraction_strategy: Literal["all", "llm"] = "all",
+    code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], Union[str, Awaitable[str]]]] = None,
     client: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
@@ -147,7 +146,7 @@ def create_async_pyright_evaluator(
     return _create_async_base_code_evaluator(
         model=model,
         client=client,
-        run_name="code_llm_as_judge",
+        run_name="pyright_check",
         feedback_key="pyright_succeeded",
         scorer=_scorer,
         code_extraction_strategy=code_extraction_strategy,

@@ -211,10 +211,13 @@ def _normalize_final_app_outputs_as_string(outputs: Union[str, dict]) -> str:
     if isinstance(outputs, str):
         return outputs
     elif isinstance(outputs, dict):
-        if "messages" not in outputs or not isinstance(outputs["messages"], list):
+        if "content" in outputs:
+            return outputs["content"]
+        elif "messages" in outputs and isinstance(outputs["messages"], list):
+            return outputs["messages"][-1]["content"]
+        else:
             raise ValueError(
-                f"Expected a dictionary with a 'messages' key with a list of messages, but got {outputs}"
+                f"Expected a string, dictionary with a 'content' key or a 'messages' key with a list of messages, but got {outputs}"
             )
-        return outputs["messages"][-1]["content"]
     else:
         raise ValueError(f"Expected str or dict, got {type(outputs)}")

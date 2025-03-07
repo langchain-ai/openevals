@@ -83,17 +83,47 @@ Extract code from the following text:
 """
 
 
+def _extract_code_from_markdown_code_blocks(text: str) -> str:
+    """
+    Extract code from markdown code blocks in the provided text.
+
+    Supports both triple backtick code blocks with or without language specifiers.
+
+    Args:
+        text: The text containing markdown code blocks
+
+    Returns:
+        A string containing only the code extracted from code blocks, with blocks
+        separated by newlines
+    """
+    import re
+
+    # Pattern to match code blocks with or without language specifier
+    # (?s) enables dot to match newlines
+    # (?:```(?:\w+)?\n(.*?)```) matches code blocks with optional language specifier
+    pattern = r"(?s)```(?:\w+)?\n(.*?)```"
+
+    # Find all code blocks
+    code_blocks = re.findall(pattern, text)
+
+    if not code_blocks:
+        return text  # Return original text if no code blocks found
+
+    # Join all code blocks with newlines
+    return "\n".join(code_blocks)
+
+
 def _create_base_code_evaluator(
     *,
     scorer: Callable[..., ScoreType],
-    code_extraction_strategy: Literal["all", "llm"] = "all",
+    code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], str]] = None,
     model: Optional[str] = None,
     client: Optional[BaseChatModel] = None,
     run_name: str,
     feedback_key: str,
 ) -> SimpleEvaluator:
-    if code_extractor is not None and code_extraction_strategy != "all":
+    if code_extractor is not None and code_extraction_strategy != "none":
         raise ValueError(
             "`code_extractor` and `code_extraction_strategy` cannot both be provided"
         )
@@ -127,6 +157,10 @@ def _create_base_code_evaluator(
                         {"run_name": "extract_code"},
                     )
                     normalized_outputs = res.content  # type: ignore
+                elif code_extraction_strategy == "markdown_code_blocks":
+                    normalized_outputs = _extract_code_from_markdown_code_blocks(
+                        normalized_outputs
+                    )
                 else:
                     # Nothing to do to extract code
                     pass
@@ -153,14 +187,14 @@ def _create_base_code_evaluator(
 def _create_async_base_code_evaluator(
     *,
     scorer: Callable[..., Union[ScoreType, Awaitable[ScoreType]]],
-    code_extraction_strategy: Literal["all", "llm"] = "all",
+    code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], Union[str, Awaitable[str]]]] = None,
     model: Optional[str] = None,
     client: Optional[BaseChatModel] = None,
     run_name: str,
     feedback_key: str,
 ) -> SimpleAsyncEvaluator:
-    if code_extractor is not None and code_extraction_strategy != "all":
+    if code_extractor is not None and code_extraction_strategy != "none":
         raise ValueError(
             "`code_extractor` and `code_extraction_strategy` cannot both be provided"
         )
@@ -195,6 +229,10 @@ def _create_async_base_code_evaluator(
                         {"run_name": "extract_code"},
                     )
                     normalized_outputs = res.content
+                elif code_extraction_strategy == "markdown_code_blocks":
+                    normalized_outputs = _extract_code_from_markdown_code_blocks(
+                        normalized_outputs
+                    )
                 else:
                     # Nothing to do to extract code
                     pass

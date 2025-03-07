@@ -5,7 +5,7 @@ CODE_CORRECTNESS_PROMPT = """You are an expert code reviewer evaluating code for
   - Solves the problem completely as specified in the input
   - Should contain only valid code without any additional text
   - Handles all edge cases appropriately
-  - Contains no bugs or logical errors
+  - Contains absolutely no bugs or logical errors
   - Uses efficient and appropriate algorithms/data structures
   - Follows language-specific best practices
   - Has correct syntax and would compile/run without errors
@@ -13,7 +13,7 @@ CODE_CORRECTNESS_PROMPT = """You are an expert code reviewer evaluating code for
   When scoring, you should penalize:
   - Logical errors or bugs that would cause incorrect behavior
   - Missing edge case handling
-  - Overly inefficient implementations when significantly better approaches exist
+  - Overly inefficient implementations when better approaches exist
   - Incomplete solutions that don't address all requirements
   - Syntax errors that would prevent compilation/execution
   - Security vulnerabilities or unsafe practices
@@ -22,7 +22,7 @@ CODE_CORRECTNESS_PROMPT = """You are an expert code reviewer evaluating code for
 
 <Instructions>
   - Carefully analyze both the output code and the initial input query
-  - Check for functional correctness and completeness
+  - Meticulously check for functional correctness and completeness
   - Focus on whether the code would work correctly rather than style preferences
 </Instructions>
 
@@ -46,7 +46,7 @@ CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS = """You are an expert code revie
   - Solves the problem completely as specified in the input
   - Should contain only valid code without any additional text
   - Handles all edge cases appropriately
-  - Contains no bugs or logical errors
+  - Contains absolutely no bugs or logical errors
   - Uses efficient and appropriate algorithms/data structures
   - Follows language-specific best practices
   - Has correct syntax and would compile/run without errors
@@ -54,7 +54,7 @@ CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS = """You are an expert code revie
   When scoring, you should penalize:
   - Logical errors or bugs that would cause incorrect behavior
   - Missing edge case handling
-  - Overly inefficient implementations when significantly better approaches exist
+  - Overly inefficient implementations when better approaches exist
   - Incomplete solutions that don't address all requirements
   - Syntax errors that would prevent compilation/execution
   - Security vulnerabilities or unsafe practices
@@ -63,7 +63,7 @@ CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS = """You are an expert code revie
 
 <Instructions>
   - Carefully analyze both the output code and the initial input query
-  - Check for functional correctness and completeness
+  - Meticulously check for functional correctness and completeness
   - Focus on whether the code would work correctly rather than style preferences
   - Compare the output with the reference output to verify correctness
   - The reference output represents the expected behavior or result

@@ -1101,16 +1101,10 @@ Then, you can use it as follows:
 ```python
 from openevals.code.pyright import create_pyright_evaluator
 
-evaluator = create_pyright_evaluator(
-    code_extraction_strategy="markdown_code_blocks"
-)
+evaluator = create_pyright_evaluator()
 
 CODE = """
-Sure! I can create a function that adds two numbers together. Here's the code:
-
-\`\`\`python
 def sum_of_two_numbers(a, b): return a + b
-\`\`\`
 """
 
 result = evaluator(outputs=CODE)
@@ -1153,16 +1147,10 @@ Then, you can use it as follows:
 ```python
 from openevals.code.mypy import create_mypy_evaluator
 
-evaluator = create_mypy_evaluator(
-    code_extraction_strategy="markdown_code_blocks"
-)
+evaluator = create_mypy_evaluator()
 
 CODE = """
-Sure! I can create a function that adds two numbers together. Here's the code:
-
-\`\`\`python
 def sum_of_two_numbers(a, b): return a + b
-\`\`\`
 """
 
 result = evaluator(outputs=CODE)
@@ -1215,21 +1203,52 @@ llm_as_judge = create_code_llm_as_judge(
     code_extraction_strategy="markdown_code_blocks",
 )
 
-CODE = """
-Sure! Here's the code:
+
+INPUTS = """
+Rewrite the code below to be async:
 
 \`\`\`python
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+def _run_mypy(
+    *,
+    filepath: str,
+    mypy_cli_args: list[str],
+) -> Tuple[bool, str]:
+    result = subprocess.run(
+        [
+            "mypy",
+            *mypy_cli_args,
+            filepath,
+        ],
+        capture_output=True,
+    )
+    return _parse_mypy_output(result.stdout)
 \`\`\`
 """
 
-eval_result = llm_as_judge(inputs="Generate a working web server in Python with FastAPI.", outputs=CODE)
+OUTPUTS = """
+\`\`\`python
+async def _run_mypy_async(
+    *,
+    filepath: str,
+    mypy_cli_args: list[str],
+) -> Tuple[bool, str]:
+    process = await subprocess.run(
+        [
+            "mypy",
+            *mypy_cli_args,
+            filepath,
+        ],
+    )
+    stdout, _ = await process.communicate()
+
+    return _parse_mypy_output(stdout)
+\`\`\`
+"""
+
+eval_result = llm_as_judge(
+    inputs=INPUTS,
+    outputs=OUTPUTS
+)
 
 print(eval_result)
 ```
@@ -1237,8 +1256,8 @@ print(eval_result)
 ```
 {
     'key': 'code_correctness',
-    'score': True,
-    'comment': None,
+    'score': False,
+    'comment': "The provided async code is incorrect. It still incorrectly attempts to use 'await subprocess.run' which is synchronous and does not support being awaited. The proper asynchronous approach would be to use 'asyncio.create_subprocess_exec' (or a similar asyncio API) with appropriate redirection of stdout (e.g., stdout=asyncio.subprocess.PIPE) and then await the 'communicate()' call. Thus, the code does not meet the requirements completely as specified, and there is a significant error which prevents it from working correctly. Thus, the score should be: false.",
 }
 ```
 </details>

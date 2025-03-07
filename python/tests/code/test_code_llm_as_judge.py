@@ -7,40 +7,116 @@ from openevals.code.llm import create_code_llm_as_judge, CODE_CORRECTNESS_PROMPT
 @pytest.mark.parametrize(
     "inputs, outputs, expected_result",
     [
+        #         (
+        #             "Generate a function that returns the sum of two numbers",
+        #             "Sure! Here's a function that returns the sum of two numbers: def sum_of_two_numbers(a, b): return a + b",
+        #             False,
+        #         ),
+        #         (
+        #             "Generate a function that returns the sum of two numbers",
+        #             "def sum_of_two_numbers(a, b): return a + b",
+        #             True,
+        #         ),
+        #         (
+        #             "Generate a working web server in Python with FastAPI.",
+        #             """
+        # from fastapi import FastAPI
+        # app = FastAPI()
+        # def read_root():
+        #     return {"Hello": "World"}""",
+        #             False,
+        #         ),
+        #         (
+        #             "Generate a working web server in Python with FastAPI.",
+        #             """
+        # from fastapi import FastAPI
+        # app = FastAPI()
+        # @app.get("/")
+        # def read_root():
+        #     return {"Hello": "World"}""",
+        #             True,
+        #         ),
         (
-            "Generate a function that returns the sum of two numbers",
-            "Sure! Here's a function that returns the sum of two numbers: def sum_of_two_numbers(a, b): return a + b",
-            False,
-        ),
-        (
-            "Generate a function that returns the sum of two numbers",
-            "def sum_of_two_numbers(a, b): return a + b",
+            """
+Rewrite the code below to be async:
+
+```python
+def _run_mypy(
+    *,
+    filepath: str,
+    mypy_cli_args: list[str],
+) -> Tuple[bool, str]:
+    result = subprocess.run(
+        [
+            "mypy",
+            *mypy_cli_args,
+            filepath,
+        ],
+        capture_output=True,
+    )
+    return _parse_mypy_output(result.stdout)
+```
+""",
+            """
+```python
+async def _run_mypy_async(
+    *,
+    filepath: str,
+    mypy_cli_args: list[str],
+) -> Tuple[bool, str]:
+    process = await asyncio.create_subprocess_exec(
+        "mypy",
+        *(mypy_cli_args or []),
+        filepath,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, _ = await process.communicate()
+
+    return _parse_mypy_output(stdout)
+```""",
             True,
         ),
         (
-            "Generate a working web server in Python with FastAPI.",
             """
-from fastapi import FastAPI
+Rewrite the code below to be async:
 
-app = FastAPI()
+```python
+def _run_mypy(
+    *,
+    filepath: str,
+    mypy_cli_args: list[str],
+) -> Tuple[bool, str]:
+    result = subprocess.run(
+        [
+            "mypy",
+            *mypy_cli_args,
+            filepath,
+        ],
+        capture_output=True,
+    )
+    return _parse_mypy_output(result.stdout)
+```
+""",
+            """
+```python
+async def _run_mypy_async(
+    *,
+    filepath: str,
+    mypy_cli_args: list[str],
+) -> Tuple[bool, str]:
+    process = await subprocess.run(
+        [
+            "mypy",
+            *mypy_cli_args,
+            filepath,
+        ],
+    )
+    stdout, _ = await process.communicate()
 
-def read_root():
-    return {"Hello": "World"}
-        """,
+    return _parse_mypy_output(stdout)
+```""",
             False,
-        ),
-        (
-            "Generate a working web server in Python with FastAPI.",
-            """
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-        """,
-            True,
         ),
     ],
 )
@@ -52,6 +128,7 @@ def test_code_llm_as_judge_extraction_strategy_default(
         model="openai:o3-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    print(eval_result)
     assert eval_result["score"] == expected_result
 
 
@@ -72,8 +149,7 @@ from fastapi import FastAPI
 app = FastAPI()
 
 def read_root():
-    return {"Hello": "World"}
-        """,
+    return {"Hello": "World"}""",
             False,
         ),
         (
@@ -85,8 +161,7 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
-        """,
+    return {"Hello": "World"}""",
             True,
         ),
     ],

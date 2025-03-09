@@ -1169,7 +1169,6 @@ print(result)
 By default, this evaluator will run with the following arguments:
 
 ```
-
 mypy --no-incremental --disallow-untyped-calls --disallow-incomplete-defs --ignore-missing-imports
 ```
 

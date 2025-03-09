@@ -104,6 +104,11 @@ def create_pyright_evaluator(
     client: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
 ) -> SimpleEvaluator:
+    if code_extraction_strategy != "llm" and (client or model):
+        raise ValueError(
+            "client and model may only be passed if code_extraction_strategy is 'llm'"
+        )
+
     def _scorer(
         *,
         outputs: str,
@@ -117,7 +122,7 @@ def create_pyright_evaluator(
     return _create_base_code_evaluator(
         model=model,
         client=client,
-        run_name="code_llm_as_judge",
+        run_name="pyright_evaluator",
         feedback_key="pyright_succeeded",
         scorer=_scorer,
         code_extraction_strategy=code_extraction_strategy,
@@ -133,6 +138,11 @@ def create_async_pyright_evaluator(
     client: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
 ) -> SimpleAsyncEvaluator:
+    if code_extraction_strategy != "llm" and (client or model):
+        raise ValueError(
+            "client and model may only be passed if code_extraction_strategy is 'llm'"
+        )
+
     async def _scorer(
         *,
         outputs: str,

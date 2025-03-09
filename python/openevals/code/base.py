@@ -78,7 +78,7 @@ LLM_EXTRACTION_USER_PROMPT = """
 Extract code from the following text:
 
 <text>
-{text}
+{outputs}
 </text>
 """
 
@@ -150,7 +150,7 @@ def _create_base_code_evaluator(
                             {
                                 "role": "user",
                                 "content": LLM_EXTRACTION_USER_PROMPT.format(
-                                    text=normalized_outputs
+                                    outputs=normalized_outputs
                                 ),
                             },
                         ],

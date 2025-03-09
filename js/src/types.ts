@@ -17,7 +17,8 @@ export type SimpleEvaluator = (params: {
 export type SingleResultScorerReturnType =
   | boolean
   | number
-  | [boolean | number, string];
+  | [boolean | number, string]
+  | readonly [boolean | number, string];
 
 export type MultiResultScorerReturnType = {
   [key: string]:

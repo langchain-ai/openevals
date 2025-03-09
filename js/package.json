@@ -16,10 +16,12 @@
   "dependencies": {
     "@langchain/openai": "^0.4.4",
     "langchain": "^0.3.18",
-    "langsmith": "^0.3.11"
+    "langsmith": "^0.3.11",
+    "uuid": "^11.1.0"
   },
   "peerDependencies": {
-    "@langchain/core": "^0.3.40"
+    "@langchain/core": "^0.3.40",
+    "typescript": "*"
   },
   "devDependencies": {
     "@langchain/core": "^0.3.40",
@@ -40,6 +42,11 @@
     "prettier": "^3.5.1",
     "typescript": "~5.1.6",
     "vitest": "^3.0.5"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
   },
   "files": [
     "dist/",

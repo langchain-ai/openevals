@@ -21,6 +21,7 @@ export const config = {
   ],
   entrypoints: {
     index: "index",
+    "code/typescript": "code/typescript",
     llm: "llm",
     types: "types",
     utils: "utils",

@@ -17,8 +17,9 @@ export const _convertToOpenAIMessage = (
   message: BaseMessage | ChatCompletionMessage
 ): ChatCompletionMessage => {
   if (isBaseMessage(message)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return _convertMessagesToOpenAIParams([message])[0] as any;
+    return _convertMessagesToOpenAIParams([
+      message,
+    ])[0] as ChatCompletionMessage;
   } else {
     return message;
   }
@@ -129,8 +130,38 @@ export const _runEvaluator = async <
         ls_framework ?? "openevals";
       currentRunTree.extra.metadata.__ls_evaluator = runName;
       currentRunTree.extra.metadata.__ls_language = "js";
-    } catch (e) {}
+    } catch {
+      // Do nothing
+    }
     const res = await runScorer(extra ?? ({} as T));
     return res as EvaluationResultType<O>;
   }
 };
+
+export function _normalizeOutputsAsString(
+  outputs: string | Record<string, unknown>
+): string {
+  if (typeof outputs === "string") {
+    return outputs;
+  } else if (outputs !== null && typeof outputs === "object") {
+    if ("content" in outputs) {
+      return outputs.content as string;
+    } else if (
+      "messages" in outputs &&
+      Array.isArray(outputs.messages) &&
+      outputs.messages.length > 0
+    ) {
+      return outputs.messages[outputs.messages.length - 1].content as string;
+    } else {
+      throw new Error(
+        `Expected a string, dictionary with a 'content' key or a 'messages' key with a list of messages, but got ${JSON.stringify(
+          outputs,
+          null,
+          2
+        )}`
+      );
+    }
+  } else {
+    throw new Error(`Expected string or object, got ${typeof outputs}`);
+  }
+}

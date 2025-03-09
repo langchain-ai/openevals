@@ -128,7 +128,7 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
   - [Code](#code)
     - [Pyright (Python-only)](#pyright-python-only)
     - [Mypy (Python-only)](#mypy-python-only)
-    - [TypeScript (TypeScript-only)](#typescript-typescript-only)
+    - [TypeScript type-checking (TypeScript-only)](#typescript-type-checking-typescript-only)
     - [LLM-as-judge for code](#llm-as-judge-for-code)
   - [Other](#other)
     - [Exact Match](#exact-match)
@@ -1181,9 +1181,39 @@ evaluator = create_mypy_evaluator(
 )
 ```
 
-#### TypeScript (TypeScript-only)
+#### TypeScript type-checking (TypeScript-only)
 
-// TODO
+The TypeScript evaluator uses TypeScript's type checker to check the code for correctness.
+
+You will need to install `typescript` on your system as a dependency (not a dev dependency!):
+
+```bash
+npm install typescript
+```
+
+Then, you can use it as follows (note that you should import from the `openevals/code/typescript` entrypoint due to the additional required dependency):
+
+```ts
+import { createTypeScriptEvaluator } from "openevals/code/typescript";
+
+const evaluator = createTypeScriptEvaluator();
+
+const result = await evaluator({
+    outputs: "function add(a, b) { return a + b; }",
+});
+
+console.log(result);
+```
+
+```
+{
+    'key': 'typescript_succeeded',
+    'score': True,
+    'comment': None,
+}
+```
+
+The evaluator will ignore `reportMissingImports` errors.
 
 #### LLM-as-judge for code
 
@@ -1260,6 +1290,47 @@ print(eval_result)
     'comment': "The provided async code is incorrect. It still incorrectly attempts to use 'await subprocess.run' which is synchronous and does not support being awaited. The proper asynchronous approach would be to use 'asyncio.create_subprocess_exec' (or a similar asyncio API) with appropriate redirection of stdout (e.g., stdout=asyncio.subprocess.PIPE) and then await the 'communicate()' call. Thus, the code does not meet the requirements completely as specified, and there is a significant error which prevents it from working correctly. Thus, the score should be: false.",
 }
 ```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createCodeLLMAsJudge, CODE_CORRECTNESS_PROMPT } from "openevals";
+
+const evaluator = createCodeLLMAsJudge({
+  prompt: CODE_CORRECTNESS_PROMPT,
+  model: "openai:o3-mini",
+});
+
+const inputs = `Add proper TypeScript types to the following code:
+
+\`\`\`typescript
+function add(a, b) { return a + b; }
+\`\`\`
+`;
+
+const outputs = `
+\`\`\`typescript
+function add(a: number, b: number): boolean {
+  return a + b;
+}
+\`\`\`
+`;
+
+const evalResult = await evaluator({ inputs, outputs });
+
+console.log(evalResult);
+```
+
+```
+{
+  "key": "code_correctness",
+  "score": false,
+  "comment": "The code has a logical error in its type specification. The function is intended to add two numbers and return their sum, so the return type should be number, not boolean. This mistake makes the solution incorrect according to the rubric. Thus, the score should be: false."
+}
+```
+
 </details>
 
 ### Other

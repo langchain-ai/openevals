@@ -3810,6 +3810,10 @@ __metadata:
     vitest: ^3.0.5
   peerDependencies:
     "@langchain/core": ^0.3.40
+    typescript: "*"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
   languageName: unknown
   linkType: soft
 

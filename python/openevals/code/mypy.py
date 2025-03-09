@@ -98,6 +98,31 @@ def create_mypy_evaluator(
     client: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
 ) -> SimpleEvaluator:
+    """Create an evaluator that checks Python code with mypy.
+
+    This function creates an evaluator that runs mypy on Python code
+    to check for type errors and other issues. It supports different strategies
+    for extracting code from the input.
+
+    Args:
+        mypy_cli_args: Command line arguments to pass to mypy. Defaults to a set of
+            common type checking flags.
+        code_extraction_strategy: Strategy for extracting code from the input.
+            Options are:
+            - "none": Use the input as-is
+            - "llm": Use an LLM to extract code (requires client or model)
+            - "markdown_code_blocks": Extract code from markdown code blocks
+        code_extractor: Optional custom function to extract code from the input.
+        client: LLM client to use for code extraction if strategy is "llm".
+        model: Model identifier to use for code extraction if strategy is "llm".
+
+    Returns:
+        An evaluator function that runs mypy on the input code.
+
+    Raises:
+        ValueError: If client or model is provided with a code_extraction_strategy
+            other than "llm".
+    """
     if code_extraction_strategy != "llm" and (client or model):
         raise ValueError(
             "client and model may only be passed if code_extraction_strategy is 'llm'"
@@ -137,6 +162,31 @@ def create_async_mypy_evaluator(
     client: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
 ) -> SimpleAsyncEvaluator:
+    """Create an asynchronous evaluator that checks Python code with mypy.
+
+    This function creates an asynchronous evaluator that runs mypy on Python code
+    to check for type errors and other issues. It supports different strategies
+    for extracting code from the input.
+
+    Args:
+        mypy_cli_args: Command line arguments to pass to mypy. Defaults to a set of
+            common type checking flags.
+        code_extraction_strategy: Strategy for extracting code from the input.
+            Options are:
+            - "none": Use the input as-is
+            - "llm": Use an LLM to extract code (requires client or model)
+            - "markdown_code_blocks": Extract code from markdown code blocks
+        code_extractor: Optional custom function to extract code from the input.
+        client: LLM client to use for code extraction if strategy is "llm".
+        model: Model identifier to use for code extraction if strategy is "llm".
+
+    Returns:
+        An asynchronous evaluator function that runs mypy on the input code.
+
+    Raises:
+        ValueError: If client or model is provided with a code_extraction_strategy
+            other than "llm".
+    """
     if code_extraction_strategy != "llm" and (client or model):
         raise ValueError(
             "client and model may only be passed if code_extraction_strategy is 'llm'"

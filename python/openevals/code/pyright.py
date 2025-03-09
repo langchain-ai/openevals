@@ -104,6 +104,29 @@ def create_pyright_evaluator(
     client: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
 ) -> SimpleEvaluator:
+    """Creates an evaluator that checks Python code using Pyright.
+
+    This evaluator runs Pyright static type checking on Python code and returns whether
+    the code passes type checking along with any error details.
+
+    Args:
+        pyright_cli_args: Command-line arguments to pass to Pyright.
+        code_extraction_strategy: Strategy for extracting code from the output.
+            - "none": Use the entire output as code.
+            - "llm": Use an LLM to extract code from the output.
+            - "markdown_code_blocks": Extract code from markdown code blocks.
+        code_extractor: Custom function to extract code from the output.
+            Can be synchronous or asynchronous.
+        client: LLM client to use for code extraction if strategy is "llm".
+        model: Model name to use for code extraction if strategy is "llm".
+
+    Returns:
+        An evaluator function.
+
+    Raises:
+        ValueError: If client or model is provided with a code_extraction_strategy
+                   other than "llm".
+    """
     if code_extraction_strategy != "llm" and (client or model):
         raise ValueError(
             "client and model may only be passed if code_extraction_strategy is 'llm'"
@@ -138,6 +161,29 @@ def create_async_pyright_evaluator(
     client: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
 ) -> SimpleAsyncEvaluator:
+    """Creates an asynchronous evaluator that checks Python code using Pyright.
+
+    This evaluator runs Pyright static type checking on Python code and returns whether
+    the code passes type checking along with any error details.
+
+    Args:
+        pyright_cli_args: Command-line arguments to pass to Pyright.
+        code_extraction_strategy: Strategy for extracting code from the output.
+            - "none": Use the entire output as code.
+            - "llm": Use an LLM to extract code from the output.
+            - "markdown_code_blocks": Extract code from markdown code blocks.
+        code_extractor: Custom function to extract code from the output.
+            Can be synchronous or asynchronous.
+        client: LLM client to use for code extraction if strategy is "llm".
+        model: Model name to use for code extraction if strategy is "llm".
+
+    Returns:
+        An asynchronous evaluator function.
+
+    Raises:
+        ValueError: If client or model is provided with a code_extraction_strategy
+                   other than "llm".
+    """
     if code_extraction_strategy != "llm" and (client or model):
         raise ValueError(
             "client and model may only be passed if code_extraction_strategy is 'llm'"

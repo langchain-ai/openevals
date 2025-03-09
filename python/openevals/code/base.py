@@ -222,7 +222,7 @@ def _create_async_base_code_evaluator(
                             {
                                 "role": "user",
                                 "content": LLM_EXTRACTION_USER_PROMPT.format(
-                                    text=normalized_outputs
+                                    outputs=normalized_outputs
                                 ),
                             },
                         ],

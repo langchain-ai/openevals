@@ -2,6 +2,10 @@ index.cjs
 index.js
 index.d.ts
 index.d.cts
+code/typescript.cjs
+code/typescript.js
+code/typescript.d.ts
+code/typescript.d.cts
 llm.cjs
 llm.js
 llm.d.ts

@@ -125,6 +125,11 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
   - [Extraction and tool calls](#extraction-and-tool-calls)
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
+  - [Code](#code)
+    - [Pyright (Python-only)](#pyright-python-only)
+    - [Mypy (Python-only)](#mypy-python-only)
+    - [TypeScript type-checking (TypeScript-only)](#typescript-type-checking-typescript-only)
+    - [LLM-as-judge for code](#llm-as-judge-for-code)
   - [Other](#other)
     - [Exact Match](#exact-match)
     - [Levenshtein Distance](#levenshtein-distance)
@@ -1060,6 +1065,268 @@ Therefore, the list aggregator will return a final score of 0.
   'key': 'json_match:a',
   'score': 0,
   'comment': None
+}
+```
+
+</details>
+
+### Code
+
+OpenEvals contains some useful prebuilt evaluators for evaluating generated code:
+
+- Type-checking generated code with [Pyright](https://github.com/microsoft/pyright) and [Mypy](https://github.com/python/mypy) (Python-only) or TypeScript's built-in type checker (JavaScript only)
+- LLM-as-a-judge for code
+
+Since LLM outputs with code may contain other text (for example, interleaved explanations with code), OpenEvals code evaluators share some built-in extraction methods for identifying just the code from of LLM outputs.
+
+For any of the evaluators in this section, you can either pass a `code_extraction_strategy` param set to `llm`, which will use an `llm` with a default prompt to directly extract code, or `markdown_code_blocks`, which will extract anything in markdown code blocks (triple backticks). You can alternatively pass a `code_extractor` param set to a function that takes an LLM output and returns a string of code. The default is to leave the output content untouched (`"none"`).
+
+If using `code_extraction_strategy="llm"`, you can also pass a `model` string or a `client` to the evaluator to set which evaluator the model uses for code extraction.
+If you would like to customize the prompt, you should use the `code_extractor` param instead.
+
+All evaluators in this section accept `outputs` as a string, an object with a key `"messages"` that contains a list of messages, or a message-like object with a key `"content"` that contains a string.
+
+#### Pyright (Python-only)
+
+For Pyright, you will need to install the `pyright` CLI on your system:
+
+```bash
+pip install pyright
+```
+
+You can find full installation instructions [here](https://microsoft.github.io/pyright/#/installation?id=command-line).
+
+Then, you can use it as follows:
+
+```python
+from openevals.code.pyright import create_pyright_evaluator
+
+evaluator = create_pyright_evaluator()
+
+CODE = """
+def sum_of_two_numbers(a, b): return a + b
+"""
+
+result = evaluator(outputs=CODE)
+
+print(result)
+```
+
+```
+{
+    'key': 'pyright_succeeded',
+    'score': True,
+    'comment': None,
+}
+```
+
+The evaluator will ignore `reportMissingImports` errors.
+
+You can also pass `pyright_cli_args` to the evaluator to customize the arguments passed to the `pyright` CLI:
+
+```python
+evaluator = create_pyright_evaluator(
+    pyright_cli_args=["--flag"]
+)
+```
+
+For a full list of supported arguments, see the [pyright CLI documentation](https://microsoft.github.io/pyright/#/command-line).
+
+#### Mypy (Python-only)
+
+For Mypy, you will need to install `mypy` on your system:
+
+```bash
+pip install mypy
+```
+
+You can find full installation instructions [here](https://mypy.readthedocs.io/en/stable/getting_started.html).
+
+Then, you can use it as follows:
+
+```python
+from openevals.code.mypy import create_mypy_evaluator
+
+evaluator = create_mypy_evaluator()
+
+CODE = """
+def sum_of_two_numbers(a, b): return a + b
+"""
+
+result = evaluator(outputs=CODE)
+
+print(result)
+```
+
+```
+{
+    'key': 'mypy_succeeded',
+    'score': True,
+    'comment': None,
+}
+```
+
+By default, this evaluator will run with the following arguments:
+
+```
+mypy --no-incremental --disallow-untyped-calls --disallow-incomplete-defs --ignore-missing-imports
+```
+
+But you can pass `mypy_cli_args` to the evaluator to customize the arguments passed to the `mypy` CLI. This will override the default arguments:
+
+```python
+evaluator = create_mypy_evaluator(
+    mypy_cli_args=["--flag"]
+)
+```
+
+#### TypeScript type-checking (TypeScript-only)
+
+The TypeScript evaluator uses TypeScript's type checker to check the code for correctness.
+
+You will need to install `typescript` on your system as a dependency (not a dev dependency!):
+
+```bash
+npm install typescript
+```
+
+Then, you can use it as follows (note that you should import from the `openevals/code/typescript` entrypoint due to the additional required dependency):
+
+```ts
+import { createTypeScriptEvaluator } from "openevals/code/typescript";
+
+const evaluator = createTypeScriptEvaluator();
+
+const result = await evaluator({
+    outputs: "function add(a, b) { return a + b; }",
+});
+
+console.log(result);
+```
+
+```
+{
+    'key': 'typescript_succeeded',
+    'score': True,
+    'comment': None,
+}
+```
+
+The evaluator will ignore `reportMissingImports` errors.
+
+#### LLM-as-judge for code
+
+OpenEvals includes a prebuilt LLM-as-a-judge evaluator for code. The primary differentiator between this one and the more generic [LLM-as-judge evaluator](#llm-as-judge) is that it will perform the extraction steps detailed above - otherwise it takes the same arguments, including a prompt.
+
+You can run an LLM-as-a-judge evaluator for code as follows:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.code.llm import create_code_llm_as_judge, CODE_CORRECTNESS_PROMPT
+
+llm_as_judge = create_code_llm_as_judge(
+    prompt=CODE_CORRECTNESS_PROMPT,
+    model="openai:o3-mini",
+    code_extraction_strategy="markdown_code_blocks",
+)
+
+
+INPUTS = """
+Rewrite the code below to be async:
+
+\`\`\`python
+def _run_mypy(
+    *,
+    filepath: str,
+    mypy_cli_args: list[str],
+) -> Tuple[bool, str]:
+    result = subprocess.run(
+        [
+            "mypy",
+            *mypy_cli_args,
+            filepath,
+        ],
+        capture_output=True,
+    )
+    return _parse_mypy_output(result.stdout)
+\`\`\`
+"""
+
+OUTPUTS = """
+\`\`\`python
+async def _run_mypy_async(
+    *,
+    filepath: str,
+    mypy_cli_args: list[str],
+) -> Tuple[bool, str]:
+    process = await subprocess.run(
+        [
+            "mypy",
+            *mypy_cli_args,
+            filepath,
+        ],
+    )
+    stdout, _ = await process.communicate()
+
+    return _parse_mypy_output(stdout)
+\`\`\`
+"""
+
+eval_result = llm_as_judge(
+    inputs=INPUTS,
+    outputs=OUTPUTS
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'code_correctness',
+    'score': False,
+    'comment': "The provided async code is incorrect. It still incorrectly attempts to use 'await subprocess.run' which is synchronous and does not support being awaited. The proper asynchronous approach would be to use 'asyncio.create_subprocess_exec' (or a similar asyncio API) with appropriate redirection of stdout (e.g., stdout=asyncio.subprocess.PIPE) and then await the 'communicate()' call. Thus, the code does not meet the requirements completely as specified, and there is a significant error which prevents it from working correctly. Thus, the score should be: false.",
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createCodeLLMAsJudge, CODE_CORRECTNESS_PROMPT } from "openevals";
+
+const evaluator = createCodeLLMAsJudge({
+  prompt: CODE_CORRECTNESS_PROMPT,
+  model: "openai:o3-mini",
+});
+
+const inputs = `Add proper TypeScript types to the following code:
+
+\`\`\`typescript
+function add(a, b) { return a + b; }
+\`\`\`
+`;
+
+const outputs = `
+\`\`\`typescript
+function add(a: number, b: number): boolean {
+  return a + b;
+}
+\`\`\`
+`;
+
+const evalResult = await evaluator({ inputs, outputs });
+
+console.log(evalResult);
+```
+
+```
+{
+  "key": "code_correctness",
+  "score": false,
+  "comment": "The code has a logical error in its type specification. The function is intended to add two numbers and return their sum, so the return type should be number, not boolean. This mistake makes the solution incorrect according to the rubric. Thus, the score should be: false."
 }
 ```
 

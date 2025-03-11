@@ -6,7 +6,7 @@ import { createLLMAsJudge } from "../llm.js";
 import { CORRECTNESS_PROMPT } from "../prompts/correctness.js";
 
 ls.describe("LLM Judge Correctness", () => {
-  ls.test.only(
+  ls.test(
     "should pass correctness check for correct answer",
     {
       inputs: {

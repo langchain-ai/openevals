@@ -155,23 +155,21 @@ def _create_llm_as_judge_scorer(
         if isinstance(inputs, dict):
             inputs = json.dumps(inputs)
 
+        prompt_params = {
+            "inputs": inputs,
+            "outputs": outputs,
+            "reference_outputs": reference_outputs,
+            **kwargs,
+        }
+        filtered_prompt_params = {
+            k: v for k, v in prompt_params.items() if v is not None
+        }
+
         if isinstance(prompt, RunnableLike):
-            formatted_prompt = prompt.invoke(
-                input={
-                    "inputs": inputs,
-                    "outputs": outputs,
-                    "reference_outputs": reference_outputs,
-                    **kwargs,
-                }
-            )
+            formatted_prompt = prompt.invoke(filtered_prompt_params)
             messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
         elif isinstance(prompt, str):
-            formatted_prompt = prompt.format(
-                inputs=inputs,
-                outputs=outputs,
-                reference_outputs=reference_outputs,
-                **kwargs,
-            )
+            formatted_prompt = prompt.format(**filtered_prompt_params)
             messages = [
                 {"role": "user", "content": formatted_prompt},
             ]
@@ -304,23 +302,21 @@ def _create_async_llm_as_judge_scorer(
         if isinstance(inputs, dict):
             inputs = json.dumps(inputs)
 
+        prompt_params = {
+            "inputs": inputs,
+            "outputs": outputs,
+            "reference_outputs": reference_outputs,
+            **kwargs,
+        }
+        filtered_prompt_params = {
+            k: v for k, v in prompt_params.items() if v is not None
+        }
+
         if isinstance(prompt, RunnableLike):
-            formatted_prompt = await prompt.ainvoke(
-                input={
-                    "inputs": inputs,
-                    "outputs": outputs,
-                    "reference_outputs": reference_outputs,
-                    **kwargs,
-                }
-            )
+            formatted_prompt = await prompt.ainvoke(filtered_prompt_params)
             messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
         elif isinstance(prompt, str):
-            formatted_prompt = prompt.format(
-                inputs=inputs,
-                outputs=outputs,
-                reference_outputs=reference_outputs,
-                **kwargs,
-            )
+            formatted_prompt = prompt.format(**filtered_prompt_params)
             messages = [
                 {"role": "user", "content": formatted_prompt},
             ]

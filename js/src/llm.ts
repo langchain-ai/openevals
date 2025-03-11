@@ -206,23 +206,25 @@ export const _createLLMAsJudgeScorer = (params: {
     );
 
     let messages: (ChatCompletionMessage | BaseMessage)[] = [];
+    
+    const promptParams = {
+      inputs: stringifiedInputs,
+      outputs: stringifiedOutputs,
+      reference_outputs: stringifiedReferenceOutputs,
+      ...stringifiedRest,
+    };
+    
+    // Filter out undefined values from promptParams
+    const filteredPromptParams = Object.fromEntries(
+      Object.entries(promptParams).filter(([_, value]) => value !== undefined)
+    );
 
     if (_isRunnableInterface(prompt)) {
-      const formattedPrompt = await prompt.invoke({
-        inputs: stringifiedInputs,
-        outputs: stringifiedOutputs,
-        reference_outputs: stringifiedReferenceOutputs,
-        ...stringifiedRest,
-      });
+      const formattedPrompt = await prompt.invoke(filteredPromptParams);
       messages = formattedPrompt.messages;
     } else if (typeof prompt === "string") {
       const template = ChatPromptTemplate.fromTemplate(prompt);
-      const formattedPrompt = await template.invoke({
-        inputs: stringifiedInputs,
-        outputs: stringifiedOutputs,
-        reference_outputs: stringifiedReferenceOutputs,
-        ...stringifiedRest,
-      });
+      const formattedPrompt = await template.invoke(filteredPromptParams);
       messages = formattedPrompt.messages;
     } else {
       messages = await prompt({

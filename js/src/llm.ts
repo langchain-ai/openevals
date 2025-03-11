@@ -6,9 +6,6 @@ import { initChatModel } from "langchain/chat_models/universal";
 import { traceable } from "langsmith/traceable";
 
 import { _runEvaluator, _normalizeToOpenAIMessagesList } from "./utils.js";
-import { CONCISENESS_PROMPT } from "./prompts/conciseness.js";
-import { HALLUCINATION_PROMPT } from "./prompts/hallucination.js";
-import { CORRECTNESS_PROMPT } from "./prompts/correctness.js";
 import {
   ChatCompletionMessage,
   FewShotExample,
@@ -219,40 +216,6 @@ export const _createLLMAsJudgeScorer = (params: {
       });
       messages = formattedPrompt.messages;
     } else if (typeof prompt === "string") {
-      if (prompt === CORRECTNESS_PROMPT) {
-        if (
-          [
-            stringifiedInputs,
-            stringifiedOutputs,
-            stringifiedReferenceOutputs,
-          ].some((x) => x === null || x === undefined)
-        ) {
-          throw new Error(
-            "CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs"
-          );
-        }
-      }
-      if (prompt === CONCISENESS_PROMPT) {
-        if (
-          [stringifiedInputs, stringifiedOutputs].some(
-            (x) => x === null || x === undefined
-          )
-        ) {
-          throw new Error("CONCISENESS_PROMPT requires inputs and outputs");
-        }
-      }
-      if (prompt === HALLUCINATION_PROMPT) {
-        if (
-          [stringifiedInputs, stringifiedOutputs].some(
-            (x) => x === null || x === undefined
-          ) ||
-          !("context" in stringifiedRest)
-        ) {
-          throw new Error(
-            "HALLUCINATION_PROMPT requires inputs, outputs, and context"
-          );
-        }
-      }
       const template = ChatPromptTemplate.fromTemplate(prompt);
       const formattedPrompt = await template.invoke({
         inputs: stringifiedInputs,

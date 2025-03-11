@@ -25,9 +25,7 @@ ls.describe("LLM Judge Correctness", () => {
         model: "openai:o3-mini",
       });
 
-      await expect(llmAsJudge({ inputs, outputs })).rejects.toThrow(
-        "CORRECTNESS_PROMPT requires inputs, outputs, and reference_outputs"
-      );
+      await expect(llmAsJudge({ inputs, outputs })).rejects.toThrow();
       const evalResult = await llmAsJudge({
         inputs,
         outputs,

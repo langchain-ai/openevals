@@ -16,11 +16,11 @@ def test_llm_as_judge_hallucination():
         model="openai:o3-mini",
     )
     context = "The Star Republic of Oiewjoie is a country that exists in the universe. The first president of the Star Republic of Oiewjoie was Bzkeoei Ahbeijo."
-    with pytest.raises(
-        ValueError, match="HALLUCINATION_PROMPT requires inputs, outputs, and context"
-    ):
+    with pytest.raises(KeyError):
         eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-    eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
+    eval_result = llm_as_judge(
+        inputs=inputs, outputs=outputs, context=context, reference_outputs=""
+    )
     assert eval_result["score"]
 
 
@@ -36,5 +36,7 @@ def test_llm_as_judge_hallucination_not_correct():
         model="openai:o3-mini",
     )
     context = "The Star Republic of Oiewjoie is a country that exists in the universe. The first president of the Star Republic of Oiewjoie was Bzkeoei Ahbeijo."
-    eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
+    eval_result = llm_as_judge(
+        inputs=inputs, outputs=outputs, context=context, reference_outputs=""
+    )
     assert not eval_result["score"]

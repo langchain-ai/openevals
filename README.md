@@ -439,7 +439,12 @@ llm_as_judge = create_llm_as_judge(
     model="openai:o3-mini",
 )
 
-eval_result = llm_as_judge(inputs=inputs, outputs=outputs, context=context)
+eval_result = llm_as_judge(
+    inputs=inputs,
+    outputs=outputs,
+    context=context,
+    reference_outputs="",
+)
 ```
 
 ```
@@ -472,6 +477,7 @@ const evalResult = await hallucinationEvaluator({
   inputs,
   outputs,
   context,
+  referenceOutputs: "",
 });
 
 console.log(evalResult);

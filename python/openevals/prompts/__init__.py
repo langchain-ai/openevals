@@ -15,5 +15,5 @@ from .code_correctness import (
     CODE_CORRECTNESS_PROMPT,
     CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS,
 )
-from .rag_hallucination import GROUNDED_IN_CONTEXT_PROMPT
+from .rag_hallucination import GROUNDEDNESS_PROMPT
 from .rag_retrieval import RETRIEVAL_HELPFULNESS_PROMPT

@@ -12,5 +12,7 @@ export {
   CODE_CORRECTNESS_PROMPT,
   CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS,
 } from "./prompts/code_correctness.js";
+export { GROUNDEDNESS_PROMPT } from "./prompts/rag_hallucination.js"
+export { RETRIEVAL_HELPFULNESS_PROMPT } from  "./prompts/rag_retrieval.js";
 
 export * from "./types.js";

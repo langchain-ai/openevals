@@ -1,4 +1,4 @@
-GROUNDEDNESS_PROMPT = """You are an expert data labeler evaluating model outputs for relevance to some context. Your task is to assign a score based on the following rubric:
+RAG_HALLUCATION_PROMPT = """You are an expert data labeler evaluating model outputs for relevance to some context. Your task is to assign a score based on the following rubric:
 
 <Rubric>
 Relevant outputs:

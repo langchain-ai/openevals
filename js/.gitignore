@@ -10,6 +10,10 @@ llm.cjs
 llm.js
 llm.d.ts
 llm.d.cts
+prompts.cjs
+prompts.js
+prompts.d.ts
+prompts.d.cts
 types.cjs
 types.js
 types.d.ts

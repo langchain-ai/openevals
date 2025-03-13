@@ -125,6 +125,9 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
   - [Extraction and tool calls](#extraction-and-tool-calls)
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
+  - [RAG](#rag)
+    - [Evaluating retrieval](#evaluating-retrieval)
+    - [Evaluating generation](#evaluating-generation)
   - [Code](#code)
     - [Pyright (Python-only)](#pyright-python-only)
     - [Mypy (Python-only)](#mypy-python-only)
@@ -1075,6 +1078,205 @@ Therefore, the list aggregator will return a final score of 0.
 ```
 
 </details>
+
+### RAG
+
+RAG applications in their most basic form consist of 2 steps. In the retrieval step, context is retrieved (most commonly from a vector database) to provide the LLM with the information it needs to respond to the user. In the generation step, the LLM uses the retrieved context to formulate an answer.
+
+Openevals provides prebuilt prompts to evaluate both of these steps.
+
+#### Evaluating retrieval
+
+The code below shows how to evaluate the retrieval step of a RAG application.
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import RETRIEVAL_HELPFULNESS_PROMPT
+
+retrieval_evaluator = create_llm_as_judge(
+    prompt=RETRIEVAL_HELPFULNESS_PROMPT,
+    feedback_key="retrieval_helpfulness",
+    model="openai:o3-mini",
+)
+
+inputs = {
+    "question": "Where was the first president of foobarland born?",
+}
+outputs = [
+    {
+        "title": "foobarland president",
+        "content": "the first president of foobarland was bagatur"
+    },
+    {
+        "title": "bagatur bio",
+        "content": "bagutur is a big fan of PR reviews"
+    }
+]
+
+eval_result = retrieval_evaluator(
+  inputs=inputs,
+  outputs=outputs,
+)
+
+print(eval_result)
+```
+
+
+```
+{
+  'key': 'retrieval_helpfulness', 
+  'score': False, 
+  'comment': "The question asks for the birthplace of the first president of foobarland, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, RETRIEVAL_HELPFULNESS_PROMPT } from "openevals";
+
+const inputs = {
+  question: "Where was the first president of foobarland born?",
+}
+const outputs = [
+  {
+    title: "foobarland president",
+    content: "the first president of foobarland was bagatur"
+  },
+  {
+    title: "bagatur bio",
+    content: "bagutur is a big fan of PR reviews"
+  }
+]
+
+const llmAsJudge = createLLMAsJudge({
+  prompt: RETRIEVAL_HELPFULNESS_PROMPT,
+  feedbackKey: "hallucination",
+  model: "openai:o3-mini",
+});
+
+const evalResult = await llmAsJudge({
+  inputs,
+  outputs,
+});
+
+console.log(evalResult);
+```
+
+
+```
+{
+  'key': 'retrieval_helpfulness', 
+  'score': False, 
+  'comment': "The question asks for the birthplace of the first president of foobarland, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
+}
+```
+
+</details>
+
+#### Evaluating generation
+
+The code below shows how to evaluate the generation step of a RAG application.
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import RAG_HALLUCATION_PROMPT
+
+generation_evaluator = create_llm_as_judge(
+    prompt=RAG_HALLUCATION_PROMPT,
+    feedback_key="generation_hallucination",
+    model="openai:o3-mini",
+)
+
+inputs = {
+    "question": "Where was the first president of foobarland born?",
+}
+context = [
+    {
+        "title": "foobarland president",
+        "content": "the first president of foobarland was bagatur"
+    },
+    {
+        "title": "bagatur bio",
+        "content": "bagutur was born in langchainland"
+    }
+]
+outputs = {"answer": "The first president of foobarland was born in langchainland."}
+
+eval_result = generation_evaluator(
+  inputs=inputs,
+  outputs=outputs,
+  context=context
+)
+
+print(eval_result)
+```
+
+
+```
+{
+  'key': 'generation_hallucination', 
+  'score': True, 
+  'comment': 'The context contains two factual pieces of information: (1) the first president of foobarland was bagatur, and (2) bagatur (or bagutur as stated in the second document) was born in langchainland. The model output combines these two facts by stating that "The first president of foobarland was born in langchainland." This composite statement is directly supported by the retrieved documents, as it infers that the first president (bagatur) was born in langchainland based on the provided context. All parts of the model output are supported by the context and are basic facts, so no unsupported or hallucinated content is present. Thus, the score should be: true.'
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, RAG_HALLUCATION_PROMPT } from "openevals";
+
+const inputs = {
+  question: "Where was the first president of foobarland born?",
+}
+const context = [
+  {
+    title: "foobarland president",
+    content: "the first president of foobarland was bagatur"
+  },
+  {
+    title: "bagatur bio",
+    content: "bagutur was born in langchainland"
+  }
+]
+const outputs = {
+  answer: "The first president of foobarland was born in langchainland."
+}
+
+const llmAsJudge = createLLMAsJudge({
+  prompt: RAG_HALLUCATION_PROMPT,
+  feedbackKey: "hallucination",
+  model: "openai:o3-mini",
+});
+
+const evalResult = await llmAsJudge({
+  inputs,
+  outputs,
+});
+
+console.log(evalResult);
+```
+
+
+```
+{
+  'key': 'generation_hallucination', 
+  'score': True, 
+  'comment': 'The context contains two factual pieces of information: (1) the first president of foobarland was bagatur, and (2) bagatur (or bagutur as stated in the second document) was born in langchainland. The model output combines these two facts by stating that "The first president of foobarland was born in langchainland." This composite statement is directly supported by the retrieved documents, as it infers that the first president (bagatur) was born in langchainland based on the provided context. All parts of the model output are supported by the context and are basic facts, so no unsupported or hallucinated content is present. Thus, the score should be: true.'
+}
+```
 
 ### Code
 

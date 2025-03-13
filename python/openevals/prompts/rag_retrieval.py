@@ -30,9 +30,9 @@ RETRIEVAL_HELPFULNESS_PROMPT = """You are an expert data labeler evaluating outp
 - Use partial credit where applicable, recognizing outputs that are somewhat helpful even if incomplete.  
 </Reminder> 
 
-<input>
-{input}
-</input>
+<inputs>
+{inputs}
+</inputs>
 
 <outputs>
 {outputs}

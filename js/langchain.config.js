@@ -23,6 +23,7 @@ export const config = {
     index: "index",
     "code/typescript": "code/typescript",
     llm: "llm",
+    prompts: "prompts/index",
     types: "types",
     utils: "utils",
   },

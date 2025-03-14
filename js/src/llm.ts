@@ -206,14 +206,14 @@ export const _createLLMAsJudgeScorer = (params: {
     );
 
     let messages: (ChatCompletionMessage | BaseMessage)[] = [];
-    
+
     const promptParams = {
       inputs: stringifiedInputs,
       outputs: stringifiedOutputs,
       reference_outputs: stringifiedReferenceOutputs,
       ...stringifiedRest,
     };
-    
+
     // Filter out undefined values from promptParams
     const filteredPromptParams = Object.fromEntries(
       Object.entries(promptParams).filter(([_, value]) => value !== undefined)

@@ -1277,6 +1277,7 @@ console.log(evalResult);
   'comment': 'The context contains two factual pieces of information: (1) the first president of foobarland was bagatur, and (2) bagatur (or bagutur as stated in the second document) was born in langchainland. The model output combines these two facts by stating that "The first president of foobarland was born in langchainland." This composite statement is directly supported by the retrieved documents, as it infers that the first president (bagatur) was born in langchainland based on the provided context. All parts of the model output are supported by the context and are basic facts, so no unsupported or hallucinated content is present. Thus, the score should be: true.'
 }
 ```
+</details>
 
 ### Code
 

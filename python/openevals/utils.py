@@ -1,4 +1,5 @@
 from __future__ import annotations
+import asyncio
 
 from langsmith import testing as t, get_current_run_tree
 from langsmith.testing._internal import _TEST_CASE
@@ -131,7 +132,10 @@ async def _arun_evaluator(
 ) -> EvaluatorResult | list[EvaluatorResult]:
     async def _arun_scorer():
         # Get the initial score
-        score = await scorer(**kwargs)
+        if asyncio.iscoroutinefunction(scorer):
+            score = await scorer(**kwargs)
+        else:
+            score = scorer(**kwargs)
 
         # Collect all results first
         if isinstance(score, dict):

@@ -23,13 +23,13 @@ jobs:
       - name: Check for file changes
         id: check-changes
         run: |
-          if git diff --name-only origin/main HEAD | grep -q "^python/"; then
+          if git diff --name-only origin/main HEAD | grep -E "^python/.*\.py$"; then
             echo "python_changed=true" >> $GITHUB_OUTPUT
           else
             echo "python_changed=false" >> $GITHUB_OUTPUT
           fi
-
-          if git diff --name-only origin/main HEAD | grep -q "^js/"; then
+          
+          if git diff --name-only origin/main HEAD | grep -E "^js/.*\.(js|ts|jsx|tsx)$"; then
             echo "js_changed=true" >> $GITHUB_OUTPUT
           else
             echo "js_changed=false" >> $GITHUB_OUTPUT

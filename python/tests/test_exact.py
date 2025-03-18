@@ -42,7 +42,6 @@ async def test_exact_matcher_with_different_values_async():
     ) == EvaluatorResult(key="exact_match", score=False, comment=None, metadata=None)
 
 
-@pytest.mark.langsmith
 def test_exact_evaluate():
     client = Client()
     evaluator = exact_match
@@ -51,7 +50,6 @@ def test_exact_evaluate():
         assert r["evaluation_results"]["results"][0].score is not None
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_exact_aevaluate():
     client = Client()

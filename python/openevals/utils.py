@@ -1,7 +1,7 @@
 from __future__ import annotations
 import asyncio
 
-from langsmith import testing as t, get_current_run_tree
+from langsmith import testing as t, get_current_run_tree, traceable
 from langsmith.testing._internal import _TEST_CASE
 from typing import Any, Callable, TYPE_CHECKING, Union, Optional
 
@@ -86,7 +86,8 @@ def _run_evaluator(
     ls_framework: str = "openevals",
     **kwargs: Any,
 ) -> EvaluatorResult | list[EvaluatorResult]:
-    def _run_scorer():
+    @traceable(name=run_name)
+    def _run_scorer(**kwargs: Any):
         # Get the initial score
         score = scorer(**kwargs)
 
@@ -154,7 +155,8 @@ async def _arun_evaluator(
     ls_framework: str = "openevals",
     **kwargs: Any,
 ) -> EvaluatorResult | list[EvaluatorResult]:
-    async def _arun_scorer():
+    @traceable(name=run_name)
+    async def _arun_scorer(**kwargs: Any):
         # Get the initial score
         if asyncio.iscoroutinefunction(scorer):
             score = await scorer(**kwargs)
@@ -193,7 +195,7 @@ async def _arun_evaluator(
     # Log feedback if in test case
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
-            results = await _arun_scorer()
+            results = await _arun_scorer(**kwargs)
             _add_metadata_to_run_tree(run_name, ls_framework, results)
             if isinstance(results, list):
                 for result in results:
@@ -210,7 +212,7 @@ async def _arun_evaluator(
                     comment=results["comment"],
                 )
     else:
-        results = await _arun_scorer()
+        results = await _arun_scorer(**kwargs)
         _add_metadata_to_run_tree(run_name, ls_framework, results)
 
     # Return single result or list of results

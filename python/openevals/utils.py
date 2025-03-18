@@ -123,7 +123,7 @@ def _run_evaluator(
     # Log feedback if in test case
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
-            results = _run_scorer()
+            results = _run_scorer(**kwargs)
             _add_metadata_to_run_tree(run_name, ls_framework, results)
             if isinstance(results, list):
                 for result in results:
@@ -140,7 +140,7 @@ def _run_evaluator(
                     comment=results["comment"],
                 )
     else:
-        results = _run_scorer()
+        results = _run_scorer(**kwargs)
         _add_metadata_to_run_tree(run_name, ls_framework, results)
 
     # Return single result or list of results

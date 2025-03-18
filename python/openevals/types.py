@@ -16,6 +16,7 @@ class EvaluatorResult(TypedDict):
     key: str
     score: ScoreType
     comment: Optional[str]
+    metadata: Optional[dict]
 
 
 class SimpleEvaluatorNormal(Protocol):

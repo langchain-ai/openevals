@@ -51,16 +51,20 @@ def _normalize_to_openai_messages_list(
 def _process_score(key: str, value: Any) -> tuple[float, str | None]:
     if isinstance(value, dict):
         if "score" in value:
-            return value["score"], value.get("reasoning")
+            return value["score"], value.get("reasoning"), value.get("metadata", None)
         raise ValueError(
             f"Expected a dictionary with keys 'score' and 'reasoning', but got {value}"
         )
     return value, None
 
 
-def _add_metadata_to_run_tree(run_name: str, framework: str | None = None):
+def _add_metadata_to_run_tree(
+    run_name: str, framework: str | None = None, metadata: dict | None = None
+):
     rt = get_current_run_tree()
     if rt is not None:
+        if metadata is not None:
+            rt.metadata.update(metadata)
         rt.metadata["__ls_framework"] = framework
         rt.metadata["__ls_evaluator"] = run_name
         rt.metadata["__ls_language"] = "python"
@@ -83,24 +87,35 @@ def _run_evaluator(
             results = []
             # Handle dictionary of scores
             for key, value in score.items():
-                key_score, reasoning = _process_score(key, value)
+                key_score, reasoning, metadata = _process_score(key, value)
                 results.append(
-                    EvaluatorResult(key=key, score=key_score, comment=reasoning)
+                    EvaluatorResult(
+                        key=key, score=key_score, comment=reasoning, metadata=metadata
+                    )
                 )
             return results
         else:
             # Handle single score
             if isinstance(score, tuple):
-                score, reasoning = score
+                if len(score) == 3:
+                    score, reasoning, metadata = score
+                elif len(score) == 2:
+                    score, reasoning = score
+                    metadata = None
+                else:
+                    raise ValueError(f"Expected a tuple of length 2 or 3, got {score}")
             else:
                 reasoning = None
-            return EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
+                metadata = None
+            return EvaluatorResult(
+                key=feedback_key, score=score, comment=reasoning, metadata=metadata
+            )
 
     # Log feedback if in test case
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             results = _run_scorer()
-            _add_metadata_to_run_tree(run_name, ls_framework)
+            _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
             if isinstance(results, list):
                 for result in results:
                     t.log_feedback(
@@ -109,7 +124,7 @@ def _run_evaluator(
                         comment=result["comment"],
                     )
             else:
-                _add_metadata_to_run_tree(run_name, ls_framework)
+                _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
                 t.log_feedback(
                     key=results["key"],
                     score=results["score"],
@@ -117,6 +132,7 @@ def _run_evaluator(
                 )
     else:
         results = _run_scorer()
+        _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
 
     # Return single result or list of results
     return results
@@ -142,24 +158,35 @@ async def _arun_evaluator(
             results = []
             # Handle dictionary of scores
             for key, value in score.items():
-                key_score, reasoning = _process_score(key, value)
+                key_score, reasoning, metadata = _process_score(key, value)
                 results.append(
-                    EvaluatorResult(key=key, score=key_score, comment=reasoning)
+                    EvaluatorResult(
+                        key=key, score=key_score, comment=reasoning, metadata=metadata
+                    )
                 )
             return results
         else:
             # Handle single score
             if isinstance(score, tuple):
-                score, reasoning = score
+                if len(score) == 3:
+                    score, reasoning, metadata = score
+                elif len(score) == 2:
+                    score, reasoning = score
+                    metadata = None
+                else:
+                    raise ValueError(f"Expected a tuple of length 2 or 3, got {score}")
             else:
                 reasoning = None
-            return EvaluatorResult(key=feedback_key, score=score, comment=reasoning)
+                metadata = None
+            return EvaluatorResult(
+                key=feedback_key, score=score, comment=reasoning, metadata=metadata
+            )
 
     # Log feedback if in test case
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             results = await _arun_scorer()
-            _add_metadata_to_run_tree(run_name, ls_framework)
+            _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
             if isinstance(results, list):
                 for result in results:
                     t.log_feedback(
@@ -168,7 +195,7 @@ async def _arun_evaluator(
                         comment=result["comment"],
                     )
             else:
-                _add_metadata_to_run_tree(run_name, ls_framework)
+                _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
                 t.log_feedback(
                     key=results["key"],
                     score=results["score"],
@@ -176,6 +203,7 @@ async def _arun_evaluator(
                 )
     else:
         results = await _arun_scorer()
+        _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
 
     # Return single result or list of results
     return results

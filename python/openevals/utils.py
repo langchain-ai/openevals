@@ -55,7 +55,7 @@ def _process_score(key: str, value: Any) -> tuple[float, str | None]:
         raise ValueError(
             f"Expected a dictionary with keys 'score' and 'reasoning', but got {value}"
         )
-    return value, None
+    return value, None, None
 
 
 def _add_metadata_to_run_tree(

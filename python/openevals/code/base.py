@@ -78,7 +78,7 @@ def _extract_code_from_markdown_code_blocks(text: str) -> str:
     code_blocks = re.findall(pattern, text)
 
     if not code_blocks:
-        return text  # Return original text if no code blocks found
+        return None  # Return None if no code blocks found
 
     # Join all code blocks with newlines
     return "\n".join(code_blocks)
@@ -131,11 +131,13 @@ def _create_base_code_evaluator(
                     if res.tool_calls[0]["name"] == "ExtractCode":
                         normalized_outputs = res.tool_calls[0]["args"]["code"]
                     else:
-                        return (False, None, {"no_code_extracted": True})
+                        return (False, None, {"code_extraction_failed": True})
                 elif code_extraction_strategy == "markdown_code_blocks":
                     normalized_outputs = _extract_code_from_markdown_code_blocks(
                         normalized_outputs
                     )
+                    if normalized_outputs is None:
+                        return (False, None, {"code_extraction_failed": True})
                 else:
                     # Nothing to do to extract code
                     pass
@@ -207,11 +209,13 @@ def _create_async_base_code_evaluator(
                     if res.tool_calls[0]["name"] == "ExtractCode":
                         normalized_outputs = res.tool_calls[0]["args"]["code"]
                     else:
-                        return (False, None, {"no_code_extracted": True})
+                        return (False, None, {"code_extraction_failed": True})
                 elif code_extraction_strategy == "markdown_code_blocks":
                     normalized_outputs = _extract_code_from_markdown_code_blocks(
                         normalized_outputs
                     )
+                    if normalized_outputs is None:
+                        return (False, None, {"code_extraction_failed": True})
                 else:
                     # Nothing to do to extract code
                     pass

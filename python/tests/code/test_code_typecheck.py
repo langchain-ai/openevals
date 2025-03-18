@@ -137,4 +137,4 @@ def test_pyright_extraction_llm_no_code():
     )
     eval_result = pyright_evaluator(outputs="I'm doing well, how about you?")
     assert eval_result["score"] == False
-    assert eval_result["metadata"]["no_code_extracted"] == True
+    assert eval_result["metadata"]["code_extraction_failed"] == True

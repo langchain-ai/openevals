@@ -59,12 +59,20 @@ def _process_score(key: str, value: Any) -> tuple[float, str | None]:
 
 
 def _add_metadata_to_run_tree(
-    run_name: str, framework: str | None = None, metadata: dict | None = None
+    run_name: str,
+    framework: str | None = None,
+    results: Optional[Union[dict, list[dict]]] = None,
 ):
     rt = get_current_run_tree()
     if rt is not None:
-        if metadata is not None:
-            rt.metadata.update(metadata)
+        if results is not None:
+            if isinstance(results, list):
+                for result in results:
+                    if result.metadata is not None:
+                        rt.metadata.update(result.metadata)
+            else:
+                if results.metadata is not None:
+                    rt.metadata.update(results.metadata)
         rt.metadata["__ls_framework"] = framework
         rt.metadata["__ls_evaluator"] = run_name
         rt.metadata["__ls_language"] = "python"
@@ -115,7 +123,7 @@ def _run_evaluator(
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             results = _run_scorer()
-            _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
+            _add_metadata_to_run_tree(run_name, ls_framework, results)
             if isinstance(results, list):
                 for result in results:
                     t.log_feedback(
@@ -124,7 +132,7 @@ def _run_evaluator(
                         comment=result["comment"],
                     )
             else:
-                _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
+                _add_metadata_to_run_tree(run_name, ls_framework, results)
                 t.log_feedback(
                     key=results["key"],
                     score=results["score"],
@@ -132,7 +140,7 @@ def _run_evaluator(
                 )
     else:
         results = _run_scorer()
-        _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
+        _add_metadata_to_run_tree(run_name, ls_framework, results)
 
     # Return single result or list of results
     return results
@@ -186,7 +194,7 @@ async def _arun_evaluator(
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             results = await _arun_scorer()
-            _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
+            _add_metadata_to_run_tree(run_name, ls_framework, results)
             if isinstance(results, list):
                 for result in results:
                     t.log_feedback(
@@ -195,7 +203,7 @@ async def _arun_evaluator(
                         comment=result["comment"],
                     )
             else:
-                _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
+                _add_metadata_to_run_tree(run_name, ls_framework, results)
                 t.log_feedback(
                     key=results["key"],
                     score=results["score"],
@@ -203,7 +211,7 @@ async def _arun_evaluator(
                 )
     else:
         results = await _arun_scorer()
-        _add_metadata_to_run_tree(run_name, ls_framework, results["metadata"])
+        _add_metadata_to_run_tree(run_name, ls_framework, results)
 
     # Return single result or list of results
     return results

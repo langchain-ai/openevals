@@ -68,11 +68,11 @@ def _add_metadata_to_run_tree(
         if results is not None:
             if isinstance(results, list):
                 for result in results:
-                    if result.metadata is not None:
-                        rt.metadata.update(result.metadata)
+                    if result.get("metadata", None) is not None:
+                        rt.metadata.update(result.get("metadata", None))
             else:
-                if results.metadata is not None:
-                    rt.metadata.update(results.metadata)
+                if results.get("metadata", None) is not None:
+                    rt.metadata.update(results.get("metadata", None))
         rt.metadata["__ls_framework"] = framework
         rt.metadata["__ls_evaluator"] = run_name
         rt.metadata["__ls_language"] = "python"

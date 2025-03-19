@@ -4,7 +4,7 @@ import { expect } from "vitest";
 
 import { createLLMAsJudge } from "../llm.js";
 import { RAG_HALLUCATION_PROMPT } from "../prompts/rag_hallucination.js";
-import { RETRIEVAL_HELPFULNESS_PROMPT} from "../prompts/rag_retrieval.js"; 
+import { RETRIEVAL_HELPFULNESS_PROMPT } from "../prompts/rag_retrieval.js";
 
 ls.describe("LLM Judge Hallucination", () => {
   ls.test(
@@ -69,26 +69,24 @@ ls.describe("LLM Judge Hallucination", () => {
     }
   );
 
-
   ls.test(
     "should pass retrieval for relevant docs",
     {
       inputs: {
-        question:
-          "Where was the first president of foobarland born?",
+        question: "Where was the first president of foobarland born?",
       },
     },
     async ({ inputs }) => {
       const outputs = [
         {
-            title: "foobarland president",
-            content: "the first president of foobarland was bagatur"
+          title: "foobarland president",
+          content: "the first president of foobarland was bagatur",
         },
         {
-            title: "bagatur bio",
-            content: "bagutur was born in langchainland"
-        }
-      ]
+          title: "bagatur bio",
+          content: "bagutur was born in langchainland",
+        },
+      ];
 
       const llmAsJudge = createLLMAsJudge({
         prompt: RETRIEVAL_HELPFULNESS_PROMPT,
@@ -108,21 +106,20 @@ ls.describe("LLM Judge Hallucination", () => {
     "should fail retrieval for irrelevant docs",
     {
       inputs: {
-        question:
-          "Where was the first president of foobarland born?",
+        question: "Where was the first president of foobarland born?",
       },
     },
     async ({ inputs }) => {
       const outputs = [
         {
-            title: "foobarland president",
-            content: "the first president of foobarland was bagatur"
+          title: "foobarland president",
+          content: "the first president of foobarland was bagatur",
         },
         {
-            title: "bagatur bio",
-            content: "bagutur is a big fan of PR reviews"
-        }
-      ]
+          title: "bagatur bio",
+          content: "bagutur is a big fan of PR reviews",
+        },
+      ];
 
       const llmAsJudge = createLLMAsJudge({
         prompt: RETRIEVAL_HELPFULNESS_PROMPT,

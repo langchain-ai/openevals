@@ -1,16 +1,13 @@
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
 import { _convertMessagesToOpenAIParams } from "@langchain/openai";
-import {
-  wrapEvaluator,
-  isInTestContext,
-  SimpleEvaluationResult,
-} from "langsmith/utils/jestlike";
-import { getCurrentRunTree } from "langsmith/traceable";
+import { wrapEvaluator, isInTestContext } from "langsmith/utils/jestlike";
+import { getCurrentRunTree, traceable } from "langsmith/traceable";
 
 import {
   ChatCompletionMessage,
   MultiResultScorerReturnType,
   SingleResultScorerReturnType,
+  EvaluatorResult,
 } from "./types.js";
 
 export const _convertToOpenAIMessage = (
@@ -47,7 +44,14 @@ export const _normalizeToOpenAIMessagesList = (
 
 export const processScore = (
   _: string,
-  value: boolean | number | { score: boolean | number; reasoning?: string }
+  value:
+    | boolean
+    | number
+    | {
+        score: boolean | number;
+        reasoning?: string;
+        metadata?: Record<string, unknown>;
+      }
 ) => {
   if (typeof value === "object") {
     if (value != null && "score" in value) {
@@ -56,6 +60,7 @@ export const processScore = (
         "reasoning" in value && typeof value.reasoning === "string"
           ? value.reasoning
           : undefined,
+        value.metadata,
       ] as const;
     } else {
       throw new Error(
@@ -73,8 +78,8 @@ export const processScore = (
 export type EvaluationResultType<O> = O extends
   | MultiResultScorerReturnType
   | Promise<MultiResultScorerReturnType>
-  ? SimpleEvaluationResult[]
-  : SimpleEvaluationResult;
+  ? EvaluatorResult[]
+  : EvaluatorResult;
 
 export const _runEvaluator = async <
   T extends Record<string, unknown>,
@@ -96,12 +101,15 @@ export const _runEvaluator = async <
     if (!Array.isArray(score) && typeof score === "object") {
       const results = [];
       for (const [key, value] of Object.entries(score)) {
-        const [keyScore, reasoning] = processScore(key, value);
-        results.push({ key, score: keyScore, comment: reasoning });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [keyScore, reasoning, metadata] = processScore(key, value as any);
+        results.push({ key, score: keyScore, comment: reasoning, metadata });
       }
       return results;
     } else {
+      let metadata;
       if (Array.isArray(score)) {
+        metadata = score[2];
         reasoning = score[1];
         score = score[0] as Awaited<O>;
       }
@@ -109,7 +117,8 @@ export const _runEvaluator = async <
         key: feedbackKey,
         score,
         comment: reasoning,
-      } as SimpleEvaluationResult;
+        metadata,
+      } as EvaluatorResult;
     }
   };
 
@@ -133,7 +142,10 @@ export const _runEvaluator = async <
     } catch {
       // Do nothing
     }
-    const res = await runScorer(extra ?? ({} as T));
+    const traceableRunScorer = traceable(runScorer, {
+      name: runName,
+    }) as (params: T) => Promise<EvaluationResultType<O>>;
+    const res = await traceableRunScorer(extra ?? ({} as T));
     return res as EvaluationResultType<O>;
   }
 };

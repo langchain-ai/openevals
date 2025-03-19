@@ -1,6 +1,8 @@
 import { initChatModel } from "langchain/chat_models/universal";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { tool } from "@langchain/core/tools";
+import { z } from "zod";
 
 import { _normalizeOutputsAsString, _runEvaluator } from "../utils.js";
 import {
@@ -13,61 +15,19 @@ You are an expert software auditor.
 
 <Instructions>
   Your job is to extract code from a given text.
-  Your response will be passed DIRECTLY into a code execution sandbox for further testing,
+
+  - If there is code - extract it into a single script by calling the provided "ExtractCode" tool.
+  - If there is no code to extract - call "NoCode".
+
+  If you extract code, your response will be passed DIRECTLY into a code execution sandbox for further testing,
   so make sure to extract all code **without modifications**, even if it contains errors,
   since any modifications will ruin the integrity of the testing process.
-  Do not respond with any text other than the code you extract.
+  Omit installation instructions from extracted code.
 </Instructions>
-
-<Examples>
-  <Example>
-    <Input>
-      <text>
-        Here is some perfectly written TypeScript code:
-        
-        \`\`\`ts
-        print("Hello, world!")
-        \`\`\`
-      </text>
-    </Input>
-    <Output>
-      print("Hello, world!")
-    </Output>
-  </Example>
-  <Example>
-    <Input>
-      <text>
-        The first thing you should do is import lodash:
-        
-        \`\`\`ts
-        import _ from "lodash"
-        \`\`\`
-        
-        Then, you should use lodash to create an array:
-        
-        \`\`\`ts
-        const tail = _.tail([1, 2, 3, 4, 5]);
-        \`\`\`
-        
-        And finally, you should print the array:
-        
-        \`\`\`ts
-        console.log(tail);
-        \`\`\`
-        
-      </text>
-    </Input>
-    <Output>
-      import _ from "lodash"
-      const tail = _.tail([1, 2, 3, 4, 5]);
-      console.log(tail);
-    </Output>
-  </Example>
-</Examples>
 `;
 
 export const LLM_EXTRACTION_USER_PROMPT = `
-Extract code from the following text:
+Extract code from the following:
 
 <text>
 {outputs}
@@ -135,7 +95,7 @@ export function _createBaseCodeEvaluator<
 
   if (codeExtractionStrategy === "llm") {
     if (!model && !client) {
-      throw new Error("Either model or client must be provided");
+      throw new Error(`You must provide either a "model" string or a "client"`);
     }
   }
 
@@ -144,40 +104,79 @@ export function _createBaseCodeEvaluator<
     outputs: string | Record<string, unknown>;
     [key: string]: unknown;
   }) => {
-    let normalizedOutputs = _normalizeOutputsAsString(params.outputs);
+    const wrappedScorer = async (params: {
+      inputs: unknown;
+      outputs: string | Record<string, unknown>;
+      [key: string]: unknown;
+    }) => {
+      let normalizedOutputs = _normalizeOutputsAsString(params.outputs);
 
-    if (codeExtractor) {
-      normalizedOutputs = codeExtractor(params.outputs);
-    } else if (codeExtractionStrategy === "llm") {
-      if (!client) {
-        client = await initChatModel(model);
+      if (codeExtractor) {
+        normalizedOutputs = codeExtractor(params.outputs);
+      } else if (codeExtractionStrategy === "llm") {
+        if (!client) {
+          client = await initChatModel(model);
+        }
+        const llmUserPrompt = ChatPromptTemplate.fromTemplate(
+          LLM_EXTRACTION_USER_PROMPT
+        );
+
+        if (client.bindTools === undefined) {
+          throw new Error("You must pass a model that supports tool calling.");
+        }
+
+        const extractCodeTool = tool(() => {}, {
+          name: "ExtractCode",
+          description: "Tool to call if there is code to extract.",
+          schema: z.object({
+            code: z.string(),
+          }),
+        });
+
+        const noCodeTool = tool(() => {}, {
+          name: "NoCode",
+          description: "Tool to call to indicate no code was found.",
+          schema: z.object({
+            no_code: z.boolean(),
+          }),
+        });
+
+        const modelWithTools = client.bindTools([extractCodeTool, noCodeTool]);
+
+        const res = await modelWithTools.invoke([
+          {
+            role: "system",
+            content: LLM_EXTRACTION_SYSTEM_PROMPT,
+          },
+          {
+            role: "user",
+            content: await llmUserPrompt.format({ outputs: normalizedOutputs }),
+          },
+        ]);
+        if (res.tool_calls?.[0]?.name === "ExtractCode") {
+          normalizedOutputs = res.tool_calls[0].args.code;
+        } else {
+          return [
+            false,
+            "Code extraction failed",
+            { code_extraction_failed: true },
+          ] as const;
+        }
+      } else if (codeExtractionStrategy === "markdown_code_blocks") {
+        normalizedOutputs =
+          _extractCodeFromMarkdownCodeBlocks(normalizedOutputs);
       }
-      const llmUserPrompt = ChatPromptTemplate.fromTemplate(
-        LLM_EXTRACTION_USER_PROMPT
-      );
 
-      const res = await client!.invoke([
-        {
-          role: "system",
-          content: LLM_EXTRACTION_SYSTEM_PROMPT,
-        },
-        {
-          role: "user",
-          content: await llmUserPrompt.format({ outputs: normalizedOutputs }),
-        },
-      ]);
-      if (typeof res.content !== "string") {
-        throw new Error("Expected a string, got " + typeof res.content);
-      }
-      normalizedOutputs = res.content;
-    } else if (codeExtractionStrategy === "markdown_code_blocks") {
-      normalizedOutputs = _extractCodeFromMarkdownCodeBlocks(normalizedOutputs);
-    }
+      return scorer({
+        inputs: params.inputs ?? "",
+        outputs: normalizedOutputs,
+      });
+    };
 
-    return _runEvaluator(runName, scorer, feedbackKey, {
+    return _runEvaluator(runName, wrappedScorer, feedbackKey, {
       ...params,
       inputs: params.inputs ?? "",
-      outputs: normalizedOutputs,
+      outputs: params.outputs,
     });
   };
 

@@ -21,8 +21,7 @@
   },
   "peerDependencies": {
     "@langchain/core": "^0.3.40",
-    "typescript": "*",
-    "zod": "*"
+    "typescript": "*"
   },
   "devDependencies": {
     "@langchain/core": "^0.3.40",

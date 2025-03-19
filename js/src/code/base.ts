@@ -1,8 +1,6 @@
 import { initChatModel } from "langchain/chat_models/universal";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { tool } from "@langchain/core/tools";
-import { z } from "zod";
 
 import { _normalizeOutputsAsString, _runEvaluator } from "../utils.js";
 import {
@@ -33,6 +31,41 @@ Extract code from the following:
 {outputs}
 </text>
 `;
+
+const extractCodeToolSchema = {
+  type: "function",
+  function: {
+    name: "ExtractCode",
+    description: "Tool to call if there is code to extract.",
+    parameters: {
+      type: "object",
+      properties: {
+        code: {
+          type: "string",
+          description: "The code to extract.",
+        },
+      },
+      required: ["code"],
+    },
+  },
+};
+const noCodeToolSchema = {
+  type: "function",
+  function: {
+    name: "NoCode",
+    description: "Tool to call to indicate no code was found.",
+    parameters: {
+      type: "object",
+      properties: {
+        no_code: {
+          type: "boolean",
+          description: "Whether no code was found.",
+        },
+      },
+      required: ["no_code"],
+    },
+  },
+};
 
 /**
  * Extract code from markdown code blocks in the provided text.
@@ -125,23 +158,10 @@ export function _createBaseCodeEvaluator<
           throw new Error("You must pass a model that supports tool calling.");
         }
 
-        const extractCodeTool = tool(() => {}, {
-          name: "ExtractCode",
-          description: "Tool to call if there is code to extract.",
-          schema: z.object({
-            code: z.string(),
-          }),
-        });
-
-        const noCodeTool = tool(() => {}, {
-          name: "NoCode",
-          description: "Tool to call to indicate no code was found.",
-          schema: z.object({
-            no_code: z.boolean(),
-          }),
-        });
-
-        const modelWithTools = client.bindTools([extractCodeTool, noCodeTool]);
+        const modelWithTools = client.bindTools([
+          extractCodeToolSchema,
+          noCodeToolSchema,
+        ]);
 
         const res = await modelWithTools.invoke([
           {

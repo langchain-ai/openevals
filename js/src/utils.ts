@@ -1,7 +1,7 @@
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
 import { _convertMessagesToOpenAIParams } from "@langchain/openai";
 import { wrapEvaluator, isInTestContext } from "langsmith/utils/jestlike";
-import { getCurrentRunTree, traceable } from "langsmith/traceable";
+import { traceable } from "langsmith/traceable";
 
 import {
   ChatCompletionMessage,
@@ -133,17 +133,13 @@ export const _runEvaluator = async <
     });
     return res as EvaluationResultType<O>;
   } else {
-    try {
-      const currentRunTree = getCurrentRunTree();
-      currentRunTree.extra.metadata.__ls_framework =
-        ls_framework ?? "openevals";
-      currentRunTree.extra.metadata.__ls_evaluator = runName;
-      currentRunTree.extra.metadata.__ls_language = "js";
-    } catch {
-      // Do nothing
-    }
     const traceableRunScorer = traceable(runScorer, {
       name: runName,
+      metadata: {
+        __ls_framework: ls_framework ?? "openevals",
+        __ls_evaluator: runName,
+        __ls_language: "js",
+      },
     }) as (params: T) => Promise<EvaluationResultType<O>>;
     const res = await traceableRunScorer(extra ?? ({} as T));
     return res as EvaluationResultType<O>;

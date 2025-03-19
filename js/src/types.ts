@@ -2,6 +2,7 @@ export type EvaluatorResult = {
   key: string;
   score: number | boolean;
   comment?: string;
+  metadata?: Record<string, unknown>;
 };
 
 export type SimpleEvaluator = (params: {
@@ -17,8 +18,8 @@ export type SimpleEvaluator = (params: {
 export type SingleResultScorerReturnType =
   | boolean
   | number
-  | [boolean | number, string]
-  | readonly [boolean | number, string];
+  | [boolean | number, string, Record<string, unknown>?]
+  | readonly [boolean | number, string, Record<string, unknown>?];
 
 export type MultiResultScorerReturnType = {
   [key: string]:

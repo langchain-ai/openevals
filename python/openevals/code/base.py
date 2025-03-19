@@ -7,6 +7,7 @@ from openevals.utils import (
 )
 
 from typing import Any, Literal, Union, Optional, Callable, Awaitable
+from typing_extensions import TypedDict
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain.chat_models import init_chat_model
@@ -21,66 +22,36 @@ You are an expert software auditor.
 
 <Instructions>
   Your job is to extract code from a given text.
-  Your response will be passed DIRECTLY into a code execution sandbox for further testing,
+
+  - If there is code - extract it into a single script by calling the provided "ExtractCode" tool.
+  - If there is no code to extract - call "NoCode".
+
+  If you extract code, your response will be passed DIRECTLY into a code execution sandbox for further testing,
   so make sure to extract all code **without modifications**, even if it contains errors,
   since any modifications will ruin the integrity of the testing process.
-  Do not respond with any text other than the code you extract.
+  Omit installation instructions from extracted code.
 </Instructions>
-
-<Examples>
-  <Example>
-    <Input>
-      <text>
-        Here is some perfectly written Python code:
-        
-        ```python
-        console.log("Hello, world!")
-        ```
-      </text>
-    </Input>
-    <Output>
-      console.log("Hello, world!")
-    </Output>
-  </Example>
-  <Example>
-    <Input>
-      <text>
-        The first thing you should do is import numpy:
-        
-        ```
-        import numpy as np
-        ```
-        
-        Then, you should use numpy to create an array:
-        
-        ```
-        arr = np.array([1, 2, 3, 4, 5])
-        ```
-        
-        And finally, you should print the array:
-        
-        ```
-        print(arr)
-        ```
-        
-      </text>
-    </Input>
-    <Output>
-      import numpy as np
-      arr = np.array([1, 2, 3, 4, 5])
-      print(arr)
-    </Output>
-  </Example>
-</Examples>
 """
 
 LLM_EXTRACTION_USER_PROMPT = """
-Extract code from the following text:
+Extract code from the following:
 
 <text>
 {outputs}
 </text>
 """
+
+
+class ExtractCode(TypedDict):
+    """Tool to call if there is code to extract."""
+
+    code: str
+
+
+class NoCode(TypedDict):
+    """Tool to call to indicate no code was found."""
+
+    no_code: bool
 
 
 def _extract_code_from_markdown_code_blocks(text: str) -> str:
@@ -107,7 +78,7 @@ def _extract_code_from_markdown_code_blocks(text: str) -> str:
     code_blocks = re.findall(pattern, text)
 
     if not code_blocks:
-        return text  # Return original text if no code blocks found
+        return None  # Return None if no code blocks found
 
     # Join all code blocks with newlines
     return "\n".join(code_blocks)
@@ -129,7 +100,7 @@ def _create_base_code_evaluator(
         )
     if code_extraction_strategy == "llm":
         if model is None and client is None:
-            raise ValueError("Either model or client must be provided")
+            raise ValueError("You must provide either a `model` string or a `client`")
         if client is None:
             client = init_chat_model(model)  # type: ignore
 
@@ -144,7 +115,8 @@ def _create_base_code_evaluator(
             if code_extractor is None:
                 normalized_outputs = _normalize_final_app_outputs_as_string(outputs)
                 if code_extraction_strategy == "llm":
-                    res = client.invoke(
+                    model_with_tools = client.bind_tools([ExtractCode, NoCode])
+                    res = model_with_tools.invoke(
                         [
                             {"role": "system", "content": LLM_EXTRACTION_SYSTEM_PROMPT},
                             {
@@ -156,11 +128,16 @@ def _create_base_code_evaluator(
                         ],
                         {"run_name": "extract_code"},
                     )
-                    normalized_outputs = res.content  # type: ignore
+                    if res.tool_calls[0]["name"] == "ExtractCode":
+                        normalized_outputs = res.tool_calls[0]["args"]["code"]
+                    else:
+                        return (False, None, {"code_extraction_failed": True})
                 elif code_extraction_strategy == "markdown_code_blocks":
                     normalized_outputs = _extract_code_from_markdown_code_blocks(
                         normalized_outputs
                     )
+                    if normalized_outputs is None:
+                        return (False, None, {"code_extraction_failed": True})
                 else:
                     # Nothing to do to extract code
                     pass
@@ -201,7 +178,7 @@ def _create_async_base_code_evaluator(
 
     if code_extraction_strategy == "llm":
         if model is None and client is None:
-            raise ValueError("Either model or client must be provided")
+            raise ValueError("You must provide either a `model` string or a `client`")
         if client is None:
             client = init_chat_model(model)
 
@@ -216,7 +193,8 @@ def _create_async_base_code_evaluator(
             if code_extractor is None:
                 normalized_outputs = _normalize_final_app_outputs_as_string(outputs)
                 if code_extraction_strategy == "llm":
-                    res = await client.ainvoke(
+                    model_with_tools = client.bind_tools([ExtractCode, NoCode])
+                    res = await model_with_tools.ainvoke(
                         [
                             {"role": "system", "content": LLM_EXTRACTION_SYSTEM_PROMPT},
                             {
@@ -228,11 +206,16 @@ def _create_async_base_code_evaluator(
                         ],
                         {"run_name": "extract_code"},
                     )
-                    normalized_outputs = res.content
+                    if res.tool_calls[0]["name"] == "ExtractCode":
+                        normalized_outputs = res.tool_calls[0]["args"]["code"]
+                    else:
+                        return (False, None, {"code_extraction_failed": True})
                 elif code_extraction_strategy == "markdown_code_blocks":
                     normalized_outputs = _extract_code_from_markdown_code_blocks(
                         normalized_outputs
                     )
+                    if normalized_outputs is None:
+                        return (False, None, {"code_extraction_failed": True})
                 else:
                     # Nothing to do to extract code
                     pass

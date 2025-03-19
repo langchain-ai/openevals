@@ -131,7 +131,7 @@ async def test_pyright_extraction_llm():
     eval_result = await pyright_evaluator(
         outputs="Sure! Here's a function that returns the sum of two numbers: def sum_of_two_numbers(a, b): return a + b"
     )
-    assert eval_result["score"] == True
+    assert eval_result["score"]
 
 
 @pytest.mark.asyncio
@@ -142,5 +142,5 @@ async def test_pyright_extraction_llm_no_code():
         model="openai:o3-mini",
     )
     eval_result = await pyright_evaluator(outputs="I'm doing well, how about you?")
-    assert eval_result["score"] == False
-    assert eval_result["metadata"]["code_extraction_failed"] == True
+    assert not eval_result["score"]
+    assert eval_result["metadata"]["code_extraction_failed"]

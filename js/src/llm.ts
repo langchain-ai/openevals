@@ -405,8 +405,8 @@ export const createLLMAsJudge = ({
   });
 
   const _wrappedEvaluator = async (inputs: {
-    inputs: unknown;
-    outputs: unknown;
+    inputs?: unknown;
+    outputs?: unknown;
     referenceOutputs?: unknown;
     [key: string]: unknown;
   }) => {

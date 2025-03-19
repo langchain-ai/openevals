@@ -477,9 +477,9 @@ def create_llm_as_judge(
 
     def _wrapped_evaluator(
         *,
-        inputs: Optional[dict] = None,
-        outputs: Optional[dict] = None,
-        reference_outputs: Optional[dict] = None,
+        inputs: Optional[Union[str, dict]] = None,
+        outputs: Optional[Union[str, dict]] = None,
+        reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ) -> EvaluatorResult:
         run_name = (
@@ -567,9 +567,9 @@ def create_async_llm_as_judge(
 
     async def _wrapped_evaluator(
         *,
-        inputs: Optional[dict] = None,
-        outputs: Optional[dict] = None,
-        reference_outputs: Optional[dict] = None,
+        inputs: Optional[Union[str, dict]] = None,
+        outputs: Optional[Union[str, dict]] = None,
+        reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ) -> EvaluatorResult:
         run_name = (

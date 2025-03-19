@@ -173,8 +173,8 @@ export const _createLLMAsJudgeScorer = (params: {
   const useReasoning = params.useReasoning ?? true;
 
   const getScore = async (params: {
-    inputs: unknown;
-    outputs: unknown;
+    inputs?: unknown;
+    outputs?: unknown;
     referenceOutputs?: unknown;
     [key: string]: unknown;
   }): Promise<SingleResultScorerReturnType> => {

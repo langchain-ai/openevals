@@ -3808,6 +3808,7 @@ __metadata:
     typescript: ~5.1.6
     uuid: ^11.1.0
     vitest: ^3.0.5
+    zod: ^3.24.2
   peerDependencies:
     "@langchain/core": ^0.3.40
     typescript: "*"
@@ -5383,7 +5384,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.22.4":
+"zod@npm:^3.22.4, zod@npm:^3.24.2":
   version: 3.24.2
   resolution: "zod@npm:3.24.2"
   checksum: c02455c09678c5055c636d64f9fcda2424fea0aa46ac7d9681e7f41990bc55f488bcd84b9d7cfef0f6e906f51f55b245239d92a9f726248aa74c5b84edf00c2d

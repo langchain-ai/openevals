@@ -1,4 +1,9 @@
-from openevals.types import ScoreType, SimpleEvaluator, SimpleAsyncEvaluator
+from openevals.types import (
+    ScoreType,
+    SimpleEvaluator,
+    SimpleAsyncEvaluator,
+    EvaluatorResult,
+)
 
 from openevals.utils import (
     _normalize_final_app_outputs_as_string,
@@ -10,6 +15,7 @@ from typing import Any, Literal, Union, Optional, Callable, Awaitable
 from typing_extensions import TypedDict
 
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage
 from langchain.chat_models import init_chat_model
 
 __all__ = [
@@ -54,7 +60,7 @@ class NoCode(TypedDict):
     no_code: bool
 
 
-def _extract_code_from_markdown_code_blocks(text: str) -> str:
+def _extract_code_from_markdown_code_blocks(text: str) -> Optional[str]:
     """
     Extract code from markdown code blocks in the provided text.
 
@@ -110,12 +116,12 @@ def _create_base_code_evaluator(
         outputs: Union[str, dict],
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
-    ) -> dict:
+    ):
         def _score_wrapper(*, outputs: Union[str, dict], **kwargs):
             if code_extractor is None:
                 normalized_outputs = _normalize_final_app_outputs_as_string(outputs)
                 if code_extraction_strategy == "llm":
-                    model_with_tools = client.bind_tools([ExtractCode, NoCode])
+                    model_with_tools = client.bind_tools([ExtractCode, NoCode])  # type: ignore
                     res = model_with_tools.invoke(
                         [
                             {"role": "system", "content": LLM_EXTRACTION_SYSTEM_PROMPT},
@@ -128,12 +134,12 @@ def _create_base_code_evaluator(
                         ],
                         {"run_name": "extract_code"},
                     )
-                    if res.tool_calls[0]["name"] == "ExtractCode":
-                        normalized_outputs = res.tool_calls[0]["args"]["code"]
+                    if res.tool_calls[0]["name"] == "ExtractCode":  # type: ignore
+                        normalized_outputs = res.tool_calls[0]["args"]["code"]  # type: ignore
                     else:
                         return (False, None, {"code_extraction_failed": True})
                 elif code_extraction_strategy == "markdown_code_blocks":
-                    normalized_outputs = _extract_code_from_markdown_code_blocks(
+                    normalized_outputs = _extract_code_from_markdown_code_blocks(  # type: ignore
                         normalized_outputs
                     )
                     if normalized_outputs is None:
@@ -180,7 +186,7 @@ def _create_async_base_code_evaluator(
         if model is None and client is None:
             raise ValueError("You must provide either a `model` string or a `client`")
         if client is None:
-            client = init_chat_model(model)
+            client = init_chat_model(model)  # type: ignore
 
     async def _wrapped_evaluator(
         *,
@@ -188,12 +194,12 @@ def _create_async_base_code_evaluator(
         outputs: Union[str, dict],
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
-    ) -> SimpleAsyncEvaluator:
+    ):
         async def _ascore_wrapper(*, outputs: Union[str, dict], **kwargs):
             if code_extractor is None:
                 normalized_outputs = _normalize_final_app_outputs_as_string(outputs)
                 if code_extraction_strategy == "llm":
-                    model_with_tools = client.bind_tools([ExtractCode, NoCode])
+                    model_with_tools = client.bind_tools([ExtractCode, NoCode])  # type: ignore
                     res = await model_with_tools.ainvoke(
                         [
                             {"role": "system", "content": LLM_EXTRACTION_SYSTEM_PROMPT},
@@ -206,12 +212,12 @@ def _create_async_base_code_evaluator(
                         ],
                         {"run_name": "extract_code"},
                     )
-                    if res.tool_calls[0]["name"] == "ExtractCode":
-                        normalized_outputs = res.tool_calls[0]["args"]["code"]
+                    if res.tool_calls[0]["name"] == "ExtractCode":  # type: ignore
+                        normalized_outputs = res.tool_calls[0]["args"]["code"]  # type: ignore
                     else:
                         return (False, None, {"code_extraction_failed": True})
                 elif code_extraction_strategy == "markdown_code_blocks":
-                    normalized_outputs = _extract_code_from_markdown_code_blocks(
+                    normalized_outputs = _extract_code_from_markdown_code_blocks(  # type: ignore
                         normalized_outputs
                     )
                     if normalized_outputs is None:
@@ -220,7 +226,7 @@ def _create_async_base_code_evaluator(
                     # Nothing to do to extract code
                     pass
             else:
-                normalized_outputs = code_extractor(outputs)
+                normalized_outputs = code_extractor(outputs)  # type: ignore
                 if hasattr(normalized_outputs, "__await__"):
                     normalized_outputs = await normalized_outputs
             score_result = scorer(

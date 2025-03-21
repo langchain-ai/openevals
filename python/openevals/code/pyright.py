@@ -101,7 +101,7 @@ def create_pyright_evaluator(
     pyright_cli_args: list[str] = [],
     code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], str]] = None,
-    client: Optional[Union[ModelClient, BaseChatModel]] = None,
+    client: Optional[BaseChatModel] = None,
     model: Optional[str] = None,
 ) -> SimpleEvaluator:
     """Creates an evaluator that checks Python code using Pyright.
@@ -158,7 +158,7 @@ def create_async_pyright_evaluator(
     pyright_cli_args: list[str] = [],
     code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], Union[str, Awaitable[str]]]] = None,
-    client: Optional[Union[ModelClient, BaseChatModel]] = None,
+    client: Optional[BaseChatModel] = None,
     model: Optional[str] = None,
 ) -> SimpleAsyncEvaluator:
     """Creates an asynchronous evaluator that checks Python code using Pyright.

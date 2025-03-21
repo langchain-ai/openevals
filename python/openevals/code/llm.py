@@ -8,7 +8,7 @@ from openevals.prompts import (
     CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS,
 )
 
-from typing import Callable, Optional, Union, Literal, Any
+from typing import Callable, Optional, Literal, Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
 
@@ -16,7 +16,6 @@ from openevals.types import (
     SimpleEvaluator,
     SimpleAsyncEvaluator,
     RunnableLike,
-    ModelClient,
     ChatCompletionMessage,
     FewShotExample,
 )

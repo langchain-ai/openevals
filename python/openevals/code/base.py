@@ -2,7 +2,6 @@ from openevals.types import (
     ScoreType,
     SimpleEvaluator,
     SimpleAsyncEvaluator,
-    EvaluatorResult,
 )
 
 from openevals.utils import (
@@ -15,7 +14,6 @@ from typing import Any, Literal, Union, Optional, Callable, Awaitable
 from typing_extensions import TypedDict
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage
 from langchain.chat_models import init_chat_model
 
 __all__ = [

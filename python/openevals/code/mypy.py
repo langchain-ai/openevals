@@ -10,7 +10,7 @@ from openevals.code.llm import (
     _create_base_code_evaluator,
     _create_async_base_code_evaluator,
 )
-from openevals.types import ModelClient, SimpleEvaluator, SimpleAsyncEvaluator
+from openevals.types import SimpleEvaluator, SimpleAsyncEvaluator
 
 from langchain_core.language_models.chat_models import BaseChatModel
 

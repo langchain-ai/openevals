@@ -6,7 +6,7 @@ you can write more custom evals specific to your application.
 
 If you are looking for evals specific to evaluating LLM agents, please check out [`agentevals`](https://github.com/langchain-ai/agentevals).
 
-## Quickstart
+# Quickstart
 
 **Note:** If you'd like to follow along with a video walkthrough, click the image below:
 
@@ -110,7 +110,7 @@ console.log(evalResult);
 
 By default, LLM-as-judge evaluators will return a score of `True` or `False`. See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-scores), [model](#customizing-the-model), and [prompt](#customizing-prompts)!
 
-## Table of Contents
+# Table of Contents
 
 - [Installation](#installation)
 - [Evaluators](#evaluators)
@@ -144,7 +144,7 @@ By default, LLM-as-judge evaluators will return a score of `True` or `False`. Se
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
   - [Evaluate](#evaluate)
 
-## Installation
+# Installation
 
 You can install `openevals` like this:
 
@@ -184,9 +184,9 @@ npm install openai
 
 It is also helpful to be familiar with some [evaluation concepts](https://docs.smith.langchain.com/evaluation/concepts).
 
-## Evaluators
+# Evaluators
 
-### LLM-as-judge
+## LLM-as-judge
 
 One common way to evaluate an LLM app's outputs is to use another LLM as a judge. This is generally a good starting point for evals.
 
@@ -279,9 +279,9 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 
 By convention, we generally suggest sticking to `inputs`, `outputs`, and `reference_outputs` as the names of the parameters for LLM-as-judge evaluators, but these will be directly formatted into the prompt so you can use any variable names you want.
 
-### Prebuilt prompts
+## Prebuilt prompts
 
-#### Correctness
+### Correctness
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
 
@@ -354,7 +354,7 @@ console.log(evalResult);
 ```
 </details>
 
-#### Conciseness
+### Conciseness
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the conciseness of an LLM's output. It takes `inputs` and `outputs` as parameters.
 
@@ -421,7 +421,7 @@ console.log(evalResult);
 
 </details>
 
-#### Hallucination
+### Hallucination
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the hallucination of an LLM's output. It takes `inputs`, `outputs`, and optionally, `context` as parameters.
 
@@ -495,7 +495,7 @@ console.log(evalResult);
 ```
 </details>
 
-#### Customizing prompts
+### Customizing prompts
 
 The `prompt` parameter for `create_llm_as_judge` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
 
@@ -613,7 +613,7 @@ const fewShotExamples = [
 
 These will be appended to the end of the final user message in the prompt.
 
-#### Customizing the model
+### Customizing the model
 
 There are a few ways you can customize the model used for evaluation. You can pass a string formatted as `PROVIDER:MODEL` (e.g. `model=anthropic:claude-3-5-sonnet-latest`) as the `model`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://python.langchain.com/docs/how_to/chat_models_universal_init/). This requires you to install the appropriate LangChain integration package installed. Here's an example:
 
@@ -730,7 +730,7 @@ const openaiEvaluator = createLLMAsJudge({
 ```
 </details>
 
-#### Customizing output scores
+### Customizing output scores
 
 There are two fields you can set to customize the output of your evaluator:
 
@@ -850,7 +850,7 @@ console.log(result);
 
 Finally, if you would like to disable justifications for a given score, you can set `use_reasoning=False` when creating your evaluator.
 
-### Extraction and tool calls
+## Extraction and tool calls
 
 Two very common use cases for LLMs are extracting structured output from documents and tool calling. Both of these require the LLM
 to respond in a structured format. This package provides a prebuilt evaluator to help you evaluate these use cases, and is flexible
@@ -862,7 +862,7 @@ You can use the `create_json_match_evaluator` evaluator in two ways:
 
 Note that this evaluator may return multiple scores based on key and aggregation strategy, so the result will be an array of scores rather than a single one.
 
-#### Evaluating structured output with exact match
+### Evaluating structured output with exact match
 
 Use exact match evaluation when there is a clear right or wrong answer. A common scenario is text extraction from images or PDFs where you expect specific values.
 
@@ -965,7 +965,7 @@ Therefore, the list aggregator will return a final score of 0.5.
 ```
 </details>
 
-#### Evaluating structured output with LLM-as-a-Judge
+### Evaluating structured output with LLM-as-a-Judge
 
 Use LLM-as-a-judge to evaluate structured output or tools calls when the criteria is more subjective (for example the output is a kind of fruit or mentions all the fruits). 
 
@@ -1079,13 +1079,13 @@ Therefore, the list aggregator will return a final score of 0.
 
 </details>
 
-### RAG
+## RAG
 
 RAG applications in their most basic form consist of 2 steps. In the retrieval step, context is retrieved (most commonly from a vector database) to provide the LLM with the information it needs to respond to the user. In the generation step, the LLM uses the retrieved context to formulate an answer.
 
 Openevals provides prebuilt prompts to evaluate both of these steps.
 
-#### Evaluating retrieval
+### Evaluating retrieval
 
 The code below shows how to evaluate the retrieval step of a RAG application.
 
@@ -1180,7 +1180,7 @@ console.log(evalResult);
 
 </details>
 
-#### Evaluating generation
+### Evaluating generation
 
 The code below shows how to evaluate the generation step of a RAG application.
 
@@ -1279,7 +1279,7 @@ console.log(evalResult);
 ```
 </details>
 
-### Code
+## Code
 
 OpenEvals contains some useful prebuilt evaluators for evaluating generated code:
 
@@ -1295,7 +1295,7 @@ If you would like to customize the prompt, you should use the `code_extractor` p
 
 All evaluators in this section accept `outputs` as a string, an object with a key `"messages"` that contains a list of messages, or a message-like object with a key `"content"` that contains a string.
 
-#### Pyright (Python-only)
+### Pyright (Python-only)
 
 For Pyright, you will need to install the `pyright` CLI on your system:
 
@@ -1341,7 +1341,7 @@ evaluator = create_pyright_evaluator(
 
 For a full list of supported arguments, see the [pyright CLI documentation](https://microsoft.github.io/pyright/#/command-line).
 
-#### Mypy (Python-only)
+### Mypy (Python-only)
 
 For Mypy, you will need to install `mypy` on your system:
 
@@ -1389,7 +1389,7 @@ evaluator = create_mypy_evaluator(
 )
 ```
 
-#### TypeScript type-checking (TypeScript-only)
+### TypeScript type-checking (TypeScript-only)
 
 The TypeScript evaluator uses TypeScript's type checker to check the code for correctness.
 
@@ -1423,7 +1423,7 @@ console.log(result);
 
 The evaluator will ignore `reportMissingImports` errors.
 
-#### LLM-as-judge for code
+### LLM-as-judge for code
 
 OpenEvals includes a prebuilt LLM-as-a-judge evaluator for code. The primary differentiator between this one and the more generic [LLM-as-judge evaluator](#llm-as-judge) is that it will perform the extraction steps detailed above - otherwise it takes the same arguments, including a prompt.
 
@@ -1541,11 +1541,11 @@ console.log(evalResult);
 
 </details>
 
-### Other
+## Other
 
 This package also contains prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:
 
-#### Exact match
+### Exact match
 
 <details open>
 <summary>Python</summary>
@@ -1589,7 +1589,7 @@ console.log(result);
 ```
 </details>
 
-#### Levenshtein distance
+### Levenshtein distance
 
 <details open>
 <summary>Python</summary>
@@ -1636,7 +1636,7 @@ console.log(result);
 ```
 </details>
 
-#### Embedding similarity
+### Embedding similarity
 
 This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method (for Python) or takes a LangChain embeddings client directly (for TypeScript) and calculates distance between two strings using cosine similarity.
 
@@ -1692,17 +1692,17 @@ console.log(result);
 ```
 </details>
 
-### Agent evals
+## Agent evals
 
 If you are building an agent, the evals in this repo are useful for evaluating specific outputs from your agent against references.
 
 However, if you want to get started with more in-depth evals that take into account the entire trajectory of an agent, please check out the [`agentevals`](https://github.com/langchain-ai/agentevals) package.
 
-### Creating your own
+## Creating your own
 
 If there are metrics that you want to evaluate that are not covered by any of the above, you can create your own evaluator as well that interacts well with the rest of the `openevals` ecosystem.
 
-#### Evaluator interface
+### Evaluator interface
 
 The first thing to note that all evaluators should accept a subset of the following parameters:
 
@@ -1725,7 +1725,7 @@ The return values should be a dict (or, if your evaluator evaluates multiple met
 
 And that's it! Those are the only restrictions.
 
-#### Logging to LangSmith
+### Logging to LangSmith
 
 If you are using LangSmith to track experiments, you should also wrap the internals of your evaluator in the `_run_evaluator`/`_arun_evaluator` (Python) or `runEvaluator` (TypeScript) method. This ensures that the evaluator results are logged to LangSmith properly for supported runners.
 
@@ -1734,7 +1734,7 @@ This method takes a `scorer` function as part of its input that returns either:
 - A single boolean or number, representing the score for the given key.
 - A tuple that contains the score as its first element and a `comment` justifying the score as its second element.
 
-#### Example
+### Example
 
 Here's an example of how you might define a very simple custom evaluator. It only takes into account the outputs of your app and compares them against a regex pattern. It uses a factory function to create the evaluator, since `regex` is an extra param.
 
@@ -1862,7 +1862,7 @@ const result = await evaluator({ outputs: "this text contains some string" });
 ```
 </details>
 
-## Python Async Support
+# Python Async Support
 
 All `openevals` evaluators support Python [asyncio](https://docs.python.org/3/library/asyncio.html). As a convention, evaluators that use a factory function will have `async` put immediately after `create_` in the function name (for example, `create_async_llm_as_judge`), and evaluators used directly will end in `async` (e.g. `exact_match_async`).
 
@@ -1893,13 +1893,13 @@ evaluator = create_async_llm_as_judge(
 result = await evaluator(inputs="San Francisco")
 ```
 
-## LangSmith Integration
+# LangSmith Integration
 
 For tracking experiments over time, you can log evaluator results to [LangSmith](https://smith.langchain.com/), a platform for building production-grade LLM applications that includes tracing, evaluation, and experimentation tools.
 
 LangSmith currently offers two ways to run evals: a [pytest](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) (Python) or [Vitest/Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest) integration and the `evaluate` function. We'll give a quick example of how to run evals using both.
 
-### Pytest or Vitest/Jest
+## Pytest or Vitest/Jest
 
 First, follow [these instructions](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) to set up LangSmith's pytest runner,
 or these to set up [Vitest or Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest), setting appropriate environment variables:
@@ -2008,7 +2008,7 @@ And you should also see the results in the experiment view in LangSmith:
 
 ![LangSmith results](/static/img/langsmith_results.png)
 
-### Evaluate
+## Evaluate
 
 Alternatively, you can [create a dataset in LangSmith](https://docs.smith.langchain.com/evaluation/concepts#dataset-curation) and use your created evaluators with LangSmith's [`evaluate`](https://docs.smith.langchain.com/evaluation#8-run-and-view-results) function:
 
@@ -2063,7 +2063,7 @@ await evaluate(
 ```
 </details>
 
-## Thank you!
+# Thank you!
 
 We hope that `openevals` helps make evaluating your LLM apps easier!
 

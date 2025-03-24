@@ -94,4 +94,42 @@ console.log(res);
       expect(evalResult.score).toBe(expectedScore ?? true);
     }
   );
+
+  ls.test(
+    "llm extraction succeeds",
+    {
+      inputs: {
+        code: `Sure! Here's a function that returns the sum of two numbers: function add(a, b) { return a + b; }`,
+      },
+    },
+    async ({ inputs }) => {
+      const evaluator = createTypeScriptEvaluator({
+        codeExtractionStrategy: "llm",
+        model: "openai:o3-mini",
+      });
+
+      const evalResult = await evaluator({ outputs: inputs.code });
+      expect(evalResult.score).toBe(true);
+      expect(evalResult.metadata?.code_extraction_failed).toBeUndefined();
+    }
+  );
+
+  ls.test(
+    "llm extraction fails",
+    {
+      inputs: {
+        code: `I'm doing well, how about you?`,
+      },
+    },
+    async ({ inputs }) => {
+      const evaluator = createTypeScriptEvaluator({
+        codeExtractionStrategy: "llm",
+        model: "openai:o3-mini",
+      });
+
+      const evalResult = await evaluator({ outputs: inputs.code });
+      expect(evalResult.score).toBe(false);
+      expect(evalResult.metadata?.code_extraction_failed).toBe(true);
+    }
+  );
 });

@@ -597,11 +597,15 @@ def create_async_json_match_evaluator(
             else:
                 formatted_rubric, output_keys, expected_output_keys = None, None, None
             if scorer is not None:
-                llm_scores = await scorer(
+                scorer_res = scorer(
                     outputs=output_keys,
                     reference_outputs=expected_output_keys,
                     rubric=rubric,
                 )
+                if hasattr(scorer_res, "__await__"):
+                    llm_scores = await scorer_res
+                else:
+                    llm_scores = scorer_res
                 scores.update(llm_scores)
 
             return _aggregate_results(

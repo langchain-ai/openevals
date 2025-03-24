@@ -48,15 +48,15 @@ ls.describe("exact match", () => {
       });
     }
   );
+});
 
-  test("test works with evaluate", async () => {
-    const evaluator = exactMatch;
-    const result = await evaluate((inputs) => inputs, {
-      data: "exact match",
-      evaluators: [evaluator],
-    });
-    expect(result).toBeDefined();
-    expect(result.results.length).toBeGreaterThan(0);
-    expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
+test("test works with evaluate", async () => {
+  const evaluator = exactMatch;
+  const result = await evaluate((inputs) => inputs, {
+    data: "exact match",
+    evaluators: [evaluator],
   });
+  expect(result).toBeDefined();
+  expect(result.results.length).toBeGreaterThan(0);
+  expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
 });

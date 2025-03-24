@@ -1,6 +1,6 @@
 {
   "name": "openevals",
-  "version": "0.0.6",
+  "version": "0.0.9",
   "packageManager": "yarn@3.5.1",
   "type": "module",
   "scripts": {
@@ -62,6 +62,10 @@
     "llm.js",
     "llm.d.ts",
     "llm.d.cts",
+    "prompts.cjs",
+    "prompts.js",
+    "prompts.d.ts",
+    "prompts.d.cts",
     "types.cjs",
     "types.js",
     "types.d.ts",
@@ -98,6 +102,15 @@
       },
       "import": "./llm.js",
       "require": "./llm.cjs"
+    },
+    "./prompts": {
+      "types": {
+        "import": "./prompts.d.ts",
+        "require": "./prompts.d.cts",
+        "default": "./prompts.d.ts"
+      },
+      "import": "./prompts.js",
+      "require": "./prompts.cjs"
     },
     "./types": {
       "types": {

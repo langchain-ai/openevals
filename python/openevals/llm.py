@@ -139,7 +139,7 @@ def _create_llm_as_judge_scorer(
     def get_score(
         *,
         inputs: Optional[Union[str, dict]] = None,
-        outputs: Union[str, dict],
+        outputs: Optional[Union[str, dict]] = None,
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ):
@@ -286,7 +286,7 @@ def _create_async_llm_as_judge_scorer(
     async def aget_score(
         *,
         inputs: Optional[Union[str, dict]] = None,
-        outputs: Union[str, dict],
+        outputs: Optional[Union[str, dict]] = None,
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ):
@@ -477,9 +477,9 @@ def create_llm_as_judge(
 
     def _wrapped_evaluator(
         *,
-        inputs: dict,
-        outputs: dict,
-        reference_outputs: Optional[dict] = None,
+        inputs: Optional[Union[str, dict]] = None,
+        outputs: Optional[Union[str, dict]] = None,
+        reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ) -> EvaluatorResult:
         run_name = (
@@ -567,9 +567,9 @@ def create_async_llm_as_judge(
 
     async def _wrapped_evaluator(
         *,
-        inputs: dict,
-        outputs: dict,
-        reference_outputs: Optional[dict] = None,
+        inputs: Optional[Union[str, dict]] = None,
+        outputs: Optional[Union[str, dict]] = None,
+        reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ) -> EvaluatorResult:
         run_name = (

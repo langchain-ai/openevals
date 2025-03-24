@@ -173,8 +173,8 @@ export const _createLLMAsJudgeScorer = (params: {
   const useReasoning = params.useReasoning ?? true;
 
   const getScore = async (params: {
-    inputs: unknown;
-    outputs: unknown;
+    inputs?: unknown;
+    outputs?: unknown;
     referenceOutputs?: unknown;
     [key: string]: unknown;
   }): Promise<SingleResultScorerReturnType> => {
@@ -206,14 +206,14 @@ export const _createLLMAsJudgeScorer = (params: {
     );
 
     let messages: (ChatCompletionMessage | BaseMessage)[] = [];
-    
+
     const promptParams = {
       inputs: stringifiedInputs,
       outputs: stringifiedOutputs,
       reference_outputs: stringifiedReferenceOutputs,
       ...stringifiedRest,
     };
-    
+
     // Filter out undefined values from promptParams
     const filteredPromptParams = Object.fromEntries(
       Object.entries(promptParams).filter(([_, value]) => value !== undefined)
@@ -405,8 +405,8 @@ export const createLLMAsJudge = ({
   });
 
   const _wrappedEvaluator = async (inputs: {
-    inputs: unknown;
-    outputs: unknown;
+    inputs?: unknown;
+    outputs?: unknown;
     referenceOutputs?: unknown;
     [key: string]: unknown;
   }) => {

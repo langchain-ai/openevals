@@ -42,6 +42,7 @@ def test_llm_as_judge_rag_hallucination_not_correct():
     )
     assert not eval_result["score"]
 
+
 @pytest.mark.langsmith
 def test_llm_as_judge_rag_retrieval():
     inputs = {
@@ -50,22 +51,17 @@ def test_llm_as_judge_rag_retrieval():
     outputs = [
         {
             "title": "foobarland president",
-            "content": "the first president of foobarland was bagatur"
+            "content": "the first president of foobarland was bagatur",
         },
-        {
-            "title": "bagatur bio",
-            "content": "bagutur was born in langchainland"
-        }
-      ]
+        {"title": "bagatur bio", "content": "bagutur was born in langchainland"},
+    ]
     llm_as_judge = create_llm_as_judge(
         prompt=RETRIEVAL_HELPFULNESS_PROMPT,
         feedback_key="hallucination",
         model="openai:o3-mini",
     )
 
-    eval_result = llm_as_judge(
-        inputs=inputs, outputs=outputs
-    )
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
 
 
@@ -77,21 +73,16 @@ def test_llm_as_judge_rag_retrIEVAL_not_correct():
     outputs = [
         {
             "title": "foobarland president",
-            "content": "the first president of foobarland was bagatur"
+            "content": "the first president of foobarland was bagatur",
         },
-        {
-            "title": "bagatur bio",
-            "content": "bagutur is a big fan of PR reviews"
-        }
-      ]
+        {"title": "bagatur bio", "content": "bagutur is a big fan of PR reviews"},
+    ]
     llm_as_judge = create_llm_as_judge(
         prompt=RETRIEVAL_HELPFULNESS_PROMPT,
         feedback_key="hallucination",
         model="openai:o3-mini",
     )
-    
-    eval_result = llm_as_judge(
-        inputs=inputs, outputs=outputs
-    )
+
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
 
     assert not eval_result["score"]

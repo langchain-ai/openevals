@@ -16,6 +16,7 @@ class EvaluatorResult(TypedDict):
     key: str
     score: ScoreType
     comment: Optional[str]
+    metadata: Optional[dict]
 
 
 class SimpleEvaluatorNormal(Protocol):
@@ -97,6 +98,6 @@ class ModelClient(Protocol):
 
 @runtime_checkable
 class RunnableLike(Protocol):
-    def invoke(self, **kwargs) -> Any: ...
+    def invoke(self, inputs: Any, **kwargs) -> Any: ...
 
-    async def ainvoke(self, **kwargs) -> Any: ...
+    async def ainvoke(self, inputs: Any, **kwargs) -> Any: ...

@@ -1,7 +1,7 @@
-"""Tests for the async React code evaluator."""
+"""Tests for the React code evaluator."""
 
-import pytestw
-from openevals.code.reacteval import create_async_react_evaluator
+import pytest
+from openevals.code.react import create_async_react_ui_llm_as_judge
 
 
 # Sample React code with a button component
@@ -57,8 +57,9 @@ This creates a nice looking button with rounded corners.
 
 
 @pytest.mark.asyncio
+@pytest.mark.langsmith
 @pytest.mark.parametrize(
-    "extraction_strategy, outputs, description",
+    "code_extraction_strategy, outputs, description",
     [
         (
             "none",
@@ -82,22 +83,19 @@ This creates a nice looking button with rounded corners.
         ),
     ],
 )
-async def test_async_react_evaluator(
-    extraction_strategy, outputs, description
-):
-    """Test the async React code evaluator with different extraction strategies."""
-    
-    # Create evaluator with real API calls
-    evaluator = await create_async_react_evaluator(
-        extraction_strategy=extraction_strategy,
-        extraction_model="openai:gpt-4" if extraction_strategy == "llm" else None,
-        evaluation_model="openai:gpt-4o",
+async def test_react_evaluator(code_extraction_strategy, outputs, description):
+    """Test the React code evaluator with different extraction strategies."""
+
+    # Create a real evaluator without any mocks
+    evaluator = create_async_react_ui_llm_as_judge(
+        code_extraction_strategy=code_extraction_strategy,
+        model="openai:gpt-4o",
         feedback_key="react_test",
     )
-    
-    # Run evaluation
+
+    # Run evaluation with real API calls
     result = await evaluator(outputs=outputs, description=description)
-    
+
     # Verify the result
     assert result["key"] == "react_test"
     assert isinstance(result["score"], bool)
@@ -105,8 +103,9 @@ async def test_async_react_evaluator(
 
 
 @pytest.mark.asyncio
+@pytest.mark.langsmith
 @pytest.mark.parametrize(
-    "extraction_strategy, code_extractor, outputs, description",
+    "code_extraction_strategy, code_extractor, outputs, description",
     [
         (
             "none",
@@ -116,60 +115,26 @@ async def test_async_react_evaluator(
         ),
     ],
 )
-async def test_async_react_evaluator_with_custom_extractor(
-    extraction_strategy, code_extractor, outputs, description
+async def test_react_evaluator_with_custom_extractor(
+    code_extraction_strategy,
+    code_extractor,
+    outputs,
+    description,
 ):
-    """Test the async React code evaluator with a custom code extractor."""
-    
+    """Test the React code evaluator with a custom code extractor."""
+
     # Create evaluator with real API and custom extractor
-    evaluator = await create_async_react_evaluator(
-        extraction_strategy=extraction_strategy,
+    evaluator = create_async_react_ui_llm_as_judge(
+        code_extraction_strategy=code_extraction_strategy,
         code_extractor=code_extractor,
-        evaluation_model="openai:gpt-4o",
+        model="openai:gpt-4o",
         feedback_key="react_test",
     )
-    
+
     # Run evaluation
     result = await evaluator(outputs=outputs, description=description)
-    
+
     # Verify the result
     assert result["key"] == "react_test"
-    assert isinstance(result["score"], bool)
-    assert isinstance(result["comment"], str)
-
-
-@pytest.mark.asyncio
-async def test_async_react_evaluator_missing_description():
-    """Test the async React code evaluator when the description field is missing."""
-    
-    evaluator = await create_async_react_evaluator(extraction_strategy="none")
-    
-    # Run evaluation without providing a description
-    result = await evaluator(outputs=SAMPLE_REACT_CODE)
-    
-    # Verify the result indicates an error due to missing description
-    assert result["key"] == "react_succeeded"
-    assert result["score"] is False
-    assert "Missing required description field" in result["comment"]
-
-
-@pytest.mark.asyncio
-async def test_async_react_evaluator_custom_description_field():
-    """Test the async React code evaluator with a custom description field name."""
-    
-    evaluator = await create_async_react_evaluator(
-        extraction_strategy="none",
-        description_field="custom_desc",
-        evaluation_model="openai:gpt-4o",
-    )
-    
-    # Run evaluation with the custom description field
-    result = await evaluator(
-        outputs=SAMPLE_REACT_CODE,
-        custom_desc="A blue button with 'Click Me' text",
-    )
-    
-    # Verify the result
-    assert result["key"] == "react_succeeded"
     assert isinstance(result["score"], bool)
     assert isinstance(result["comment"], str)

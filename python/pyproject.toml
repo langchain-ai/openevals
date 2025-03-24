@@ -16,10 +16,16 @@ dependencies = [
 dev = [
     "mypy>=1.15.0",
     "openai>=1.61.1",
+    "playwright>=1.51.0",
     "pyright>=1.1.396",
     "pytest>=8.3.4",
     "pytest-asyncio>=0.25.3",
     "ruff>=0.9.5",
+]
+
+[project.optional-dependencies]
+playwright = [
+    "playwright>=1.51.0"
 ]
 
 [tool.setuptools.packages.find]

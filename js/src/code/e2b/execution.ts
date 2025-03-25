@@ -7,6 +7,7 @@ import { SingleResultScorerReturnType } from "../../types.js";
 import {
   PACKAGE_JSON_FILE_WITH_TSX,
   EXTRACT_IMPORT_NAMES,
+  TYPESCRIPT_EVALUATOR_SEPARATOR,
 } from "./sandbox/files.js";
 
 const E2B_COMMAND = [
@@ -14,6 +15,7 @@ const E2B_COMMAND = [
   `echo '${EXTRACT_IMPORT_NAMES}' > extract_import_names.js`,
   `ls node_modules/typescript 2>/dev/null || npm i`,
   `node extract_import_names.js | xargs -r -I {} sh -c 'ls node_modules/{} 2>/dev/null || npm install {} --prefer-offline'`,
+  `echo '${TYPESCRIPT_EVALUATOR_SEPARATOR}'`,
   `npx tsx outputs.ts`,
 ].join("&&");
 
@@ -58,7 +60,7 @@ export function createE2BExecutionEvaluator(config: {
       await sandbox.commands.run(E2B_COMMAND, {
         cwd,
       });
-      return true;
+      return [true, ""] as const;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       if (e.result && typeof e.result.stderr === "string") {

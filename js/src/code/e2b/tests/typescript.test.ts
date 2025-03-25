@@ -60,15 +60,11 @@ await graph.invoke({
       },
       expectedScore: true,
     },
-  ])(
-    "should respect imports",
-    async ({ inputs, outputs, expectedScore, model }) => {
-      const evaluator = createE2BTypeScriptEvaluator({
-        model,
-        sandbox,
-      });
-      const evalResult = await evaluator({ inputs, outputs });
-      expect(evalResult.score).toBe(expectedScore);
-    }
-  );
+  ])("should respect imports", async ({ inputs, outputs, expectedScore }) => {
+    const evaluator = createE2BTypeScriptEvaluator({
+      sandbox,
+    });
+    const evalResult = await evaluator({ inputs, outputs });
+    expect(evalResult.score).toBe(expectedScore);
+  });
 });

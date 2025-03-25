@@ -90,7 +90,7 @@ def _extract_code_from_markdown_code_blocks(text: str) -> Optional[str]:
 
 def _create_base_code_evaluator(
     *,
-    scorer: Callable[..., ScoreType],
+    scorer: Callable[..., Union[ScoreType, tuple[bool, Optional[str], Optional[dict]]]],
     code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], str]] = None,
     model: Optional[str] = None,

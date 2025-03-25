@@ -1,0 +1,17 @@
+# This is a config for E2B sandbox template.
+# You can use template ID (v71x59lhtunu3h64sook) or template name (OpenEvalsPython) to create a sandbox:
+
+# Python SDK
+# from e2b import Sandbox, AsyncSandbox
+# sandbox = Sandbox("OpenEvalsPython") # Sync sandbox
+# sandbox = await AsyncSandbox.create("OpenEvalsPython") # Async sandbox
+
+# JS SDK
+# import { Sandbox } from 'e2b'
+# const sandbox = await Sandbox.create('OpenEvalsPython')
+
+team_id = "05b2f714-5d50-49d2-ac5d-12f657292011"
+start_cmd = "/root/.jupyter/start-up.sh"
+dockerfile = "e2b.Dockerfile"
+template_name = "OpenEvalsPython"
+template_id = "v71x59lhtunu3h64sook"

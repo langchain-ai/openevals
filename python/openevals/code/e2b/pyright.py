@@ -38,9 +38,9 @@ def create_e2b_pyright_evaluator(
     model: Optional[str] = None,
     client: Optional[BaseChatModel] = None,
 ) -> SimpleEvaluator:
-    if code_extraction_strategy != "none" and (model or client):
+    if code_extraction_strategy != "llm" and (model or client):
         raise ValueError(
-            "model and client may only be passed if code_extraction_strategy is 'none'"
+            "model and client may only be passed if code_extraction_strategy is 'llm'"
         )
 
     def _scorer(outputs: str, **kwargs: Any):

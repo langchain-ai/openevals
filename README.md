@@ -43,22 +43,21 @@ Once you've done this, you can run your first eval:
 
 ```python
 from openevals.llm import create_llm_as_judge
-from openevals.prompts import CORRECTNESS_PROMPT
+from openevals.prompts import CONCISENESS_PROMPT
 
-correctness_evaluator = create_llm_as_judge(
-    prompt=CORRECTNESS_PROMPT,
+conciseness_evaluator = create_llm_as_judge(
+    # CONCISENESS_PROMPT is just an f-string
+    prompt=CONCISENESS_PROMPT,
     model="openai:o3-mini",
 )
 
-inputs = "How much has the price of doodads changed in the past year?"
+inputs = "How is the weather in San Francisco?"
 # These are fake outputs, in reality you would run your LLM-based system to get real outputs
-outputs = "Doodads have increased in price by 10% in the past year."
-reference_outputs = "The price of doodads has decreased by 50% in the past year."
+outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
 # When calling an LLM-as-judge evaluator, parameters are formatted directly into the prompt
-eval_result = correctness_evaluator(
+eval_result = conciseness_evaluator(
   inputs=inputs,
   outputs=outputs,
-  reference_outputs=reference_outputs
 )
 
 print(eval_result)
@@ -68,7 +67,7 @@ print(eval_result)
 {
     'key': 'score',
     'score': False,
-    'comment': 'The provided answer stated that doodads increased in price by 10%, which conflicts with the reference output...'
+    'comment': 'The output includes an unnecessary greeting ("Thanks for asking!") and extra..'
 }
 ```
 </details>
@@ -77,23 +76,22 @@ print(eval_result)
 <summary>TypeScript</summary>
 
 ```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
+import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 
-const correctnessEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
+const concisenessEvaluator = createLLMAsJudge({
+  // CONCISENESS_PROMPT is just an f-string
+  prompt: CONCISENESS_PROMPT,
   model: "openai:o3-mini",
 });
 
-const inputs = "How much has the price of doodads changed in the past year?"
+const inputs = "How is the weather in San Francisco?"
 // These are fake outputs, in reality you would run your LLM-based system to get real outputs
-const outputs = "Doodads have increased in price by 10% in the past year."
-const referenceOutputs = "The price of doodads has decreased by 50% in the past year."
+const outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
 
 // When calling an LLM-as-judge evaluator, parameters are formatted directly into the prompt
-const evalResult = await correctnessEvaluator({
+const evalResult = await concisenessEvaluator({
   inputs,
   outputs,
-  referenceOutputs,
 });
 
 console.log(evalResult);
@@ -103,12 +101,14 @@ console.log(evalResult);
 {
     key: 'score',
     score: false,
-    comment: '...'
+    comment: 'The output includes an unnecessary greeting ("Thanks for asking!") and extra..'
 }
 ```
 </details>
 
-By default, LLM-as-judge evaluators will return a score of `True` or `False`. See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-scores), [model](#customizing-the-model), and [prompt](#customizing-prompts)!
+This is an example of a reference-free evaluator - some other evaluators may accept slightly different parameters such as a required reference output. LLM-as-judge evaluators will attempt to format any passed parameters into their passed `prompt`, allowing you to flexibly customize criteria or add other fields.
+
+See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-scores) to output more than just `True/False`, the [model](#customizing-the-model), or the [prompt](#customizing-prompts)!
 
 # Table of Contents
 

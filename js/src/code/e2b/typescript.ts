@@ -8,14 +8,16 @@ import {
   PACKAGE_JSON_FILE,
   TYPESCRIPT_EVALUATOR_FILE,
   EXTRACT_IMPORT_NAMES,
+  TYPESCRIPT_EVALUATOR_SEPARATOR,
 } from "./sandbox/files.js";
 
 const E2B_COMMAND = [
   `echo '${PACKAGE_JSON_FILE}' > package.json`,
-  `echo '${TYPESCRIPT_EVALUATOR_FILE}' > run_typescript.ts`,
-  `echo '${EXTRACT_IMPORT_NAMES}' > extract_import_names.ts`,
-  `npm i`,
-  `npx tsx extract_import_names.ts | xargs -r -I {} npm install {}`,
+  `echo '${TYPESCRIPT_EVALUATOR_FILE}' > check_typescript.js`,
+  `echo '${EXTRACT_IMPORT_NAMES}' > extract_import_names.js`,
+  `ls node_modules/typescript 2>/dev/null || npm i`,
+  `node extract_import_names.js | xargs -r -I {} sh -c 'ls node_modules/{} 2>/dev/null || npm install {} --prefer-offline'`,
+  `node check_typescript.js`,
 ].join("&&");
 
 /**
@@ -24,6 +26,8 @@ const E2B_COMMAND = [
  *
  * @param config - Optional configuration object
  * @param config.sandbox - E2B sandbox instance to use for the evaluation.
+ * @param config.newProjectDirectoryPerExecution - Whether to reuse the project directory created within the sandbox for each evaluation run or create a brand new one each time.
+ *   Setting to true will slow down execution due to setup time and the need to reinstall deps from scratch.
  * @param config.codeExtractionStrategy - Strategy to extract code from the output:
  *   - "none": Use the raw output as-is
  *   - "llm": Use an LLM to extract code from the output
@@ -35,6 +39,7 @@ const E2B_COMMAND = [
  */
 export function createE2BTypeScriptEvaluator(config: {
   sandbox: Sandbox;
+  newProjectDirectoryPerExecution?: boolean;
   codeExtractionStrategy?: "none" | "llm" | "markdown_code_blocks";
   codeExtractor?: (outputs: string | Record<string, unknown>) => string;
   model?: string;
@@ -49,17 +54,17 @@ export function createE2BTypeScriptEvaluator(config: {
     );
   }
   const _scorer = async (params: { outputs: string }) => {
-    const uuid = uuidv4();
+    const cwd = config.newProjectDirectoryPerExecution ? uuidv4() : "openevals";
     const sandbox = config.sandbox;
     try {
-      await sandbox.files.write(`${uuid}/outputs.ts`, params.outputs);
-      await sandbox.commands.run(E2B_COMMAND, {
-        cwd: uuid,
+      await sandbox.files.write(`${cwd}/outputs.ts`, params.outputs);
+      const res = await sandbox.commands.run(E2B_COMMAND, {
+        cwd,
       });
-      const res = await sandbox.commands.run(`npx tsx run_typescript.ts`, {
-        cwd: uuid,
-      });
-      return JSON.parse(res.stdout);
+      if (res.stdout.includes(TYPESCRIPT_EVALUATOR_SEPARATOR)) {
+        return JSON.parse(res.stdout.split(TYPESCRIPT_EVALUATOR_SEPARATOR)[1]);
+      }
+      return [false, res.stdout];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       if (e.result && typeof e.result.stderr === "string") {

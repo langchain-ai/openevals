@@ -1,6 +1,10 @@
+export const TYPESCRIPT_EVALUATOR_SEPARATOR = "---typescript-eval-start---";
+
 export const TYPESCRIPT_EVALUATOR_FILE = `import ts from "typescript";
 import * as fs from "fs";
 import os from "node:os";
+
+console.log("${TYPESCRIPT_EVALUATOR_SEPARATOR}");
 
 try {
   const filepath = "./outputs.ts";
@@ -16,14 +20,14 @@ try {
     },
   });
   const diagnostics = ts.getPreEmitDiagnostics(program);
-  const issueStrings: string[] = [];
+  const issueStrings = [];
   if (diagnostics.length === 0) {
     console.log(true);
   } else {
     diagnostics.forEach((diagnostic) => {
       if (diagnostic.file) {
         const { line, character } =
-          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+          diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
         const message = ts.flattenDiagnosticMessageText(
           diagnostic.messageText,
           "\\n"
@@ -43,7 +47,7 @@ try {
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} catch (e: any) {
+} catch (e) {
   console.log(JSON.stringify([false, e.message]));
 }
 `;
@@ -52,8 +56,17 @@ export const PACKAGE_JSON_FILE = `{
   "name": "e2b-typescript-sandbox",
   "type": "module",
   "dependencies": {
-    "tsx": "latest",
     "typescript": "latest"
+  }
+}
+`;
+
+export const PACKAGE_JSON_FILE_WITH_TSX = `{
+  "name": "e2b-typescript-sandbox",
+  "type": "module",
+  "dependencies": {
+    "typescript": "latest",
+    "tsx": "latest"
   }
 }
 `;
@@ -65,7 +78,7 @@ const filePath = "./outputs.ts";
 const sourceCode = fs.readFileSync(filePath, "utf8");
 const sourceFile = ts.createSourceFile(filePath, sourceCode, ts.ScriptTarget.Latest, true);
 
-const npmImports: string[] = [];
+const npmImports = [];
 
 ts.forEachChild(sourceFile, node => {
   if (ts.isImportDeclaration(node)) {
@@ -74,7 +87,6 @@ ts.forEachChild(sourceFile, node => {
       const importPath = moduleSpecifier.text;
       if (!importPath.startsWith(".") && !importPath.startsWith("/")) {
         const packageName = importPath.replace(/^node:/, "");
-        // Handle scoped packages (@org/package-name)
         const basePackage = packageName.startsWith("@") 
           ? packageName.split("/").slice(0, 2).join("/")
           : packageName.split("/")[0];

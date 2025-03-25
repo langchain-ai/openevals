@@ -46,6 +46,7 @@ from openevals.llm import create_llm_as_judge
 from openevals.prompts import CONCISENESS_PROMPT
 
 conciseness_evaluator = create_llm_as_judge(
+    # CONCISENESS_PROMPT is just an f-string
     prompt=CONCISENESS_PROMPT,
     model="openai:o3-mini",
 )
@@ -78,6 +79,7 @@ print(eval_result)
 import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 
 const concisenessEvaluator = createLLMAsJudge({
+  // CONCISENESS_PROMPT is just an f-string
   prompt: CONCISENESS_PROMPT,
   model: "openai:o3-mini",
 });
@@ -104,7 +106,7 @@ console.log(evalResult);
 ```
 </details>
 
-This is an example of a reference-free evaluator - some other evaluators may accept slightly different parameters such as a required reference output. LLM-as-judge evaluators will attempt to format any passed parameters into their `prompt`, allowing you to flexibly customize criteria or add other fields.
+This is an example of a reference-free evaluator - some other evaluators may accept slightly different parameters such as a required reference output. LLM-as-judge evaluators will attempt to format any passed parameters into their passed `prompt`, allowing you to flexibly customize criteria or add other fields.
 
 See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-scores) to output more than just `True/False`, the [model](#customizing-the-model), or the [prompt](#customizing-prompts)!
 

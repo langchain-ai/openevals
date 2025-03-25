@@ -7,7 +7,7 @@ import { SingleResultScorerReturnType } from "../../types.js";
 import {
   PACKAGE_JSON_FILE,
   EXTRACT_IMPORT_NAMES,
-} from "./sandbox/typescript.js";
+} from "./sandbox/files.js";
 
 const E2B_COMMAND = [
   `echo '${PACKAGE_JSON_FILE}' > package.json`,

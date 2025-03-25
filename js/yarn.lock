@@ -5,10 +5,45 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"@bufbuild/protobuf@npm:^2.2.2":
+  version: 2.2.5
+  resolution: "@bufbuild/protobuf@npm:2.2.5"
+  checksum: 4394be1cf132bcf0f7afe2abe345b399a49958227b9205fc02a33bf2667bfea00896f66922f2428a9c34c79b05e90a83a98f5dbeb54be876f9196a5f9183a63c
+  languageName: node
+  linkType: hard
+
 "@cfworker/json-schema@npm:^4.0.2":
   version: 4.1.1
   resolution: "@cfworker/json-schema@npm:4.1.1"
   checksum: 35b5b246eff7bc75a17befb6e6d56475ab9261279c5d727610dc6827cce557d11db353cca3c06b8272f3974eb2ac508a7bbae3accd3d6c8402dfe0aafbfea0aa
+  languageName: node
+  linkType: hard
+
+"@connectrpc/connect-web@npm:2.0.0-rc.3":
+  version: 2.0.0-rc.3
+  resolution: "@connectrpc/connect-web@npm:2.0.0-rc.3"
+  peerDependencies:
+    "@bufbuild/protobuf": ^2.2.0
+    "@connectrpc/connect": 2.0.0-rc.3
+  checksum: 2889806b7161507f20d01a472b8173ea8fec4db664e89a3c46b2a04690abafb3b73a7541334d34b70be5d4867b2c4e51558bec7dfb3cead061f66fcc42076f8d
+  languageName: node
+  linkType: hard
+
+"@connectrpc/connect@npm:2.0.0-rc.3":
+  version: 2.0.0-rc.3
+  resolution: "@connectrpc/connect@npm:2.0.0-rc.3"
+  peerDependencies:
+    "@bufbuild/protobuf": ^2.2.0
+  checksum: 78e993f48b4ff7dd290a919eb34578ca97848f12576a1fb8e988af50a100c6aa790c2cfaa0aca6fae658e56c652c81db5be9cbf650a4a69f18fa0a8a3b94b58d
+  languageName: node
+  linkType: hard
+
+"@e2b/code-interpreter@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@e2b/code-interpreter@npm:1.0.4"
+  dependencies:
+    e2b: ^1.0.5
+  checksum: a940c1375e3798b3a9d9ee0f918877c193b24187c957e944a9690fd9879be28ae4465d5f0f0918830f50a1329ada4d95b7610e1936cc26feed7a0ee799bbe0c4
   languageName: node
   linkType: hard
 
@@ -1523,6 +1558,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"compare-versions@npm:^6.1.0":
+  version: 6.1.1
+  resolution: "compare-versions@npm:6.1.1"
+  checksum: 73fe6c4f52d22efe28f0a3be10df2afd704e10b3593360cd963e86b33a7a263c263b41a1361b69c30a0fe68bfa70fef90860c1cf2ef41502629d4402890fcd57
+  languageName: node
+  linkType: hard
+
 "concat-map@npm:0.0.1":
   version: 0.0.1
   resolution: "concat-map@npm:0.0.1"
@@ -1729,6 +1771,20 @@ __metadata:
     es-errors: "npm:^1.3.0"
     gopd: "npm:^1.2.0"
   checksum: 149207e36f07bd4941921b0ca929e3a28f1da7bd6b6ff8ff7f4e2f2e460675af4576eeba359c635723dc189b64cdd4787e0255897d5b135ccc5d15cb8685fc90
+  languageName: node
+  linkType: hard
+
+"e2b@npm:^1.0.5":
+  version: 1.2.1
+  resolution: "e2b@npm:1.2.1"
+  dependencies:
+    "@bufbuild/protobuf": ^2.2.2
+    "@connectrpc/connect": 2.0.0-rc.3
+    "@connectrpc/connect-web": 2.0.0-rc.3
+    compare-versions: ^6.1.0
+    openapi-fetch: ^0.9.7
+    platform: ^1.3.6
+  checksum: 7076f790820ebc8cb5bc1121ab8b78b02da5caa39d374091c9db365a25133f3b37816b7344e1351bd39321d153bddc3b25d888b1d6ca1f8d719ff036b30ee4fc
   languageName: node
   linkType: hard
 
@@ -3775,6 +3831,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openapi-fetch@npm:^0.9.7":
+  version: 0.9.8
+  resolution: "openapi-fetch@npm:0.9.8"
+  dependencies:
+    openapi-typescript-helpers: ^0.0.8
+  checksum: 32a32698942b12b4c2fe2249eb90f745fa8dfde16d3312966e009fb7aaf7a233f883536ed58b1cdd58b6cafd6b55784e6aa7d13fefaf7c990929868e335d6cbe
+  languageName: node
+  linkType: hard
+
 "openapi-types@npm:^12.1.3":
   version: 12.1.3
   resolution: "openapi-types@npm:12.1.3"
@@ -3782,10 +3847,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openapi-typescript-helpers@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "openapi-typescript-helpers@npm:0.0.8"
+  checksum: e309d7d297cf78308c41c324ffe094c3ef194117bf104b5300e45535d158265f665c69e810a143f1d3db7020575c3041e370d2ee93fc8094f5aabc14a366fc39
+  languageName: node
+  linkType: hard
+
 "openevals@workspace:.":
   version: 0.0.0-use.local
   resolution: "openevals@workspace:."
   dependencies:
+    "@e2b/code-interpreter": ^1.0.4
     "@langchain/core": ^0.3.40
     "@langchain/openai": ^0.4.4
     "@langchain/scripts": 0.1.3
@@ -3809,6 +3882,7 @@ __metadata:
     uuid: ^11.1.0
     vitest: ^3.0.5
   peerDependencies:
+    "@e2b/code-interpreter": ^1.0.4
     "@langchain/core": ^0.3.40
     typescript: "*"
   peerDependenciesMeta:
@@ -4013,6 +4087,13 @@ __metadata:
   version: 2.3.1
   resolution: "picomatch@npm:2.3.1"
   checksum: 050c865ce81119c4822c45d3c84f1ced46f93a0126febae20737bd05ca20589c564d6e9226977df859ed5e03dc73f02584a2b0faad36e896936238238b0446cf
+  languageName: node
+  linkType: hard
+
+"platform@npm:^1.3.6":
+  version: 1.3.6
+  resolution: "platform@npm:1.3.6"
+  checksum: 6f472a09c61d418c7e26c1c16d0bdc029549d512dbec6526216a1e59ec68100d07007d0097dcba69dddad883d6f2a83361b4bdfe0094a3d9a2af24158643d85e
   languageName: node
   linkType: hard
 

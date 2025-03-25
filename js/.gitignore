@@ -6,6 +6,10 @@ code/typescript.cjs
 code/typescript.js
 code/typescript.d.ts
 code/typescript.d.cts
+code/e2b.cjs
+code/e2b.js
+code/e2b.d.ts
+code/e2b.d.cts
 llm.cjs
 llm.js
 llm.d.ts

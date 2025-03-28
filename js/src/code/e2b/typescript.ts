@@ -1,6 +1,5 @@
 import { Sandbox } from "@e2b/code-interpreter";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import { v4 as uuidv4 } from "uuid";
 
 import { _createBaseCodeEvaluator } from "../base.js";
 import { SingleResultScorerReturnType } from "../../types.js";
@@ -26,8 +25,8 @@ const E2B_COMMAND = [
  *
  * @param config - Optional configuration object
  * @param config.sandbox - E2B sandbox instance to use for the evaluation.
- * @param config.newProjectDirectoryPerExecution - Whether to reuse the project directory created within the sandbox for each evaluation run or create a brand new one each time.
- *   Setting to true will slow down execution due to setup time and the need to reinstall deps from scratch.
+ * @param config.sandboxProjectDirectory - Directory within the sandbox to use for the evaluation.
+ *   Allows you to add additional sandbox project files ahead of time.
  * @param config.codeExtractionStrategy - Strategy to extract code from the output:
  *   - "none": Use the raw output as-is
  *   - "llm": Use an LLM to extract code from the output
@@ -39,7 +38,7 @@ const E2B_COMMAND = [
  */
 export function createE2BTypeScriptEvaluator(config: {
   sandbox: Sandbox;
-  newProjectDirectoryPerExecution?: boolean;
+  sandboxProjectDirectory?: string;
   codeExtractionStrategy?: "none" | "llm" | "markdown_code_blocks";
   codeExtractor?: (outputs: string | Record<string, unknown>) => string;
   model?: string;
@@ -54,7 +53,7 @@ export function createE2BTypeScriptEvaluator(config: {
     );
   }
   const _scorer = async (params: { outputs: string }) => {
-    const cwd = config.newProjectDirectoryPerExecution ? uuidv4() : "openevals";
+    const cwd = config.sandboxProjectDirectory ?? "openevals";
     const sandbox = config.sandbox;
     try {
       await sandbox.files.write(`${cwd}/outputs.ts`, params.outputs);

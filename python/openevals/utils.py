@@ -254,9 +254,11 @@ def _normalize_final_app_outputs_as_string(outputs: Union[str, dict]) -> str:
         return outputs
     elif isinstance(outputs, dict):
         if "content" in outputs:
-            return outputs["content"]
+            converted_message = _convert_to_openai_message(outputs)
+            return converted_message["content"]
         elif "messages" in outputs and isinstance(outputs["messages"], list):
-            return outputs["messages"][-1]["content"]
+            final_message = _convert_to_openai_message(outputs["messages"][-1])
+            return final_message["content"]
         else:
             raise ValueError(
                 f"Expected a string, dictionary with a 'content' key or a 'messages' key with a list of messages, but got {outputs}"

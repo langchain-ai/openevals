@@ -1,12 +1,12 @@
 import pytest
-from e2b_code_interpreter import Sandbox
+from e2b_code_interpreter import AsyncSandbox
 
-from openevals.code.e2b.pyright import create_e2b_pyright_evaluator
+from openevals.code.e2b.execution import create_async_e2b_execution_evaluator
 
 
-@pytest.fixture(scope="module")
-def sandbox():
-    sandbox = Sandbox("OpenEvalsPython")
+@pytest.fixture
+async def sandbox():
+    sandbox = await AsyncSandbox.create("OpenEvalsPython")
     yield sandbox
 
 
@@ -71,9 +71,9 @@ graph.invoke({})
         ),
     ],
 )
-def test_e2b_pyright_evaluator(inputs, outputs, expected_result, sandbox):
-    llm_as_judge = create_e2b_pyright_evaluator(
+async def test_e2b_execution_evaluator(inputs, outputs, expected_result, sandbox):
+    evaluator = create_async_e2b_execution_evaluator(
         sandbox=sandbox,
     )
-    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    eval_result = await evaluator(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == expected_result

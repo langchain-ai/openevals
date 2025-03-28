@@ -1,15 +1,10 @@
 import pytest
-from e2b_code_interpreter import Sandbox
+from e2b_code_interpreter import AsyncSandbox
 
-from openevals.code.e2b.pyright import create_e2b_pyright_evaluator
-
-
-@pytest.fixture(scope="module")
-def sandbox():
-    sandbox = Sandbox("OpenEvalsPython")
-    yield sandbox
+from openevals.code.e2b.pyright import create_async_e2b_pyright_evaluator
 
 
+@pytest.mark.asyncio
 @pytest.mark.langsmith(output_keys=["outputs"])
 @pytest.mark.parametrize(
     "inputs, outputs, expected_result",
@@ -71,9 +66,10 @@ graph.invoke({})
         ),
     ],
 )
-def test_e2b_pyright_evaluator(inputs, outputs, expected_result, sandbox):
-    llm_as_judge = create_e2b_pyright_evaluator(
+async def test_e2b_pyright_evaluator(inputs, outputs, expected_result):
+    sandbox = await AsyncSandbox.create("OpenEvalsPython")
+    evaluator = create_async_e2b_pyright_evaluator(
         sandbox=sandbox,
     )
-    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    eval_result = await evaluator(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == expected_result

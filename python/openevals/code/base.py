@@ -33,7 +33,7 @@ You are an expert software auditor.
   If you extract code, your response will be passed DIRECTLY into a code execution sandbox for further testing,
   so make sure to extract all code **without modifications**, even if it contains errors,
   since any modifications will ruin the integrity of the testing process.
-  Omit installation instructions from extracted code.
+  Omit installation instructions and shell commands from any code you extract.
 </Instructions>
 """
 
@@ -47,7 +47,8 @@ Extract code from the following:
 
 
 class ExtractCode(TypedDict):
-    """Tool to call if there is code to extract."""
+    """Tool to call if there is code to extract.
+    Omit installation instructions and shell commands."""
 
     code: str
 
@@ -76,10 +77,27 @@ def _extract_code_from_markdown_code_blocks(text: str) -> Optional[str]:
     # Pattern to match code blocks with or without language specifier
     # (?s) enables dot to match newlines
     # (?:```(?:\w+)?\n(.*?)```) matches code blocks with optional language specifier
-    pattern = r"(?s)```(?:\w+)?\n(.*?)```"
+    pattern = r"(?m)^(?<!`)\`\`\`(\w*)\n([\s\S]*?)^(?<!`)\`\`\`$"
 
     # Find all code blocks
-    code_blocks = re.findall(pattern, text)
+    matches = re.finditer(pattern, text, re.MULTILINE)
+
+    # Filter out bash/shell blocks and collect valid code blocks
+    excluded_langs = {
+        "bash",
+        "sh",
+        "shell",
+        "zsh",
+        "fish",
+        "console",
+        "terminal",
+        "json",
+    }
+    code_blocks = []
+    for match in matches:
+        lang = match.group(1).strip()
+        if lang not in excluded_langs:
+            code_blocks.append(match.group(2))
 
     if not code_blocks:
         return None  # Return None if no code blocks found

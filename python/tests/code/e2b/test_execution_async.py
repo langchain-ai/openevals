@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from e2b_code_interpreter import AsyncSandbox
 
@@ -10,6 +12,10 @@ async def sandbox():
     yield sandbox
 
 
+@pytest.mark.skipif(
+    os.environ.get("E2B_API_KEY") is None,
+    reason="E2B_API_KEY is not set",
+)
 @pytest.mark.langsmith(output_keys=["outputs"])
 @pytest.mark.parametrize(
     "inputs, outputs, expected_result",

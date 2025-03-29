@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from e2b_code_interpreter import Sandbox
 
@@ -10,6 +12,10 @@ def sandbox():
     yield sandbox
 
 
+@pytest.mark.skipif(
+    os.environ.get("E2B_API_KEY") is None,
+    reason="E2B_API_KEY is not set",
+)
 @pytest.mark.langsmith(output_keys=["outputs"])
 @pytest.mark.parametrize(
     "inputs, outputs, expected_result",
@@ -79,6 +85,10 @@ def test_e2b_execution_evaluator(inputs, outputs, expected_result, sandbox):
     assert eval_result["score"] == expected_result
 
 
+@pytest.mark.skipif(
+    os.environ.get("E2B_API_KEY") is None,
+    reason="E2B_API_KEY is not set",
+)
 @pytest.mark.langsmith
 def test_e2b_execution_evaluator_with_custom_env(sandbox):
     outputs = """

@@ -115,6 +115,6 @@ jobs:
           LANGSMITH_TRACING: "true"
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: yarn test src/string/tests src/tests
+        run: yarn test
         shell: bash
         working-directory: js

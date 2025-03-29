@@ -1,9 +1,15 @@
+import os
+
 import pytest
 from e2b_code_interpreter import AsyncSandbox
 
 from openevals.code.e2b.pyright import create_async_e2b_pyright_evaluator
 
 
+@pytest.mark.skipif(
+    os.environ.get("E2B_API_KEY") is None,
+    reason="E2B_API_KEY is not set",
+)
 @pytest.mark.asyncio
 @pytest.mark.langsmith(output_keys=["outputs"])
 @pytest.mark.parametrize(

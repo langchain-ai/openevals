@@ -1,7 +1,7 @@
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 import ts from "typescript";
-import * as fs from "fs";
+import * as fs from "node:fs";
 import os from "node:os";
 import { v4 as uuidv4 } from "uuid";
 

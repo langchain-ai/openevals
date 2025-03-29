@@ -28,6 +28,10 @@ export const config = {
     types: "types",
     utils: "utils",
   },
+  requiresOptionalDependency: [
+    "code/typescript",
+    "code/e2b",
+  ],
   tsConfigPath: resolve("./tsconfig.json"),
   packageSuffix: "core",
   cjsSource: "./dist-cjs",

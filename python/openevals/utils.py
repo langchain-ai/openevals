@@ -249,7 +249,7 @@ def _chat_completion_messages_to_string(messages: list[ChatCompletionMessage]) -
     return "\n\n".join(format_message(message) for message in messages)
 
 
-def _normalize_final_app_outputs_as_string(outputs: Union[str, dict]) -> str:
+def _normalize_final_app_outputs_as_string(outputs: Union[str, dict]):
     if isinstance(outputs, str):
         return outputs
     elif isinstance(outputs, dict):

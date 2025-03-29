@@ -72,8 +72,8 @@ graph.invoke({})
     ],
 )
 def test_e2b_pyright_evaluator(inputs, outputs, expected_result, sandbox):
-    llm_as_judge = create_e2b_pyright_evaluator(
+    evaluator = create_e2b_pyright_evaluator(
         sandbox=sandbox,
     )
-    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    eval_result = evaluator(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == expected_result

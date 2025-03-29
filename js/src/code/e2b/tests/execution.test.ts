@@ -85,11 +85,11 @@ await graph.invoke({
       },
       expectedScore: true,
     },
-  ])("should execute code", async ({ inputs, outputs, expectedScore }) => {
+  ])("should execute code", async ({ outputs, expectedScore }) => {
     const evaluator = createE2BExecutionEvaluator({
       sandbox,
     });
-    const evalResult = await evaluator({ inputs, outputs });
+    const evalResult = await evaluator({ outputs });
     expect(evalResult.score).toBe(expectedScore);
   });
 });

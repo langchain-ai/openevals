@@ -45,9 +45,9 @@ def create_e2b_pyright_evaluator(
 
     Args:
         sandbox (Sandbox): The E2B sandbox environment for code execution.
-        sandbox_project_directory (Optional[str], optional): Directory where the code will be evaluated. 
+        sandbox_project_directory (Optional[str], optional): Directory where the code will be evaluated.
             Defaults to "openevals".
-        code_extraction_strategy (Literal["none", "llm", "markdown_code_blocks"], optional): Strategy for 
+        code_extraction_strategy (Literal["none", "llm", "markdown_code_blocks"], optional): Strategy for
             extracting code from the input. Defaults to "none".
         code_extractor (Optional[Callable[[Any], str]], optional): Custom function to extract code from input.
             Only used if code_extraction_strategy is "none".
@@ -108,9 +108,9 @@ def create_async_e2b_pyright_evaluator(
 
     Args:
         sandbox (AsyncSandbox): The E2B async sandbox environment for code execution.
-        sandbox_project_directory (Optional[str], optional): Directory where the code will be evaluated. 
+        sandbox_project_directory (Optional[str], optional): Directory where the code will be evaluated.
             Defaults to "openevals".
-        code_extraction_strategy (Literal["none", "llm", "markdown_code_blocks"], optional): Strategy for 
+        code_extraction_strategy (Literal["none", "llm", "markdown_code_blocks"], optional): Strategy for
             extracting code from the input. Defaults to "none".
         code_extractor (Optional[Callable[[Any], str]], optional): Custom function to extract code from input.
             Only used if code_extraction_strategy is "none".

@@ -1362,6 +1362,12 @@ You will need to install the `e2b-code-interpreter` package, available as an ext
 pip install openevals["e2b-code-interpreter"]
 ```
 
+Then, you will need to set your E2B API key as an environment variable:
+
+```
+export E2B_API_KEY="YOUR_KEY_HERE"
+```
+
 Then, you will need to initialize an E2B sandbox. There is a special `OpenEvalsPython` template that includes `pyright` and `uv` preinstalled for faster execution, though the evaluator will work with any sandbox:
 
 ```python
@@ -1509,7 +1515,13 @@ You will need to install the official `@e2b/code-interpreter` package as a peer 
 npm install @e2b/code-interpreter
 ```
 
-Then, you will need to initialize an E2B sandbox:
+Then, you will need to set your E2B API key as an environment variable:
+
+```
+process.env.E2B_API_KEY="YOUR_KEY_HERE"
+```
+
+Next, initialize an E2B sandbox:
 
 ```ts
 import { Sandbox } from "@e2b/code-interpreter";
@@ -1562,6 +1574,12 @@ You will need to install the `e2b-code-interpreter` package, available as an ext
 
 ```bash
 pip install openevals["e2b-code-interpreter"]
+```
+
+Then, you will need to set your E2B API key as an environment variable:
+
+```
+export E2B_API_KEY="YOUR_KEY_HERE"
 ```
 
 Then, you will need to initialize an E2B sandbox. There is a special `OpenEvalsPython` template that includes `pyright` and `uv` preinstalled for faster execution, though the evaluator will work with any sandbox:
@@ -1631,7 +1649,13 @@ You will need to install the official `@e2b/code-interpreter` package as a peer 
 npm install @e2b/code-interpreter
 ```
 
-Then, you will need to initialize an E2B sandbox:
+Then, you will need to set your E2B API key as an environment variable:
+
+```
+process.env.E2B_API_KEY="YOUR_KEY_HERE"
+```
+
+Next, initialize an E2B sandbox:
 
 ```ts
 import { Sandbox } from "@e2b/code-interpreter";

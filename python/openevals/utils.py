@@ -249,14 +249,16 @@ def _chat_completion_messages_to_string(messages: list[ChatCompletionMessage]) -
     return "\n\n".join(format_message(message) for message in messages)
 
 
-def _normalize_final_app_outputs_as_string(outputs: Union[str, dict]) -> str:
+def _normalize_final_app_outputs_as_string(outputs: Union[str, dict]):
     if isinstance(outputs, str):
         return outputs
     elif isinstance(outputs, dict):
         if "content" in outputs:
-            return outputs["content"]
+            converted_message = _convert_to_openai_message(outputs)
+            return converted_message["content"]
         elif "messages" in outputs and isinstance(outputs["messages"], list):
-            return outputs["messages"][-1]["content"]
+            final_message = _convert_to_openai_message(outputs["messages"][-1])
+            return final_message["content"]
         else:
             raise ValueError(
                 f"Expected a string, dictionary with a 'content' key or a 'messages' key with a list of messages, but got {outputs}"

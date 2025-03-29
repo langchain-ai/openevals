@@ -1,6 +1,6 @@
 [project]
 name = "openevals"
-version = "0.0.13"
+version = "0.0.14rc10"
 license = {text = "MIT"}
 description = "Open-source evaluators for LLM applications"
 readme = "README.md"
@@ -14,12 +14,18 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "e2b-code-interpreter>=1.1.1",
     "mypy>=1.15.0",
     "openai>=1.61.1",
     "pyright>=1.1.396",
     "pytest>=8.3.4",
     "pytest-asyncio>=0.25.3",
     "ruff>=0.9.5",
+]
+
+[project.optional-dependencies]
+e2b-code-interpreter = [
+    "e2b-code-interpreter>=1.1.1"
 ]
 
 [tool.setuptools.packages.find]

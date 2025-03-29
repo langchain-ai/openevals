@@ -338,6 +338,38 @@ wheels = [
 ]
 
 [[package]]
+name = "e2b"
+version = "1.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "httpcore" },
+    { name = "httpx" },
+    { name = "packaging" },
+    { name = "protobuf" },
+    { name = "python-dateutil" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b0/cd/7f9cba32485aeec2222f73c446f9d6dd2d929a77ebcb6d14fa88d119ecb1/e2b-1.3.1.tar.gz", hash = "sha256:d704faa618f0c7b3a4374654443609522a589189ece24d791129e9722f266e75", size = 51248 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c2/f3/20650b526a22adc8cfc9021eecd92342eb2a862f9c3702f963385888bd5e/e2b-1.3.1-py3-none-any.whl", hash = "sha256:2c7fa76e7a8614ebbc0df7f0863275284f9cd4afba7dc631e1c1471658809c37", size = 95906 },
+]
+
+[[package]]
+name = "e2b-code-interpreter"
+version = "1.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "e2b" },
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4c/a0/aa992090fc02ea7eeafce9b4fc122546c8dd81e85810c0d06bfd4c29a6a2/e2b_code_interpreter-1.1.1.tar.gz", hash = "sha256:b13091f75fc127ad3a268b8746e5da996c6734f432e606fcd4f3897a5b1c2bf0", size = 9288 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/40/dcdc47d039dd85e74df2532a01e9d47031fbfdfdc20c0b2de4e42b557271/e2b_code_interpreter-1.1.1-py3-none-any.whl", hash = "sha256:f56450b192456f24df89b9159d1067d50c7133d587ab12116144638969409578", size = 12049 },
+]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1026,7 +1058,7 @@ wheels = [
 
 [[package]]
 name = "openevals"
-version = "0.0.11"
+version = "0.0.14rc10"
 source = { virtual = "." }
 dependencies = [
     { name = "langchain" },
@@ -1035,8 +1067,14 @@ dependencies = [
     { name = "rich" },
 ]
 
+[package.optional-dependencies]
+e2b-code-interpreter = [
+    { name = "e2b-code-interpreter" },
+]
+
 [package.dev-dependencies]
 dev = [
+    { name = "e2b-code-interpreter" },
     { name = "mypy" },
     { name = "openai" },
     { name = "pyright" },
@@ -1047,6 +1085,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "e2b-code-interpreter", marker = "extra == 'e2b-code-interpreter'", specifier = ">=1.1.1" },
     { name = "langchain", specifier = ">=0.3.18" },
     { name = "langchain-openai", specifier = ">=0.3.6" },
     { name = "langsmith", specifier = ">=0.3.15" },
@@ -1055,6 +1094,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "e2b-code-interpreter", specifier = ">=1.1.1" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "openai", specifier = ">=1.61.1" },
     { name = "pyright", specifier = ">=1.1.396" },
@@ -1244,6 +1284,22 @@ wheels = [
 ]
 
 [[package]]
+name = "protobuf"
+version = "5.29.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/17/7d/b9dca7365f0e2c4fa7c193ff795427cfa6290147e5185ab11ece280a18e7/protobuf-5.29.4.tar.gz", hash = "sha256:4f1dfcd7997b31ef8f53ec82781ff434a28bf71d9102ddde14d076adcfc78c99", size = 424902 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9a/b2/043a1a1a20edd134563699b0e91862726a0dc9146c090743b6c44d798e75/protobuf-5.29.4-cp310-abi3-win32.whl", hash = "sha256:13eb236f8eb9ec34e63fc8b1d6efd2777d062fa6aaa68268fb67cf77f6839ad7", size = 422709 },
+    { url = "https://files.pythonhosted.org/packages/79/fc/2474b59570daa818de6124c0a15741ee3e5d6302e9d6ce0bdfd12e98119f/protobuf-5.29.4-cp310-abi3-win_amd64.whl", hash = "sha256:bcefcdf3976233f8a502d265eb65ea740c989bacc6c30a58290ed0e519eb4b8d", size = 434506 },
+    { url = "https://files.pythonhosted.org/packages/46/de/7c126bbb06aa0f8a7b38aaf8bd746c514d70e6a2a3f6dd460b3b7aad7aae/protobuf-5.29.4-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:307ecba1d852ec237e9ba668e087326a67564ef83e45a0189a772ede9e854dd0", size = 417826 },
+    { url = "https://files.pythonhosted.org/packages/a2/b5/bade14ae31ba871a139aa45e7a8183d869efe87c34a4850c87b936963261/protobuf-5.29.4-cp38-abi3-manylinux2014_aarch64.whl", hash = "sha256:aec4962f9ea93c431d5714ed1be1c93f13e1a8618e70035ba2b0564d9e633f2e", size = 319574 },
+    { url = "https://files.pythonhosted.org/packages/46/88/b01ed2291aae68b708f7d334288ad5fb3e7aa769a9c309c91a0d55cb91b0/protobuf-5.29.4-cp38-abi3-manylinux2014_x86_64.whl", hash = "sha256:d7d3f7d1d5a66ed4942d4fefb12ac4b14a29028b209d4bfb25c68ae172059922", size = 319672 },
+    { url = "https://files.pythonhosted.org/packages/8a/b8/c3847343ebd9c7ae0b762de1e173b110689fd334ac8dcf1697ffd9316861/protobuf-5.29.4-cp39-cp39-win32.whl", hash = "sha256:fd32223020cb25a2cc100366f1dedc904e2d71d9322403224cdde5fdced0dabe", size = 422675 },
+    { url = "https://files.pythonhosted.org/packages/f0/74/e23e1ab05b27ce0b55f70be90df82076a5c18924d98679110459c52bacd9/protobuf-5.29.4-cp39-cp39-win_amd64.whl", hash = "sha256:678974e1e3a9b975b8bc2447fca458db5f93a2fb6b0c8db46b6675b5b5346812", size = 434594 },
+    { url = "https://files.pythonhosted.org/packages/12/fb/a586e0c973c95502e054ac5f81f88394f24ccc7982dac19c515acd9e2c93/protobuf-5.29.4-py3-none-any.whl", hash = "sha256:3fde11b505e1597f71b875ef2fc52062b6a9740e5f7c8997ce878b6009145862", size = 172551 },
+]
+
+[[package]]
 name = "pycparser"
 version = "2.22"
 source = { registry = "https://pypi.org/simple" }
@@ -1412,6 +1468,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f2/a8/ecbc8ede70921dd2f544ab1cadd3ff3bf842af27f87bbdea774c7baa1d38/pytest_asyncio-0.25.3.tar.gz", hash = "sha256:fc1da2cf9f125ada7e710b4ddad05518d4cee187ae9412e9ac9271003497f07a", size = 54239 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/67/17/3493c5624e48fd97156ebaec380dcaafee9506d7e2c46218ceebbb57d7de/pytest_asyncio-0.25.3-py3-none-any.whl", hash = "sha256:9e89518e0f9bd08928f97a3482fdc4e244df17529460bc038291ccaf8f85c7c3", size = 19467 },
+]
+
+[[package]]
+name = "python-dateutil"
+version = "2.9.0.post0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/66/c0/0c8b6ad9f17a802ee498c46e004a0eb49bc148f2fd230864601a86dcf6db/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3", size = 342432 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427", size = 229892 },
 ]
 
 [[package]]
@@ -1616,6 +1684,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a5/7d/7b461ab0e2404293c0627125bb70ac642c2e8d55bf590f6fce85f508f1b2/ruff-0.9.6-py3-none-win32.whl", hash = "sha256:194d8402bceef1b31164909540a597e0d913c0e4952015a5b40e28c146121b5d", size = 9949214 },
     { url = "https://files.pythonhosted.org/packages/ee/30/c3cee10f915ed75a5c29c1e57311282d1a15855551a64795c1b2bbe5cf37/ruff-0.9.6-py3-none-win_amd64.whl", hash = "sha256:03482d5c09d90d4ee3f40d97578423698ad895c87314c4de39ed2af945633caa", size = 10999914 },
     { url = "https://files.pythonhosted.org/packages/e8/a8/d71f44b93e3aa86ae232af1f2126ca7b95c0f515ec135462b3e1f351441c/ruff-0.9.6-py3-none-win_arm64.whl", hash = "sha256:0e2bb706a2be7ddfea4a4af918562fdc1bcb16df255e5fa595bbd800ce322a5a", size = 10177499 },
+]
+
+[[package]]
+name = "six"
+version = "1.17.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050 },
 ]
 
 [[package]]

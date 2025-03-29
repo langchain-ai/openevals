@@ -20,7 +20,7 @@ You are an expert software auditor.
   If you extract code, your response will be passed DIRECTLY into a code execution sandbox for further testing,
   so make sure to extract all code **without modifications**, even if it contains errors,
   since any modifications will ruin the integrity of the testing process.
-  Omit installation instructions from extracted code.
+  Omit installation instructions and shell commands from any code you extract.
 </Instructions>
 `;
 
@@ -36,7 +36,8 @@ const extractCodeToolSchema = {
   type: "function",
   function: {
     name: "ExtractCode",
-    description: "Tool to call if there is code to extract.",
+    description:
+      "Tool to call if there is code to extract. Omit installation instructions and shell commands.",
     parameters: {
       type: "object",
       properties: {
@@ -76,23 +77,36 @@ const noCodeToolSchema = {
  * @returns A string containing only the code extracted from code blocks, with blocks
  *          separated by newlines
  */
-function _extractCodeFromMarkdownCodeBlocks(text: string): string {
+export function _extractCodeFromMarkdownCodeBlocks(
+  text: string
+): string | null {
   // Pattern to match code blocks with or without language specifier
-  // (?s) enables dot to match newlines
-  // (?:```(?:\w+)?\n(.*?)```) matches code blocks with optional language specifier
-  const pattern = /```(?:\w+)?\n([\s\S]*?)```/g;
+  const pattern = /^(?<!`)```(\w*)\n([\s\S]*?)^(?<!`)```$/gm;
 
   // Find all code blocks
+  const excludedLangs = new Set([
+    "bash",
+    "sh",
+    "shell",
+    "zsh",
+    "fish",
+    "console",
+    "terminal",
+    "json",
+  ]);
   const codeBlocks: string[] = [];
 
   let match = pattern.exec(text);
   while (match !== null) {
-    codeBlocks.push(match[1]);
+    const lang = match[1].trim();
+    if (!excludedLangs.has(lang)) {
+      codeBlocks.push(match[2]);
+    }
     match = pattern.exec(text);
   }
 
   if (codeBlocks.length === 0) {
-    return text; // Return original text if no code blocks found
+    return null; // Return null if no valid code blocks found
   }
 
   // Join all code blocks with newlines
@@ -183,8 +197,16 @@ export function _createBaseCodeEvaluator<
           ] as const;
         }
       } else if (codeExtractionStrategy === "markdown_code_blocks") {
-        normalizedOutputs =
+        const extractedCode =
           _extractCodeFromMarkdownCodeBlocks(normalizedOutputs);
+        if (extractedCode == null) {
+          return [
+            false,
+            "Code extraction failed",
+            { code_extraction_failed: true },
+          ] as const;
+        }
+        normalizedOutputs = extractedCode;
       }
 
       return scorer({

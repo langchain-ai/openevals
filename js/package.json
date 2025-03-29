@@ -20,10 +20,12 @@
     "uuid": "^11.1.0"
   },
   "peerDependencies": {
+    "@e2b/code-interpreter": "^1.0.4",
     "@langchain/core": "^0.3.40",
     "typescript": "*"
   },
   "devDependencies": {
+    "@e2b/code-interpreter": "^1.0.4",
     "@langchain/core": "^0.3.40",
     "@langchain/scripts": "0.1.3",
     "@tsconfig/recommended": "^1.0.8",
@@ -58,6 +60,10 @@
     "code/typescript.js",
     "code/typescript.d.ts",
     "code/typescript.d.cts",
+    "code/e2b.cjs",
+    "code/e2b.js",
+    "code/e2b.d.ts",
+    "code/e2b.d.cts",
     "llm.cjs",
     "llm.js",
     "llm.d.ts",
@@ -93,6 +99,15 @@
       },
       "import": "./code/typescript.js",
       "require": "./code/typescript.cjs"
+    },
+    "./code/e2b": {
+      "types": {
+        "import": "./code/e2b.d.ts",
+        "require": "./code/e2b.d.cts",
+        "default": "./code/e2b.d.ts"
+      },
+      "import": "./code/e2b.js",
+      "require": "./code/e2b.cjs"
     },
     "./llm": {
       "types": {

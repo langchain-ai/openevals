@@ -99,7 +99,8 @@ ls.describe("llm as judge", () => {
       const outputs = { a: 1, b: 2 };
       const client = new OpenAI();
       const evaluator = createLLMAsJudge({
-        prompt: "How equal are these two? {inputs} {outputs}",
+        prompt:
+          "How equal are these two? If there are two props and one is equal and the other is not, return 0.5. {inputs} {outputs}",
         judge: client,
         model: "openai:o3-mini",
         continuous: true,

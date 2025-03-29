@@ -6,16 +6,11 @@ from e2b_code_interpreter import AsyncSandbox
 from openevals.code.e2b.execution import create_async_e2b_execution_evaluator
 
 
-@pytest.fixture
-async def sandbox():
-    sandbox = await AsyncSandbox.create("OpenEvalsPython")
-    yield sandbox
-
-
 @pytest.mark.skipif(
     os.environ.get("E2B_API_KEY") is None,
     reason="E2B_API_KEY is not set",
 )
+@pytest.mark.asyncio
 @pytest.mark.langsmith(output_keys=["outputs"])
 @pytest.mark.parametrize(
     "inputs, outputs, expected_result",
@@ -77,7 +72,8 @@ graph.invoke({})
         ),
     ],
 )
-async def test_e2b_execution_evaluator(inputs, outputs, expected_result, sandbox):
+async def test_async_e2b_execution_evaluator(inputs, outputs, expected_result):
+    sandbox = await AsyncSandbox.create("OpenEvalsPython")
     evaluator = create_async_e2b_execution_evaluator(
         sandbox=sandbox,
     )

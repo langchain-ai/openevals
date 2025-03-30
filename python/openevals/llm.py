@@ -75,7 +75,6 @@ def _construct_output_schema(
         else {
             "type": "object",
             "additionalProperties": False,
-            "strict": True,
         }
     )
     # Set the description for the score schema

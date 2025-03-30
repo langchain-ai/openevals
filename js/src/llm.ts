@@ -87,7 +87,6 @@ function constructOutputSchema({
   const jsonSchema: Record<string, unknown> = schema ?? {
     type: "object",
     additionalProperties: false,
-    strict: true,
   };
 
   let description: string;

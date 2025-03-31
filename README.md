@@ -136,7 +136,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [LLM-as-judge for code](#llm-as-judge-for-code)
   - [Sandboxed code](#sandboxed-code)
     - [Sandboxed Pyright (Python-only)](#sandbox-pyright-python-only)
-    - [Sandboxed TypeScript (TypeScript-only)](#sandbox-typescript-typescript-only)
+    - [Sandboxed TypeScript type-checking (TypeScript-only)](#sandbox-typescript-type-checking-typescript-only)
     - [Sandboxed Execution](#sandbox-execution)
   - [Other](#other)
     - [Exact Match](#exact-match)
@@ -1631,7 +1631,7 @@ print(eval_result)
 
 Above, the evaluator identifies and installs the `langgraph` package inside the sandbox, then runs `pyright`. The type-check fails because the provided code misuses the imported package, invoking the builder rather than the compiled graph.
 
-### Sandbox TypeScript (TypeScript-only)
+### Sandbox TypeScript type-checking (TypeScript-only)
 
 You can also run TypeScript type-checking in an [E2B](https://e2b.dev) sandbox. The evaluator will run a script to parse out package names
 from generated code, then will install those packages in the sandbox and will run TypeScript. The evaluator will return any analyzed errors in its comment.

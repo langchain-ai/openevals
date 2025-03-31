@@ -108,7 +108,7 @@ console.log(evalResult);
 
 This is an example of a reference-free evaluator - some other evaluators may accept slightly different parameters such as a required reference output. LLM-as-judge evaluators will attempt to format any passed parameters into their passed `prompt`, allowing you to flexibly customize criteria or add other fields.
 
-See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-scores) to output more than just `True/False`, the [model](#customizing-the-model), or the [prompt](#customizing-prompts)!
+See the [LLM-as-judge](#llm-as-judge) section for more information on how to customize the [scoring](#customizing-output-score-values) to output float values rather than just `True/False`, the [model](#customizing-the-model), or the [prompt](#customizing-prompts)!
 
 # Table of Contents
 
@@ -121,7 +121,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
       - [Hallucination](#hallucination)
     - [Customizing prompts](#customizing-prompts)
     - [Customizing the model](#customizing-the-model)
-    - [Customizing output scores](#customizing-output-scores)
+    - [Customizing output score values](#customizing-output-score-values)
   - [Extraction and tool calls](#extraction-and-tool-calls)
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
@@ -735,9 +735,9 @@ const openaiEvaluator = createLLMAsJudge({
 ```
 </details>
 
-### Customizing output scores
+### Customizing output score values
 
-There are two fields you can set to customize the output of your evaluator:
+There are two fields you can set to customize the outputted scores of your evaluator:
 
 - `continuous`: a boolean that sets whether the evaluator should return a float score somewhere between 0 and 1 instead of a binary score. Defaults to `False`.
 - `choices`: a list of floats that sets the possible scores for the evaluator.

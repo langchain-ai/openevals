@@ -131,12 +131,13 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
   - [Code](#code)
     - [Extracting code outputs](#extracting-code-outputs)
     - [Pyright (Python-only)](#pyright-python-only)
-    - [E2B Sandbox Pyright (Python-only)](#e2b-sandbox-pyright-python-only)
     - [Mypy (Python-only)](#mypy-python-only)
     - [TypeScript type-checking (TypeScript-only)](#typescript-type-checking-typescript-only)
-    - [E2B Sandbox TypeScript (TypeScript-only)](#e2b-sandbox-typescript-typescript-only)
-    - [E2B Sandbox Execution](#e2b-sandbox-execution)
     - [LLM-as-judge for code](#llm-as-judge-for-code)
+  - [Sandboxed code](#sandboxed-code)
+    - [Sandboxed Pyright (Python-only)](#sandbox-pyright-python-only)
+    - [Sandboxed TypeScript (TypeScript-only)](#sandbox-typescript-typescript-only)
+    - [Sandboxed Execution](#sandbox-execution)
   - [Other](#other)
     - [Exact Match](#exact-match)
     - [Levenshtein Distance](#levenshtein-distance)
@@ -1339,7 +1340,7 @@ print(result)
 }
 ```
 
-**Note:** The evaluator will ignore `reportMissingImports` errors.
+**Note:** The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-pyright-python-only) of this evaluator.
 
 You can also pass `pyright_cli_args` to the evaluator to customize the arguments passed to the `pyright` CLI:
 
@@ -1350,77 +1351,6 @@ evaluator = create_pyright_evaluator(
 ```
 
 For a full list of supported arguments, see the [pyright CLI documentation](https://microsoft.github.io/pyright/#/command-line).
-
-### E2B Sandbox Pyright (Python-only)
-
-You can also run Pyright type-checking in an [E2B](https://e2b.dev) sandbox. The evaluator will run a script to parse out package names
-from generated code, then will install those packages in the sandbox and will run Pyright. The evaluator will return any analyzed errors in its comment.
-
-You will need to install the `e2b-code-interpreter` package, available as an extra:
-
-```bash
-pip install openevals["e2b-code-interpreter"]
-```
-
-Then, you will need to set your E2B API key as an environment variable:
-
-```
-export E2B_API_KEY="YOUR_KEY_HERE"
-```
-
-Then, you will need to initialize an E2B sandbox. There is a special `OpenEvalsPython` template that includes `pyright` and `uv` preinstalled for faster execution, though the evaluator will work with any sandbox:
-
-```python
-from e2b_code_interpreter import Sandbox
-
-# E2B template with uv and pyright preinstalled
-sandbox = Sandbox("OpenEvalsPython")
-```
-
-Finally, pass that created sandbox into the `create_e2b_pyright_evaluator` factory function and run it:
-
-```python
-from openevals.code.e2b.pyright import create_e2b_pyright_evaluator
-
-evaluator = create_e2b_pyright_evaluator(
-    sandbox=sandbox,
-)
-
-CODE = """
-from typing import Annotated
-
-from typing_extensions import TypedDict
-
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-
-
-class State(TypedDict):
-    messages: Annotated[list, add_messages]
-
-builder = StateGraph(State)
-builder.add_node("start", lambda state: state)
-builder.compile()
-
-builder.invoke({})
-"""
-
-eval_result = evaluator(outputs=CODE)
-
-print(eval_result)
-```
-
-```
-{
-  'key': 'pyright_succeeded',
-  'score': false,
-  'comment': '[{"severity": "error", "message": "Cannot access attribute "invoke" for class "StateGraph"...}]',
-}
-```
-
-Above, the evaluator identifies and installs the `langgraph` package inside the sandbox, then runs `pyright`. The type-check fails because the provided code misuses the imported package, invoking the builder rather than the compiled graph.
-
-If you have a custom sandbox you have already set up, you can supply a `sandbox_project_directory` param to customize the folder in which type-checking runs.
 
 ### Mypy (Python-only)
 
@@ -1502,214 +1432,7 @@ console.log(result);
 }
 ```
 
-The evaluator will ignore `reportMissingImports` errors.
-
-### E2B Sandbox TypeScript (TypeScript-only)
-
-You can also run TypeScript type-checking in an [E2B](https://e2b.dev) sandbox. The evaluator will run a script to parse out package names
-from generated code, then will install those packages in the sandbox and will run TypeScript. The evaluator will return any analyzed errors in its comment.
-
-You will need to install the official `@e2b/code-interpreter` package as a peer dependency:
-
-```bash
-npm install @e2b/code-interpreter
-```
-
-Then, you will need to set your E2B API key as an environment variable:
-
-```
-process.env.E2B_API_KEY="YOUR_KEY_HERE"
-```
-
-Next, initialize an E2B sandbox:
-
-```ts
-import { Sandbox } from "@e2b/code-interpreter";
-
-const sandbox = await Sandbox.create();
-```
-
-And finally, pass the sandbox into the `createE2BTypeScriptEvaluator` and run it:
-
-```ts
-import { createE2BTypeScriptEvaluator } from "openevals/code/e2b";
-
-const evaluator = createE2BTypeScriptEvaluator({
-  sandbox,
-});
-
-const CODE = `
-import { StateGraph } from '@langchain/langgraph';
-
-await StateGraph.invoke({})
-`;
-
-const evalResult = await evaluator({ outputs: CODE });
-
-console.log(evalResult);
-```
-
-```
-{
-  "key": "typescript_succeeded",
-  "score": false,
-  "comment": "(3,18): Property 'invoke' does not exist on type 'typeof StateGraph'."
-}
-```
-
-Above, the evaluator identifies and installs `@langchain/langgraph`, then runs a type-check via TypeScript. The type-check fails because the provided code misuses the imported package.
-
-If you have a custom sandbox you have already set up, you can supply a `sandboxProjectDirectory` param to customize the folder in which type-checking runs.
-
-### E2B Sandbox Execution
-
-To further evaluate code correctness, OpenEvals has a sandbox execution evaluator that runs generated code in an [E2B](https://e2b.dev) sandbox.
-
-The evaluator will run a script to parse out package names from generated code, then will install those packages in the sandbox. The evaluator will then attempt to run the generated code return any analyzed errors in its comment.
-
-<details open>
-<summary>Python</summary>
-
-You will need to install the `e2b-code-interpreter` package, available as an extra:
-
-```bash
-pip install openevals["e2b-code-interpreter"]
-```
-
-Then, you will need to set your E2B API key as an environment variable:
-
-```
-export E2B_API_KEY="YOUR_KEY_HERE"
-```
-
-Then, you will need to initialize an E2B sandbox. There is a special `OpenEvalsPython` template that includes `pyright` and `uv` preinstalled for faster execution, though the evaluator will work with any sandbox:
-
-```python
-from e2b_code_interpreter import Sandbox
-
-# E2B template with uv and pyright preinstalled
-sandbox = Sandbox("OpenEvalsPython")
-```
-
-Then pass the sandbox to the `create_e2b_execution_evaluator` factory function and run the result:
-
-```python
-from openevals.code.e2b.execution import create_e2b_execution_evaluator
-
-evaluator = create_e2b_execution_evaluator(
-    sandbox=sandbox,
-)
-
-CODE = """
-from typing import Annotated
-
-from typing_extensions import TypedDict
-
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-
-
-class State(TypedDict):
-    messages: Annotated[list, add_messages]
-
-builder = StateGraph(State)
-builder.add_node("start", lambda state: state)
-builder.compile()
-
-builder.invoke({})
-"""
-
-eval_result = evaluator(outputs=CODE)
-
-print(eval_result)
-```
-
-```
-{
-  'key': 'execution_succeeded',
-  'score': False,
-  'comment': '"Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/openevals/outputs.py\", line 15, in <module>\n    builder.compile()\n  File \"/home/user/openevals/.venv/lib/python3.10/site-packages/langgraph/graph/state.py\", line 602, in compile\n    self.validate(\n  File \"/home/user/openevals/.venv/lib/python3.10/site-packages/langgraph/graph/graph.py\", line 267, in validate\n    raise ValueError(\nValueError: Graph must have an entrypoint: add at least one edge from START to another node\n"'
-}
-```
-
-Above, the evaluator identifies and installs `langgraph`, then attempts to execute the code. The type-check fails because the provided code misuses the imported package.
-
-If desired, you can pass an `environment_variables` dict when creating the evaluator. Generated code will  have access to these variables within the sandbox, but be cautious, as there is no way to predict exactly what code an LLM will generate.
-
-If you have a custom sandbox you have already set up, you can supply a `sandbox_project_directory` param to customize the folder in which execution runs.
-
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-You will need to install the official `@e2b/code-interpreter` package as a peer dependency:
-
-```bash
-npm install @e2b/code-interpreter
-```
-
-Then, you will need to set your E2B API key as an environment variable:
-
-```
-process.env.E2B_API_KEY="YOUR_KEY_HERE"
-```
-
-Next, initialize an E2B sandbox:
-
-```ts
-import { Sandbox } from "@e2b/code-interpreter";
-
-const sandbox = await Sandbox.create();
-```
-
-And finally, pass the sandbox into the `create` and run it:
-
-```ts
-import { createE2BExecutionEvaluator } from "openevals/code/e2b";
-
-const evaluator = createE2BExecutionEvaluator({
-  sandbox,
-});
-
-const CODE = `
-import { Annotation, StateGraph } from '@langchain/langgraph';
-
-const StateAnnotation = Annotation.Root({
-  joke: Annotation<string>,
-  topic: Annotation<string>,
-});
-
-const graph = new StateGraph(StateAnnotation)
-  .addNode("joke", () => ({}))
-  .compile();
-  
-await graph.invoke({
-  joke: "foo",
-  topic: "history",
-});
-`;
-
-const evalResult = await evaluator({ outputs });
-
-console.log(evalResult);
-```
-
-```
-{
-  "key": "execution_succeeded",
-  "score": false,
-  "comment": "file:///home/user/openevals/node_modules/@langchain/langgraph/dist/graph/state.js:197\n            throw new Error(`${key} is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.`);\n                  ^\n\nError: joke is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.\n    at StateGraph.addNode (/home/user/openevals/node_modules/@langchain/langgraph/src/graph/state.ts:292:13)\n    at <anonymous> (/home/user/openevals/outputs.ts:9:4)\n    at ModuleJob.run (node:internal/modules/esm/module_job:195:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:336:24)\n    at async loadESM (node:internal/process/esm_loader:34:7)\n    at async handleMainPromise (node:internal/modules/run_main:106:12)\n\nNode.js v18.19.0\n"
-}
-```
-
-Above, the evaluator identifies and installs `@langchain/langgraph`, then attempts to execute the code. The type-check fails because the provided code misuses the imported package.
-
-If desired, you can pass an `environmentVariables` object when creating the evaluator. Generated code will  have access to these variables within the sandbox, but be cautious, as there is no way to predict exactly what code an LLM will generate.
-
-If you have a custom sandbox you have already set up, you can supply a `sandboxProjectDirectory` param to customize the folder in which execution runs.
-
-</details>
+**Note:** The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-typescript-typescript-only) of this evaluator.
 
 ### LLM-as-judge for code
 
@@ -1826,6 +1549,286 @@ console.log(evalResult);
   "comment": "The code has a logical error in its type specification. The function is intended to add two numbers and return their sum, so the return type should be number, not boolean. This mistake makes the solution incorrect according to the rubric. Thus, the score should be: false."
 }
 ```
+
+</details>
+
+## Sandboxed code
+
+LLMs can generate arbitrary code, and if you are running a code evaluator locally, you may not wish to install generated dependencies or run this arbitrary code locally. To solve this, OpenEvals integrates with [E2B](https://e2b.dev) to run some code evaluators in isolated sandboxes.
+
+Given some output code from an LLM, these sandboxed code evaluators will run scripts in a sandbox that parse out dependencies and install them so that the evaluator has proper context for type-checking or execution.
+
+These evaluators all require a `sandbox` parameter upon creation, and also accept the code extraction parameters present in the other [code evaluators](#extracting-code-outputs). For Python, there is a special `OpenEvalsPython` template that includes `pyright` and `uv` preinstalled for faster execution, though the evaluator will work with any sandbox.
+
+If you have a custom sandbox with dependencies pre-installed or files already set up, you can supply a `sandbox_project_directory` (Python) or `sandboxProjectDirectory` (TypeScript) param when calling the appropriate `create` method to customize the folder in which type-checking/execution runs.
+
+### Sandbox Pyright (Python-only)
+
+You can also run Pyright type-checking in an [E2B](https://e2b.dev) sandbox. The evaluator will run a script to parse out package names
+from generated code, then will install those packages in the sandbox and will run Pyright. The evaluator will return any analyzed errors in its comment.
+
+You will need to install the `e2b-code-interpreter` package, available as an extra:
+
+```bash
+pip install openevals["e2b-code-interpreter"]
+```
+
+Then, you will need to set your E2B API key as an environment variable:
+
+```
+export E2B_API_KEY="YOUR_KEY_HERE"
+```
+
+Then, you will need to initialize an E2B sandbox. There is a special `OpenEvalsPython` template that includes `pyright` and `uv` preinstalled for faster execution, though the evaluator will work with any sandbox:
+
+```python
+from e2b_code_interpreter import Sandbox
+
+# E2B template with uv and pyright preinstalled
+sandbox = Sandbox("OpenEvalsPython")
+```
+
+Finally, pass that created sandbox into the `create_e2b_pyright_evaluator` factory function and run it:
+
+```python
+from openevals.code.e2b.pyright import create_e2b_pyright_evaluator
+
+evaluator = create_e2b_pyright_evaluator(
+    sandbox=sandbox,
+)
+
+CODE = """
+from typing import Annotated
+
+from typing_extensions import TypedDict
+
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+
+
+class State(TypedDict):
+    messages: Annotated[list, add_messages]
+
+builder = StateGraph(State)
+builder.add_node("start", lambda state: state)
+builder.compile()
+
+builder.invoke({})
+"""
+
+eval_result = evaluator(outputs=CODE)
+
+print(eval_result)
+```
+
+```
+{
+  'key': 'pyright_succeeded',
+  'score': false,
+  'comment': '[{"severity": "error", "message": "Cannot access attribute "invoke" for class "StateGraph"...}]',
+}
+```
+
+Above, the evaluator identifies and installs the `langgraph` package inside the sandbox, then runs `pyright`. The type-check fails because the provided code misuses the imported package, invoking the builder rather than the compiled graph.
+
+### Sandbox TypeScript (TypeScript-only)
+
+You can also run TypeScript type-checking in an [E2B](https://e2b.dev) sandbox. The evaluator will run a script to parse out package names
+from generated code, then will install those packages in the sandbox and will run TypeScript. The evaluator will return any analyzed errors in its comment.
+
+You will need to install the official `@e2b/code-interpreter` package as a peer dependency:
+
+```bash
+npm install @e2b/code-interpreter
+```
+
+Then, you will need to set your E2B API key as an environment variable:
+
+```
+process.env.E2B_API_KEY="YOUR_KEY_HERE"
+```
+
+Next, initialize an E2B sandbox:
+
+```ts
+import { Sandbox } from "@e2b/code-interpreter";
+
+const sandbox = await Sandbox.create();
+```
+
+And finally, pass the sandbox into the `createE2BTypeScriptEvaluator` and run it:
+
+```ts
+import { createE2BTypeScriptEvaluator } from "openevals/code/e2b";
+
+const evaluator = createE2BTypeScriptEvaluator({
+  sandbox,
+});
+
+const CODE = `
+import { StateGraph } from '@langchain/langgraph';
+
+await StateGraph.invoke({})
+`;
+
+const evalResult = await evaluator({ outputs: CODE });
+
+console.log(evalResult);
+```
+
+```
+{
+  "key": "typescript_succeeded",
+  "score": false,
+  "comment": "(3,18): Property 'invoke' does not exist on type 'typeof StateGraph'."
+}
+```
+
+Above, the evaluator identifies and installs `@langchain/langgraph`, then runs a type-check via TypeScript. The type-check fails because the provided code misuses the imported package.
+
+### Sandbox Execution
+
+To further evaluate code correctness, OpenEvals has a sandbox execution evaluator that runs generated code in an [E2B](https://e2b.dev) sandbox.
+
+The evaluator will run a script to parse out package names from generated code, then will install those packages in the sandbox. The evaluator will then attempt to run the generated code return any analyzed errors in its comment.
+
+<details open>
+<summary>Python</summary>
+
+You will need to install the `e2b-code-interpreter` package, available as an extra:
+
+```bash
+pip install openevals["e2b-code-interpreter"]
+```
+
+Then, you will need to set your E2B API key as an environment variable:
+
+```
+export E2B_API_KEY="YOUR_KEY_HERE"
+```
+
+Then, you will need to initialize an E2B sandbox. There is a special `OpenEvalsPython` template that includes `pyright` and `uv` preinstalled for faster execution, though the evaluator will work with any sandbox:
+
+```python
+from e2b_code_interpreter import Sandbox
+
+# E2B template with uv and pyright preinstalled
+sandbox = Sandbox("OpenEvalsPython")
+```
+
+Then pass the sandbox to the `create_e2b_execution_evaluator` factory function and run the result:
+
+```python
+from openevals.code.e2b.execution import create_e2b_execution_evaluator
+
+evaluator = create_e2b_execution_evaluator(
+    sandbox=sandbox,
+)
+
+CODE = """
+from typing import Annotated
+
+from typing_extensions import TypedDict
+
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+
+
+class State(TypedDict):
+    messages: Annotated[list, add_messages]
+
+builder = StateGraph(State)
+builder.add_node("start", lambda state: state)
+builder.compile()
+
+builder.invoke({})
+"""
+
+eval_result = evaluator(outputs=CODE)
+
+print(eval_result)
+```
+
+```
+{
+  'key': 'execution_succeeded',
+  'score': False,
+  'comment': '"Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/openevals/outputs.py\", line 15, in <module>\n    builder.compile()\n  File \"/home/user/openevals/.venv/lib/python3.10/site-packages/langgraph/graph/state.py\", line 602, in compile\n    self.validate(\n  File \"/home/user/openevals/.venv/lib/python3.10/site-packages/langgraph/graph/graph.py\", line 267, in validate\n    raise ValueError(\nValueError: Graph must have an entrypoint: add at least one edge from START to another node\n"'
+}
+```
+
+Above, the evaluator identifies and installs `langgraph`, then attempts to execute the code. The type-check fails because the provided code misuses the imported package.
+
+If desired, you can pass an `environment_variables` dict when creating the evaluator. Generated code will  have access to these variables within the sandbox, but be cautious, as there is no way to predict exactly what code an LLM will generate.
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+You will need to install the official `@e2b/code-interpreter` package as a peer dependency:
+
+```bash
+npm install @e2b/code-interpreter
+```
+
+Then, you will need to set your E2B API key as an environment variable:
+
+```
+process.env.E2B_API_KEY="YOUR_KEY_HERE"
+```
+
+Next, initialize an E2B sandbox:
+
+```ts
+import { Sandbox } from "@e2b/code-interpreter";
+
+const sandbox = await Sandbox.create();
+```
+
+And finally, pass the sandbox into the `create` and run it:
+
+```ts
+import { createE2BExecutionEvaluator } from "openevals/code/e2b";
+
+const evaluator = createE2BExecutionEvaluator({
+  sandbox,
+});
+
+const CODE = `
+import { Annotation, StateGraph } from '@langchain/langgraph';
+
+const StateAnnotation = Annotation.Root({
+  joke: Annotation<string>,
+  topic: Annotation<string>,
+});
+
+const graph = new StateGraph(StateAnnotation)
+  .addNode("joke", () => ({}))
+  .compile();
+  
+await graph.invoke({
+  joke: "foo",
+  topic: "history",
+});
+`;
+
+const evalResult = await evaluator({ outputs });
+
+console.log(evalResult);
+```
+
+```
+{
+  "key": "execution_succeeded",
+  "score": false,
+  "comment": "file:///home/user/openevals/node_modules/@langchain/langgraph/dist/graph/state.js:197\n            throw new Error(`${key} is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.`);\n                  ^\n\nError: joke is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.\n    at StateGraph.addNode (/home/user/openevals/node_modules/@langchain/langgraph/src/graph/state.ts:292:13)\n    at <anonymous> (/home/user/openevals/outputs.ts:9:4)\n    at ModuleJob.run (node:internal/modules/esm/module_job:195:25)\n    at async ModuleLoader.import (node:internal/modules/esm/loader:336:24)\n    at async loadESM (node:internal/process/esm_loader:34:7)\n    at async handleMainPromise (node:internal/modules/run_main:106:12)\n\nNode.js v18.19.0\n"
+}
+```
+
+Above, the evaluator identifies and installs `@langchain/langgraph`, then attempts to execute the code. The type-check fails because the provided code misuses the imported package.
+
+If desired, you can pass an `environmentVariables` object when creating the evaluator. Generated code will  have access to these variables within the sandbox, but be cautious, as there is no way to predict exactly what code an LLM will generate.
 
 </details>
 

@@ -146,7 +146,7 @@ function constructOutputSchema({
   return [jsonSchema, description];
 }
 
-function _stringifyPromptParam(param: unknown): string | unknown {
+function _stringifyPromptParam(param: unknown): string {
   if (typeof param === "string") {
     return param;
   } else if (isBaseMessage(param)) {
@@ -154,15 +154,17 @@ function _stringifyPromptParam(param: unknown): string | unknown {
   } else if (typeof param === "object" && param !== null) {
     if (Array.isArray(param)) {
       return JSON.stringify(
-        param.filter(isBaseMessage).map(_convertToOpenAIMessage)
+        param.map((message) =>
+          isBaseMessage(message) ? _convertToOpenAIMessage(message) : message
+        )
       );
     }
 
     const objParam = param as Record<string, unknown>;
     if ("messages" in objParam && Array.isArray(objParam.messages)) {
-      objParam.messages = objParam.messages
-        .filter(isBaseMessage)
-        .map(_convertToOpenAIMessage);
+      objParam.messages = objParam.messages.map((message) =>
+        isBaseMessage(message) ? _convertToOpenAIMessage(message) : message
+      );
       return JSON.stringify(objParam);
     }
     return JSON.stringify(param);

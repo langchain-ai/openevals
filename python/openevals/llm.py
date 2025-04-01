@@ -128,9 +128,8 @@ def _stringify_prompt_param(param: Any) -> Any:
     elif isinstance(param, dict):
         if "messages" in param and isinstance(param["messages"], list):
             param["messages"] = [
-                _convert_to_openai_message(msg)
+                _convert_to_openai_message(msg) if isinstance(msg, BaseMessage) else msg
                 for msg in param["messages"]
-                if isinstance(msg, BaseMessage)
             ]
             return json.dumps(param)
         else:
@@ -138,9 +137,8 @@ def _stringify_prompt_param(param: Any) -> Any:
     elif isinstance(param, list):
         return json.dumps(
             [
-                _convert_to_openai_message(msg)
+                _convert_to_openai_message(msg) if isinstance(msg, BaseMessage) else msg
                 for msg in param
-                if isinstance(msg, BaseMessage)
             ]
         )
     else:

@@ -7,6 +7,7 @@ import { ChatOpenAI } from "@langchain/openai";
 
 import { createLLMAsJudge } from "../llm.js";
 import * as hub from "langchain/hub";
+import { HumanMessage } from "@langchain/core/messages";
 
 ls.describe("llm as judge", () => {
   ls.test(
@@ -128,6 +129,23 @@ ls.describe("llm as judge", () => {
       expect(result).toBeDefined();
       expect(result.score).toBe(true);
       expect(result.comment).toBeDefined();
+    }
+  );
+
+  ls.test(
+    "llm as judge LangChain messages",
+    {
+      inputs: [new HumanMessage(JSON.stringify({ a: 1, b: 2 }))],
+    },
+    async ({ inputs }) => {
+      const outputs = [new HumanMessage(JSON.stringify({ a: 1, b: 3 }))];
+      const evaluator = createLLMAsJudge({
+        prompt: "Are these two equal? {inputs} {outputs}",
+        judge: new ChatOpenAI({ model: "gpt-4o-mini" }),
+      });
+      const result = await evaluator({ inputs, outputs });
+      expect(result).toBeDefined();
+      expect(result.score).toBe(false);
     }
   );
 

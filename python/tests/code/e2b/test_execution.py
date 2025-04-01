@@ -224,4 +224,4 @@ if __name__ == "__main__":
         environment_variables={"ANTHROPIC_API_KEY": "foo"},
     )
     eval_result = evaluator(outputs=outputs)
-    assert eval_result["score"] == True
+    assert eval_result["score"]

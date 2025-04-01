@@ -1,7 +1,10 @@
+import json
+import pytest
+
 from openevals.llm import create_async_llm_as_judge
 
+from langchain_core.messages import HumanMessage
 from openai import AsyncOpenAI
-import pytest
 from langchain_openai import ChatOpenAI
 from langsmith import Client
 from langchain import hub as prompts
@@ -147,6 +150,20 @@ async def test_async_llm_as_judge_langchain():
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_llm_as_judge_langchain_messages():
+    inputs = [HumanMessage(content=json.dumps({"a": 1, "b": 2}))]
+    outputs = [HumanMessage(content=json.dumps({"a": 1, "b": 3}))]
+    client = ChatOpenAI(model="gpt-4o-mini")
+    llm_as_judge = create_async_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        judge=client,
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert not eval_result["score"]
 
 
 @pytest.mark.langsmith

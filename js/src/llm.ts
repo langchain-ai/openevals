@@ -1,11 +1,15 @@
 import { RunnableInterface, Runnable } from "@langchain/core/runnables";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { BaseMessage } from "@langchain/core/messages";
+import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
 import { initChatModel } from "langchain/chat_models/universal";
 import { traceable } from "langsmith/traceable";
 
-import { _runEvaluator, _normalizeToOpenAIMessagesList } from "./utils.js";
+import {
+  _runEvaluator,
+  _normalizeToOpenAIMessagesList,
+  _convertToOpenAIMessage,
+} from "./utils.js";
 import {
   ChatCompletionMessage,
   FewShotExample,
@@ -142,6 +146,30 @@ function constructOutputSchema({
   return [jsonSchema, description];
 }
 
+function _stringifyPromptParam(param: unknown): string | unknown {
+  if (typeof param === "string") {
+    return param;
+  } else if (isBaseMessage(param)) {
+    return JSON.stringify(_convertToOpenAIMessage(param));
+  } else if (typeof param === "object" && param !== null) {
+    if (Array.isArray(param)) {
+      return JSON.stringify(
+        param.filter(isBaseMessage).map(_convertToOpenAIMessage)
+      );
+    }
+
+    const objParam = param as Record<string, unknown>;
+    if ("messages" in objParam && Array.isArray(objParam.messages)) {
+      objParam.messages = objParam.messages
+        .filter(isBaseMessage)
+        .map(_convertToOpenAIMessage);
+      return JSON.stringify(objParam);
+    }
+    return JSON.stringify(param);
+  }
+  return JSON.stringify(param);
+}
+
 export const _createLLMAsJudgeScorer = (params: {
   prompt:
     | string
@@ -188,19 +216,19 @@ export const _createLLMAsJudgeScorer = (params: {
     let stringifiedInputs = inputs;
     let stringifiedOutputs = outputs;
     let stringifiedReferenceOutputs = referenceOutputs;
-    if (inputs && typeof inputs !== "string") {
-      stringifiedInputs = JSON.stringify(inputs);
+    if (inputs) {
+      stringifiedInputs = _stringifyPromptParam(inputs);
     }
-    if (outputs && typeof outputs !== "string") {
-      stringifiedOutputs = JSON.stringify(outputs);
+    if (outputs) {
+      stringifiedOutputs = _stringifyPromptParam(outputs);
     }
-    if (referenceOutputs && typeof referenceOutputs !== "string") {
-      stringifiedReferenceOutputs = JSON.stringify(referenceOutputs);
+    if (referenceOutputs) {
+      stringifiedReferenceOutputs = _stringifyPromptParam(referenceOutputs);
     }
     const stringifiedRest = Object.fromEntries(
       Object.entries(rest).map(([key, value]) => [
         key,
-        typeof value === "string" ? value : JSON.stringify(value),
+        _stringifyPromptParam(value),
       ])
     );
 

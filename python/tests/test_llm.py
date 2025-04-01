@@ -1,10 +1,13 @@
+import json
+import pytest
+
 from openevals.llm import create_llm_as_judge
 
 from openai import OpenAI
-import pytest
 from langchain_openai import ChatOpenAI
 from langsmith import Client
 from langchain import hub as prompts
+from langchain_core.messages import HumanMessage
 
 
 @pytest.mark.langsmith
@@ -138,6 +141,32 @@ def test_llm_as_judge_langchain():
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
+
+
+@pytest.mark.langsmith
+def test_llm_as_judge_langchain_messages():
+    inputs = [HumanMessage(content=json.dumps({"a": 1, "b": 2}))]
+    outputs = [HumanMessage(content=json.dumps({"a": 1, "b": 3}))]
+    client = ChatOpenAI(model="gpt-4o-mini")
+    llm_as_judge = create_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        judge=client,
+    )
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    assert not eval_result["score"]
+
+
+@pytest.mark.langsmith
+def test_llm_as_judge_langchain_messages_dict():
+    inputs = {"messages": [HumanMessage(content=json.dumps({"a": 1, "b": 2}))]}
+    outputs = {"messages": [HumanMessage(content=json.dumps({"a": 1, "b": 3}))]}
+    client = ChatOpenAI(model="gpt-4o-mini")
+    llm_as_judge = create_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        judge=client,
+    )
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    assert not eval_result["score"]
 
 
 @pytest.mark.langsmith

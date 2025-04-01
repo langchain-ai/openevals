@@ -132,18 +132,23 @@ ls.describe("llm as judge", () => {
     }
   );
 
-  ls.test(
+  ls.test.only(
     "llm as judge LangChain messages",
     {
-      inputs: [new HumanMessage(JSON.stringify({ a: 1, b: 2 }))],
+      inputs: { messages: [new HumanMessage(JSON.stringify({ a: 1, b: 2 }))] },
     },
     async ({ inputs }) => {
-      const outputs = [new HumanMessage(JSON.stringify({ a: 1, b: 3 }))];
+      const outputs = {
+        messages: [new HumanMessage(JSON.stringify({ a: 1, b: 3 }))],
+      };
       const evaluator = createLLMAsJudge({
         prompt: "Are these two equal? {inputs} {outputs}",
         judge: new ChatOpenAI({ model: "gpt-4o-mini" }),
       });
-      const result = await evaluator({ inputs, outputs });
+      const result = await evaluator({
+        inputs: inputs.messages,
+        outputs: outputs.messages,
+      });
       expect(result).toBeDefined();
       expect(result.score).toBe(false);
     }

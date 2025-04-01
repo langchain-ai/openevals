@@ -174,9 +174,17 @@ def _create_llm_as_judge_scorer(
                 "`system` is only supported when `prompt` is a string template"
             )
 
-        stringified_outputs = _stringify_prompt_param(outputs)
-        stringified_reference_outputs = _stringify_prompt_param(reference_outputs)
-        stringified_inputs = _stringify_prompt_param(inputs)
+        stringified_outputs = (
+            _stringify_prompt_param(outputs) if outputs is not None else None
+        )
+        stringified_reference_outputs = (
+            _stringify_prompt_param(reference_outputs)
+            if reference_outputs is not None
+            else None
+        )
+        stringified_inputs = (
+            _stringify_prompt_param(inputs) if inputs is not None else None
+        )
 
         prompt_params = {
             "inputs": stringified_inputs,
@@ -318,9 +326,17 @@ def _create_async_llm_as_judge_scorer(
                 "`system` is only supported when `prompt` is a string template"
             )
 
-        stringified_outputs = _stringify_prompt_param(outputs)
-        stringified_reference_outputs = _stringify_prompt_param(reference_outputs)
-        stringified_inputs = _stringify_prompt_param(inputs)
+        stringified_outputs = (
+            _stringify_prompt_param(outputs) if outputs is not None else None
+        )
+        stringified_reference_outputs = (
+            _stringify_prompt_param(reference_outputs)
+            if reference_outputs is not None
+            else None
+        )
+        stringified_inputs = (
+            _stringify_prompt_param(inputs) if inputs is not None else None
+        )
 
         prompt_params = {
             "inputs": stringified_inputs,

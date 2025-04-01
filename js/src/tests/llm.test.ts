@@ -133,7 +133,7 @@ ls.describe("llm as judge", () => {
   );
 
   ls.test(
-    "llm as judge LangChain messages",
+    "llm as judge LangChain messages array",
     {
       inputs: { messages: [new HumanMessage(JSON.stringify({ a: 1, b: 2 }))] },
     },
@@ -148,6 +148,28 @@ ls.describe("llm as judge", () => {
       const result = await evaluator({
         inputs: inputs.messages,
         outputs: outputs.messages,
+      });
+      expect(result).toBeDefined();
+      expect(result.score).toBe(false);
+    }
+  );
+
+  ls.test(
+    "llm as judge LangChain messages object",
+    {
+      inputs: { messages: [new HumanMessage(JSON.stringify({ a: 1, b: 2 }))] },
+    },
+    async ({ inputs }) => {
+      const outputs = {
+        messages: [new HumanMessage(JSON.stringify({ a: 1, b: 3 }))],
+      };
+      const evaluator = createLLMAsJudge({
+        prompt: "Are these two equal? {inputs} {outputs}",
+        judge: new ChatOpenAI({ model: "gpt-4o-mini" }),
+      });
+      const result = await evaluator({
+        inputs,
+        outputs,
       });
       expect(result).toBeDefined();
       expect(result.score).toBe(false);

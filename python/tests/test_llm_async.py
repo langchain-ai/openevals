@@ -169,8 +169,8 @@ async def test_llm_as_judge_langchain_messages():
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_llm_as_judge_langchain_messages_dict():
-    inputs = { "messages": [HumanMessage(content=json.dumps({"a": 1, "b": 2}))] }
-    outputs = { "messages": [HumanMessage(content=json.dumps({"a": 1, "b": 3}))] }
+    inputs = {"messages": [HumanMessage(content=json.dumps({"a": 1, "b": 2}))]}
+    outputs = {"messages": [HumanMessage(content=json.dumps({"a": 1, "b": 3}))]}
     client = ChatOpenAI(model="gpt-4o-mini")
     llm_as_judge = create_async_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",

@@ -2,6 +2,7 @@ from __future__ import annotations
 from openevals.utils import (
     _run_evaluator,
     _arun_evaluator,
+    _convert_to_openai_message,
     _normalize_to_openai_messages_list,
 )
 from openevals.types import (
@@ -16,10 +17,11 @@ from openevals.types import (
 )
 
 from langchain.chat_models import init_chat_model
-from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.language_models.chat_models import BaseChatModel, BaseMessage
 from langsmith import traceable
 
 from typing import (
+    Any,
     Awaitable,
     Callable,
     Optional,
@@ -118,6 +120,31 @@ def _construct_output_schema(
     return (json_schema, description)
 
 
+def _stringify_prompt_param(param: Any) -> Any:
+    if isinstance(param, str):
+        return param
+    elif isinstance(param, BaseMessage):
+        return json.dumps(_convert_to_openai_message(param))
+    elif isinstance(param, dict):
+        if "messages" in param and isinstance(param["messages"], list):
+            param["messages"] = [
+                _convert_to_openai_message(msg) if isinstance(msg, BaseMessage) else msg
+                for msg in param["messages"]
+            ]
+            return json.dumps(param)
+        else:
+            return json.dumps(param)
+    elif isinstance(param, list):
+        return json.dumps(
+            [
+                _convert_to_openai_message(msg) if isinstance(msg, BaseMessage) else msg
+                for msg in param
+            ]
+        )
+    else:
+        return json.dumps(param)
+
+
 def _create_llm_as_judge_scorer(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
@@ -147,17 +174,22 @@ def _create_llm_as_judge_scorer(
                 "`system` is only supported when `prompt` is a string template"
             )
 
-        if isinstance(outputs, dict):
-            outputs = json.dumps(outputs)
-        if isinstance(reference_outputs, dict):
-            reference_outputs = json.dumps(reference_outputs)
-        if isinstance(inputs, dict):
-            inputs = json.dumps(inputs)
+        stringified_outputs = (
+            _stringify_prompt_param(outputs) if outputs is not None else None
+        )
+        stringified_reference_outputs = (
+            _stringify_prompt_param(reference_outputs)
+            if reference_outputs is not None
+            else None
+        )
+        stringified_inputs = (
+            _stringify_prompt_param(inputs) if inputs is not None else None
+        )
 
         prompt_params = {
-            "inputs": inputs,
-            "outputs": outputs,
-            "reference_outputs": reference_outputs,
+            "inputs": stringified_inputs,
+            "outputs": stringified_outputs,
+            "reference_outputs": stringified_reference_outputs,
             **kwargs,
         }
         filtered_prompt_params = {
@@ -294,17 +326,22 @@ def _create_async_llm_as_judge_scorer(
                 "`system` is only supported when `prompt` is a string template"
             )
 
-        if isinstance(outputs, dict):
-            outputs = json.dumps(outputs)
-        if isinstance(reference_outputs, dict):
-            reference_outputs = json.dumps(reference_outputs)
-        if isinstance(inputs, dict):
-            inputs = json.dumps(inputs)
+        stringified_outputs = (
+            _stringify_prompt_param(outputs) if outputs is not None else None
+        )
+        stringified_reference_outputs = (
+            _stringify_prompt_param(reference_outputs)
+            if reference_outputs is not None
+            else None
+        )
+        stringified_inputs = (
+            _stringify_prompt_param(inputs) if inputs is not None else None
+        )
 
         prompt_params = {
-            "inputs": inputs,
-            "outputs": outputs,
-            "reference_outputs": reference_outputs,
+            "inputs": stringified_inputs,
+            "outputs": stringified_outputs,
+            "reference_outputs": stringified_reference_outputs,
             **kwargs,
         }
         filtered_prompt_params = {

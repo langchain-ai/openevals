@@ -195,10 +195,9 @@ It is also helpful to be familiar with some [evaluation concepts](https://docs.s
 One common way to evaluate an LLM app's outputs is to use another LLM as a judge. This is generally a good starting point for evals.
 
 This package contains the `create_llm_as_judge` function, which takes a prompt and a model as input, and returns an evaluator function
-that handles formatting inputs, parsing the judge LLM's outputs into a score, and LangSmith tracing and result logging.
+that handles converting parameters into strings and parsing the judge LLM's outputs as a score.
 
-To use the `create_llm_as_judge` function, you need to provide a prompt and a model. For prompts, LangSmith has some prebuilt prompts
-in the `openevals.prompts` module that you can use out of the box. Here's an example:
+To use the `create_llm_as_judge` function, you need to provide a prompt and a model. To get started, OpenEvals has some prebuilt prompts in the `openevals.prompts` module that you can use out of the box. Here's an example:
 
 <details open>
 <summary>Python</summary>
@@ -503,7 +502,7 @@ console.log(evalResult);
 
 The `prompt` parameter for `create_llm_as_judge` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
 
-Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, you can also require additional variables. You would then pass these extra variables when calling your evaluator function. Here's an example:
+Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, your prompts can also require additional variables. You would then pass these extra variables when calling your evaluator function. Here's an example of a prompt that requires an extra variable named `context`:
 
 <details open>
 <summary>Python</summary>

@@ -132,7 +132,7 @@ ls.describe("llm as judge", () => {
     }
   );
 
-  ls.test.only(
+  ls.test(
     "llm as judge LangChain messages",
     {
       inputs: { messages: [new HumanMessage(JSON.stringify({ a: 1, b: 2 }))] },

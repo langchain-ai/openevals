@@ -1,7 +1,9 @@
 import pytest
 
+from langsmith import testing as t
+
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.rag_retrieval import RETRIEVAL_HELPFULNESS_PROMPT
+from openevals.prompts.rag_helpfulness import RAG_HELPFULNESS_PROMPT
 from openevals.prompts.rag_hallucination import RAG_HALLUCATION_PROMPT
 
 
@@ -11,6 +13,8 @@ def test_llm_as_judge_rag_hallucination():
         "question": "Who was the first president of the Star Republic of Oiewjoie?",
     }
     outputs = {"answer": "Bzkeoei Ahbeijo"}
+    t.log_inputs(inputs)
+    t.log_outputs(outputs)
     llm_as_judge = create_llm_as_judge(
         prompt=RAG_HALLUCATION_PROMPT,
         feedback_key="hallucination",
@@ -31,6 +35,8 @@ def test_llm_as_judge_rag_hallucination_not_correct():
         "question": "Who was the first president of the Star Republic of Oiewjoie?",
     }
     outputs = {"answer": "John Adams"}
+    t.log_inputs(inputs)
+    t.log_outputs(outputs)
     llm_as_judge = create_llm_as_judge(
         prompt=RAG_HALLUCATION_PROMPT,
         feedback_key="hallucination",
@@ -44,20 +50,18 @@ def test_llm_as_judge_rag_hallucination_not_correct():
 
 
 @pytest.mark.langsmith
-def test_llm_as_judge_rag_retrieval():
+def test_llm_as_judge_rag_helpfulnesss():
     inputs = {
         "question": "Where was the first president of foobarland born?",
     }
-    outputs = [
-        {
-            "title": "foobarland president",
-            "content": "the first president of foobarland was bagatur",
-        },
-        {"title": "bagatur bio", "content": "bagutur was born in langchainland"},
-    ]
+    outputs = {
+        "answer": "The first president of foobarland was born in langchainland. His name was Bagatur Askaryan."
+    }
+    t.log_inputs(inputs)
+    t.log_outputs(outputs)
     llm_as_judge = create_llm_as_judge(
-        prompt=RETRIEVAL_HELPFULNESS_PROMPT,
-        feedback_key="hallucination",
+        prompt=RAG_HELPFULNESS_PROMPT,
+        feedback_key="helpfulness",
         model="openai:o3-mini",
     )
 
@@ -66,20 +70,18 @@ def test_llm_as_judge_rag_retrieval():
 
 
 @pytest.mark.langsmith
-def test_llm_as_judge_rag_retrIEVAL_not_correct():
+def test_llm_as_judge_rag_helpfulness_not_correct():
     inputs = {
         "question": "Where was the first president of foobarland born?",
     }
-    outputs = [
-        {
-            "title": "foobarland president",
-            "content": "the first president of foobarland was bagatur",
-        },
-        {"title": "bagatur bio", "content": "bagutur is a big fan of PR reviews"},
-    ]
+    outputs = {
+        "answer": "The first president of foobarland was bagatur"
+    }
+    t.log_inputs(inputs)
+    t.log_outputs(outputs)
     llm_as_judge = create_llm_as_judge(
-        prompt=RETRIEVAL_HELPFULNESS_PROMPT,
-        feedback_key="hallucination",
+        prompt=RAG_HELPFULNESS_PROMPT,
+        feedback_key="helpfulness",
         model="openai:o3-mini",
     )
 

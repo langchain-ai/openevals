@@ -503,7 +503,7 @@ console.log(evalResult);
 
 The `prompt` parameter for `create_llm_as_judge` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
 
-Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, your prompts can also require additional variables. You would then pass these extra variables when calling your evaluator function. Here's an example of a prompt that requires the `context` key:
+Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, your prompts can also require additional variables. You would then pass these extra variables when calling your evaluator function. Here's an example of a prompt that requires an extra variable named `context`:
 
 <details open>
 <summary>Python</summary>

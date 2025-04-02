@@ -3,99 +3,91 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 
 import { createLLMAsJudge } from "../llm.js";
-import { RAG_HALLUCATION_PROMPT } from "../prompts/rag_hallucination.js";
-import { RETRIEVAL_HELPFULNESS_PROMPT } from "../prompts/rag_retrieval.js";
+import { RAG_HELPFULNESS_PROMPT } from "../prompts/rag_helpfulness.js";
+import { RAG_GROUNDEDNESS_PROMPT } from "../prompts/rag_groundedness.js";
+import { RAG_RETRIEVAL_RELEVANCE_PROMPT } from "../prompts/rag_retrieval_relevance.js";
 
-ls.describe("LLM Judge Hallucination", () => {
+ls.describe("LLM as Judge RAG", () => {
   ls.test(
-    "should pass hallucination check for non-hallucinated answer",
+    "should test LLM judge RAG helpfulness",
     {
       inputs: {
-        question:
-          "Who was the first president of the Star Republic of Oiewjoie?",
+        question: "Where was the first president of foobarland born?",
       },
     },
     async ({ inputs }) => {
-      const outputs = { answer: "Bzkeoei Ahbeijo" };
-      const context =
-        "The Star Republic of Oiewjoie is a country that exists in the universe. The first president of the Star Republic of Oiewjoie was Bzkeoei Ahbeijo.";
+      const outputs = {
+        answer:
+          "The first president of foobarland was born in langchainland. His name was Bagatur Askaryan.",
+      };
 
       const llmAsJudge = createLLMAsJudge({
-        prompt: RAG_HALLUCATION_PROMPT,
-        feedbackKey: "hallucination",
-        model: "openai:o3-mini",
+        prompt: RAG_HELPFULNESS_PROMPT,
+        feedbackKey: "helpfulness",
+        model: "openai:gpt-4o-mini",
       });
 
       const evalResult = await llmAsJudge({
         inputs,
         outputs,
-        context,
-        referenceOutputs: "",
       });
       expect(evalResult.score).toBeTruthy();
     }
   );
 
   ls.test(
-    "should fail hallucination check for hallucinated answer",
+    "should test LLM judge RAG helpfulness not correct",
     {
       inputs: {
-        question:
-          "Who was the first president of the Star Republic of Oiewjoie?",
+        question: "Where was the first president of foobarland born?",
       },
     },
     async ({ inputs }) => {
       const outputs = {
-        answer: "John Adams",
+        answer: "The first president of foobarland was bagatur",
       };
-      const context =
-        "The Star Republic of Oiewjoie is a country that exists in the universe. The first president of the Star Republic of Oiewjoie was Bzkeoei Ahbeijo.";
 
       const llmAsJudge = createLLMAsJudge({
-        prompt: RAG_HALLUCATION_PROMPT,
-        feedbackKey: "hallucination",
-        model: "openai:o3-mini",
+        prompt: RAG_HELPFULNESS_PROMPT,
+        feedbackKey: "helpfulness",
+        model: "openai:gpt-4o-mini",
       });
-
-      await expect(llmAsJudge({ inputs, outputs })).rejects.toThrow();
 
       const evalResult = await llmAsJudge({
         inputs,
         outputs,
-        context,
-        referenceOutputs: "",
       });
       expect(evalResult.score).toBeFalsy();
     }
   );
 
   ls.test(
-    "should pass retrieval for relevant docs",
+    "should test LLM judge RAG groundedness",
     {
-      inputs: {
-        question: "Where was the first president of foobarland born?",
-      },
+      inputs: {},
     },
-    async ({ inputs }) => {
-      const outputs = [
-        {
-          title: "foobarland president",
-          content: "the first president of foobarland was bagatur",
-        },
-        {
-          title: "bagatur bio",
-          content: "bagutur was born in langchainland",
-        },
-      ];
-
-      const llmAsJudge = createLLMAsJudge({
-        prompt: RETRIEVAL_HELPFULNESS_PROMPT,
-        feedbackKey: "hallucination",
-        model: "openai:o3-mini",
+    async () => {
+      const retrievalEvaluator = createLLMAsJudge({
+        prompt: RAG_GROUNDEDNESS_PROMPT,
+        feedbackKey: "groundedness",
+        model: "openai:gpt-4o-mini",
       });
 
-      const evalResult = await llmAsJudge({
-        inputs,
+      const context = {
+        documents: [
+          "FoobarLand is a new country located on the dark side of the moon",
+          "Space dolphins are native to FoobarLand",
+          "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+          "The current weather in FoobarLand is 80 degrees and clear.",
+        ],
+      };
+
+      const outputs = {
+        answer: "The first president of FoobarLand was Bagatur Askaryan.",
+      };
+
+      const evalResult = await retrievalEvaluator({
+        context,
         outputs,
       });
       expect(evalResult.score).toBeTruthy();
@@ -103,33 +95,31 @@ ls.describe("LLM Judge Hallucination", () => {
   );
 
   ls.test(
-    "should fail retrieval for irrelevant docs",
+    "should test LLM judge RAG retrieval relevance",
     {
       inputs: {
-        question: "Where was the first president of foobarland born?",
+        question: "Where was the first president of FoobarLand born?",
       },
     },
     async ({ inputs }) => {
-      const outputs = [
-        {
-          title: "foobarland president",
-          content: "the first president of foobarland was bagatur",
-        },
-        {
-          title: "bagatur bio",
-          content: "bagutur is a big fan of PR reviews",
-        },
-      ];
-
-      const llmAsJudge = createLLMAsJudge({
-        prompt: RETRIEVAL_HELPFULNESS_PROMPT,
-        feedbackKey: "hallucination",
-        model: "openai:o3-mini",
+      const retrievalRelevanceEvaluator = createLLMAsJudge({
+        prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
+        feedbackKey: "retrieval_relevance",
+        model: "openai:gpt-4o-mini",
       });
 
-      const evalResult = await llmAsJudge({
+      const context = {
+        documents: [
+          "FoobarLand is a new country located on the dark side of the moon",
+          "Space dolphins are native to FoobarLand",
+          "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+          "The current weather in FoobarLand is 80 degrees and clear.",
+        ],
+      };
+
+      const evalResult = await retrievalRelevanceEvaluator({
         inputs,
-        outputs,
+        context,
       });
       expect(evalResult.score).toBeFalsy();
     }

@@ -126,8 +126,12 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
   - [RAG](#rag)
-    - [Evaluating retrieval](#evaluating-retrieval)
-    - [Evaluating generation](#evaluating-generation)
+    - [Correctness](#correctness-rag)
+    - [Helpfulness](#helpfulness)
+    - [Groundedness](#groudedness)
+    - [Retrieval relevance](#retrieval-relevance)
+      - [Retrieval relevance with LLM as judge](#retrieval-relevance-with-llm-as-judge)
+      - [Retrieval relevance with string evaluators](#retrieval-relevance-with-string-evaluators)
   - [Code](#code)
     - [Extracting code outputs](#extracting-code-outputs)
     - [Pyright (Python-only)](#pyright-python-only)
@@ -285,79 +289,6 @@ By convention, we generally suggest sticking to `inputs`, `outputs`, and `refere
 
 ## Prebuilt prompts
 
-### Correctness
-
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import CORRECTNESS_PROMPT
-
-correctness_evaluator = create_llm_as_judge(
-    prompt=CORRECTNESS_PROMPT,
-    feedback_key="correctness",
-    model="openai:o3-mini",
-)
-
-inputs = "How much has the price of doodads changed in the past year?"
-outputs = "Doodads have increased in price by 10% in the past year."
-reference_outputs = "The price of doodads has decreased by 50% in the past year."
-
-eval_result = correctness_evaluator(
-  inputs=inputs,
-  outputs=outputs,
-  reference_outputs=reference_outputs
-)
-
-print(eval_result)
-```
-
-```
-{
-    'key': 'correctness',
-    'score': False,
-    'comment': '...'
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const correctnessEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  feedbackKey: "correctness",
-  model: "openai:o3-mini",
-});
-
-const inputs = "How much has the price of doodads changed in the past year?"
-const outputs = "Doodads have increased in price by 10% in the past year."
-const referenceOutputs = "The price of doodads has decreased by 50% in the past year."
-
-const evalResult = await correctnessEvaluator({
-  inputs,
-  outputs,
-  referenceOutputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'correctness',
-    score: false,
-    comment: '...'
-}
-```
-</details>
-
 ### Conciseness
 
 `openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the conciseness of an LLM's output. It takes `inputs` and `outputs` as parameters.
@@ -423,6 +354,79 @@ console.log(evalResult);
 }
 ```
 
+</details>
+
+### Correctness
+
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
+
+correctness_evaluator = create_llm_as_judge(
+    prompt=CORRECTNESS_PROMPT,
+    feedback_key="correctness",
+    model="openai:o3-mini",
+)
+
+inputs = "How much has the price of doodads changed in the past year?"
+outputs = "Doodads have increased in price by 10% in the past year."
+reference_outputs = "The price of doodads has decreased by 50% in the past year."
+
+eval_result = correctness_evaluator(
+  inputs=inputs,
+  outputs=outputs,
+  reference_outputs=reference_outputs
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'correctness',
+    'score': False,
+    'comment': '...'
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
+
+const correctnessEvaluator = createLLMAsJudge({
+  prompt: CORRECTNESS_PROMPT,
+  feedbackKey: "correctness",
+  model: "openai:o3-mini",
+});
+
+const inputs = "How much has the price of doodads changed in the past year?";
+const outputs = "Doodads have increased in price by 10% in the past year.";
+const referenceOutputs = "The price of doodads has decreased by 50% in the past year.";
+
+const evalResult = await correctnessEvaluator({
+  inputs,
+  outputs,
+  referenceOutputs,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'correctness',
+    score: false,
+    comment: '...'
+}
+```
 </details>
 
 ### Hallucination
@@ -1085,152 +1089,143 @@ Therefore, the list aggregator will return a final score of 0.
 
 ## RAG
 
-RAG applications in their most basic form consist of 2 steps. In the retrieval step, context is retrieved (most commonly from a vector database) to provide the LLM with the information it needs to respond to the user. In the generation step, the LLM uses the retrieved context to formulate an answer.
+RAG applications in their most basic form consist of 2 steps. In the retrieval step, context is retrieved (often from something like a vector database that a user has prepared ahead of time, though [web retrieval](https://github.com/assafelovic/gpt-researcher) use-cases are gaining in popularity as well) to provide the LLM with the information it needs to respond to the user. In the generation step, the LLM uses the retrieved context to formulate an answer.
 
-Openevals provides prebuilt prompts to evaluate both of these steps.
+OpenEvals provides prebuilt prompts and other methods for the following:
 
-### Evaluating retrieval
+1. [Correctness](#correctness-rag): Final output vs. input + reference answer
+Goal: Measure "how similar/correct is the generated answer relative to a ground-truth answer"
+Requires reference: Yes
 
-The code below shows how to evaluate the retrieval step of a RAG application.
+2. [Helpfulness](#helpfulness): Final output vs. input
+Goal: Measure "how well does the generated response address the initial user input"
+Requires reference: No, because it will compare the answer to the input question
+
+3. [Groundedness](#groundedness): Final output vs. retrieved context
+Goal: Measure "to what extent does the generated response agree with the retrieved context"
+Requires reference: No, because it will compare the answer to the retrieved context
+
+4. [Retrieval relevance](#retrieval-relevance): Retrieved context vs. input
+Goal: Measure "how relevant are my retrieved results for this query"
+Requires reference: No, because it will compare the question to the retrieved context
+
+### Correctness {#rag}
+
+`correctness` measures how similar/correct a generated answer is to a ground-truth answer. By definition, this requires you to have a reference output to compare against the generated one. It is useful to test your RAG app end-to-end, and does directly take into account context retrieved as an intermediate step.
+
+You can evaluate the correctness of a RAG app's outputs using the LLM-as-judge evaluator alongside the general [prebuilt prompt](#correctness) covered above. Here's an example:
 
 <details open>
 <summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
-from openevals.prompts import RETRIEVAL_HELPFULNESS_PROMPT
+from openevals.prompts import CORRECTNESS_PROMPT
 
-retrieval_evaluator = create_llm_as_judge(
-    prompt=RETRIEVAL_HELPFULNESS_PROMPT,
-    feedback_key="retrieval_helpfulness",
+correctness_evaluator = create_llm_as_judge(
+    prompt=CORRECTNESS_PROMPT,
+    feedback_key="correctness",
     model="openai:o3-mini",
 )
 
-inputs = {
-    "question": "Where was the first president of foobarland born?",
-}
-outputs = [
-    {
-        "title": "foobarland president",
-        "content": "the first president of foobarland was bagatur"
-    },
-    {
-        "title": "bagatur bio",
-        "content": "bagutur is a big fan of PR reviews"
-    }
-]
+inputs = "How much has the price of doodads changed in the past year?"
+outputs = "Doodads have increased in price by 10% in the past year."
+reference_outputs = "The price of doodads has decreased by 50% in the past year."
 
-eval_result = retrieval_evaluator(
+eval_result = correctness_evaluator(
   inputs=inputs,
   outputs=outputs,
+  reference_outputs=reference_outputs
 )
 
 print(eval_result)
 ```
 
-
 ```
 {
-  'key': 'retrieval_helpfulness', 
-  'score': False, 
-  'comment': "The question asks for the birthplace of the first president of foobarland, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
+    'key': 'correctness',
+    'score': False,
+    'comment': '...'
 }
 ```
-
 </details>
 
 <details>
 <summary>TypeScript</summary>
 
 ```ts
-import { createLLMAsJudge, RETRIEVAL_HELPFULNESS_PROMPT } from "openevals";
+import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
-const inputs = {
-  question: "Where was the first president of foobarland born?",
-}
-const outputs = [
-  {
-    title: "foobarland president",
-    content: "the first president of foobarland was bagatur"
-  },
-  {
-    title: "bagatur bio",
-    content: "bagutur is a big fan of PR reviews"
-  }
-]
-
-const llmAsJudge = createLLMAsJudge({
-  prompt: RETRIEVAL_HELPFULNESS_PROMPT,
-  feedbackKey: "hallucination",
+const correctnessEvaluator = createLLMAsJudge({
+  prompt: CORRECTNESS_PROMPT,
+  feedbackKey: "correctness",
   model: "openai:o3-mini",
 });
 
-const evalResult = await llmAsJudge({
+const inputs = "How much has the price of doodads changed in the past year?";
+const outputs = "Doodads have increased in price by 10% in the past year.";
+const referenceOutputs = "The price of doodads has decreased by 50% in the past year.";
+
+const evalResult = await correctnessEvaluator({
   inputs,
   outputs,
+  referenceOutputs,
 });
 
 console.log(evalResult);
 ```
 
-
 ```
 {
-  'key': 'retrieval_helpfulness', 
-  'score': False, 
-  'comment': "The question asks for the birthplace of the first president of foobarland, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
+    key: 'correctness',
+    score: false,
+    comment: '...'
 }
 ```
-
 </details>
 
-### Evaluating generation
+For more information on customizing LLM-as-judge evaluators, see [these sections](#customizing-prompts).
 
-The code below shows how to evaluate the generation step of a RAG application.
+### Helpfulness
+
+`helpfulness` measures how well the generated response addresses the initial user input. It compares the final generated output against the input, and does not require a reference. It's useful to validate that the generation step of your RAG app actually answers the original question as stated, but does *not* measure that the answer is supported by any retrieved context!
+
+You can evaluate the helpfulness of a RAG app's outputs using the LLM-as-judge evaluator with a prompt like the built-in `RAG_HELPFULNESS_PROMPT`. Here's an example:
 
 <details open>
 <summary>Python</summary>
 
 ```python
 from openevals.llm import create_llm_as_judge
-from openevals.prompts import RAG_HALLUCATION_PROMPT
+from openevals.prompts import RAG_HELPFULNESS_PROMPT
 
-generation_evaluator = create_llm_as_judge(
-    prompt=RAG_HALLUCATION_PROMPT,
-    feedback_key="generation_hallucination",
+helpfulness_evaluator = create_llm_as_judge(
+    prompt=RAG_HELPFULNESS_PROMPT,
+    feedback_key="helpfulness",
     model="openai:o3-mini",
 )
 
 inputs = {
-    "question": "Where was the first president of foobarland born?",
+    "question": "Where was the first president of FoobarLand born?",
 }
-context = [
-    {
-        "title": "foobarland president",
-        "content": "the first president of foobarland was bagatur"
-    },
-    {
-        "title": "bagatur bio",
-        "content": "bagutur was born in langchainland"
-    }
-]
-outputs = {"answer": "The first president of foobarland was born in langchainland."}
 
-eval_result = generation_evaluator(
+outputs = {
+    "answer": "The first president of FoobarLand was Bagatur Askaryan.",
+}
+
+eval_result = helpfulness_evaluator(
   inputs=inputs,
   outputs=outputs,
-  context=context
 )
 
 print(eval_result)
 ```
 
-
 ```
 {
-  'key': 'generation_hallucination', 
-  'score': True, 
-  'comment': 'The context contains two factual pieces of information: (1) the first president of foobarland was bagatur, and (2) bagatur (or bagutur as stated in the second document) was born in langchainland. The model output combines these two facts by stating that "The first president of foobarland was born in langchainland." This composite statement is directly supported by the retrieved documents, as it infers that the first president (bagatur) was born in langchainland based on the provided context. All parts of the model output are supported by the context and are basic facts, so no unsupported or hallucinated content is present. Thus, the score should be: true.'
+  'key': 'helpfulness', 
+  'score': False, 
+  'comment': "The question asks for the birthplace of the first president of FoobarLand, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
 }
 ```
 
@@ -1240,32 +1235,23 @@ print(eval_result)
 <summary>TypeScript</summary>
 
 ```ts
-import { createLLMAsJudge, RAG_HALLUCATION_PROMPT } from "openevals";
+import { createLLMAsJudge, RAG_HELPFULNESS_PROMPT } from "openevals";
 
 const inputs = {
-  question: "Where was the first president of foobarland born?",
-}
-const context = [
-  {
-    title: "foobarland president",
-    content: "the first president of foobarland was bagatur"
-  },
-  {
-    title: "bagatur bio",
-    content: "bagutur was born in langchainland"
-  }
-]
+  "question": "Where was the first president of FoobarLand born?",
+};
+
 const outputs = {
-  answer: "The first president of foobarland was born in langchainland."
-}
+  "answer": "The first president of FoobarLand was Bagatur Askaryan.",
+};
 
-const llmAsJudge = createLLMAsJudge({
-  prompt: RAG_HALLUCATION_PROMPT,
-  feedbackKey: "hallucination",
+const helpfulnessEvaluator = createLLMAsJudge({
+  prompt: RAG_HELPFULNESS_PROMPT,
+  feedbackKey: "helpfulness",
   model: "openai:o3-mini",
 });
 
-const evalResult = await llmAsJudge({
+const evalResult = await helpfulnessEvaluator({
   inputs,
   outputs,
 });
@@ -1273,12 +1259,281 @@ const evalResult = await llmAsJudge({
 console.log(evalResult);
 ```
 
+```
+{
+  'key': 'helpfulness', 
+  'score': False, 
+  'comment': "The question asks for the birthplace of the first president of FoobarLand, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
+}
+```
+
+</details>
+
+### Groundedness
+
+`groundedness` measures the extent that the generated response agrees with the retrieved context. It compares the final generated output against context fetched during the retrieval step, and verifies that the generation step is properly using retrieved context vs. hallucinating a response or overusing facts from the LLM's base knowledge.
+
+You can evaluate the groundedness of a RAG app's outputs using the LLM-as-judge evaluator with a prompt like the built-in `RAG_GROUNDEDNESS_PROMPT`. Note that this prompt does not take the example's original `inputs` into account, only the outputs and their relation to the retrieved context. Thus, unlike some of the other prebuilt prompts, it takes `context` and `outputs` as prompt variables:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import RAG_GROUNDEDNESS_PROMPT
+
+groundedness_evaluator = create_llm_as_judge(
+    prompt=RAG_GROUNDEDNESS_PROMPT,
+    feedback_key="groundedness",
+    model="openai:o3-mini",
+)
+
+context = {
+    "documents": [
+        "FoobarLand is a new country located on the dark side of the moon",
+        "Space dolphins are native to FoobarLand",
+        "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+        "The current weather in FoobarLand is 80 degrees and clear."
+    ],
+}
+
+outputs = {
+    "answer": "The first president of FoobarLand was Bagatur Askaryan.",
+}
+
+eval_result = groundedness_evaluator(
+    context=context,
+    outputs=outputs,
+)
+
+print(eval_result)
+```
 
 ```
 {
-  'key': 'generation_hallucination', 
-  'score': True, 
-  'comment': 'The context contains two factual pieces of information: (1) the first president of foobarland was bagatur, and (2) bagatur (or bagutur as stated in the second document) was born in langchainland. The model output combines these two facts by stating that "The first president of foobarland was born in langchainland." This composite statement is directly supported by the retrieved documents, as it infers that the first president (bagatur) was born in langchainland based on the provided context. All parts of the model output are supported by the context and are basic facts, so no unsupported or hallucinated content is present. Thus, the score should be: true.'
+  'key': 'groundedness',
+  'score': True,
+  'comment': 'The output states, "The first president of FoobarLand was Bagatur Askaryan," which is directly supported by the retrieved context (document 3 explicitly states this fact). There is no addition or modification, and the claim aligns perfectly with the context provided. Thus, the score should be: true.',
+  'metadata': None
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, RAG_GROUNDEDNESS_PROMPT } from "openevals";
+
+const groundednessEvaluator = createLLMAsJudge({
+  prompt: RAG_GROUNDEDNESS_PROMPT,
+  feedbackKey: "groundedness",
+  model: "openai:o3-mini",
+});
+
+const context = {
+  documents: [
+    "FoobarLand is a new country located on the dark side of the moon",
+    "Space dolphins are native to FoobarLand",
+    "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+    "The current weather in FoobarLand is 80 degrees and clear."
+  ],
+};
+
+const outputs = {
+  answer: "The first president of FoobarLand was Bagatur Askaryan.",
+};
+
+const evalResult = await groundednessEvaluator({
+  context,
+  outputs,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+  'key': 'groundedness',
+  'score': true,
+  'comment': 'The output states, "The first president of FoobarLand was Bagatur Askaryan," which is directly supported by the retrieved context (document 3 explicitly states this fact). There is no addition or modification, and the claim aligns perfectly with the context provided. Thus, the score should be: true.',
+  'metadata': None
+}
+```
+
+</details>
+
+### Retrieval relevance
+
+`retrieval_relevance` measures how relevant retrieved context is to an input query. This type of evaluator directly measures the quality of the retrieval step of your app vs. its generation step.
+
+#### Retrieval relevance with LLM-as-judge
+
+You can evaluate the retrieval relevance of a RAG app using the LLM-as-judge evaluator with a prompt like the built-in `RAG_RETRIEVAL_RELEVANCE_PROMPT`. Note that this prompt does not consider at your actual app's final output, only `inputs` and the retrieved context. Thus, unlike some of the other prebuilt prompts, it takes `context` and `inputs` as prompt variables:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import RAG_RETRIEVAL_RELEVANCE_PROMPT
+
+retrieval_relevance_evaluator = create_llm_as_judge(
+    prompt=RAG_RETRIEVAL_RELEVANCE_PROMPT,
+    feedback_key="retrieval_relevance",
+    model="openai:o3-mini",
+)
+
+inputs = {
+    "question": "Where was the first president of FoobarLand born?",
+}
+
+context = {
+    "documents": [
+        "FoobarLand is a new country located on the dark side of the moon",
+        "Space dolphins are native to FoobarLand",
+        "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+        "The current weather in FoobarLand is 80 degrees and clear.",
+    ],
+}
+
+eval_result = retrieval_relevance_evaluator(
+    inputs=inputs,
+    context=context,
+)
+
+print(eval_result)
+```
+
+```
+{
+  'key': 'retrieval_relevance',
+  'score': False,
+  'comment': "The retrieved context provides some details about FoobarLand – for instance, that it is a new country located on the dark side of the moon and that its first president is Bagatur Askaryan. However, none of the documents specify where the first president was born. Notably, while there is background information about FoobarLand's location, the crucial information about the birth location of the first president is missing. Thus, the retrieved context does not fully address the question. Thus, the score should be: false.",
+  'metadata': None
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, RAG_RETRIEVAL_RELEVANCE_PROMPT } from "openevals";
+
+const retrievalRelevanceEvaluator = createLLMAsJudge({
+  prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
+  feedbackKey: "retrieval_relevance",
+  model: "openai:o3-mini",
+});
+
+const inputs = {
+  question: "Where was the first president of FoobarLand born?",
+}
+
+const context = {
+  documents: [
+    "FoobarLand is a new country located on the dark side of the moon",
+    "Space dolphins are native to FoobarLand",
+    "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+    "The current weather in FoobarLand is 80 degrees and clear.",
+  ],
+}
+
+const retrievalRelevanceEvaluator = await retrievalRelevanceEvaluator({
+  inputs,
+  context,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+  'key': 'retrieval_relevance',
+  'score': False,
+  'comment': "The retrieved context provides some details about FoobarLand – for instance, that it is a new country located on the dark side of the moon and that its first president is Bagatur Askaryan. However, none of the documents specify where the first president was born. Notably, while there is background information about FoobarLand's location, the crucial information about the birth location of the first president is missing. Thus, the retrieved context does not fully address the question. Thus, the score should be: false.",
+  'metadata': None
+}
+```
+
+</details>
+
+#### Retrieval relevance with string evaluators
+
+You can also use string evaluators like [embedding similarity](#embedding-similarity) to measure retrieval relevance without using an LLM. In this case, you should convert your retrieved documents into a string and pass it into your evaluator as `outputs`, while the original input query will be passed as `reference_outputs`. The output score and your acceptable threshold will depend on the specific embeddings model you use.
+
+Here's an example:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.string.embedding_similarity import create_embedding_similarity_evaluator
+
+evaluator = create_embedding_similarity_evaluator()
+
+inputs = "Where was the first president of FoobarLand born?"
+
+context = "\n".join([
+    "BazQuxLand is a new country located on the dark side of the moon",
+    "Space dolphins are native to BazQuxLand",
+    "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
+    "The current weather in BazQuxLand is 80 degrees and clear.",
+])
+
+result = evaluator(
+    outputs=context,
+    reference_outputs=inputs,
+)
+
+print(result)
+```
+
+```
+{
+  'key': 'embedding_similarity',
+  'score': 0.43,
+  'comment': None,
+  'metadata': None
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createEmbeddingSimilarityEvaluator } from "openevals";
+import { OpenAIEmbeddings } from "@langchain/openai";
+
+const evaluator = createEmbeddingSimilarityEvaluator({
+  embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
+});
+
+const inputs = "Where was the first president of FoobarLand born?";
+
+const context = [
+  "BazQuxLand is a new country located on the dark side of the moon",
+  "Space dolphins are native to BazQuxLand",
+  "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
+  "The current weather in BazQuxLand is 80 degrees and clear.",
+].join("\n");
+
+const result = await evaluator(
+  outputs: context,
+  referenceOutputs: inputs,
+);
+
+console.log(result);
+```
+
+```
+{
+  'key': 'embedding_similarity',
+  'score': 0.43,
 }
 ```
 </details>
@@ -1967,8 +2222,8 @@ const evaluator = createEmbeddingSimilarityEvaluator({
 });
 
 const result = await evaluator(
-    outputs="The weather is nice!",
-    referenceOutputs="The weather is very nice!",
+    outputs: "The weather is nice!",
+    referenceOutputs: "The weather is very nice!",
 );
 
 console.log(result);

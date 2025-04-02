@@ -7,6 +7,29 @@ import pytest
 
 
 @pytest.mark.langsmith
+def test_embedding_similarity_documents():
+    evaluator = create_embedding_similarity_evaluator()
+
+    inputs = "Where was the first president of FoobarLand born?"
+
+    context = "\n".join(
+        [
+            "BazQuxLand is a new country located on the dark side of the moon",
+            "Space dolphins are native to BazQuxLand",
+            "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
+            "The current weather in BazQuxLand is 80 degrees and clear.",
+        ]
+    )
+
+    result = evaluator(
+        outputs=context,
+        reference_outputs=inputs,
+    )
+
+    print(result)
+
+
+@pytest.mark.langsmith
 def test_embedding_similarity():
     outputs = {"a": 1, "b": 2}
     reference_outputs = {"a": 1, "b": 2}

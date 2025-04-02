@@ -545,21 +545,25 @@ RAG applications in their most basic form consist of 2 steps. In the retrieval s
 
 OpenEvals provides prebuilt prompts and other methods for the following:
 
-1. [Correctness](#correctness-rag): Final output vs. input + reference answer
-Goal: Measure "how similar/correct is the generated answer relative to a ground-truth answer"
-Requires reference: Yes
+1. [Correctness](#correctness-rag)
+- Evaluates: Final output vs. input + reference answer
+- Goal: Measure "how similar/correct is the generated answer relative to a ground-truth answer"
+- Requires reference: Yes
 
-2. [Helpfulness](#helpfulness): Final output vs. input
-Goal: Measure "how well does the generated response address the initial user input"
-Requires reference: No, because it will compare the answer to the input question
+2. [Helpfulness](#helpfulness)
+- Evaluates: Final output vs. input
+- Goal: Measure "how well does the generated response address the initial user input"
+- Requires reference: No, because it will compare the answer to the input question
 
-3. [Groundedness](#groundedness): Final output vs. retrieved context
-Goal: Measure "to what extent does the generated response agree with the retrieved context"
-Requires reference: No, because it will compare the answer to the retrieved context
+3. [Groundedness](#groundedness)
+- Evaluates: Final output vs. retrieved context
+- Goal: Measure "to what extent does the generated response agree with the retrieved context"
+- Requires reference: No, because it will compare the answer to the retrieved context
 
-4. [Retrieval relevance](#retrieval-relevance): Retrieved context vs. input
-Goal: Measure "how relevant are my retrieved results for this query"
-Requires reference: No, because it will compare the question to the retrieved context
+4. [Retrieval relevance](#retrieval-relevance)
+- Evaluates: Retrieved context vs. input
+- Goal: Measure "how relevant are my retrieved results for this query"
+- Requires reference: No, because it will compare the question to the retrieved context
 
 ### Correctness {#rag}
 

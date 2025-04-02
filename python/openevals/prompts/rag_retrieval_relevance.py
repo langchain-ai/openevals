@@ -38,6 +38,6 @@ RAG_RETRIEVAL_RELEVANCE_PROMPT = """You are an expert data labeler evaluating re
 </inputs>
 
 <retrieved_context>
-{outputs}
+{context}
 </retrieved_context>
 """

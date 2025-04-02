@@ -5,5 +5,6 @@ export {
   CODE_CORRECTNESS_PROMPT,
   CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS,
 } from "./code_correctness.js";
-export { RAG_HALLUCATION_PROMPT } from "./rag_hallucination.js";
-export { RETRIEVAL_HELPFULNESS_PROMPT } from "./rag_retrieval.js";
+export { RAG_HELPFULNESS_PROMPT } from "./rag_helpfulness.js";
+export { RAG_GROUNDEDNESS_PROMPT } from "./rag_groundedness.js";
+export { RAG_RETRIEVAL_RELEVANCE_PROMPT } from "./rag_retrieval_relevance.js";

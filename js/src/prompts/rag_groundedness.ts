@@ -5,12 +5,12 @@ A well-grounded output should:
 - Make claims that are directly supported by the retrieved context
 - Stay within the scope of information provided in the context
 - Maintain the same meaning and intent as the source material
-- Not introduce external facts or unsupported assertions
+- Not introduce external facts or unsupported assertions outside of basic facts (2 + 2 = 4)
 
 An ungrounded output:
 - Makes claims without support from the context
 - Contradicts the retrieved information
-- Includes speculation or external knowledge
+- Includes speculation or external knowledge outside of basic facts
 - Distorts or misrepresents the context
 </Rubric>
 

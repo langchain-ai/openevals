@@ -739,7 +739,7 @@ wheels = [
 
 [[package]]
 name = "langsmith"
-version = "0.3.20"
+version = "0.3.22"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -750,8 +750,9 @@ dependencies = [
     { name = "requests-toolbelt" },
     { name = "zstandard" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/c7/6b/073fa75f4f90d82ba5b04a2eb2ce28c5267d7cffab073ed198a981704bee/langsmith-0.3.22.tar.gz", hash = "sha256:68a9ff000025e565526cb17acac150b986b3d766ab12fcabd2a64d4d3ee13afe", size = 337704 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0a/c3/d430b0cb07a6c2bdccbb97dd72f192c12f7fd9811a94c4ddf16d45079940/langsmith-0.3.20-py3-none-any.whl", hash = "sha256:48949e8697c75438cf1c36f83c8ac23cbb91e60161f960a3dc1df53cc441198d", size = 352369 },
+    { url = "https://files.pythonhosted.org/packages/0b/00/bfbc109003d26f183141252d7ab9230955908eeff8bdfdc9e4f2887c9ccb/langsmith-0.3.22-py3-none-any.whl", hash = "sha256:ca8a58ab6b0ef831226027ca73c216f0edb2419f02579a4ce8ae167ecaeea192", size = 352414 },
 ]
 
 [[package]]
@@ -1088,7 +1089,7 @@ requires-dist = [
     { name = "e2b-code-interpreter", marker = "extra == 'e2b-code-interpreter'", specifier = ">=1.1.1" },
     { name = "langchain", specifier = ">=0.3.18" },
     { name = "langchain-openai", specifier = ">=0.3.6" },
-    { name = "langsmith", specifier = ">=0.3.20" },
+    { name = "langsmith", specifier = ">=0.3.22" },
     { name = "rich", specifier = ">=13.9.4" },
 ]
 

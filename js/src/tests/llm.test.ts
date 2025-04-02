@@ -211,7 +211,7 @@ ls.describe("llm as judge", () => {
           },
           { inputs: { a: 1, b: 3 }, outputs: { a: 1, b: 2 }, score: 1.0 },
         ],
-        model: "openai:gpt-4o-mini",
+        model: "openai:o3-mini",
       });
       const result = await evaluator({ inputs, outputs });
       expect(result).toBeDefined();

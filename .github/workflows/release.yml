@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "python/pyproject.toml"
+  workflow_dispatch:
+    inputs:
+      dangerous-non-main-release:
+        required: false
+        type: boolean
+        default: false
+        description: "Release from a non-main branch (danger!)"
+
+env:
+  POETRY_VERSION: "1.4.2"
+
+jobs:
+  if_release:
+    # Disallow publishing from branches that aren't `main`.
+    if: github.ref == 'refs/heads/main' || inputs.dangerous-non-main-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v3
+      # Python Build
+      - name: Install poetry
+        run: pipx install poetry==$POETRY_VERSION
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "poetry"
+      - name: Build project for distribution
+        run: cd python && poetry build
+      - name: Check Version
+        id: check-version
+        run: |
+          cd python && echo version=$(poetry version --short) >> $GITHUB_OUTPUT
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: |
+            - "python/dist/*"
+            - "js/dist/*"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          generateReleaseNotes: true
+          tag: v${{ steps.check-version.outputs.version }}
+          commit: ${{ github.sha }}
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: "python/dist"

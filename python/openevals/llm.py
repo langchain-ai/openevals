@@ -513,12 +513,12 @@ def create_llm_as_judge(
         choices: Optional list of specific float values the score must be chosen from.
         use_reasoning: If True, includes explanation for the score in the output. Defaults to True.
         few_shot_examples: Optional list of example evaluations to append to the prompt.
-        output_schema: Optional JSON schema, Pydantic model, or TypedDict for the output of the judge. If provided, the output will be the raw response from the model.
+        output_schema: Optional JSON schema, Pydantic model, or TypedDict for the output of the evaluator.
             If you are using an OpenAI client directly, this field must be OpenAI structured output format or JSON schema if provided.
     Returns:
         A function that takes inputs, outputs, reference_outputs, and other kwargs, formats them into
         a prompt, invokes the judge, and returns an evaluation result.
-        If `output_schema` is provided, the output will be a callable function that returns the raw response from the model.
+        If `output_schema` is provided, the evaluator will be a callable function returning a dict conforming to the provided schema.
 
     Example:
         ```python
@@ -611,12 +611,12 @@ def create_async_llm_as_judge(
         choices: Optional list of specific float values the score must be chosen from.
         use_reasoning: If True, includes explanation for the score in the output. Defaults to True.
         few_shot_examples: Optional list of example evaluations to append to the prompt.
-        output_schema: Optional JSON schema for the output of the judge. If provided, the output will be the raw response from the model.
+        output_schema: Optional JSON schema for the output of the evaluator.
             If you are using an OpenAI client directly, this field must be OpenAI structured output format or JSON schema if provided.
     Returns:
         A function that takes inputs, outputs, reference_outputs, and other kwargs, formats them into
         a prompt, invokes the judge, and returns an evaluation result.
-        If `output_schema` is provided, the output will be the raw response from the model.
+        If `output_schema` is provided, the evaluator will be a callable function returning a dict conforming to the provided schema.
 
     Example:
         ```python

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+import json
 
 from langsmith import testing as t, get_current_run_tree, traceable
 from langsmith.testing._internal import _TEST_CASE
@@ -166,7 +167,7 @@ def _run_evaluator_untyped(
                     else:
                         t.log_feedback(
                             key=key,
-                            value=dict_results[key],
+                            value=dict_results[key] if isinstance(dict_results[key], str) else json.dumps(dict_results[key]),
                         )
             elif isinstance(results, list):
                 for result in results:
@@ -279,7 +280,7 @@ async def _arun_evaluator_untyped(
                     else:
                         t.log_feedback(
                             key=key,
-                            value=dict_results[key],
+                            value=dict_results[key] if isinstance(dict_results[key], str) else json.dumps(dict_results[key]),
                         )
             elif isinstance(results, list):
                 for result in results:

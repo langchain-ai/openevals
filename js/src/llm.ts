@@ -1,24 +1,43 @@
 import { RunnableInterface, Runnable } from "@langchain/core/runnables";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { ChatPromptTemplate, StructuredPrompt } from "@langchain/core/prompts";
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
 import { initChatModel } from "langchain/chat_models/universal";
 import { traceable } from "langsmith/traceable";
+import { zodToJsonSchema } from "zod-to-json-schema";
+import type { z } from "zod";
 
 import {
-  _runEvaluator,
   _normalizeToOpenAIMessagesList,
   _convertToOpenAIMessage,
+  _runEvaluatorUntyped,
 } from "./utils.js";
 import {
   ChatCompletionMessage,
+  EvaluatorResult,
   FewShotExample,
   ModelClient,
   SingleResultScorerReturnType,
 } from "./types.js";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ZodObjectAny = z.ZodObject<any, any, any, any>;
+
 function _isRunnableInterface(prompt: unknown): prompt is RunnableInterface {
   return Runnable.isRunnable(prompt);
+}
+
+function _isStructuredPrompt(prompt: unknown): prompt is StructuredPrompt {
+  return (
+    _isRunnableInterface(prompt) && "schema" in prompt && prompt.schema != null
+  );
+}
+
+export function isZodSchema(
+  input?: ZodObjectAny | Record<string, unknown>
+): input is ZodObjectAny {
+  // Check for a characteristic method of Zod schemas
+  return typeof (input as ZodObjectAny)?.parse === "function";
 }
 
 function _isBaseChatModel(x: unknown): x is BaseChatModel {
@@ -77,18 +96,16 @@ function appendFewShotExamples({
   return messages;
 }
 
-function constructOutputSchema({
-  schema,
+function constructDefaultOutputJsonSchema({
   continuous,
   choices,
   useReasoning,
 }: {
-  schema?: Record<string, unknown>;
   continuous?: boolean;
   choices?: number[];
   useReasoning?: boolean;
 }): [Record<string, unknown>, string] {
-  const jsonSchema: Record<string, unknown> = schema ?? {
+  const jsonSchema: Record<string, unknown> = {
     type: "object",
     additionalProperties: false,
   };
@@ -124,23 +141,21 @@ function constructOutputSchema({
     };
   }
 
-  if (!schema) {
-    if (useReasoning) {
-      jsonSchema.properties = {
-        reasoning: {
-          type: "string",
-          description:
-            "A human-readable explanation of the score. You MUST end the reasoning with a sentence that says: Thus, the score should be: SCORE_YOU_ASSIGN.",
-        },
-        score: scoreSchema,
-      };
-      jsonSchema.required = ["reasoning", "score"];
-    } else {
-      jsonSchema.properties = {
-        score: scoreSchema,
-      };
-      jsonSchema.required = ["score"];
-    }
+  if (useReasoning) {
+    jsonSchema.properties = {
+      reasoning: {
+        type: "string",
+        description:
+          "A human-readable explanation of the score. You MUST end the reasoning with a sentence that says: Thus, the score should be: SCORE_YOU_ASSIGN.",
+      },
+      score: scoreSchema,
+    };
+    jsonSchema.required = ["reasoning", "score"];
+  } else {
+    jsonSchema.properties = {
+      score: scoreSchema,
+    };
+    jsonSchema.required = ["score"];
   }
 
   return [jsonSchema, description];
@@ -180,7 +195,7 @@ export const _createLLMAsJudgeScorer = (params: {
         ...args: unknown[]
       ) => ChatCompletionMessage[] | Promise<ChatCompletionMessage[]>);
   system?: string;
-  schema?: Record<string, unknown>;
+  schema?: Record<string, unknown> | ZodObjectAny;
   judge?: ModelClient | BaseChatModel;
   model?: string;
   continuous?: boolean;
@@ -188,15 +203,12 @@ export const _createLLMAsJudgeScorer = (params: {
   useReasoning?: boolean;
   fewShotExamples?: FewShotExample[];
 }) => {
-  const {
-    prompt,
-    system,
-    schema,
-    model,
-    continuous,
-    choices,
-    fewShotExamples,
-  } = params;
+  const { prompt, system, model, continuous, choices, fewShotExamples } =
+    params;
+
+  let schema = isZodSchema(params.schema)
+    ? zodToJsonSchema(params.schema)
+    : params.schema;
 
   let judge = params.judge;
   const useReasoning = params.useReasoning ?? true;
@@ -251,6 +263,9 @@ export const _createLLMAsJudgeScorer = (params: {
     if (_isRunnableInterface(prompt)) {
       const formattedPrompt = await prompt.invoke(filteredPromptParams);
       messages = formattedPrompt.messages;
+      if (_isStructuredPrompt(prompt)) {
+        schema = prompt.schema;
+      }
     } else if (typeof prompt === "string") {
       const template = ChatPromptTemplate.fromTemplate(prompt);
       const formattedPrompt = await template.invoke(filteredPromptParams);
@@ -277,8 +292,7 @@ export const _createLLMAsJudgeScorer = (params: {
       });
     }
 
-    const [jsonSchema, description] = constructOutputSchema({
-      schema,
+    const [defaultJsonSchema, description] = constructDefaultOutputJsonSchema({
       continuous,
       choices,
       useReasoning,
@@ -295,13 +309,14 @@ export const _createLLMAsJudgeScorer = (params: {
 
     let response;
     if (_isBaseChatModel(judge)) {
-      response = await judge
-        .withStructuredOutput({
+      const judgeWithStructuredOutput = judge.withStructuredOutput(
+        schema ?? {
           title: "score",
           description,
-          ...jsonSchema,
-        })
-        .invoke(normalizedMessages);
+          ...defaultJsonSchema,
+        }
+      );
+      response = await judgeWithStructuredOutput.invoke(normalizedMessages);
       if (schema === undefined) {
         if (useReasoning) {
           return [response.score, response.reasoning];
@@ -316,6 +331,27 @@ export const _createLLMAsJudgeScorer = (params: {
           "`model` string is required (e.g. 'openai:o3-mini') when `judge` is an OpenAI client"
         );
       }
+      let openaiJsonSchema: Record<string, unknown> =
+        schema ?? defaultJsonSchema;
+      if (openaiJsonSchema.name === undefined) {
+        openaiJsonSchema = {
+          name: "score",
+          strict: true,
+          schema: openaiJsonSchema,
+        };
+      }
+      if (
+        openaiJsonSchema.schema == null ||
+        typeof openaiJsonSchema.schema !== "object"
+      ) {
+        throw new Error(
+          "`ouputSchema` must be JSON schema or OpenAI structured output format when using an OpenAI client directly"
+        );
+      }
+      if (!("additionalProperties" in openaiJsonSchema.schema)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (openaiJsonSchema.schema as any).additionalProperties = false;
+      }
 
       const params: Record<string, unknown> = {
         messages: normalizedMessages,
@@ -324,11 +360,7 @@ export const _createLLMAsJudgeScorer = (params: {
           : model,
         response_format: {
           type: "json_schema",
-          json_schema: {
-            name: "score",
-            strict: true,
-            schema: jsonSchema,
-          },
+          json_schema: openaiJsonSchema,
         },
       };
 
@@ -378,7 +410,9 @@ export const _createLLMAsJudgeScorer = (params: {
  * @param params.useReasoning If true, includes explanation for the score in the output.
  *                           Defaults to true.
  * @param params.fewShotExamples Optional list of example evaluations to append to the prompt
- *
+ * @param params.outputSchema Optional JSON schema or Zod schema for the output of the evaluator.
+ *                            If provided, the created evaluator will return an object conforming to the provided schema.
+ *                            If you are using an OpenAI client directly, this field must be OpenAI structured output format or JSON schema if provided.
  * @returns A function that takes inputs, outputs, reference_outputs, and other kwargs,
  *          formats them into a prompt, invokes the judge, and returns an evaluation result
  *
@@ -396,7 +430,45 @@ export const _createLLMAsJudgeScorer = (params: {
  * });
  * ```
  */
-export const createLLMAsJudge = ({
+export function createLLMAsJudge(params: {
+  prompt:
+    | string
+    | RunnableInterface
+    | ((
+        ...args: unknown[]
+      ) => ChatCompletionMessage[] | Promise<ChatCompletionMessage[]>);
+  feedbackKey?: string;
+  model?: string;
+  system?: string;
+  judge?: ModelClient | BaseChatModel;
+  continuous?: boolean;
+  choices?: number[];
+  useReasoning?: boolean;
+  fewShotExamples?: FewShotExample[];
+  outputSchema?: undefined;
+}): (
+  params: Record<string, unknown>
+) => Promise<EvaluatorResult & Record<string, unknown>>;
+
+export function createLLMAsJudge(params: {
+  prompt:
+    | string
+    | RunnableInterface
+    | ((
+        ...args: unknown[]
+      ) => ChatCompletionMessage[] | Promise<ChatCompletionMessage[]>);
+  feedbackKey?: string;
+  model?: string;
+  system?: string;
+  judge?: ModelClient | BaseChatModel;
+  continuous?: boolean;
+  choices?: number[];
+  useReasoning?: boolean;
+  fewShotExamples?: FewShotExample[];
+  outputSchema: Record<string, unknown> | ZodObjectAny;
+}): (params: Record<string, unknown>) => Promise<Record<string, unknown>>;
+
+export function createLLMAsJudge({
   prompt,
   feedbackKey = "score",
   model,
@@ -406,6 +478,7 @@ export const createLLMAsJudge = ({
   choices,
   useReasoning = true,
   fewShotExamples,
+  outputSchema,
 }: {
   prompt:
     | string
@@ -421,7 +494,12 @@ export const createLLMAsJudge = ({
   choices?: number[];
   useReasoning?: boolean;
   fewShotExamples?: FewShotExample[];
-}) => {
+  outputSchema?: Record<string, unknown> | ZodObjectAny;
+}):
+  | ((
+      params: Record<string, unknown>
+    ) => Promise<EvaluatorResult & Record<string, unknown>>)
+  | ((params: Record<string, unknown>) => Promise<Record<string, unknown>>) {
   const scorer = _createLLMAsJudgeScorer({
     prompt,
     judge,
@@ -431,6 +509,7 @@ export const createLLMAsJudge = ({
     choices,
     useReasoning,
     fewShotExamples,
+    schema: outputSchema,
   });
 
   const _wrappedEvaluator = async (inputs: {
@@ -441,7 +520,14 @@ export const createLLMAsJudge = ({
   }) => {
     const runName =
       feedbackKey !== "score" ? "llm_as_judge" : `llm_as_${feedbackKey}_judge`;
-    return _runEvaluator(runName, scorer, feedbackKey, inputs);
+    return _runEvaluatorUntyped(
+      runName,
+      scorer,
+      feedbackKey,
+      inputs,
+      undefined,
+      outputSchema !== undefined || _isStructuredPrompt(prompt)
+    );
   };
   return _wrappedEvaluator;
-};
+}

@@ -1,13 +1,15 @@
 import * as ls from "langsmith/vitest";
-import { expect, test } from "vitest";
+import { expect, test, expectTypeOf } from "vitest";
 import { evaluate } from "langsmith/evaluation";
-
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { OpenAI } from "openai";
 import { ChatOpenAI } from "@langchain/openai";
 
 import { createLLMAsJudge } from "../llm.js";
 import * as hub from "langchain/hub";
 import { HumanMessage } from "@langchain/core/messages";
+
+import { z } from "zod";
 
 ls.describe("llm as judge", () => {
   ls.test(
@@ -21,12 +23,32 @@ ls.describe("llm as judge", () => {
       const evaluator = createLLMAsJudge({
         prompt: await hub.pull("langchain-ai/equality-1-message"),
         judge: client,
-        model: "openai:o3-mini",
+        model: "openai:gpt-4o-mini",
       });
       const result = await evaluator({ inputs, outputs });
       expect(result).toBeDefined();
+      // assert TS type is not unknown
+      expectTypeOf(result.score).toEqualTypeOf<number | boolean>();
       expect(result.score).toBeDefined();
       expect(result.comment).toBeDefined();
+    }
+  );
+
+  ls.test(
+    "prompt hub structured prompt",
+    {
+      inputs: { a: 1, b: 2 },
+    },
+    async ({ inputs }) => {
+      const outputs = { a: 1, b: 2 };
+      const evaluator = createLLMAsJudge({
+        prompt: await hub.pull("jacob/simple-equality-structured"),
+        model: "openai:gpt-4o-mini",
+      });
+      const result = await evaluator({ inputs, outputs });
+      expect(result).toBeDefined();
+      expect(result.equality).toBe(true);
+      expect(result.justification).toBeDefined();
     }
   );
 
@@ -217,6 +239,77 @@ ls.describe("llm as judge", () => {
       expect(result).toBeDefined();
       expect(result.score).toBe(false);
       expect(result.comment).toBeDefined();
+    }
+  );
+
+  ls.test(
+    "llm as judge with custom JSON schema output schema",
+    {
+      inputs: { a: 1, b: 2 },
+    },
+    async ({ inputs }) => {
+      const outputs = { a: 1, b: 2 };
+      const evaluator = createLLMAsJudge({
+        prompt: "Are these two equal? {inputs} {outputs}",
+        outputSchema: zodToJsonSchema(
+          z.object({
+            equality: z.boolean(),
+            justification: z.string(),
+          })
+        ),
+        model: "openai:gpt-4o-mini",
+      });
+      const result = await evaluator({ inputs, outputs });
+      expect(result).toBeDefined();
+      expect(result.equality).toBe(true);
+      expect(result.justification).toBeDefined();
+    }
+  );
+
+  ls.test(
+    "llm as judge with OpenAI client and custom JSON schema output schema",
+    {
+      inputs: { a: 1, b: 2 },
+    },
+    async ({ inputs }) => {
+      const outputs = { a: 1, b: 2 };
+      const evaluator = createLLMAsJudge({
+        prompt: "Are these two equal? {inputs} {outputs}",
+        outputSchema: zodToJsonSchema(
+          z.object({
+            equality: z.boolean(),
+            justification: z.string(),
+          })
+        ),
+        judge: new OpenAI(),
+        model: "gpt-4o-mini",
+      });
+      const result = await evaluator({ inputs, outputs });
+      expect(result).toBeDefined();
+      expect(result.equality).toBe(true);
+      expect(result.justification).toBeDefined();
+    }
+  );
+
+  ls.test(
+    "llm as judge with custom Zod output schema",
+    {
+      inputs: { a: 1, b: 2 },
+    },
+    async ({ inputs }) => {
+      const outputs = { a: 1, b: 2 };
+      const evaluator = createLLMAsJudge({
+        prompt: "Are these two equal? {inputs} {outputs}",
+        outputSchema: z.object({
+          equality: z.boolean(),
+          justification: z.string(),
+        }),
+        model: "openai:gpt-4o-mini",
+      });
+      const result = await evaluator({ inputs, outputs });
+      expect(result).toBeDefined();
+      expect(result.equality).toBe(true);
+      expect(result.justification).toBeDefined();
     }
   );
 

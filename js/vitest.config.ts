@@ -4,5 +4,6 @@ export default defineConfig({
   test: {
     setupFiles: ["dotenv/config"],
     testTimeout: 30000,
+    reporters: ["langsmith/vitest/reporter"]
   },
 });

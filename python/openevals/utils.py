@@ -199,7 +199,7 @@ async def _arun_evaluator(
     ls_framework: str = "openevals",
     **kwargs: Any,
 ) -> EvaluatorResult | list[EvaluatorResult]:
-    return _arun_evaluator_untyped(  # type: ignore
+    return await _arun_evaluator_untyped(  # type: ignore
         run_name=run_name,
         scorer=scorer,
         feedback_key=feedback_key,

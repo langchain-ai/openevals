@@ -1,5 +1,7 @@
 import json
 import pytest
+from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 from openevals.llm import create_async_llm_as_judge
 
@@ -208,6 +210,66 @@ async def test_async_llm_as_judge_few_shot_examples():
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_async_llm_as_judge_custom_output_schema_typed_dict():
+    class EqualityResult(TypedDict):
+        justification: str
+        are_equal: bool
+
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    llm_as_judge = create_async_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        output_schema=EqualityResult,
+        model="openai:gpt-4o-mini",
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["are_equal"]
+    assert eval_result["justification"] is not None
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_async_llm_as_judge_custom_output_schema_openai_client():
+    class EqualityResult(BaseModel):
+        justification: str
+        are_equal: bool
+
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    client = AsyncOpenAI()
+    llm_as_judge = create_async_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        output_schema=EqualityResult.model_json_schema(),
+        judge=client,
+        model="gpt-4o-mini",
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["are_equal"]
+    assert eval_result["justification"] is not None
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_async_llm_as_judge_custom_output_schema_pydantic():
+    class EqualityResult(BaseModel):
+        justification: str
+        are_equal: bool
+
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    llm_as_judge = create_async_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        output_schema=EqualityResult,
+        model="openai:gpt-4o-mini",
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert isinstance(eval_result, EqualityResult)
+    assert eval_result.are_equal
+    assert eval_result.justification is not None
 
 
 @pytest.mark.langsmith

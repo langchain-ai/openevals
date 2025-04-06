@@ -33,7 +33,7 @@ def test_prompt_hub_works_one_message():
     outputs = {"a": 1, "b": 2}
     client = OpenAI()
     llm_as_judge = create_llm_as_judge(
-        prompt=prompts.pull("langchain-ai/equality-1-message", include_model=True),
+        prompt=prompts.pull("langchain-ai/equality-1-message"),
         judge=client,
         model="gpt-4o-mini",
     )
@@ -47,7 +47,7 @@ def test_structured_prompt():
     inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
     client = Client()
-    prompt = client.pull_prompt("jacob/simple-equality-structured", include_model=True)
+    prompt = client.pull_prompt("jacob/simple-equality-structured")
     llm_as_judge = create_llm_as_judge(
         prompt=prompt,
         model="openai:gpt-4o-mini",

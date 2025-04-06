@@ -50,7 +50,7 @@ async def test_structured_prompt():
     inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
     client = Client()
-    prompt = client.pull_prompt("jacob/simple-equality-structured", include_model=True)
+    prompt = client.pull_prompt("jacob/simple-equality-structured")
     llm_as_judge = create_async_llm_as_judge(
         prompt=prompt,
         model="openai:gpt-4o-mini",

@@ -33,13 +33,28 @@ def test_prompt_hub_works_one_message():
     outputs = {"a": 1, "b": 2}
     client = OpenAI()
     llm_as_judge = create_llm_as_judge(
-        prompt=prompts.pull("langchain-ai/equality-1-message"),
+        prompt=prompts.pull("langchain-ai/equality-1-message", include_model=True),
         judge=client,
         model="gpt-4o-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
     assert eval_result["comment"] is not None
+
+
+@pytest.mark.langsmith
+def test_structured_prompt():
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    client = Client()
+    prompt = client.pull_prompt("jacob/simple-equality-structured", include_model=True)
+    llm_as_judge = create_llm_as_judge(
+        prompt=prompt,
+        model="openai:gpt-4o-mini",
+    )
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["equality"] is True
+    assert eval_result["justification"] is not None
 
 
 @pytest.mark.langsmith

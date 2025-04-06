@@ -46,6 +46,22 @@ async def test_prompt_hub_works_one_message():
 
 @pytest.mark.langsmith
 @pytest.mark.asyncio
+async def test_structured_prompt():
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    client = Client()
+    prompt = client.pull_prompt("jacob/simple-equality-structured", include_model=True)
+    llm_as_judge = create_async_llm_as_judge(
+        prompt=prompt,
+        model="openai:gpt-4o-mini",
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["equality"] is True
+    assert eval_result["justification"] is not None
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
 async def test_async_llm_as_judge_openai():
     inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}

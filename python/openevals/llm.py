@@ -17,7 +17,9 @@ from openevals.types import (
 )
 
 from langchain.chat_models import init_chat_model
+from langchain_core.runnables import RunnableSequence
 from langchain_core.language_models.chat_models import BaseChatModel, BaseMessage
+from langchain_core.prompts.structured import StructuredPrompt
 from langsmith import traceable
 
 from typing import (
@@ -29,6 +31,13 @@ from typing import (
 )
 
 import json
+
+
+def _is_structured_prompt(prompt: Any) -> bool:
+    return isinstance(prompt, StructuredPrompt) or (
+        isinstance(prompt, RunnableSequence)
+        and isinstance(prompt.first, StructuredPrompt)
+    )
 
 
 def _append_few_shot_examples(
@@ -191,7 +200,11 @@ def _create_llm_as_judge_scorer(
         }
 
         if isinstance(prompt, RunnableLike):
-            formatted_prompt = prompt.invoke(filtered_prompt_params)
+            if _is_structured_prompt(prompt):
+                result = prompt.invoke(filtered_prompt_params)
+                return result
+            else:
+                formatted_prompt = prompt.invoke(filtered_prompt_params)
             messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
         elif isinstance(prompt, str):
             formatted_prompt = prompt.format(**filtered_prompt_params)
@@ -358,8 +371,12 @@ def _create_async_llm_as_judge_scorer(
         }
 
         if isinstance(prompt, RunnableLike):
-            formatted_prompt = await prompt.ainvoke(filtered_prompt_params)
-            messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
+            if _is_structured_prompt(prompt):
+                result = prompt.invoke(filtered_prompt_params)
+                return result
+            else:
+                formatted_prompt = await prompt.ainvoke(filtered_prompt_params)
+                messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
         elif isinstance(prompt, str):
             formatted_prompt = prompt.format(**filtered_prompt_params)
             messages = [
@@ -558,7 +575,8 @@ def create_llm_as_judge(
             inputs=inputs,
             outputs=outputs,
             reference_outputs=reference_outputs,
-            return_raw_output=output_schema is not None,
+            return_raw_output=output_schema is not None
+            or _is_structured_prompt(prompt),
             **kwargs,
         )
         if output_schema is not None:
@@ -655,7 +673,8 @@ def create_async_llm_as_judge(
             inputs=inputs,
             outputs=outputs,
             reference_outputs=reference_outputs,
-            return_raw_output=output_schema is not None,
+            return_raw_output=output_schema is not None
+            or _is_structured_prompt(prompt),
             **kwargs,
         )
         if output_schema is not None:

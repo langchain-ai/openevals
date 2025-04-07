@@ -955,7 +955,9 @@ console.log(evalResult);
 
 #### Logging feedback with custom output schemas
 
-If you are using an OpenEvals evaluator with [LangSmith's `pytest` or `Vitest`/`Jest` runners](#pytest-or-vitestjest), each key in the output schema will be logged as feedback.
+If you are using an OpenEvals evaluator with [LangSmith's `pytest` or `Vitest`/`Jest` runners](#pytest-or-vitestjest), you will need to manually [log feedback keys](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest#log-feedback).
+
+If you are using `evaluate`, you will need to wrap your evaluator in another function that maps your evaluator return value to [feedback in the right format](https://docs.smith.langchain.com/evaluation/how_to_guides/custom_evaluator).
 
 #### Structured prompts
 

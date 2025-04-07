@@ -213,21 +213,6 @@ export async function _runEvaluatorUntyped<
     if (returnRawOutputs) {
       // TODO: Fix LangSmith SDK types
       const rawResults = res as Record<string, unknown>;
-      for (const key of Object.keys(rawResults)) {
-        if (
-          typeof rawResults[key] === "number" ||
-          typeof rawResults[key] === "boolean"
-        ) {
-          logFeedback({ key, score: rawResults[key] as number | boolean });
-        } else {
-          // TODO: Fix LangSmith SDK types
-          logFeedback({
-            key,
-            value: JSON.stringify(rawResults[key]),
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any);
-        }
-      }
       return rawResults;
     }
     return res as EvaluationResultType<O>;

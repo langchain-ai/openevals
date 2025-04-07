@@ -565,7 +565,7 @@ def create_llm_as_judge(
             inputs=inputs,
             outputs=outputs,
             reference_outputs=reference_outputs,
-            return_raw_output=output_schema is not None
+            return_raw_outputs=output_schema is not None
             or isinstance(prompt, StructuredPrompt),
             **kwargs,
         )
@@ -663,7 +663,7 @@ def create_async_llm_as_judge(
             inputs=inputs,
             outputs=outputs,
             reference_outputs=reference_outputs,
-            return_raw_output=output_schema is not None
+            return_raw_outputs=output_schema is not None
             or isinstance(prompt, StructuredPrompt),
             **kwargs,
         )

@@ -167,7 +167,9 @@ def _run_evaluator_untyped(
                     else:
                         t.log_feedback(
                             key=key,
-                            value=dict_results[key] if isinstance(dict_results[key], str) else json.dumps(dict_results[key]),
+                            value=dict_results[key]
+                            if isinstance(dict_results[key], str)
+                            else json.dumps(dict_results[key]),
                         )
             elif isinstance(results, list):
                 for result in results:
@@ -280,7 +282,9 @@ async def _arun_evaluator_untyped(
                     else:
                         t.log_feedback(
                             key=key,
-                            value=dict_results[key] if isinstance(dict_results[key], str) else json.dumps(dict_results[key]),
+                            value=dict_results[key]
+                            if isinstance(dict_results[key], str)
+                            else json.dumps(dict_results[key]),
                         )
             elif isinstance(results, list):
                 for result in results:

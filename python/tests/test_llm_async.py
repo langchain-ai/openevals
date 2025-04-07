@@ -115,7 +115,7 @@ async def test_async_llm_as_judge_openai_not_equal_continuous():
     outputs = {"a": 1, "b": 2}
     client = AsyncOpenAI()
     llm_as_judge = create_async_llm_as_judge(
-        prompt="How equal are these 2? {inputs} {outputs}",
+        prompt="How equal are these 2? Your score should be a fraction of how many props are equal: {inputs} {outputs}",
         judge=client,
         model="gpt-4o-mini",
         continuous=True,
@@ -147,7 +147,7 @@ async def test_async_llm_as_judge_openai_not_equal_binary_pass():
     outputs = {"a": 1, "b": 2}
     client = AsyncOpenAI()
     llm_as_judge = create_async_llm_as_judge(
-        prompt="How equal are these 2? {inputs} {outputs}",
+        prompt="How equal are these 2? Your score should be a fraction of how many props are equal: {inputs} {outputs}",
         judge=client,
         model="o3-mini",
         continuous=True,

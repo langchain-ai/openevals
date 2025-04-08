@@ -448,14 +448,16 @@ For Python, `output_schema` may be:
 
 - A `TypedDict` instance
 - A [Pydantic](https://docs.pydantic.dev) model
-- JSON schema
+- [JSON schema](https://json-schema.org/)
+- [OpenAI's structured output format](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#supported-schemas)
 
 For TypeScript, `outputSchema` may be:
 
 - A [Zod](https://zod.dev) object
-- JSON schema
+- [JSON schema](https://json-schema.org/)
+- [OpenAI's structured output format](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#supported-schemas)
 
-Note that if you are using an OpenAI client directly, only JSON schema and [OpenAI's structured output format](https://platform.openai.com/docs/guides/structured-outputs).
+Note that if you are using an OpenAI client directly, only JSON schema and OpenAI's structured output format.
 
 Here's an example:
 

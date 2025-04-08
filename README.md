@@ -56,8 +56,8 @@ inputs = "How is the weather in San Francisco?"
 outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
 # When calling an LLM-as-judge evaluator, parameters are formatted directly into the prompt
 eval_result = conciseness_evaluator(
-  inputs=inputs,
-  outputs=outputs,
+    inputs=inputs,
+    outputs=outputs,
 )
 
 print(eval_result)

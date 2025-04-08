@@ -1,7 +1,7 @@
 from __future__ import annotations
 from openevals.utils import (
-    _run_evaluator,
-    _arun_evaluator,
+    _run_evaluator_untyped,
+    _arun_evaluator_untyped,
     _convert_to_openai_message,
     _normalize_to_openai_messages_list,
 )
@@ -18,6 +18,7 @@ from openevals.types import (
 
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel, BaseMessage
+from langchain_core.prompts.structured import StructuredPrompt
 from langsmith import traceable
 
 from typing import (
@@ -64,21 +65,16 @@ def _append_few_shot_examples(
     return messages
 
 
-def _construct_output_schema(
+def _construct_default_output_json_schema(
     *,
-    schema: Optional[dict] = None,
     continuous: bool = False,
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
 ) -> tuple[dict, str]:
-    json_schema = (
-        schema
-        if schema is not None
-        else {
-            "type": "object",
-            "additionalProperties": False,
-        }
-    )
+    json_schema = {
+        "type": "object",
+        "additionalProperties": False,
+    }
     # Set the description for the score schema
     if choices:
         description = "A number that represents the degree to which the criteria in the prompt are met."
@@ -101,21 +97,20 @@ def _construct_output_schema(
         }
 
     # Add reasoning if passed
-    if schema is None:
-        if use_reasoning:
-            json_schema["properties"] = {
-                "reasoning": {
-                    "type": "string",
-                    "description": "A human-readable explanation of the score. You MUST end the reasoning with a sentence that says: Thus, the score should be: SCORE_YOU_ASSIGN.",
-                },
-                "score": score_schema,
-            }
-            json_schema["required"] = ["reasoning", "score"]
-        else:
-            json_schema["properties"] = {
-                "score": score_schema,
-            }
-            json_schema["required"] = ["score"]
+    if use_reasoning:
+        json_schema["properties"] = {
+            "reasoning": {
+                "type": "string",
+                "description": "A human-readable explanation of the score. You MUST end the reasoning with a sentence that says: Thus, the score should be: SCORE_YOU_ASSIGN.",
+            },
+            "score": score_schema,
+        }
+        json_schema["required"] = ["reasoning", "score"]
+    else:
+        json_schema["properties"] = {
+            "score": score_schema,
+        }
+        json_schema["required"] = ["score"]
 
     return (json_schema, description)
 
@@ -149,7 +144,7 @@ def _create_llm_as_judge_scorer(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     system: Optional[str] = None,
-    schema: Optional[dict] = None,
+    schema: Optional[Union[dict, type]] = None,
     judge: Optional[
         Union[
             ModelClient,
@@ -199,6 +194,9 @@ def _create_llm_as_judge_scorer(
         if isinstance(prompt, RunnableLike):
             formatted_prompt = prompt.invoke(filtered_prompt_params)
             messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
+            if isinstance(prompt, StructuredPrompt):
+                nonlocal schema
+                schema = prompt.schema_
         elif isinstance(prompt, str):
             formatted_prompt = prompt.format(**filtered_prompt_params)
             messages = [
@@ -225,8 +223,7 @@ def _create_llm_as_judge_scorer(
                 few_shot_examples=few_shot_examples,
             )
 
-        (json_schema, description) = _construct_output_schema(
-            schema=schema,
+        (default_json_schema, description) = _construct_default_output_json_schema(
             continuous=continuous,
             choices=choices,
             use_reasoning=use_reasoning,
@@ -241,13 +238,16 @@ def _create_llm_as_judge_scorer(
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
-            response = judge.with_structured_output(
-                {
+            judge_with_structured_output = judge.with_structured_output(
+                schema
+                if schema is not None
+                else {
                     "title": "score",
                     "description": description,
-                    **json_schema,
+                    **default_json_schema,
                 }
-            ).invoke(messages)  # type: ignore
+            )
+            response = judge_with_structured_output.invoke(messages)  # type: ignore
             if schema is None:
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore
@@ -259,16 +259,29 @@ def _create_llm_as_judge_scorer(
                 raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
             if model.startswith("openai:"):
                 model = model[len("openai:") :]
+
+            openai_json_schema = default_json_schema
+            if schema is not None:
+                if not isinstance(schema, dict):
+                    raise ValueError(
+                        "`schema` must be JSON schema or OpenAI structured output format when using an OpenAI client directly"
+                    )
+                openai_json_schema = schema
+            if openai_json_schema.get("name") is None:
+                openai_json_schema = {
+                    "name": "score",
+                    "strict": True,
+                    "schema": openai_json_schema,
+                }
+            if openai_json_schema.get("schema", {}).get("additionalProperties") is None:
+                openai_json_schema["schema"]["additionalProperties"] = False
+
             params = {
                 "messages": messages,
                 "model": model,
                 "response_format": {
                     "type": "json_schema",
-                    "json_schema": {
-                        "name": "score",
-                        "strict": True,
-                        "schema": json_schema,
-                    },
+                    "json_schema": openai_json_schema,
                 },
             }
 
@@ -301,7 +314,7 @@ def _create_async_llm_as_judge_scorer(
     *,
     prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
     system: Optional[str] = None,
-    schema: Optional[dict] = None,
+    schema: Optional[Union[dict, type]] = None,
     judge: Optional[
         Union[
             ModelClient,
@@ -349,8 +362,11 @@ def _create_async_llm_as_judge_scorer(
         }
 
         if isinstance(prompt, RunnableLike):
-            formatted_prompt = await prompt.ainvoke(filtered_prompt_params)
+            formatted_prompt = prompt.invoke(filtered_prompt_params)
             messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
+            if isinstance(prompt, StructuredPrompt):
+                nonlocal schema
+                schema = prompt.schema_
         elif isinstance(prompt, str):
             formatted_prompt = prompt.format(**filtered_prompt_params)
             messages = [
@@ -377,8 +393,7 @@ def _create_async_llm_as_judge_scorer(
                 few_shot_examples=few_shot_examples,
             )
 
-        (json_schema, description) = _construct_output_schema(
-            schema=schema,
+        (default_json_schema, description) = _construct_default_output_json_schema(
             continuous=continuous,
             choices=choices,
             use_reasoning=use_reasoning,
@@ -393,13 +408,16 @@ def _create_async_llm_as_judge_scorer(
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
-            response = await judge.with_structured_output(
-                {
+            judge_with_structured_output = judge.with_structured_output(
+                schema
+                if schema is not None
+                else {
                     "title": "score",
                     "description": description,
-                    **json_schema,
+                    **default_json_schema,
                 }
-            ).ainvoke(messages)  # type: ignore
+            )
+            response = await judge_with_structured_output.ainvoke(messages)  # type: ignore
             if schema is None:
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore
@@ -411,16 +429,29 @@ def _create_async_llm_as_judge_scorer(
                 raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
             if model.startswith("openai:"):
                 model = model[len("openai:") :]
+
+            openai_json_schema = default_json_schema
+            if schema is not None:
+                if not isinstance(schema, dict):
+                    raise ValueError(
+                        "`schema` must be JSON schema or OpenAI structured output format when using an OpenAI client directly"
+                    )
+                openai_json_schema = schema
+            if openai_json_schema.get("name") is None:
+                openai_json_schema = {
+                    "name": "score",
+                    "strict": True,
+                    "schema": openai_json_schema,
+                }
+            if openai_json_schema.get("schema", {}).get("additionalProperties") is None:
+                openai_json_schema["schema"]["additionalProperties"] = False
+
             params = {
                 "messages": messages,
                 "model": model,
                 "response_format": {
                     "type": "json_schema",
-                    "json_schema": {
-                        "name": "score",
-                        "strict": True,
-                        "schema": json_schema,
-                    },
+                    "json_schema": openai_json_schema,
                 },
             }
 
@@ -460,7 +491,8 @@ def create_llm_as_judge(
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
-) -> SimpleEvaluator:
+    output_schema: Optional[Union[dict, type]] = None,
+) -> Union[SimpleEvaluator, Callable[..., Any]]:
     """Create an evaluator that uses an LLM to assess output quality based on specified criteria.
     Handles prompt formatting, LLM invocation, and structured output parsing.
 
@@ -481,10 +513,12 @@ def create_llm_as_judge(
         choices: Optional list of specific float values the score must be chosen from.
         use_reasoning: If True, includes explanation for the score in the output. Defaults to True.
         few_shot_examples: Optional list of example evaluations to append to the prompt.
-
+        output_schema: Optional JSON schema, Pydantic model, or TypedDict for the output of the evaluator.
+            If you are using an OpenAI client directly, this field must be OpenAI structured output format or JSON schema if provided.
     Returns:
         A function that takes inputs, outputs, reference_outputs, and other kwargs, formats them into
         a prompt, invokes the judge, and returns an evaluation result.
+        If `output_schema` is provided, the evaluator will be a callable function returning a dict conforming to the provided schema.
 
     Example:
         ```python
@@ -509,6 +543,7 @@ def create_llm_as_judge(
         choices=choices,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
+        schema=output_schema,
     )
 
     def _wrapped_evaluator(
@@ -517,21 +552,25 @@ def create_llm_as_judge(
         outputs: Optional[Union[str, dict]] = None,
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
-    ) -> EvaluatorResult:
+    ) -> EvaluatorResult | dict:
         run_name = (
             "llm_as_judge"
             if feedback_key == "score"
             else f"llm_as_{feedback_key}_judge"
         )
-        res = _run_evaluator(
+        res = _run_evaluator_untyped(
             run_name=run_name,
             scorer=scorer,
             feedback_key=feedback_key,
             inputs=inputs,
             outputs=outputs,
             reference_outputs=reference_outputs,
+            return_raw_outputs=output_schema is not None
+            or isinstance(prompt, StructuredPrompt),
             **kwargs,
         )
+        if output_schema is not None:
+            return res  # type: ignore
         if isinstance(res, list):
             return res[0]
         return res  # type: ignore
@@ -550,7 +589,8 @@ def create_async_llm_as_judge(
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
-) -> SimpleAsyncEvaluator:
+    output_schema: Optional[Union[dict, type]] = None,
+) -> Union[SimpleAsyncEvaluator, Callable[..., Awaitable[Any]]]:
     """Create an evaluator that uses an LLM to assess output quality based on specified criteria.
     Handles prompt formatting, LLM invocation, and structured output parsing.
 
@@ -571,10 +611,12 @@ def create_async_llm_as_judge(
         choices: Optional list of specific float values the score must be chosen from.
         use_reasoning: If True, includes explanation for the score in the output. Defaults to True.
         few_shot_examples: Optional list of example evaluations to append to the prompt.
-
+        output_schema: Optional JSON schema for the output of the evaluator.
+            If you are using an OpenAI client directly, this field must be OpenAI structured output format or JSON schema if provided.
     Returns:
         A function that takes inputs, outputs, reference_outputs, and other kwargs, formats them into
         a prompt, invokes the judge, and returns an evaluation result.
+        If `output_schema` is provided, the evaluator will be a callable function returning a dict conforming to the provided schema.
 
     Example:
         ```python
@@ -599,6 +641,7 @@ def create_async_llm_as_judge(
         choices=choices,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
+        schema=output_schema,
     )
 
     async def _wrapped_evaluator(
@@ -607,21 +650,25 @@ def create_async_llm_as_judge(
         outputs: Optional[Union[str, dict]] = None,
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
-    ) -> EvaluatorResult:
+    ) -> EvaluatorResult | dict:
         run_name = (
             "llm_as_judge"
             if feedback_key == "score"
             else f"llm_as_{feedback_key}_judge"
         )
-        res = await _arun_evaluator(
+        res = await _arun_evaluator_untyped(
             run_name=run_name,
             scorer=scorer,
             feedback_key=feedback_key,
             inputs=inputs,
             outputs=outputs,
             reference_outputs=reference_outputs,
+            return_raw_outputs=output_schema is not None
+            or isinstance(prompt, StructuredPrompt),
             **kwargs,
         )
+        if output_schema is not None:
+            return res  # type: ignore
         if isinstance(res, list):
             return res[0]
         return res

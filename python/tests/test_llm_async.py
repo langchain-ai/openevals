@@ -1,5 +1,7 @@
 import json
 import pytest
+from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 from openevals.llm import create_async_llm_as_judge
 
@@ -40,6 +42,22 @@ async def test_prompt_hub_works_one_message():
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
     assert eval_result["comment"] is not None
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_structured_prompt():
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    client = Client()
+    prompt = client.pull_prompt("jacob/simple-equality-structured")
+    llm_as_judge = create_async_llm_as_judge(
+        prompt=prompt,
+        model="openai:gpt-4o-mini",
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["equality"] is True
+    assert eval_result["justification"] is not None
 
 
 @pytest.mark.langsmith
@@ -97,7 +115,7 @@ async def test_async_llm_as_judge_openai_not_equal_continuous():
     outputs = {"a": 1, "b": 2}
     client = AsyncOpenAI()
     llm_as_judge = create_async_llm_as_judge(
-        prompt="How equal are these 2? {inputs} {outputs}",
+        prompt="How equal are these 2? Your score should be a fraction of how many props are equal: {inputs} {outputs}",
         judge=client,
         model="gpt-4o-mini",
         continuous=True,
@@ -129,7 +147,7 @@ async def test_async_llm_as_judge_openai_not_equal_binary_pass():
     outputs = {"a": 1, "b": 2}
     client = AsyncOpenAI()
     llm_as_judge = create_async_llm_as_judge(
-        prompt="How equal are these 2? {inputs} {outputs}",
+        prompt="How equal are these 2? Your score should be a fraction of how many props are equal: {inputs} {outputs}",
         judge=client,
         model="o3-mini",
         continuous=True,
@@ -208,6 +226,66 @@ async def test_async_llm_as_judge_few_shot_examples():
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_async_llm_as_judge_custom_output_schema_typed_dict():
+    class EqualityResult(TypedDict):
+        justification: str
+        are_equal: bool
+
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    llm_as_judge = create_async_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        output_schema=EqualityResult,
+        model="openai:gpt-4o-mini",
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["are_equal"]
+    assert eval_result["justification"] is not None
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_async_llm_as_judge_custom_output_schema_openai_client():
+    class EqualityResult(BaseModel):
+        justification: str
+        are_equal: bool
+
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    client = AsyncOpenAI()
+    llm_as_judge = create_async_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        output_schema=EqualityResult.model_json_schema(),
+        judge=client,
+        model="gpt-4o-mini",
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["are_equal"]
+    assert eval_result["justification"] is not None
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_async_llm_as_judge_custom_output_schema_pydantic():
+    class EqualityResult(BaseModel):
+        justification: str
+        are_equal: bool
+
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    llm_as_judge = create_async_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        output_schema=EqualityResult,
+        model="openai:gpt-4o-mini",
+    )
+    eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
+    assert isinstance(eval_result, EqualityResult)
+    assert eval_result.are_equal
+    assert eval_result.justification is not None
 
 
 @pytest.mark.langsmith

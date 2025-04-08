@@ -1,6 +1,10 @@
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
 import { _convertMessagesToOpenAIParams } from "@langchain/openai";
-import { wrapEvaluator, isInTestContext } from "langsmith/utils/jestlike";
+import {
+  wrapEvaluator,
+  isInTestContext,
+  logFeedback,
+} from "langsmith/utils/jestlike";
 import { traceable } from "langsmith/traceable";
 
 import {
@@ -81,7 +85,7 @@ export type EvaluationResultType<O> = O extends
   ? EvaluatorResult[]
   : EvaluatorResult;
 
-export const _runEvaluator = async <
+export async function _runEvaluator<
   T extends Record<string, unknown>,
   O extends
     | SingleResultScorerReturnType
@@ -93,9 +97,83 @@ export const _runEvaluator = async <
   feedbackKey: string,
   extra?: T,
   ls_framework?: string
-): Promise<EvaluationResultType<O>> => {
+): Promise<EvaluationResultType<O>> {
+  return _runEvaluatorUntyped(
+    runName,
+    scorer,
+    feedbackKey,
+    extra,
+    ls_framework,
+    false
+  ) as Promise<EvaluationResultType<O>>;
+}
+
+export async function _runEvaluatorUntyped<
+  T extends Record<string, unknown>,
+  O extends
+    | SingleResultScorerReturnType
+    | MultiResultScorerReturnType
+    | Promise<SingleResultScorerReturnType | MultiResultScorerReturnType>,
+>(
+  runName: string,
+  scorer: (params: T) => O,
+  feedbackKey: string,
+  extra?: T,
+  ls_framework?: string,
+  returnRawOutputs?: true
+): Promise<Record<string, unknown>>;
+
+export async function _runEvaluatorUntyped<
+  T extends Record<string, unknown>,
+  O extends
+    | SingleResultScorerReturnType
+    | MultiResultScorerReturnType
+    | Promise<SingleResultScorerReturnType | MultiResultScorerReturnType>,
+>(
+  runName: string,
+  scorer: (params: T) => O,
+  feedbackKey: string,
+  extra?: T,
+  ls_framework?: string,
+  returnRawOutputs?: false | undefined
+): Promise<EvaluationResultType<O>>;
+
+export async function _runEvaluatorUntyped<
+  T extends Record<string, unknown>,
+  O extends
+    | SingleResultScorerReturnType
+    | MultiResultScorerReturnType
+    | Promise<SingleResultScorerReturnType | MultiResultScorerReturnType>,
+>(
+  runName: string,
+  scorer: (params: T) => O,
+  feedbackKey: string,
+  extra?: T,
+  ls_framework?: string,
+  returnRawOutputs?: boolean
+): Promise<Record<string, unknown> | EvaluationResultType<O>>;
+
+export async function _runEvaluatorUntyped<
+  T extends Record<string, unknown>,
+  O extends
+    | SingleResultScorerReturnType
+    | MultiResultScorerReturnType
+    | Promise<SingleResultScorerReturnType | MultiResultScorerReturnType>,
+>(
+  runName: string,
+  scorer: (params: T) => O,
+  feedbackKey: string,
+  extra?: T,
+  ls_framework?: string,
+  returnRawOutputs?: boolean
+): Promise<Record<string, unknown> | EvaluationResultType<O>> {
   const runScorer = async (params: T) => {
     let score = await scorer(params);
+
+    if (returnRawOutputs) {
+      return score;
+    }
+
     let reasoning;
 
     if (!Array.isArray(score) && typeof score === "object") {
@@ -123,7 +201,8 @@ export const _runEvaluator = async <
   };
 
   if (isInTestContext()) {
-    const res = await wrapEvaluator(runScorer)(extra ?? ({} as T), {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await wrapEvaluator(runScorer as any)(extra ?? ({} as T), {
       name: runName,
       metadata: {
         __ls_framework: ls_framework ?? "openevals",
@@ -131,6 +210,11 @@ export const _runEvaluator = async <
         __ls_language: "js",
       },
     });
+    if (returnRawOutputs) {
+      // TODO: Fix LangSmith SDK types
+      const rawResults = res as Record<string, unknown>;
+      return rawResults;
+    }
     return res as EvaluationResultType<O>;
   } else {
     const traceableRunScorer = traceable(runScorer, {
@@ -144,7 +228,7 @@ export const _runEvaluator = async <
     const res = await traceableRunScorer(extra ?? ({} as T));
     return res as EvaluationResultType<O>;
   }
-};
+}
 
 export function _normalizeOutputsAsString(
   outputs: string | Record<string, unknown>

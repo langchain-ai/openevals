@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+import json
 
 from langsmith import testing as t, get_current_run_tree, traceable
 from langsmith.testing._internal import _TEST_CASE
@@ -71,8 +72,11 @@ def _add_metadata_to_run_tree(
                     if result.get("metadata", None) is not None:
                         rt.metadata.update(result.get("metadata", None))
             else:
-                if results.get("metadata", None) is not None:
-                    rt.metadata.update(results.get("metadata", None))
+                try:
+                    if results.get("metadata", None) is not None:
+                        rt.metadata.update(results.get("metadata", None))
+                except Exception:
+                    pass
         rt.metadata["__ls_framework"] = framework
         rt.metadata["__ls_evaluator"] = run_name
         rt.metadata["__ls_language"] = "python"
@@ -86,10 +90,32 @@ def _run_evaluator(
     ls_framework: str = "openevals",
     **kwargs: Any,
 ) -> EvaluatorResult | list[EvaluatorResult]:
+    return _run_evaluator_untyped(  # type: ignore
+        run_name=run_name,
+        scorer=scorer,
+        feedback_key=feedback_key,
+        return_raw_outputs=False,
+        ls_framework=ls_framework,
+        **kwargs,
+    )
+
+
+def _run_evaluator_untyped(
+    *,
+    run_name: str,
+    scorer: Callable,
+    feedback_key: str,
+    return_raw_outputs: bool = False,
+    ls_framework: str = "openevals",
+    **kwargs: Any,
+) -> EvaluatorResult | list[EvaluatorResult] | dict:
     @traceable(name=run_name)
     def _run_scorer(**kwargs: Any):
         # Get the initial score
         score = scorer(**kwargs)
+
+        if return_raw_outputs:
+            return score
 
         # Collect all results first
         if isinstance(score, dict):
@@ -125,20 +151,20 @@ def _run_evaluator(
         with t.trace_feedback(name=run_name):
             results = _run_scorer(**kwargs)
             _add_metadata_to_run_tree(run_name, ls_framework, results)
-            if isinstance(results, list):
-                for result in results:
+            if not return_raw_outputs:
+                if isinstance(results, list):
+                    for result in results:
+                        t.log_feedback(
+                            key=result["key"],
+                            score=result["score"],
+                            comment=result["comment"],
+                        )
+                else:
                     t.log_feedback(
-                        key=result["key"],
-                        score=result["score"],
-                        comment=result["comment"],
+                        key=results["key"],
+                        score=results["score"],
+                        comment=results["comment"],
                     )
-            else:
-                _add_metadata_to_run_tree(run_name, ls_framework, results)
-                t.log_feedback(
-                    key=results["key"],
-                    score=results["score"],
-                    comment=results["comment"],
-                )
     else:
         results = _run_scorer(**kwargs)
         _add_metadata_to_run_tree(run_name, ls_framework, results)
@@ -152,9 +178,29 @@ async def _arun_evaluator(
     run_name: str,
     scorer: Callable,
     feedback_key: str,
+    return_raw_outputs: bool = False,
     ls_framework: str = "openevals",
     **kwargs: Any,
 ) -> EvaluatorResult | list[EvaluatorResult]:
+    return await _arun_evaluator_untyped(  # type: ignore
+        run_name=run_name,
+        scorer=scorer,
+        feedback_key=feedback_key,
+        return_raw_outputs=return_raw_outputs,
+        ls_framework=ls_framework,
+        **kwargs,
+    )
+
+
+async def _arun_evaluator_untyped(
+    *,
+    run_name: str,
+    scorer: Callable,
+    feedback_key: str,
+    return_raw_outputs: bool = False,
+    ls_framework: str = "openevals",
+    **kwargs: Any,
+) -> EvaluatorResult | list[EvaluatorResult] | dict:
     @traceable(name=run_name)
     async def _arun_scorer(**kwargs: Any):
         # Get the initial score
@@ -162,6 +208,9 @@ async def _arun_evaluator(
             score = await scorer(**kwargs)
         else:
             score = scorer(**kwargs)
+
+        if return_raw_outputs:
+            return score
 
         # Collect all results first
         if isinstance(score, dict):
@@ -197,20 +246,20 @@ async def _arun_evaluator(
         with t.trace_feedback(name=run_name):
             results = await _arun_scorer(**kwargs)
             _add_metadata_to_run_tree(run_name, ls_framework, results)
-            if isinstance(results, list):
-                for result in results:
+            if not return_raw_outputs:
+                if isinstance(results, list):
+                    for result in results:
+                        t.log_feedback(
+                            key=result["key"],
+                            score=result["score"],
+                            comment=result["comment"],
+                        )
+                else:
                     t.log_feedback(
-                        key=result["key"],
-                        score=result["score"],
-                        comment=result["comment"],
+                        key=results["key"],
+                        score=results["score"],
+                        comment=results["comment"],
                     )
-            else:
-                _add_metadata_to_run_tree(run_name, ls_framework, results)
-                t.log_feedback(
-                    key=results["key"],
-                    score=results["score"],
-                    comment=results["comment"],
-                )
     else:
         results = await _arun_scorer(**kwargs)
         _add_metadata_to_run_tree(run_name, ls_framework, results)

@@ -3,7 +3,6 @@ import { _convertMessagesToOpenAIParams } from "@langchain/openai";
 import {
   wrapEvaluator,
   isInTestContext,
-  logFeedback,
 } from "langsmith/utils/jestlike";
 import { traceable } from "langsmith/traceable";
 

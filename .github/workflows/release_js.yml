@@ -1,0 +1,56 @@
+name: JS Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "js/package.json"
+  workflow_dispatch:
+    inputs:
+      dangerous-non-main-release:
+        required: false
+        type: boolean
+        default: false
+        description: "Release from a non-main branch (danger!)"
+
+
+jobs:
+  if_release:
+    # Disallow publishing from branches that aren't `main`.
+    if: github.ref == 'refs/heads/main' || inputs.dangerous-non-main-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    defaults:
+      run:
+        working-directory: "js"
+    steps:
+      - uses: actions/checkout@v3
+      # JS Build
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+          cache: "yarn"
+          cache-dependency-path: "js/yarn.lock"
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Build
+        run: yarn run build
+      - name: Check version
+        run: yarn run check-version
+      - name: Check NPM version
+        id: check_npm_version
+        run: |
+          if yarn run check-npm-version; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Publish package to NPM
+        if: steps.check_npm_version.outputs.should_publish == 'true'
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          yarn publish --non-interactive

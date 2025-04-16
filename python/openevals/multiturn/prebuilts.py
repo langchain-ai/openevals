@@ -7,7 +7,7 @@ from openevals.types import MessagesDict
 from openevals.utils import _convert_to_openai_message
 
 
-def create_user_simulator(
+def create_llm_simulated_user(
     *,
     system: str,
     model: Optional[str] = None,

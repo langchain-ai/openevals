@@ -7,7 +7,7 @@ from typing import (
 )
 
 from typing_extensions import NotRequired, TypedDict
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, BaseMessageChunk
 
 
 ScoreType = Union[float, bool]
@@ -61,8 +61,11 @@ class FewShotExample(TypedDict):
     reasoning: Optional[str]
 
 
+Messages = Union[ChatCompletionMessage, BaseMessage, BaseMessageChunk]
+
+
 class MessagesDict(TypedDict):
-    messages: list[Union[ChatCompletionMessage, BaseMessage]]
+    messages: list[Messages]
 
 
 @runtime_checkable

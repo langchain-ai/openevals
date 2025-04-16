@@ -486,7 +486,7 @@ def create_json_match_evaluator(
             **kwargs,
         )  # type: ignore
 
-    return wrapped_evaluator
+    return wrapped_evaluator  # type: ignore
 
 
 def create_async_json_match_evaluator(
@@ -628,4 +628,4 @@ def create_async_json_match_evaluator(
             **kwargs,
         )
 
-    return wrapped_evaluator
+    return wrapped_evaluator  # type: ignore

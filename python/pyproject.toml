@@ -8,13 +8,14 @@ requires-python = ">=3.9"
 dependencies = [
     "langchain>=0.3.18",
     "langchain-openai>=0.3.6",
-    "langsmith>=0.3.22",
+    "langsmith>=0.3.31",
     "rich>=13.9.4",
 ]
 
 [dependency-groups]
 dev = [
     "e2b-code-interpreter>=1.1.1",
+    "langgraph>=0.3.30",
     "mypy>=1.15.0",
     "openai>=1.61.1",
     "pydantic>=2.10.6",

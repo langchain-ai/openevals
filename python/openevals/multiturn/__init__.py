@@ -9,7 +9,7 @@ from openevals.types import (
 from openevals.utils import _convert_to_openai_message
 from langsmith import traceable
 
-from langchain_core.runnables import RunnableLambda, Runnable
+from langchain_core.runnables import RunnableLambda, Runnable, RunnableConfig
 
 
 def _wrap(app: Runnable | Callable[..., Any], run_name: str) -> Runnable:
@@ -106,6 +106,7 @@ def create_multiturn_simulator(
     trajectory_evaluators: list[SimpleEvaluator],
     max_turns: int = 5,
     stopping_condition: Optional[Callable[..., bool]] = None,
+    runnable_config: Optional[RunnableConfig] = None,
 ) -> SimpleEvaluator:
     if not trajectory_evaluators:
         raise ValueError("You must pass at least one trajectory evaluator.")
@@ -126,13 +127,17 @@ def create_multiturn_simulator(
             current_inputs = (
                 inputs
                 if turn_counter == 0
-                else wrapped_simulated_user.invoke(current_reduced_trajectory)
+                else wrapped_simulated_user.invoke(
+                    current_reduced_trajectory, config=runnable_config
+                )
             )
             raw_trajectory.append(current_inputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory, current_inputs
             )
-            current_outputs = wrapped_app.invoke(current_reduced_trajectory)
+            current_outputs = wrapped_app.invoke(
+                current_reduced_trajectory, config=runnable_config
+            )
             raw_trajectory.append(current_outputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory, current_outputs

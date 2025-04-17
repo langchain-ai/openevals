@@ -151,11 +151,10 @@ def create_multiturn_simulator(
             - evaluator_results: List of results from trajectory evaluators
             - trajectory: The complete conversation trajectory
 
-    Raises:
-        ValueError: If using static responses and the number of turns exceeds available responses.
-
     Example:
         ```python
+        from openevals.simulators import create_multiturn_simulator
+
         # Create a simulator with static user responses
         simulator = create_multiturn_simulator(
             app=my_chat_app,

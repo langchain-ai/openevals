@@ -13,6 +13,47 @@ def create_llm_simulated_user(
     model: Optional[str] = None,
     client: Optional[BaseChatModel] = None,
 ):
+    """Creates a simulated user powered by a language model for multi-turn conversations.
+
+    This function generates a simulator that can be used with the create_multiturn_simulator to create
+    dynamic, LLM-powered user responses in a conversation. The simulator automatically handles message
+    role conversion to maintain proper conversation flow, where user messages become assistant messages
+    and vice versa when passed to the underlying LLM.
+
+    Args:
+        system: System prompt that guides the LLM's behavior as a simulated user.
+        model: Optional name of the language model to use. Must be provided if client is not.
+        client: Optional LangChain chat model instance. Must be provided if model is not.
+
+    Returns:
+        A callable simulator function that takes a TrajectoryDict containing conversation messages
+        and returns a TrajectoryDict with the simulated user's response.
+
+    Example:
+        ```python
+        from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
+
+        # Create a simulated user with GPT-4
+        simulated_user = create_llm_simulated_user(
+            system="You are a helpful customer service representative",
+            model="openai:gpt-4.1-mini"
+        )
+
+        # Use with create_multiturn_simulator
+        simulator = create_multiturn_simulator(
+            app=my_chat_app,
+            user=simulated_user,
+            max_turns=5
+        )
+        ```
+
+    Notes:
+        - The simulator automatically converts message roles to maintain proper conversation flow:
+          * User messages become assistant messages when sent to the LLM
+          * Assistant messages (without tool calls) become user messages when sent to the LLM
+        - The system prompt is prepended to each conversation to maintain consistent behavior
+        - The simulator returns responses in the format expected by create_multiturn_simulator
+    """
     if not model and not client:
         raise ValueError("Either model or client must be provided")
     if model and client:

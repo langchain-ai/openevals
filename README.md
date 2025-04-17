@@ -114,7 +114,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 
 - [Installation](#installation)
 - [Evaluators](#evaluators)
-  - <details open>
+  - <details>
       <summary><a href="#llm-as-judge">LLM-as-Judge</a></summary>
 
     - [Prebuilt prompts](#prebuilt-prompts)
@@ -168,8 +168,8 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 
   </details>
 
-  - <details open>
-    <summary><a href="#other">Other</a></summary>
+  - <details>
+      <summary><a href="#other">Other</a></summary>
 
     - [Exact Match](#exact-match)
     - [Levenshtein Distance](#levenshtein-distance)

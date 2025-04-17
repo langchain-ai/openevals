@@ -113,7 +113,9 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 # Table of Contents
 
 - [Installation](#installation)
-- [Evaluators](#evaluators)
+<details>
+<summary><a href="#evaluators">Evaluators</a></summary>
+
   - [LLM-as-Judge](#llm-as-judge)
     - [Prebuilt prompts](#prebuilt-prompts)
       - [Correctness](#correctness)
@@ -149,7 +151,9 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Embedding Similarity](#embedding-similarity)
   - [Agent evals](#agent-evals)
   - [Creating your own](#creating-your-own)
-- [Python Async Support](#python-async-support)
+  - [Python Async Support](#python-async-support)
+
+</details>
 - [LangSmith Integration](#langsmith-integration)
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
   - [Evaluate](#evaluate)
@@ -2518,7 +2522,7 @@ const result = await evaluator({ outputs: "this text contains some string" });
 ```
 </details>
 
-# Python Async Support
+## Python Async Support
 
 All `openevals` evaluators support Python [asyncio](https://docs.python.org/3/library/asyncio.html). As a convention, evaluators that use a factory function will have `async` put immediately after `create_` in the function name (for example, `create_async_llm_as_judge`), and evaluators used directly will end in `async` (e.g. `exact_match_async`).
 

@@ -125,23 +125,32 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Customizing the model](#customizing-the-model)
     - [Customizing output score values](#customizing-output-score-values)
     - [Customizing output schema](#customizing-output-schema)
+
   </details>
+
   - <details>
       <summary><a href="#extraction-and-tool-calls">Extraction and tool calls</a></summary>
+
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
+
   </details>
+
   - <details>
       <summary><a href="#rag">RAG</a></summary>
+
     - [Correctness](#correctness-rag)
     - [Helpfulness](#helpfulness)
     - [Groundedness](#groundedness)
     - [Retrieval relevance](#retrieval-relevance)
       - [Retrieval relevance with LLM as judge](#retrieval-relevance-with-llm-as-judge)
       - [Retrieval relevance with string evaluators](#retrieval-relevance-with-string-evaluators)
+
   </details>
+
   - <details>
       <summary><a href="#code">Code</a></summary>
+
     - [Extracting code outputs](#extracting-code-outputs)
     - [Pyright (Python-only)](#pyright-python-only)
     - [Mypy (Python-only)](#mypy-python-only)
@@ -151,13 +160,18 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Sandboxed Pyright (Python-only)](#sandbox-pyright-python-only)
     - [Sandboxed TypeScript type-checking (TypeScript-only)](#sandbox-typescript-type-checking-typescript-only)
     - [Sandboxed Execution](#sandbox-execution)
+
   </details>
+
   - <details open>
     <summary><a href="#other">Other</a></summary>
+
     - [Exact Match](#exact-match)
     - [Levenshtein Distance](#levenshtein-distance)
     - [Embedding Similarity](#embedding-similarity)
+
   </details>
+
   - [Agent evals](#agent-evals)
   - [Creating your own](#creating-your-own)
   - [Python Async Support](#python-async-support)

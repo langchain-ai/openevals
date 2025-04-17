@@ -26,15 +26,18 @@ if TYPE_CHECKING:
 def _convert_to_openai_message(
     message: ChatCompletionMessage | BaseMessage | dict,
 ) -> ChatCompletionMessage:
-    if isinstance(message, dict):
-        return message.copy()  # type: ignore
-    else:
-        if not isinstance(message, BaseMessage):
-            raise ValueError(f"Expected BaseMessage, got {type(message)}")
+    if isinstance(message, BaseMessage):
         converted = convert_to_openai_messages([message])[0]
         if message.id is not None and converted.get("id") is None:
             converted["id"] = message.id
         return converted  # type: ignore
+    if not isinstance(message, dict):
+        message = dict(message)
+    if "role" not in message or "content" not in message:
+        raise ValueError(
+            f"Expected a dict with 'role' and 'content' keys or a LangChain message instance, got {message}"
+        )
+    return message.copy()  # type: ignore
 
 
 def _normalize_to_openai_messages_list(

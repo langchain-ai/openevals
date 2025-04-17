@@ -1,11 +1,14 @@
+import json
+
 from langgraph.checkpoint.memory import MemorySaver
 from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import create_react_agent
 
-from openevals.multiturn import create_multiturn_simulator
-from openevals.multiturn.prebuilts import create_llm_simulated_user
+from openevals.simulators.multiturn import create_multiturn_simulator
+from openevals.simulators.multiturn.prebuilts import create_llm_simulated_user
 from openevals.llm import create_llm_as_judge
-
+from openevals.types import MessagesDict
+from openai import OpenAI
 
 import pytest
 
@@ -40,7 +43,7 @@ def test_multiturn_failure():
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
-    assert not res["results"][0]["score"]
+    assert not res["evaluator_results"][0]["score"]
 
 
 @pytest.mark.langsmith
@@ -72,4 +75,146 @@ def test_multiturn_success():
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
-    assert res["results"][0]["score"]
+    assert res["evaluator_results"][0]["score"]
+
+
+@pytest.mark.langsmith
+def test_multiturn_preset_responses():
+    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
+
+    def give_refund():
+        """Gives a refund."""
+        return "Refunds granted."
+
+    app = create_react_agent(
+        init_chat_model("openai:gpt-4.1-nano"),
+        tools=[give_refund],
+        checkpointer=MemorySaver(),
+    )
+    trajectory_evaluator = create_llm_as_judge(
+        model="openai:gpt-4o-mini",
+        prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
+        feedback_key="satisfaction",
+    )
+    simulator = create_multiturn_simulator(
+        app=app,
+        user=[
+            "All work and no play makes Jack a dull boy 1.",
+            "All work and no play makes Jack a dull boy 2.",
+            "All work and no play makes Jack a dull boy 3.",
+            "All work and no play makes Jack a dull boy 4.",
+        ],
+        trajectory_evaluators=[trajectory_evaluator],
+        runnable_config={"configurable": {"thread_id": "1"}},
+    )
+    res = simulator(inputs=inputs)
+    print(res["trajectory"])
+    assert (
+        res["trajectory"]["messages"][2]["content"]
+        == "All work and no play makes Jack a dull boy 1."
+    )
+    assert (
+        res["trajectory"]["messages"][4]["content"]
+        == "All work and no play makes Jack a dull boy 2."
+    )
+    assert (
+        res["trajectory"]["messages"][6]["content"]
+        == "All work and no play makes Jack a dull boy 3."
+    )
+    assert (
+        res["trajectory"]["messages"][8]["content"]
+        == "All work and no play makes Jack a dull boy 4."
+    )
+
+
+@pytest.mark.langsmith
+def test_multiturn_message_with_openai():
+    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
+
+    client = OpenAI()
+
+    def app(inputs: MessagesDict):
+        res = client.chat.completions.create(
+            model="gpt-4.1-nano",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an angry parrot named Polly who is angry at everything. Squawk a lot.",
+                }
+            ]
+            + inputs["messages"],
+        )
+        return {"messages": res.choices[0].message}
+
+    user = create_llm_simulated_user(
+        system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
+        model="openai:gpt-4.1-nano",
+    )
+    trajectory_evaluator = create_llm_as_judge(
+        model="openai:gpt-4o-mini",
+        prompt="Based on the below conversation, are the parrots angry?\n{outputs}",
+        feedback_key="satisfaction",
+    )
+    simulator = create_multiturn_simulator(
+        app=app,
+        user=user,
+        trajectory_evaluators=[trajectory_evaluator],
+        runnable_config={"configurable": {"thread_id": "1"}},
+    )
+    res = simulator(inputs=inputs)
+    assert res["evaluator_results"][0]["score"]
+
+
+@pytest.mark.langsmith
+def test_multiturn_stopping_condition():
+    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
+
+    def give_refund():
+        """Gives a refund."""
+        return "Refunds granted."
+
+    app = create_react_agent(
+        init_chat_model("openai:gpt-4.1-nano"),
+        tools=[give_refund],
+        checkpointer=MemorySaver(),
+    )
+    user = create_llm_simulated_user(
+        system="You are a happy and reasonable person who wants a refund.",
+        model="openai:gpt-4.1-nano",
+    )
+    trajectory_evaluator = create_llm_as_judge(
+        model="openai:gpt-4o-mini",
+        prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
+        feedback_key="satisfaction",
+    )
+    client = OpenAI()
+
+    def stopping_condition(current_trajectory, **kwargs):
+        res = (
+            client.chat.completions.create(
+                model="gpt-4.1-nano",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Your job is to determine if a refund has been granted in the following conversation. Respond only with JSON with a single boolean key named 'refund_granted'.",
+                    }
+                ]
+                + current_trajectory["messages"],
+                response_format={"type": "json_object"},
+            )
+            .choices[0]
+            .message.content
+        )
+        return json.loads(res)["refund_granted"]
+
+    simulator = create_multiturn_simulator(
+        app=app,
+        user=user,
+        trajectory_evaluators=[trajectory_evaluator],
+        stopping_condition=stopping_condition,
+        runnable_config={"configurable": {"thread_id": "1"}},
+        max_turns=10,
+    )
+    res = simulator(inputs=inputs)
+    assert res["evaluator_results"][0]["score"]
+    assert len(res["trajectory"]["messages"]) < 20

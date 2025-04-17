@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -22,9 +22,9 @@ def create_llm_simulated_user(
         client = init_chat_model(model=model)  # type: ignore
 
     def _simulator(inputs: MessagesDict):
-        if not inputs["messages"] or not isinstance(inputs["messages"], list):
+        if not isinstance(inputs, dict) or not inputs["messages"]:
             raise ValueError(
-                "Input must be a dict with a 'messages' key containing a list of messages"
+                "Simulated user inputs must be a dict with a 'messages' key containing a list of messages"
             )
         messages = []
         for msg in inputs["messages"]:

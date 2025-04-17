@@ -105,7 +105,7 @@ def create_multiturn_simulator(
     user: Runnable | Callable[..., Any] | list[Any],
     trajectory_evaluators: list[SimpleEvaluator],
     max_turns: int = 5,
-    # stopping_condition: Optional[Callable[[list[Any]], bool]] = None,
+    stopping_condition: Optional[Callable[..., bool]] = None,
 ) -> SimpleEvaluator:
     if not trajectory_evaluators:
         raise ValueError("You must pass at least one trajectory evaluator.")
@@ -138,6 +138,8 @@ def create_multiturn_simulator(
                 current_reduced_trajectory, current_outputs
             )
             turn_counter += 1
+            if stopping_condition and stopping_condition(current_reduced_trajectory):
+                break
         results = []
         for trajectory_evaluator in trajectory_evaluators:
             trajectory_eval_result = trajectory_evaluator(

@@ -40,6 +40,7 @@ def test_multiturn_failure():
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
+        max_turns=5,
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
@@ -72,6 +73,7 @@ def test_multiturn_success():
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
+        max_turns=5,
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
@@ -105,6 +107,7 @@ def test_multiturn_preset_responses():
             "All work and no play makes Jack a dull boy 4.",
         ],
         trajectory_evaluators=[trajectory_evaluator],
+        max_turns=5,
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
@@ -159,6 +162,7 @@ def test_multiturn_message_with_openai():
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
+        max_turns=5,
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)

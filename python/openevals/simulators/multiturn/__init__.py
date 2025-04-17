@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Callable, Literal, Optional, Union, Protocol, runtime_checkable
+from typing import Any, Callable, Literal, Optional, Protocol, runtime_checkable
 from openevals.types import (
     SimpleEvaluator,
     Messages,
@@ -106,8 +106,8 @@ def create_multiturn_simulator(
     user: Runnable[MessagesDict, MessagesDictUpdate]
     | Callable[[MessagesDict], MessagesDictUpdate]
     | list[str | Messages],
+    max_turns: int,
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
-    max_turns: int = 5,
     stopping_condition: Optional[StoppingCondition] = None,
     runnable_config: Optional[RunnableConfig] = None,
 ) -> SimpleEvaluator:

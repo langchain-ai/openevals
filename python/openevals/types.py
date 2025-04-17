@@ -64,14 +64,6 @@ class FewShotExample(TypedDict):
 Messages = Union[ChatCompletionMessage, BaseMessage, BaseMessageChunk]
 
 
-class MessagesDict(TypedDict):
-    messages: list[Messages]
-
-
-class MessagesDictUpdate(TypedDict):
-    messages: Union[list[Messages], Messages]
-
-
 @runtime_checkable
 class ChatCompletionsClient(Protocol):
     def create(self, **kwargs) -> ChatCompletion: ...

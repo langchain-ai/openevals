@@ -7,7 +7,7 @@ from langgraph.prebuilt import create_react_agent
 from openevals.simulators.multiturn import create_multiturn_simulator
 from openevals.simulators.multiturn.prebuilts import create_llm_simulated_user
 from openevals.llm import create_llm_as_judge
-from openevals.types import MessagesDict
+from openevals.simulators.multiturn.types import TrajectoryDict
 from openai import OpenAI
 
 import pytest
@@ -111,7 +111,6 @@ def test_multiturn_preset_responses():
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
-    print(res["trajectory"])
     assert (
         res["trajectory"]["messages"][2]["content"]
         == "All work and no play makes Jack a dull boy 1."
@@ -136,7 +135,7 @@ def test_multiturn_message_with_openai():
 
     client = OpenAI()
 
-    def app(inputs: MessagesDict):
+    def app(inputs: TrajectoryDict):
         res = client.chat.completions.create(
             model="gpt-4.1-nano",
             messages=[

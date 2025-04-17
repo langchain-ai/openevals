@@ -3,7 +3,7 @@ from typing import Optional
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
 
-from openevals.types import MessagesDict
+from openevals.simulators.multiturn.types import TrajectoryDict
 from openevals.utils import _convert_to_openai_message
 
 
@@ -21,7 +21,7 @@ def create_llm_simulated_user(
     if not client:
         client = init_chat_model(model=model)  # type: ignore
 
-    def _simulator(inputs: MessagesDict):
+    def _simulator(inputs: TrajectoryDict):
         if not isinstance(inputs, dict) or not inputs["messages"]:
             raise ValueError(
                 "Simulated user inputs must be a dict with a 'messages' key containing a list of messages"

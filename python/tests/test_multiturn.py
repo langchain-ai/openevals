@@ -3,6 +3,7 @@ import json
 from langgraph.checkpoint.memory import MemorySaver
 from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import create_react_agent
+from langsmith import testing as t
 
 from openevals.simulators.multiturn import create_multiturn_simulator
 from openevals.simulators.multiturn.prebuilts import create_llm_simulated_user
@@ -44,6 +45,7 @@ def test_multiturn_failure():
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
+    t.log_outputs(res)
     assert not res["evaluator_results"][0]["score"]
 
 
@@ -77,6 +79,7 @@ def test_multiturn_success():
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
+    t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
 
 
@@ -111,6 +114,7 @@ def test_multiturn_preset_responses():
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
+    t.log_outputs(res)
     assert (
         res["trajectory"]["messages"][2]["content"]
         == "All work and no play makes Jack a dull boy 1."
@@ -155,7 +159,7 @@ def test_multiturn_message_with_openai():
     trajectory_evaluator = create_llm_as_judge(
         model="openai:gpt-4o-mini",
         prompt="Based on the below conversation, are the parrots angry?\n{outputs}",
-        feedback_key="satisfaction",
+        feedback_key="anger",
     )
     simulator = create_multiturn_simulator(
         app=app,
@@ -165,6 +169,7 @@ def test_multiturn_message_with_openai():
         runnable_config={"configurable": {"thread_id": "1"}},
     )
     res = simulator(inputs=inputs)
+    t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
 
 
@@ -219,5 +224,6 @@ def test_multiturn_stopping_condition():
         max_turns=10,
     )
     res = simulator(inputs=inputs)
+    t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
     assert len(res["trajectory"]["messages"]) < 20

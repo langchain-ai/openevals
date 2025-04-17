@@ -247,8 +247,8 @@ def create_multiturn_simulator(
             else:
                 results.append(trajectory_eval_result)
         return MultiturnSimulatorResult(
-            evaluator_results=results,
             trajectory=current_reduced_trajectory,
+            evaluator_results=results,
         )
 
     return _run_simulator

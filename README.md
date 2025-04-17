@@ -114,7 +114,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 
 - [Installation](#installation)
 - [Evaluators](#evaluators)
-  - <details>
+  - <details open>
       <summary><a href="#llm-as-judge">LLM-as-Judge</a></summary>
 
     - [Prebuilt prompts](#prebuilt-prompts)
@@ -156,7 +156,12 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Mypy (Python-only)](#mypy-python-only)
     - [TypeScript type-checking (TypeScript-only)](#typescript-type-checking-typescript-only)
     - [LLM-as-judge for code](#llm-as-judge-for-code)
-  - [Sandboxed code](#sandboxed-code)
+
+  </details>
+
+  - <details>
+      <summary><a href="#sandboxed-code">Sandboxed code</a></summary>
+
     - [Sandboxed Pyright (Python-only)](#sandbox-pyright-python-only)
     - [Sandboxed TypeScript type-checking (TypeScript-only)](#sandbox-typescript-type-checking-typescript-only)
     - [Sandboxed Execution](#sandbox-execution)

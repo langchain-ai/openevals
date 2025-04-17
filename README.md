@@ -113,10 +113,11 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 # Table of Contents
 
 - [Installation](#installation)
-<details>
-<summary><a href="#evaluators">Evaluators</a></summary>
+- [Evaluators](#evaluators)
 
-  - [LLM-as-Judge](#llm-as-judge)
+  - <details>
+      <summary><a href="#llm-as-judge">LLM-as-Judge</a></summary>
+
     - [Prebuilt prompts](#prebuilt-prompts)
       - [Correctness](#correctness)
       - [Conciseness](#conciseness)
@@ -125,6 +126,9 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Customizing the model](#customizing-the-model)
     - [Customizing output score values](#customizing-output-score-values)
     - [Customizing output schema](#customizing-output-schema)
+
+  </details>
+
   - [Extraction and tool calls](#extraction-and-tool-calls)
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
@@ -152,8 +156,6 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
   - [Agent evals](#agent-evals)
   - [Creating your own](#creating-your-own)
   - [Python Async Support](#python-async-support)
-
-</details>
 - [LangSmith Integration](#langsmith-integration)
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
   - [Evaluate](#evaluate)

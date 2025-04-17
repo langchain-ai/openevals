@@ -5,10 +5,9 @@ from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import create_react_agent
 from langsmith import testing as t
 
-from openevals.simulators.multiturn import create_multiturn_simulator
-from openevals.simulators.multiturn.prebuilts import create_llm_simulated_user
+from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
 from openevals.llm import create_llm_as_judge
-from openevals.simulators.multiturn.types import TrajectoryDict
+from openevals.types import TrajectoryDict
 from openai import OpenAI
 
 import pytest

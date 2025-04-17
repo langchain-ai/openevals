@@ -5,13 +5,15 @@ from openevals.types import (
     Messages,
     ChatCompletionMessage,
 )
-from openevals.simulators.multiturn.types import TrajectoryDict, TrajectoryDictUpdate
+from openevals.types import (
+    TrajectoryDict,
+    TrajectoryDictUpdate,
+    MultiturnSimulatorResult,
+)
 from openevals.utils import _convert_to_openai_message
 from langsmith import traceable
 
 from langchain_core.runnables import RunnableLambda, Runnable, RunnableConfig
-
-from openevals.simulators.multiturn.types import MultiturnSimulatorResult
 
 
 def _wrap(app: Runnable | Callable[..., Any], run_name: str) -> Runnable:
@@ -102,9 +104,9 @@ def create_multiturn_simulator(
     stopping_condition: Optional[Callable[[TrajectoryDict], bool]] = None,
     runnable_config: Optional[RunnableConfig] = None,
 ) -> Callable[..., MultiturnSimulatorResult]:
-    """Creates a simulator for multi-turn conversations between an app and a simulated user.
+    """Creates a simulator for multi-turn conversations between an application and a simulated user.
 
-    This function generates a simulator that can run conversations between an application and
+    This function generates a simulator that can run conversations between an app and
     either a dynamic user simulator or a list of static user responses. The simulator supports
     evaluation of conversation trajectories and customizable stopping conditions.
 
@@ -122,7 +124,7 @@ def create_multiturn_simulator(
     as an input under the "outputs" kwarg.
 
     When calling the created simulator, you may also provide a "reference_outputs" kwarg,
-    which will be passed through to the evaluators under the "reference_outputs" kwarg.
+    which will be passed directly through to the provided evaluators.
 
     Args:
         app: Your application. Can be either a LangChain Runnable or a

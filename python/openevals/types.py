@@ -82,3 +82,13 @@ class RunnableLike(Protocol):
     def invoke(self, inputs: Any, **kwargs) -> Any: ...
 
     async def ainvoke(self, inputs: Any, **kwargs) -> Any: ...
+
+
+TrajectoryDict = dict[str, Union[list[Messages], Any]]
+
+TrajectoryDictUpdate = dict[str, Union[list[Messages], Messages, Any]]
+
+
+class MultiturnSimulatorResult(TypedDict):
+    evaluator_results: list[EvaluatorResult]
+    trajectory: TrajectoryDict

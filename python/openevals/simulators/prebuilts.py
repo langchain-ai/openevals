@@ -3,7 +3,7 @@ from typing import Optional
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
 
-from openevals.simulators.multiturn.types import TrajectoryDict
+from openevals.types import TrajectoryDict
 from openevals.utils import _convert_to_openai_message
 
 

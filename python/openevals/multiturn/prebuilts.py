@@ -40,6 +40,10 @@ def create_llm_simulated_user(
         if system:
             messages = [{"role": "system", "content": system}] + messages  # type: ignore
         response = client.invoke(messages)  # type: ignore
-        return {"messages": [{"role": "human", "content": response.content}]}
+        return {
+            "messages": [
+                {"role": "user", "content": response.content, "id": response.id}
+            ]
+        }
 
     return _simulator

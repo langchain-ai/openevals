@@ -1,22 +1,15 @@
 import uuid
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, Callable, Optional, Union
 from openevals.types import (
     SimpleEvaluator,
-    ChatCompletionMessage,
     Messages,
     MessagesDict,
+    ChatCompletionMessage,
 )
 from openevals.utils import _convert_to_openai_message
 from langsmith import traceable
 
 from langchain_core.runnables import RunnableLambda, Runnable
-from langchain_core.messages import (
-    BaseMessage,
-    BaseMessageChunk,
-    RemoveMessage,
-    convert_to_messages,
-    message_chunk_to_message,
-)
 
 
 def _wrap(app: Runnable | Callable[..., Any], run_name: str) -> Runnable:
@@ -26,11 +19,10 @@ def _wrap(app: Runnable | Callable[..., Any], run_name: str) -> Runnable:
         return RunnableLambda(app).with_config({"run_name": run_name})
 
 
-REMOVE_ALL_MESSAGES = "__remove_all__"
-
-
-def _is_internal_message(message: Union[BaseMessage, BaseMessageChunk]) -> bool:
-    return message.type != "human" and (message.type != "ai" or message.tool_calls)
+def _is_internal_message(message: ChatCompletionMessage) -> bool:
+    return message.get("role") != "user" and (
+        message.get("role") != "assistant" or message.get("tool_calls")
+    )
 
 
 def _trajectory_reducer(
@@ -48,53 +40,34 @@ def _trajectory_reducer(
         if not isinstance(right, list):
             right = [right]  # type: ignore[assignment]
         # coerce to message
-        coerced_left: list[BaseMessage] = [
-            message_chunk_to_message(cast(BaseMessageChunk, m))
-            for m in convert_to_messages(left)  # type: ignore
+        coerced_left: list[ChatCompletionMessage] = [
+            m
+            for m in [_convert_to_openai_message(msg) for msg in left]  # type: ignore
             if not _is_internal_message(m)
         ]
-        coerced_right: list[BaseMessage] = [
-            message_chunk_to_message(cast(BaseMessageChunk, m))
-            for m in convert_to_messages(right)  # type: ignore
+        coerced_right: list[ChatCompletionMessage] = [
+            m
+            for m in [_convert_to_openai_message(msg) for msg in right]  # type: ignore
             if not _is_internal_message(m)
         ]
         # assign missing ids
         for m in coerced_left:
-            if m.id is None:
-                m.id = str(uuid.uuid4())
-        for idx, m in enumerate(coerced_right):
-            if m.id is None:
-                m.id = str(uuid.uuid4())
-            if isinstance(m, RemoveMessage) and m.id == REMOVE_ALL_MESSAGES:
-                remove_all_idx = idx
+            if m.get("id") is None:
+                m["id"] = str(uuid.uuid4())
+        for m in coerced_right:
+            if m.get("id") is None:
+                m["id"] = str(uuid.uuid4())
 
         if remove_all_idx is not None:
             return coerced_right[remove_all_idx + 1 :]  # type: ignore
 
         # merge
         merged = coerced_left.copy()
-        merged_by_id = {m.id: i for i, m in enumerate(merged)}
-        ids_to_remove = set()
+        merged_by_id = {m.get("id"): i for i, m in enumerate(merged)}
         for m in coerced_right:
-            if (existing_idx := merged_by_id.get(m.id)) is not None:
-                if isinstance(m, RemoveMessage):
-                    ids_to_remove.add(m.id)
-                else:
-                    ids_to_remove.discard(m.id)
-                    merged[existing_idx] = m
-            else:
-                if isinstance(m, RemoveMessage):
-                    raise ValueError(
-                        f"Attempting to delete a message with an ID that doesn't exist ('{m.id}')"
-                    )
-
-                merged_by_id[m.id] = len(merged)
+            if merged_by_id.get(m.get("id")) is None:
+                merged_by_id[m.get("id")] = len(merged)
                 merged.append(m)
-        merged = [
-            _convert_to_openai_message(m)
-            for m in merged
-            if m.id not in ids_to_remove  # type: ignore
-        ]
         return merged  # type: ignore
 
     if current_trajectory is None:

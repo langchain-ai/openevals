@@ -2745,7 +2745,11 @@ Additional fields are also permitted as part of the trajectory dict, which allow
 
 While you can define your own simulated user logic, OpenEvals includes a convenient prebuilt `create_llm_simulated_user` method that uses an LLM to take on the role of a user and generate responses.
 
-It works by taking the input trajectory and flipping message roles - `user` messages become `assistant` messages and vice versa. This requires a `system` prompt, in which we suggest having the LLM take on a role corresponding to a specific type of user.
+It works by taking the input trajectory and flipping message roles - `user` messages become `assistant` messages and vice versa. It takes the following parameters:
+
+- `system`: A string prompt that the simulator adds to the start of the current trajectory as a system message. We suggest having the LLM take on a role corresponding to a specific type of user persona you are testing for.
+- `model`: A string matching the model name you are using. Has the same format as the LLM-as-judge evaluator param, and requires you to install the appropriate [LangChain integration package](https://python.langchain.com/docs/concepts/chat_models/) if using models other than OpenAI. Must be populated if `client` is not populated.
+- `client`: A LangChain chat model instance. Must be populated if `model` is not populated.
 
 ## Multiturn simulation with LangGraph
 

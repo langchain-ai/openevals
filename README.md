@@ -2727,13 +2727,44 @@ When calling the created simulator, you may pass the following runtime kwargs:
 
 - `initial_trajectory`/`initialTrajectory`: The initial input to your app.
 - `reference_outputs`/`referenceOutputs`: An optional reference trajectory which will be passed directly through to the provided `trajectory_evaluators`.
-- `runnable_config`/`runnableConfig`: Optional config that will be passed as a second arg in if using LangChain/LangGraph runnables. For more on this, see [this section](#multiturn-simulation-with-langgraph).
+- `runnable_config`/`runnableConfig`: Optional config that will be passed in as a `config` kwarg if using LangChain/LangGraph runnables. For more on this, see [this section](#multiturn-simulation-with-langgraph).
 
 ## Trajectory format
 
-The multiturn simulator formats trajectories as a dict containing a key named `"messages"` whose value is a list of OpenAI-style  message objects with `"role"` and `"content"` keys.
+The multiturn simulator formats trajectories as a dict containing a key named `"messages"` whose value is a list of OpenAI-style message objects with `"role"` and `"content"` keys.
 
-The `"app"` and `"user"` methods you provide will both receive the current trajectory as an input, and should return a **trajectory update dict** with a new message or new messages in the above format under the `"messages"` key. The simulator will dedupe these returned messages by id and merge them into the complete trajectory.
+The `"app"` and `"user"` methods you provide will both receive the current trajectory as an input, and should return a **trajectory update dict** with a new message or new messages in the above format under the `"messages"` key. Here's a simplified example:
+
+```python
+from openevals.simulators import create_multiturn_simulator
+from openevals.types import TrajectoryDict
+
+def my_app(trajectory: TrajectoryDict):
+    output = "3.11 is greater than 3.9."
+    return {
+        "messages": [{"id": "1234", "role": "assistant", "content": output}]
+    }
+
+
+def my_simulated_user(trajectory: TrajectoryDict):
+    output = "Wow that's amazing!"
+    return {
+        "messages": [{"id": "5678", "role": "user", "content": output}]
+    }
+
+simulator = create_multiturn_simulator(
+    app=my_app,
+    user=my_simulated_user,
+    trajectory_evaluators=[],
+    max_turns=1,
+)
+
+simulator_result = simulator(
+  initial_trajectory={"messages": [{"role": "user", "content": "Tell me a fact!"}]}
+)
+```
+
+The simulator will dedupe these returned messages by id and merge them into the complete trajectory.
 
 Internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered out from the trajectory passed to the `app` and `user` methods to more closely simulate a request/response pattern.
 

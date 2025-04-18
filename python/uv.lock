@@ -1285,7 +1285,7 @@ wheels = [
 
 [[package]]
 name = "openevals"
-version = "0.0.18"
+version = "0.0.19rc0"
 source = { virtual = "." }
 dependencies = [
     { name = "langchain" },

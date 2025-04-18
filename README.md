@@ -2587,7 +2587,7 @@ result = await evaluator(inputs="San Francisco")
 
 # Multiturn Simulation
 
-Many LLM applications run across multiple conversation turns with a user. While the [LLM-as-judge](#llm-as-judge) evaluators in OpenEvals and the trajectory evaluators in [AgentEvals](https://github.com/langchain-ai/agentevals) are capable of evaluating a full thread of messages, obtaining a full example thread of messages can be tedious, or, depending on changes you make to your application, may no longer be a state your application can easily encounter.
+Many LLM applications run across multiple conversation turns with a user. While the [LLM-as-judge](#llm-as-judge) evaluators in OpenEvals and the trajectory evaluators in [AgentEvals](https://github.com/langchain-ai/agentevals) are capable of evaluating a full thread of messages, obtaining a representative example thread of messages can be difficult.
 
 To help judge your application's performance over multiple interactions, OpenEvals includes a `create_multiturn_simulator` method for simulating interactions between your app and an end user to help evaluate your app's performance from start to finish.
 

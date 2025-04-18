@@ -181,14 +181,10 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
   - [Creating your own](#creating-your-own)
   - [Python Async Support](#python-async-support)
 
-- <details>
-    <summary><a href="#multiturn-simulation">Multiturn Simulation</a></summary>
-    
-    - [Trajectory format](#trajectory-format)
-    - [Prebuilt simulated user](#prebuilt-simulated-user)
-    - [Multiturn simulation with LangGraph](#multiturn-simulation-with-langgraph)
-    
-  </details>
+- [Multiturn Simulation](#multiturn-simulation)
+  - [Trajectory format](#trajectory-format)
+  - [Prebuilt simulated user](#prebuilt-simulated-user)
+  - [Multiturn simulation with LangGraph](#multiturn-simulation-with-langgraph)
 
 - [LangSmith Integration](#langsmith-integration)
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)

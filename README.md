@@ -2699,8 +2699,7 @@ TODO
 </details>
 
 > [!NOTE]
-> By default, internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered out from the trajectory passed to the `app` and `user` methods to more closely simulate a request/response pattern.
-> If your app includes tool calls, it should track those as internal state rather passing them back and forth between the user and app through the trajectory.
+> By default, internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered from from the trajectory passed between the `app` and `user` methods.
 > For more information on trajectory format, see [this section below](#trajectory-format).
 
 There are a few main components:
@@ -2736,7 +2735,9 @@ The multiturn simulator formats trajectories as a dict containing a key named `"
 
 The `"app"` and `"user"` methods you provide will both receive the current trajectory as an input, and should return a **trajectory update dict** with a new message or new messages in the above format under the `"messages"` key. The simulator will dedupe these returned messages by id and merge them into the complete trajectory.
 
-**Important:** Internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered out from the trajectory passed to the `app` and `user` methods to more closely simulate a request/response pattern. If your app includes tool calls, it should track those as internal state rather passing them back and forth between the user and app through the trajectory.
+Internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered out from the trajectory passed to the `app` and `user` methods to more closely simulate a request/response pattern.
+
+This means that if your app uses things like tool calls, it should track those as internal state rather passing them back and forth between the user and app through the trajectory.
 
 Additional fields are also permitted as part of the trajectory dict, which allows you to return additional information from the `app` or `user` if you need to pass additional fields between them.
 

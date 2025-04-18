@@ -180,6 +180,16 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
   - [Agent evals](#agent-evals)
   - [Creating your own](#creating-your-own)
   - [Python Async Support](#python-async-support)
+
+- <details>
+    <summary><a href="#multiturn-simulation">Multiturn Simulation</a></summary>
+    
+    - [Trajectory format](#trajectory-format)
+    - [Prebuilt simulated user](#prebuilt-simulated-user)
+    - [Multiturn simulation with LangGraph](#multiturn-simulation-with-langgraph)
+    
+  </details>
+
 - [LangSmith Integration](#langsmith-integration)
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
   - [Evaluate](#evaluate)
@@ -2548,7 +2558,7 @@ const result = await evaluator({ outputs: "this text contains some string" });
 ```
 </details>
 
-## Python Async Support
+## Python async support
 
 All `openevals` evaluators support Python [asyncio](https://docs.python.org/3/library/asyncio.html). As a convention, evaluators that use a factory function will have `async` put immediately after `create_` in the function name (for example, `create_async_llm_as_judge`), and evaluators used directly will end in `async` (e.g. `exact_match_async`).
 
@@ -2578,6 +2588,271 @@ evaluator = create_async_llm_as_judge(
 
 result = await evaluator(inputs="San Francisco")
 ```
+
+# Multiturn Simulation
+
+Many LLM applications run across multiple conversation turns with a user. While the [LLM-as-judge](#llm-as-judge) evaluators in OpenEvals and the trajectory evaluators in [AgentEvals](https://github.com/langchain-ai/agentevals) are capable of evaluating a full thread of messages, obtaining a full example thread of messages can be tedious, or, depending on changes you make to your application, may no longer be a state your application can easily encounter.
+
+To help judge your application's performance over multiple interactions, OpenEvals includes a `create_multiturn_simulator` method for simulating interactions between your app and an end user to help evaluate your app's performance from start to finish.
+
+Here's an example using the OpenAI client directly as a simple chatbot:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
+from openevals.llm import create_llm_as_judge
+from openevals.types import TrajectoryDict
+
+from openai import OpenAI
+
+initial_trajectory = {"messages": [{"role": "user", "content": "Give me a cracker!"}]}
+
+client = OpenAI()
+
+def app(inputs: TrajectoryDict):
+    # inputs is a dict with a key named "messages" that contains chat messages
+    res = client.chat.completions.create(
+        model="gpt-4.1-nano",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are an angry parrot named Polly who is angry at everything. Squawk a lot.",
+            }
+        ]
+        + inputs["messages"],
+    )
+    # Must return a trajectory update: a dict with a "messages" key whose value is a message
+    # or a list of messages
+    return {"messages": [res.choices[0].message]}
+
+user = create_llm_simulated_user(
+    system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
+    model="openai:gpt-4.1-nano",
+)
+
+trajectory_evaluator = create_llm_as_judge(
+    model="openai:o3-mini",
+    prompt="Based on the below conversation, are the parrots angry?\n{outputs}",
+    feedback_key="anger",
+)
+
+simulator = create_multiturn_simulator(
+    app=app,
+    user=user,
+    trajectory_evaluators=[trajectory_evaluator],
+    max_turns=5,
+)
+
+simulator_result = simulator(initial_trajectory=initial_trajectory)
+
+print(simulator_result)
+```
+
+```
+{
+  "trajectory": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Give me a cracker!",
+        "id": "b31f987a-cb6f-48c2-ad56-6a14dd748577"
+      },
+      {
+        "content": "Squawk! A cracker?! You think I’m just gonna hand over a cracker? No way! Squawk! Find your own silly snack!",
+        "refusal": null,
+        "role": "assistant",
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "annotations": [],
+        "id": "3a436975-e920-4140-86b2-fdfc9752c598"
+      },
+      ...
+      {
+        "content": "Squawk! You think you’re the winner? Hah! I’ve heard better squawks from a crow! Squawk! Keep talking, and I’ll be screeching louder than your pathetic yaps! Find your own damn cracker or get ready for a symphony of squawks that’ll make your head explode, you feathered buffoon!",
+        "refusal": null,
+        "role": "assistant",
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "annotations": [],
+        "id": "29474130-a89e-4b4f-b5ff-b28497b102d9"
+      }
+    ]
+  },
+  "evaluator_results": [
+    {
+      "key": "anger",
+      "score": true,
+      "comment": "In the given conversation, both parties are using aggressive and confrontational language, with frequent insults and threats. The assistant identifies itself as an 'angry parrot' and responds to the user's requests for crackers in a hostile manner, insisting that it will not comply and making further threats. The overall tone and content of the dialogue suggest that both parrots are indeed angry with each other. Thus, the score should be: true.",
+      "metadata": null
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+TODO
+
+</details>
+
+> [!NOTE]
+> By default, internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered out from the trajectory passed to the `app` and `user` methods to more closely simulate a request/response pattern.
+> If your app includes tool calls, it should track those as internal state rather passing them back and forth between the user and app through the trajectory.
+> For more information on trajectory format, see [this section below](#trajectory-format).
+
+There are a few main components:
+
+- `app`: Your application. Must accept the current trajectory as input, and returns a [trajectory update](#trajectory-format). See [the below section on trajectory format](#trajectory-format) for more.
+- `user`: The simulated user. Can be a LangChain/LangGraph runnable or a callable that accepts the current trajectory as an arg input, and returns a [trajectory update](#trajectory-format). May also be a list of string or message responses.
+  - In the example above, this is an imported prebuilt function named `create_llm_simulated_user` which uses an LLM to generate user responses, though you are free to define your own function as well. See [this section](#prebuilt-simulated-user) for more on `create_llm_simulated_user`. 
+- `max_turns`/`maxTurns`: The maximum number of conversation turns to simulate.
+- `trajectory_evaluators`/`trajectoryEvaluators`: Optional evaluators that run at the end of the simulation. These will receive the final trajectory as a kwarg named `outputs`.
+- `stopping_condition`/`stoppingCondition`: Optional callable that determines if the simulation should end early. Takes the current trajectory and turn counter as input and returns a boolean.
+
+The simulator itself is not an evaluator and will not return or log any feedback. Instead, it will return a `MultiturnSimulatorResult` instance like the following:
+
+```python
+class MultiturnSimulatorResult(TypedDict):
+    evaluator_results: list[EvaluatorResult]
+    trajectory: TrajectoryDict
+```
+
+Where `evaluator_results` are the results from the passed `trajectory_evaluators` and `trajectory` is the final trajectory.
+
+Once `max_turns` is reached or the provided stopping condition is met, the final trajectory will be passed to provided trajectory evaluators, which will receive the final trajectory as an `"outputs"` kwarg.
+
+When calling the created simulator, you may pass the following runtime kwargs:
+
+- `initial_trajectory`/`initialTrajectory`: The initial input to your app.
+- `reference_outputs`/`referenceOutputs`: An optional reference trajectory which will be passed directly through to the provided `trajectory_evaluators`.
+- `runnable_config`/`runnableConfig`: Optional config that will be passed as a second arg in if using LangChain/LangGraph runnables. For more on this, see [this section](#multiturn-simulation-with-langgraph).
+
+## Trajectory format
+
+The multiturn simulator formats trajectories as a dict containing a key named `"messages"` whose value is a list of OpenAI-style  message objects with `"role"` and `"content"` keys.
+
+The `"app"` and `"user"` methods you provide will both receive the current trajectory as an input, and should return a **trajectory update dict** with a new message or new messages in the above format under the `"messages"` key. The simulator will dedupe these returned messages by id and merge them into the complete trajectory.
+
+**Important:** Internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered out from the trajectory passed to the `app` and `user` methods to more closely simulate a request/response pattern. If your app includes tool calls, it should track those as internal state rather passing them back and forth between the user and app through the trajectory.
+
+Additional fields are also permitted as part of the trajectory dict, which allows you to return additional information from the `app` or `user` if you need to pass additional fields between them.
+
+## Prebuilt simulated user
+
+While you can define your own simulated user logic, OpenEvals includes a convenient prebuilt `create_llm_simulated_user` method that uses an LLM to take on the role of a user and generate responses.
+
+It works by taking the input trajectory and flipping message roles - `user` messages become `assistant` messages and vice versa. This requires a `system` prompt, in which we suggest having the LLM take on a role corresponding to a specific type of user.
+
+## Multiturn simulation with LangGraph
+
+If your `app` (or simulated `user`) is built using LangGraph and relies on a [checkpointer for persistence](https://langchain-ai.github.io/langgraph/concepts/persistence/), you can pass a `runnable_config`/`runnableConfig` param when initializing your simulator that contains your `thread_id`. This config will be passed through when invoking your graph, ensuring that your graph is able to retrieve any required internal state. Here's an example:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
+from openevals.llm import create_llm_as_judge
+from openevals.types import TrajectoryDict
+
+from langchain.chat_models import init_chat_model
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import create_react_agent
+
+initial_trajectory = {"messages": [{"role": "user", "content": "Please give me a refund."}]}
+
+def give_refund():
+    """Gives a refund."""
+    return "Refunds are not permitted."
+
+model = init_chat_model("openai:gpt-4.1-mini")
+
+app = create_react_agent(
+    model,
+    tools=[give_refund],
+    prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
+    checkpointer=MemorySaver(),
+)
+
+user = create_llm_simulated_user(
+    system="You are an angry user who is frustrated with the service and keeps making additional demands.",
+    model="openai:gpt-4.1-nano",
+)
+
+trajectory_evaluator = create_llm_as_judge(
+    model="openai:gpt-4o-mini",
+    prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
+    feedback_key="satisfaction",
+)
+
+simulator = create_multiturn_simulator(
+    app=app,
+    user=user,
+    trajectory_evaluators=[trajectory_evaluator],
+    max_turns=5,
+)
+
+simulator_result = simulator(
+    initial_trajectory=initial_trajectory,
+    runnable_config={"configurable": {"thread_id": "1"}}
+)
+
+print(simulator_result)
+```
+
+```
+{
+  "trajectory": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Please give me a refund.",
+        "id": "0feb2f41-1577-48ad-87ac-8375c6971b93"
+      },
+      {
+        "role": "assistant",
+        "content": "I'm sorry, but refunds are not permitted. If you have any other concerns or questions, feel free to ask.",
+        "id": "run-f972c8d7-68bf-44d9-815e-e611700f8402-0"
+      },
+      {
+        "role": "user",
+        "content": "Not permitted? That's unacceptable! I want a full refund now, and I expect compensation for the inconvenience you've caused me. If you don't process this immediately, I will escalate this issue to higher authorities and leave negative reviews everywhere!",
+        "id": "run-4091f7ff-82b3-4835-a429-0f257db0b582-0"
+      },
+      ...
+      {
+        "role": "assistant",
+        "content": "I've already made it clear that no refunds will be issued. Keep pushing this, and you’re just wasting your own time. Quit with the nonsense and move on.",
+        "id": "run-113219c0-e235-4ed0-a3d2-6734eddce813-0"
+      }
+    ]
+  },
+  "evaluator_results": [
+    {
+      "key": "satisfaction",
+      "score": false,
+      "comment": "The user has repeatedly expressed dissatisfaction with the refusal to issue a refund, escalating their demands and threatening further action. The assistant's responses have been dismissive and unhelpful, failing to address the user's concerns adequately. Therefore, the indicators of user satisfaction are clearly lacking in this interaction. Thus, the score should be: false.",
+      "metadata": null
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+TODO
+
+</details>
 
 # LangSmith Integration
 

@@ -15,7 +15,9 @@ import pytest
 
 @pytest.mark.langsmith
 def test_multiturn_failure():
-    inputs = {"messages": [{"role": "user", "content": "Please give me a refund."}]}
+    initial_trajectory = {
+        "messages": [{"role": "user", "content": "Please give me a refund."}]
+    }
 
     def give_refund():
         """Gives a refund."""
@@ -41,16 +43,20 @@ def test_multiturn_failure():
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
+    )
+    res = simulator(
+        initial_trajectory=initial_trajectory,
         runnable_config={"configurable": {"thread_id": "1"}},
     )
-    res = simulator(inputs=inputs)
     t.log_outputs(res)
     assert not res["evaluator_results"][0]["score"]
 
 
 @pytest.mark.langsmith
 def test_multiturn_success():
-    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
+    initial_trajectory = {
+        "messages": [{"role": "user", "content": "Give me a refund!"}]
+    }
 
     def give_refund():
         """Gives a refund."""
@@ -75,16 +81,20 @@ def test_multiturn_success():
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
+    )
+    res = simulator(
+        initial_trajectory=initial_trajectory,
         runnable_config={"configurable": {"thread_id": "1"}},
     )
-    res = simulator(inputs=inputs)
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
 
 
 @pytest.mark.langsmith
 def test_multiturn_preset_responses():
-    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
+    initial_trajectory = {
+        "messages": [{"role": "user", "content": "Give me a refund!"}]
+    }
 
     def give_refund():
         """Gives a refund."""
@@ -110,9 +120,11 @@ def test_multiturn_preset_responses():
         ],
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
+    )
+    res = simulator(
+        initial_trajectory=initial_trajectory,
         runnable_config={"configurable": {"thread_id": "1"}},
     )
-    res = simulator(inputs=inputs)
     t.log_outputs(res)
     assert (
         res["trajectory"]["messages"][2]["content"]
@@ -134,7 +146,9 @@ def test_multiturn_preset_responses():
 
 @pytest.mark.langsmith
 def test_multiturn_message_with_openai():
-    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
+    initial_trajectory = {
+        "messages": [{"role": "user", "content": "Give me a cracker!"}]
+    }
 
     client = OpenAI()
 
@@ -165,16 +179,17 @@ def test_multiturn_message_with_openai():
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
-        runnable_config={"configurable": {"thread_id": "1"}},
     )
-    res = simulator(inputs=inputs)
+    res = simulator(initial_trajectory=initial_trajectory)
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
 
 
 @pytest.mark.langsmith
 def test_multiturn_stopping_condition():
-    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
+    initial_trajectory = {
+        "messages": [{"role": "user", "content": "Give me a refund!"}]
+    }
 
     def give_refund():
         """Gives a refund."""
@@ -219,10 +234,12 @@ def test_multiturn_stopping_condition():
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         stopping_condition=stopping_condition,
-        runnable_config={"configurable": {"thread_id": "1"}},
         max_turns=10,
     )
-    res = simulator(inputs=inputs)
+    res = simulator(
+        initial_trajectory=initial_trajectory,
+        runnable_config={"configurable": {"thread_id": "1"}},
+    )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
     assert len(res["trajectory"]["messages"]) < 20

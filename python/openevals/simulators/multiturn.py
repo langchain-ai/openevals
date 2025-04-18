@@ -102,7 +102,6 @@ def create_multiturn_simulator(
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
     stopping_condition: Optional[Callable[[TrajectoryDict], bool]] = None,
-    runnable_config: Optional[RunnableConfig] = None,
 ) -> Callable[..., MultiturnSimulatorResult]:
     """Creates a simulator for multi-turn conversations between an application and a simulated user.
 
@@ -113,15 +112,15 @@ def create_multiturn_simulator(
     Conversation trajectories are represented as a dict containing a key named "messages" whose
     value is a list of message objects with "role" and "content" keys. The "app" and "user"
     params you provide will both receive this trajectory as an input, and should return a
-    trajectory update dict with a new message or new messages under the "messages" key. These
-    messages will be deduped by id and combined into the complete trajectory.
+    trajectory update dict with a new message or new messages under the "messages" key. The simulator
+    will dedupe these messages by id and merge them into the complete trajectory.
 
     Additional fields are also permitted as part of the trajectory dict, which allows you to pass
     additional information between the app and user if needed.
 
     Once "max_turns" is reached or a provided stopping condition is met, the final trajectory
     will be passed to provided trajectory evaluators, which will receive the final trajectory
-    as an input under the "outputs" kwarg.
+    as an "outputs" kwarg.
 
     When calling the created simulator, you may also provide a "reference_outputs" kwarg,
     which will be passed directly through to the provided evaluators.
@@ -140,12 +139,12 @@ def create_multiturn_simulator(
             a kwarg named "outputs" and a kwarg named "reference_outputs" if provided.
         stopping_condition: Optional callable that determines if the simulation should end early.
             Takes the current trajectory and turn counter as input and returns a boolean.
-        runnable_config: Optional config that will be passed in if using LangChain Runnable components.
 
     Returns:
-        A callable that runs the simulation when invoked. The callable accepts:
-            - inputs: Initial input to start the conversation
+        A callable that runs the simulation when invoked. The callable accepts the following kwargs:
+            - initial_trajectory: Initial input to start the conversation
             - reference_outputs: Optional reference outputs for evaluation
+            - runnable_config: Optional config that will be passed in if using LangChain Runnable components.
             - **kwargs: Additional keyword arguments
         Returns a MultiturnSimulatorResult containing:
             - evaluator_results: List of results from trajectory evaluators
@@ -164,7 +163,7 @@ def create_multiturn_simulator(
         )
 
         # Run the simulation
-        result = simulator(inputs={"messages": [{"role": "user", "content": "Start"}]})
+        result = simulator(initial_trajectory={"messages": [{"role": "user", "content": "Start"}]})
         ```
     """
 
@@ -176,8 +175,9 @@ def create_multiturn_simulator(
     @traceable(name="multiturn_simulator")
     def _run_simulator(
         *,
-        inputs: Any,
+        initial_trajectory: TrajectoryDict,
         reference_outputs: Optional[Any] = None,
+        runnable_config: Optional[RunnableConfig] = None,
         **kwargs,
     ):
         turn_counter = 0
@@ -212,7 +212,7 @@ def create_multiturn_simulator(
             if max_turns is not None and turn_counter >= max_turns:
                 break
             current_inputs = (
-                inputs
+                initial_trajectory
                 if turn_counter == 0
                 else wrapped_simulated_user.invoke(
                     current_reduced_trajectory, config=runnable_config

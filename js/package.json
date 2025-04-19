@@ -29,6 +29,7 @@
   "devDependencies": {
     "@e2b/code-interpreter": "^1.0.4",
     "@langchain/core": "^0.3.40",
+    "@langchain/langgraph": "^0.2.65",
     "@langchain/scripts": "0.1.3",
     "@tsconfig/recommended": "^1.0.8",
     "@typescript-eslint/eslint-plugin": "^8.24.1",

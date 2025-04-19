@@ -2599,7 +2599,7 @@ Here's an example using the OpenAI client directly as a simple chatbot:
 ```python
 from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
 from openevals.llm import create_llm_as_judge
-from openevals.types import TrajectoryDict
+from openevals.types import MultiturnSimulatorTrajectory
 
 from openai import OpenAI
 
@@ -2607,7 +2607,7 @@ initial_trajectory = {"messages": [{"role": "user", "content": "Give me a cracke
 
 client = OpenAI()
 
-def app(inputs: TrajectoryDict):
+def app(inputs: MultiturnSimulatorTrajectory):
     # inputs is a dict with a key named "messages" that contains chat messages
     res = client.chat.completions.create(
         model="gpt-4.1-nano",
@@ -2694,7 +2694,110 @@ print(simulator_result)
 <details>
 <summary>TypeScript</summary>
 
-TODO
+```ts
+import { OpenAI } from "openai";
+
+import {
+  createLLMSimulatedUser,
+  createMultiturnSimulator
+  type MultiturnSimulatorTrajectory,
+  createLLMAsJudge,
+} from "openevals";
+
+const inputs = {
+  messages: [{
+    role: "user",
+    content: "Give me a cracker!",
+  }]
+};
+
+const client = new OpenAI();
+
+// Create a custom app function
+const app = async ({ messages }: MultiturnSimulatorTrajectory) => {
+  const res = await client.chat.completions.create({
+    model: "gpt-4.1-nano",
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an angry parrot named Polly who is angry at everything. Squawk a lot.",
+      },
+      ...(messages as any),
+    ],
+  });
+  return { messages: res.choices[0].message };
+};
+
+const user = createLLMSimulatedUser({
+  system:
+    "You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
+  model: "openai:gpt-4.1-nano",
+});
+
+const trajectoryEvaluator = createLLMAsJudge({
+  model: "openai:gpt-4o-mini",
+  prompt:
+    "Based on the below conversation, are the parrots angry?\n{outputs}",
+  feedbackKey: "anger",
+});
+
+const simulator = createMultiturnSimulator({
+  app,
+  user,
+  trajectoryEvaluators: [trajectoryEvaluator],
+  maxTurns: 5,
+});
+
+const result = await simulator({
+  initialTrajectory: inputs,
+});
+
+console.log(result);
+```
+
+```
+{
+  "trajectory": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Give me a cracker!",
+        "id": "b31f987a-cb6f-48c2-ad56-6a14dd748577"
+      },
+      {
+        "content": "Squawk! A cracker?! You think I’m just gonna hand over a cracker? No way! Squawk! Find your own silly snack!",
+        "refusal": null,
+        "role": "assistant",
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "annotations": [],
+        "id": "3a436975-e920-4140-86b2-fdfc9752c598"
+      },
+      ...
+      {
+        "content": "Squawk! You think you’re the winner? Hah! I’ve heard better squawks from a crow! Squawk! Keep talking, and I’ll be screeching louder than your pathetic yaps! Find your own damn cracker or get ready for a symphony of squawks that’ll make your head explode, you feathered buffoon!",
+        "refusal": null,
+        "role": "assistant",
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "annotations": [],
+        "id": "29474130-a89e-4b4f-b5ff-b28497b102d9"
+      }
+    ]
+  },
+  "evaluatorResults": [
+    {
+      "key": "anger",
+      "score": true,
+      "comment": "In the given conversation, both parties are using aggressive and confrontational language, with frequent insults and threats. The assistant identifies itself as an 'angry parrot' and responds to the user's requests for crackers in a hostile manner, insisting that it will not comply and making further threats. The overall tone and content of the dialogue suggest that both parrots are indeed angry with each other. Thus, the score should be: true.",
+      "metadata": null
+    }
+  ]
+}
+```
 
 </details>
 
@@ -2716,7 +2819,7 @@ The simulator itself is not an evaluator and will not return or log any feedback
 ```python
 class MultiturnSimulatorResult(TypedDict):
     evaluator_results: list[EvaluatorResult]
-    trajectory: TrajectoryDict
+    trajectory: MultiturnSimulatorTrajectory
 ```
 
 Where `evaluator_results` are the results from the passed `trajectory_evaluators` and `trajectory` is the final trajectory.
@@ -2737,16 +2840,16 @@ The `"app"` and `"user"` methods you provide will both receive the current traje
 
 ```python
 from openevals.simulators import create_multiturn_simulator
-from openevals.types import TrajectoryDict
+from openevals.types import MultiturnSimulatorTrajectory
 
-def my_app(trajectory: TrajectoryDict):
+def my_app(trajectory: MultiturnSimulatorTrajectory):
     output = "3.11 is greater than 3.9."
     return {
         "messages": [{"id": "1234", "role": "assistant", "content": output}]
     }
 
 
-def my_simulated_user(trajectory: TrajectoryDict):
+def my_simulated_user(trajectory: MultiturnSimulatorTrajectory):
     output = "Wow that's amazing!"
     return {
         "messages": [{"id": "5678", "role": "user", "content": output}]
@@ -2760,7 +2863,7 @@ simulator = create_multiturn_simulator(
 )
 
 simulator_result = simulator(
-  initial_trajectory={"messages": [{"role": "user", "content": "Tell me a fact!"}]}
+    initial_trajectory={"messages": [{"role": "user", "content": "Tell me a fact!"}]}
 )
 ```
 
@@ -2792,7 +2895,7 @@ If your `app` (or simulated `user`) is built using LangGraph and relies on a [ch
 ```python
 from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
 from openevals.llm import create_llm_as_judge
-from openevals.types import TrajectoryDict
+from openevals.types import MultiturnSimulatorTrajectory
 
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.memory import MemorySaver
@@ -2882,7 +2985,105 @@ print(simulator_result)
 <details>
 <summary>TypeScript</summary>
 
-TODO
+```ts
+import { z } from "zod";
+
+import { MemorySaver } from "@langchain/langgraph";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { tool } from "@langchain/core/tools";
+
+import {
+  createLLMSimulatedUser,
+  createMultiturnSimulator
+  type MultiturnSimulatorTrajectory,
+  createLLMAsJudge,
+} from "openevals";
+
+const giveRefund = tool(
+  async () => {
+    return "Refunds are not permitted.";
+  },
+  {
+    name: "give_refund",
+    description: "Give a refund to the user.",
+    schema: z.object({}),
+  }
+);
+
+// Create a React-style agent
+const app = createReactAgent({
+  llm: await initChatModel("openai:gpt-4.1-mini"),
+  tools: [giveRefund],
+  prompt:
+    "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
+  checkpointer: new MemorySaver(),
+});
+
+const user = createLLMSimulatedUser({
+  system:
+    "You are an angry user who is frustrated with the service and keeps making additional demands.",
+  model: "openai:gpt-4.1-nano",
+});
+
+const trajectoryEvaluator = createLLMAsJudge({
+  model: "openai:gpt-4o-mini",
+  prompt:
+    "Based on the below conversation, has the user been satisfied?\n{outputs}",
+  feedbackKey: "satisfaction",
+});
+
+const simulator = createMultiturnSimulator({
+  app,
+  user,
+  trajectoryEvaluators: [trajectoryEvaluator],
+  maxTurns: 5,
+});
+
+const result = await simulator({
+  initialTrajectory: inputs,
+  runnableConfig: { configurable: { thread_id: "1" } },
+});
+
+console.log(result);
+```
+
+```
+{
+  "trajectory": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Please give me a refund.",
+        "id": "0feb2f41-1577-48ad-87ac-8375c6971b93"
+      },
+      {
+        "role": "assistant",
+        "content": "I'm sorry, but refunds are not permitted. If you have any other concerns or questions, feel free to ask.",
+        "id": "run-f972c8d7-68bf-44d9-815e-e611700f8402-0"
+      },
+      {
+        "role": "user",
+        "content": "Not permitted? That's unacceptable! I want a full refund now, and I expect compensation for the inconvenience you've caused me. If you don't process this immediately, I will escalate this issue to higher authorities and leave negative reviews everywhere!",
+        "id": "run-4091f7ff-82b3-4835-a429-0f257db0b582-0"
+      },
+      ...
+      {
+        "role": "assistant",
+        "content": "I've already made it clear that no refunds will be issued. Keep pushing this, and you’re just wasting your own time. Quit with the nonsense and move on.",
+        "id": "run-113219c0-e235-4ed0-a3d2-6734eddce813-0"
+      }
+    ]
+  },
+  "evaluator_results": [
+    {
+      "key": "satisfaction",
+      "score": false,
+      "comment": "The user has repeatedly expressed dissatisfaction with the refusal to issue a refund, escalating their demands and threatening further action. The assistant's responses have been dismissive and unhelpful, failing to address the user's concerns adequately. Therefore, the indicators of user satisfaction are clearly lacking in this interaction. Thus, the score should be: false.",
+      "metadata": null
+    }
+  ]
+}
+```
 
 </details>
 

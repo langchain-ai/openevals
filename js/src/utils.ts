@@ -1,9 +1,6 @@
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
 import { _convertMessagesToOpenAIParams } from "@langchain/openai";
-import {
-  wrapEvaluator,
-  isInTestContext,
-} from "langsmith/utils/jestlike";
+import { wrapEvaluator, isInTestContext } from "langsmith/utils/jestlike";
 import { traceable } from "langsmith/traceable";
 
 import {
@@ -13,17 +10,24 @@ import {
   EvaluatorResult,
 } from "./types.js";
 
-export const _convertToOpenAIMessage = (
+export const convertToOpenAIMessage = (
   message: BaseMessage | ChatCompletionMessage
 ): ChatCompletionMessage => {
   if (isBaseMessage(message)) {
-    return _convertMessagesToOpenAIParams([
+    const converted = _convertMessagesToOpenAIParams([
       message,
     ])[0] as ChatCompletionMessage;
+    if (message.id && !converted.id) {
+      converted.id = message.id;
+    }
+    return converted;
   } else {
     return message;
   }
 };
+
+// Keep for backward compatibility
+export const _convertToOpenAIMessage = convertToOpenAIMessage;
 
 export const _normalizeToOpenAIMessagesList = (
   messages:

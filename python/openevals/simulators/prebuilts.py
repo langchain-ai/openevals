@@ -3,7 +3,7 @@ from typing import Optional
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
 
-from openevals.types import TrajectoryDict
+from openevals.types import MultiturnSimulatorTrajectory
 from openevals.utils import _convert_to_openai_message
 
 
@@ -26,8 +26,8 @@ def create_llm_simulated_user(
         client: Optional LangChain chat model instance. Must be provided if model is not.
 
     Returns:
-        A callable simulator function that takes a TrajectoryDict containing conversation messages
-        and returns a TrajectoryDict with the simulated user's response.
+        A callable simulator function that takes a MultiturnSimulatorTrajectory containing conversation messages
+        and returns a MultiturnSimulatorTrajectory with the simulated user's response.
 
     Example:
         ```python
@@ -62,7 +62,7 @@ def create_llm_simulated_user(
     if not client:
         client = init_chat_model(model=model)  # type: ignore
 
-    def _simulator(inputs: TrajectoryDict):
+    def _simulator(inputs: MultiturnSimulatorTrajectory):
         if not isinstance(inputs, dict) or not inputs["messages"]:
             raise ValueError(
                 "Simulated user inputs must be a dict with a 'messages' key containing a list of messages"
@@ -109,8 +109,8 @@ def create_async_llm_simulated_user(
         client: Optional LangChain chat model instance. Must be provided if model is not.
 
     Returns:
-        A callable simulator function that takes a TrajectoryDict containing conversation messages
-        and returns a TrajectoryDict with the simulated user's response.
+        A callable simulator function that takes a MultiturnSimulatorTrajectory containing conversation messages
+        and returns a MultiturnSimulatorTrajectory with the simulated user's response.
 
     Example:
         ```python
@@ -145,7 +145,7 @@ def create_async_llm_simulated_user(
     if not client:
         client = init_chat_model(model=model)  # type: ignore
 
-    async def _simulator(inputs: TrajectoryDict):
+    async def _simulator(inputs: MultiturnSimulatorTrajectory):
         if not isinstance(inputs, dict) or not inputs["messages"]:
             raise ValueError(
                 "Simulated user inputs must be a dict with a 'messages' key containing a list of messages"

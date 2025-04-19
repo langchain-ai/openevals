@@ -7,8 +7,8 @@ from openevals.types import (
     ChatCompletionMessage,
 )
 from openevals.types import (
-    TrajectoryDict,
-    TrajectoryDictUpdate,
+    MultiturnSimulatorTrajectory,
+    MultiturnSimulatorTrajectoryUpdate,
     MultiturnSimulatorResult,
 )
 from openevals.utils import _convert_to_openai_message
@@ -32,12 +32,12 @@ def _is_internal_message(message: ChatCompletionMessage) -> bool:
 
 
 def _trajectory_reducer(
-    current_trajectory: Optional[TrajectoryDict],
-    new_update: TrajectoryDictUpdate,
+    current_trajectory: Optional[MultiturnSimulatorTrajectory],
+    new_update: MultiturnSimulatorTrajectoryUpdate,
     *,
     update_source: Literal["app", "user"],
     turn_counter: int,
-) -> TrajectoryDict:
+) -> MultiturnSimulatorTrajectory:
     def _combine_messages(
         left: list[Messages] | Messages,
         right: list[Messages] | Messages,
@@ -97,7 +97,7 @@ def _create_static_simulated_user(
     static_responses: list[str | Messages],
 ):
     def _return_next_message(
-        trajectory: TrajectoryDict,
+        trajectory: MultiturnSimulatorTrajectory,
     ):
         turns = trajectory.get("turn_counter")
         if turns is None or not isinstance(turns, int):
@@ -119,14 +119,14 @@ def _create_static_simulated_user(
 
 def create_multiturn_simulator(
     *,
-    app: Runnable[TrajectoryDict, TrajectoryDictUpdate]
-    | Callable[[TrajectoryDict], TrajectoryDictUpdate],
-    user: Runnable[TrajectoryDict, TrajectoryDictUpdate]
-    | Callable[[TrajectoryDict], TrajectoryDictUpdate]
+    app: Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate]
+    | Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate],
+    user: Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate]
+    | Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate]
     | list[str | Messages],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
-    stopping_condition: Optional[Callable[[TrajectoryDict], bool]] = None,
+    stopping_condition: Optional[Callable[[MultiturnSimulatorTrajectory], bool]] = None,
 ) -> Callable[..., MultiturnSimulatorResult]:
     """Creates a simulator for multi-turn conversations between an application and a simulated user.
 
@@ -200,13 +200,13 @@ def create_multiturn_simulator(
     @traceable(name="multiturn_simulator")
     def _run_simulator(
         *,
-        initial_trajectory: TrajectoryDict,
+        initial_trajectory: MultiturnSimulatorTrajectory,
         reference_outputs: Optional[Any] = None,
         runnable_config: Optional[RunnableConfig] = None,
         **kwargs,
     ):
         turn_counter = 0
-        current_reduced_trajectory: TrajectoryDict = {"messages": []}
+        current_reduced_trajectory: MultiturnSimulatorTrajectory = {"messages": []}
         wrapped_app = _wrap(app, "app")
         if isinstance(user, list):
             static_responses = user
@@ -266,14 +266,20 @@ def create_multiturn_simulator(
 
 def create_async_multiturn_simulator(
     *,
-    app: Runnable[TrajectoryDict, TrajectoryDictUpdate]
-    | Callable[[TrajectoryDict], Awaitable[TrajectoryDictUpdate]],
-    user: Runnable[TrajectoryDict, TrajectoryDictUpdate]
-    | Callable[[TrajectoryDict], Awaitable[TrajectoryDictUpdate]]
+    app: Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate]
+    | Callable[
+        [MultiturnSimulatorTrajectory], Awaitable[MultiturnSimulatorTrajectoryUpdate]
+    ],
+    user: Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate]
+    | Callable[
+        [MultiturnSimulatorTrajectory], Awaitable[MultiturnSimulatorTrajectoryUpdate]
+    ]
     | list[str | Messages],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,
-    stopping_condition: Optional[Callable[[TrajectoryDict], Awaitable[bool]]] = None,
+    stopping_condition: Optional[
+        Callable[[MultiturnSimulatorTrajectory], Awaitable[bool]]
+    ] = None,
 ) -> Callable[..., Awaitable[MultiturnSimulatorResult]]:
     """Creates an async simulator for multi-turn conversations between an application and a simulated user.
 
@@ -347,13 +353,13 @@ def create_async_multiturn_simulator(
     @traceable(name="multiturn_simulator")
     async def _run_simulator(
         *,
-        initial_trajectory: TrajectoryDict,
+        initial_trajectory: MultiturnSimulatorTrajectory,
         reference_outputs: Optional[Any] = None,
         runnable_config: Optional[RunnableConfig] = None,
         **kwargs,
     ):
         turn_counter = 0
-        current_reduced_trajectory: TrajectoryDict = {"messages": []}
+        current_reduced_trajectory: MultiturnSimulatorTrajectory = {"messages": []}
         wrapped_app = _wrap(app, "app")
         if isinstance(user, list):
             static_responses = user

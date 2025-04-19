@@ -153,6 +153,70 @@ function _createStaticSimulatedUser(
   };
 }
 
+/**
+ * Creates a simulator for multi-turn conversations between an application and a simulated user.
+ *
+ * This function generates a simulator that can run conversations between an app and
+ * either a dynamic user simulator or a list of static user responses. The simulator supports
+ * evaluation of conversation trajectories and customizable stopping conditions.
+ *
+ * Conversation trajectories are represented as a dict containing a key named "messages" whose
+ * value is a list of message objects with "role" and "content" keys. The "app" and "user"
+ * params you provide will both receive this trajectory as an input, and should return a
+ * trajectory update dict with a new message or new messages under the "messages" key. The simulator
+ * will dedupe these messages by id and merge them into the complete trajectory.
+ *
+ * Additional fields are also permitted as part of the trajectory dict, which allows you to pass
+ * additional information between the app and user if needed.
+ *
+ * Once "maxTurns" is reached or a provided stopping condition is met, the final trajectory
+ * will be passed to provided trajectory evaluators, which will receive the final trajectory
+ * as an "outputs" param.
+ *
+ * When calling the created simulator, you may also provide a "referenceOutputs" param,
+ * which will be passed directly through to the provided evaluators.
+ *
+ * @param {Object} params - Configuration parameters for the simulator
+ * @param {Runnable<MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate> | ((trajectory: MultiturnSimulatorTrajectory) => MultiturnSimulatorTrajectoryUpdate | Promise<MultiturnSimulatorTrajectoryUpdate>)} params.app - Your application. Can be either a LangChain Runnable or a
+ *        callable that takes the current conversation trajectory dict and returns
+ *        a trajectory update dict with new messages under the "messages" key (and optionally other fields).
+ * @param {Runnable<MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate> | ((trajectory: MultiturnSimulatorTrajectory) => MultiturnSimulatorTrajectoryUpdate | Promise<MultiturnSimulatorTrajectoryUpdate>) | (string | Messages)[]} params.user - The simulated user. Can be:
+ *        - A LangChain Runnable or a callable that takes the current conversation trajectory
+ *          and returns a trajectory update dict with new messages under the "messages" key (and optionally other fields).
+ *        - A list of strings or Messages representing static user responses
+ * @param {number} [params.maxTurns] - Maximum number of conversation turns to simulate
+ * @param {SimpleEvaluator[]} [params.trajectoryEvaluators] - Optional list of evaluator functions that assess the conversation
+ *        trajectory. Each evaluator will receive the final trajectory of the conversation as
+ *        a param named "outputs" and a param named "referenceOutputs" if provided.
+ * @param {(trajectory: MultiturnSimulatorTrajectory) => boolean | Promise<boolean>} [params.stoppingCondition] - Optional callable that determines if the simulation should end early.
+ *        Takes the current trajectory as input and returns a boolean.
+ *
+ * @returns A function that runs the simulation when invoked. The function accepts the following params:
+ *          - initialTrajectory: Initial input to start the conversation
+ *          - referenceOutputs: Optional reference outputs for evaluation
+ *          - runnableConfig: Optional config that will be passed in if using LangChain Runnable components.
+ *          Returns a Promise that resolves to a MultiturnSimulatorResult containing:
+ *          - evaluator_results: List of results from trajectory evaluators
+ *          - trajectory: The complete conversation trajectory
+ *
+ * @example
+ * ```typescript
+ * import { createMultiturnSimulator } from "openevals";
+ *
+ * // Create a simulator with static user responses
+ * const simulator = createMultiturnSimulator({
+ *   app: myChatApp,
+ *   user: ["Hello!", "How are you?", "Goodbye"],
+ *   maxTurns: 3,
+ *   trajectoryEvaluators: [myEvaluator]
+ * });
+ *
+ * // Run the simulation
+ * const result = await simulator({
+ *   initialTrajectory: {messages: [{role: "user", content: "Start"}]}
+ * });
+ * ```
+ */
 export function createMultiturnSimulator({
   app,
   user,

@@ -17,28 +17,36 @@ import type {
  *
  * @param {Object} params - The parameters for creating the simulated user
  * @param {string} params.system - System prompt that guides the LLM's behavior as a simulated user
- * @param {BaseChatModel} params.client - LangChain chat model instance
+ * @param {string} [params.model] - Optional name of the language model to use. Must be provided if client is not.
+ * @param {BaseChatModel} [params.client] - Optional LangChain chat model instance. Must be provided if model is not.
+ * 
  * @returns A callable simulator function that takes a MultiturnSimulatorTrajectory containing conversation messages
  *          and returns a MultiturnSimulatorTrajectoryUpdate with the simulated user's response
  *
  * @example
  * ```typescript
- * import { ChatOpenAI } from "langchain/chat_models/openai";
- * import { createMultiturnSimulator, createLlmSimulatedUser } from "openevals";
+ * import { createMultiturnSimulator, createLLMSimulatedUser } from "openevals";
  *
  * // Create a simulated user with GPT-4
- * const simulatedUser = createLlmSimulatedUser({
+ * const simulatedUser = createLLMSimulatedUser({
  *   system: "You are a helpful customer service representative",
- *   client: new ChatOpenAI({ model: "gpt-4-turbo" })
+ *   model: "openai:gpt-4o-mini"
  * });
  *
  * // Use with createMultiturnSimulator
  * const simulator = createMultiturnSimulator({
  *   app: myChatApp,
  *   user: simulatedUser,
- *   max_turns: 5
+ *   maxTurns: 5
  * });
  * ```
+ * 
+ * Notes:
+ * - The simulator automatically converts message roles to maintain proper conversation flow:
+ *   * User messages become assistant messages when sent to the LLM
+ *   * Assistant messages (without tool calls) become user messages when sent to the LLM
+ * - The system prompt is prepended to each conversation to maintain consistent behavior
+ * - The simulator returns responses in the format expected by createMultiturnSimulator
  */
 export function createLLMSimulatedUser({
   system,

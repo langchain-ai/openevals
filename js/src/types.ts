@@ -1,3 +1,5 @@
+import type { BaseMessage, BaseMessageChunk } from "@langchain/core/messages";
+
 export type EvaluatorResult = {
   key: string;
   score: number | boolean;
@@ -35,6 +37,7 @@ export type ChatCompletionMessage = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tool_calls?: Record<string, any>[];
   tool_call_id?: string;
+  id?: string;
 };
 
 export type ChatCompletion = {
@@ -61,3 +64,20 @@ export interface ModelChatClient {
 export interface ModelClient {
   chat: ModelChatClient;
 }
+
+export type Messages = ChatCompletionMessage | BaseMessage | BaseMessageChunk;
+
+export type MultiturnSimulatorTrajectory = {
+  messages: Messages[];
+  [key: string]: unknown;
+};
+
+export type MultiturnSimulatorTrajectoryUpdate = {
+  messages: Messages[] | Messages;
+  [key: string]: unknown;
+};
+
+export type MultiturnSimulatorResult = {
+  evaluatorResults: EvaluatorResult[];
+  trajectory: MultiturnSimulatorTrajectory;
+};

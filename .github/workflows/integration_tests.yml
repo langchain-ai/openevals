@@ -45,7 +45,7 @@ jobs:
         needs.changed_files.outputs.python_changed == 'true'
       )) ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.run-python-tests == 'true')
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: python
@@ -90,7 +90,7 @@ jobs:
         needs.changed_files.outputs.js_changed == 'true'
       )) ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.run-js-tests == 'true')
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: js

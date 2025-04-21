@@ -9,7 +9,6 @@ from openevals.types import (
     EvaluatorResult,
     SimpleEvaluator,
     SimpleAsyncEvaluator,
-    RunnableLike,
     ModelClient,
     ChatCompletionMessage,
     FewShotExample,
@@ -17,6 +16,7 @@ from openevals.types import (
 )
 
 from langchain.chat_models import init_chat_model
+from langchain_core.runnables import Runnable
 from langchain_core.language_models.chat_models import BaseChatModel, BaseMessage
 from langchain_core.prompts.structured import StructuredPrompt
 from langsmith import traceable
@@ -142,7 +142,7 @@ def _stringify_prompt_param(param: Any) -> Any:
 
 def _create_llm_as_judge_scorer(
     *,
-    prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
+    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
     system: Optional[str] = None,
     schema: Optional[Union[dict, type]] = None,
     judge: Optional[
@@ -191,7 +191,7 @@ def _create_llm_as_judge_scorer(
             k: v for k, v in prompt_params.items() if v is not None
         }
 
-        if isinstance(prompt, RunnableLike):
+        if isinstance(prompt, Runnable):
             formatted_prompt = prompt.invoke(filtered_prompt_params)
             messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
             if isinstance(prompt, StructuredPrompt):
@@ -312,7 +312,7 @@ def _create_llm_as_judge_scorer(
 
 def _create_async_llm_as_judge_scorer(
     *,
-    prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
+    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
     system: Optional[str] = None,
     schema: Optional[Union[dict, type]] = None,
     judge: Optional[
@@ -361,7 +361,7 @@ def _create_async_llm_as_judge_scorer(
             k: v for k, v in prompt_params.items() if v is not None
         }
 
-        if isinstance(prompt, RunnableLike):
+        if isinstance(prompt, Runnable):
             formatted_prompt = prompt.invoke(filtered_prompt_params)
             messages = _normalize_to_openai_messages_list(formatted_prompt.messages)
             if isinstance(prompt, StructuredPrompt):
@@ -482,7 +482,7 @@ def _create_async_llm_as_judge_scorer(
 
 def create_llm_as_judge(
     *,
-    prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
+    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "score",
     judge: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
@@ -580,7 +580,7 @@ def create_llm_as_judge(
 
 def create_async_llm_as_judge(
     *,
-    prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
+    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "score",
     judge: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,

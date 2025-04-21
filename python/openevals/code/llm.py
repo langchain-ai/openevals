@@ -11,11 +11,11 @@ from openevals.prompts import (
 from typing import Callable, Optional, Literal, Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.runnables import Runnable
 
 from openevals.types import (
     SimpleEvaluator,
     SimpleAsyncEvaluator,
-    RunnableLike,
     ChatCompletionMessage,
     FewShotExample,
 )
@@ -29,7 +29,7 @@ __all__ = [
 
 def create_code_llm_as_judge(
     *,
-    prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
+    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "code_correctness",
     code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], str]] = None,
@@ -96,7 +96,7 @@ def create_code_llm_as_judge(
 
 def create_async_code_llm_as_judge(
     *,
-    prompt: str | RunnableLike | Callable[..., list[ChatCompletionMessage]],
+    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
     feedback_key: str = "code_correctness",
     code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], str]] = None,

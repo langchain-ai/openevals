@@ -1,6 +1,5 @@
 from __future__ import annotations
 import asyncio
-import json
 
 from langsmith import testing as t, get_current_run_tree, traceable
 from langsmith.testing._internal import _TEST_CASE
@@ -27,12 +26,18 @@ if TYPE_CHECKING:
 def _convert_to_openai_message(
     message: ChatCompletionMessage | BaseMessage | dict,
 ) -> ChatCompletionMessage:
-    if isinstance(message, dict):
-        return message  # type: ignore
-    else:
-        if not isinstance(message, BaseMessage):
-            raise ValueError(f"Expected BaseMessage, got {type(message)}")
-        return convert_to_openai_messages([message])[0]  # type: ignore
+    if isinstance(message, BaseMessage):
+        converted = convert_to_openai_messages([message])[0]
+        if message.id is not None and converted.get("id") is None:
+            converted["id"] = message.id
+        return converted  # type: ignore
+    if not isinstance(message, dict):
+        message = dict(message)
+    if "role" not in message or "content" not in message:
+        raise ValueError(
+            f"Expected a dict with 'role' and 'content' keys or a LangChain message instance, got {message}"
+        )
+    return message.copy()  # type: ignore
 
 
 def _normalize_to_openai_messages_list(
@@ -122,12 +127,27 @@ def _run_evaluator_untyped(
             results = []
             # Handle dictionary of scores
             for key, value in score.items():
-                key_score, reasoning, metadata = _process_score(key, value)
-                results.append(
-                    EvaluatorResult(
-                        key=key, score=key_score, comment=reasoning, metadata=metadata
+                if isinstance(value, list):
+                    for item in value:
+                        key_score, reasoning, metadata = _process_score(key, item)
+                        results.append(
+                            EvaluatorResult(
+                                key=key,
+                                score=key_score,
+                                comment=reasoning,
+                                metadata=metadata,
+                            )
+                        )
+                else:
+                    key_score, reasoning, metadata = _process_score(key, value)
+                    results.append(
+                        EvaluatorResult(
+                            key=key,
+                            score=key_score,
+                            comment=reasoning,
+                            metadata=metadata,
+                        )
                     )
-                )
             return results
         else:
             # Handle single score
@@ -217,12 +237,27 @@ async def _arun_evaluator_untyped(
             results = []
             # Handle dictionary of scores
             for key, value in score.items():
-                key_score, reasoning, metadata = _process_score(key, value)
-                results.append(
-                    EvaluatorResult(
-                        key=key, score=key_score, comment=reasoning, metadata=metadata
+                if isinstance(value, list):
+                    for item in value:
+                        key_score, reasoning, metadata = _process_score(key, item)
+                        results.append(
+                            EvaluatorResult(
+                                key=key,
+                                score=key_score,
+                                comment=reasoning,
+                                metadata=metadata,
+                            )
+                        )
+                else:
+                    key_score, reasoning, metadata = _process_score(key, value)
+                    results.append(
+                        EvaluatorResult(
+                            key=key,
+                            score=key_score,
+                            comment=reasoning,
+                            metadata=metadata,
+                        )
                     )
-                )
             return results
         else:
             # Handle single score

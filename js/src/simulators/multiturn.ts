@@ -17,6 +17,12 @@ import {
 } from "../types.js";
 import { convertToOpenAIMessage } from "../utils.js";
 
+export {
+  MultiturnSimulatorTrajectory,
+  MultiturnSimulatorTrajectoryUpdate,
+  MultiturnSimulatorResult,
+};
+
 function _wrap(
   app:
     | Runnable<MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate>

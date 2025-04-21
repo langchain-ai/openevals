@@ -17,6 +17,13 @@ from langsmith import traceable
 from langchain_core.runnables import RunnableLambda, Runnable, RunnableConfig
 
 
+__all__ = [
+    "MultiturnSimulatorTrajectory",
+    "MultiturnSimulatorTrajectoryUpdate",
+    "MultiturnSimulatorResult",
+]
+
+
 def _wrap(app: Runnable | Callable[..., Any], run_name: str) -> Runnable:
     if isinstance(app, Runnable):
         return app

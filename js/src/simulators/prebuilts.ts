@@ -19,7 +19,7 @@ import type {
  * @param {string} params.system - System prompt that guides the LLM's behavior as a simulated user
  * @param {string} [params.model] - Optional name of the language model to use. Must be provided if client is not.
  * @param {BaseChatModel} [params.client] - Optional LangChain chat model instance. Must be provided if model is not.
- * 
+ *
  * @returns A callable simulator function that takes a MultiturnSimulatorTrajectory containing conversation messages
  *          and returns a MultiturnSimulatorTrajectoryUpdate with the simulated user's response
  *
@@ -40,7 +40,7 @@ import type {
  *   maxTurns: 5
  * });
  * ```
- * 
+ *
  * Notes:
  * - The simulator automatically converts message roles to maintain proper conversation flow:
  *   * User messages become assistant messages when sent to the LLM

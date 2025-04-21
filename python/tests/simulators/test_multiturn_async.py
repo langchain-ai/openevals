@@ -10,7 +10,7 @@ from openevals.simulators import (
     create_async_llm_simulated_user,
 )
 from openevals.llm import create_async_llm_as_judge
-from openevals.types import TrajectoryDict
+from openevals.types import MultiturnSimulatorTrajectory
 from openai import OpenAI
 
 import pytest
@@ -159,7 +159,7 @@ async def test_multiturn_message_with_openai():
 
     client = OpenAI()
 
-    def app(inputs: TrajectoryDict):
+    def app(inputs: MultiturnSimulatorTrajectory):
         res = client.chat.completions.create(
             model="gpt-4.1-nano",
             messages=[

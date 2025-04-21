@@ -1606,14 +1606,21 @@ console.log(result);
 > By default, internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered from from the trajectory passed between the `app` and `user` methods.
 > For more information on trajectory format, see [this section below](#trajectory-format).
 
-There are a few main components:
+There are two main components:
 
 - `app`: Your application. Must accept the current trajectory as input, and returns a [trajectory update](#trajectory-format). See [the below section on trajectory format](#trajectory-format) for more.
 - `user`: The simulated user. Can be a LangChain/LangGraph runnable or a callable that accepts the current trajectory as an arg input, and returns a [trajectory update](#trajectory-format). May also be a list of string or message responses.
-  - In the example above, this is an imported prebuilt function named `create_llm_simulated_user` which uses an LLM to generate user responses, though you are free to define your own function as well. See [this section](#prebuilt-simulated-user) for more on `create_llm_simulated_user`. 
+  - In the example above, this is an imported prebuilt function named `create_llm_simulated_user` which uses an LLM to generate user responses, though you are free to define your own function as well. See [this section](#prebuilt-simulated-user) for more information on `create_llm_simulated_user`.
+
+The simluator will use the `initial_trajectory`/`initialTrajectory` as the first input into the `app`, which should return [an update to the trajectory](#trajectory-format). The simulator will apply this update and pass it to the `user`, which will return another trajectory update.
+
+You may also pass some additional parameters:
+
 - `max_turns`/`maxTurns`: The maximum number of conversation turns to simulate.
+- `stopping_condition`/`stoppingCondition`: Optional callable that determines if the simulation should end early. Takes the current trajectory as input and returns a boolean.
 - `trajectory_evaluators`/`trajectoryEvaluators`: Optional evaluators that run at the end of the simulation. These will receive the final trajectory as a kwarg named `outputs`.
-- `stopping_condition`/`stoppingCondition`: Optional callable that determines if the simulation should end early. Takes the current trajectory and turn counter as input and returns a boolean.
+
+You must pass at least one of `max_turns` or `stopping_condition`.  Once one of these triggers, the final trajectory will be passed to provided trajectory evaluators, which will receive the final trajectory as an `"outputs"` kwarg.
 
 The simulator itself is not an evaluator and will not return or log any feedback. Instead, it will return a `MultiturnSimulatorResult` instance like the following:
 
@@ -1624,8 +1631,6 @@ class MultiturnSimulatorResult(TypedDict):
 ```
 
 Where `evaluator_results` are the results from the passed `trajectory_evaluators` and `trajectory` is the final trajectory.
-
-Once `max_turns` is reached or the provided stopping condition is met, the final trajectory will be passed to provided trajectory evaluators, which will receive the final trajectory as an `"outputs"` kwarg.
 
 When calling the created simulator, you may pass the following runtime kwargs:
 

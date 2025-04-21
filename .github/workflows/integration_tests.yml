@@ -36,7 +36,7 @@ jobs:
           fi
 
   python_integration_test:
-    name: Python Integration Test
+    name: Python Integration Test (${{ matrix.python-version }})
     needs: changed_files
     if: >
       (github.event_name == 'push') ||
@@ -46,6 +46,9 @@ jobs:
       )) ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.run-python-tests == 'true')
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.11"]
     defaults:
       run:
         working-directory: python
@@ -57,10 +60,10 @@ jobs:
         with:
           version: "0.6.2"
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version-file: "./python/.python-version"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: |

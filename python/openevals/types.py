@@ -28,7 +28,7 @@ class SimpleEvaluator(Protocol):
         outputs: Any,
         reference_outputs: Optional[Any] = None,
         **kwargs,
-    ) -> EvaluatorResult | list[EvaluatorResult]: ...
+    ) -> Union[EvaluatorResult, list[EvaluatorResult]]: ...
 
 
 class SimpleAsyncEvaluator(Protocol):
@@ -39,7 +39,7 @@ class SimpleAsyncEvaluator(Protocol):
         outputs: Any,
         reference_outputs: Optional[Any] = None,
         **kwargs,
-    ) -> EvaluatorResult | list[EvaluatorResult]: ...
+    ) -> Union[EvaluatorResult, list[EvaluatorResult]]: ...
 
 
 class ChatCompletionMessage(TypedDict):
@@ -57,7 +57,7 @@ class ChatCompletion(TypedDict):
 class FewShotExample(TypedDict):
     inputs: Any
     outputs: Any
-    score: float | bool
+    score: Union[float, bool]
     reasoning: Optional[str]
 
 

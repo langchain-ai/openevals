@@ -21,6 +21,8 @@ __all__ = [
     "MultiturnSimulatorTrajectory",
     "MultiturnSimulatorTrajectoryUpdate",
     "MultiturnSimulatorResult",
+    "create_multiturn_simulator",
+    "create_async_multiturn_simulator",
 ]
 
 

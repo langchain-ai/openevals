@@ -121,12 +121,12 @@ def create_multiturn_simulator(
     *,
     app: Union[
         Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
-        Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate]
+        Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate],
     ],
     user: Union[
         Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
         Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate],
-        list[Union[str, Messages]]
+        list[Union[str, Messages]],
     ],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
@@ -273,15 +273,17 @@ def create_async_multiturn_simulator(
     app: Union[
         Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
         Callable[
-            [MultiturnSimulatorTrajectory], Awaitable[MultiturnSimulatorTrajectoryUpdate]
-        ]
+            [MultiturnSimulatorTrajectory],
+            Awaitable[MultiturnSimulatorTrajectoryUpdate],
+        ],
     ],
     user: Union[
         Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
         Callable[
-            [MultiturnSimulatorTrajectory], Awaitable[MultiturnSimulatorTrajectoryUpdate]
+            [MultiturnSimulatorTrajectory],
+            Awaitable[MultiturnSimulatorTrajectoryUpdate],
         ],
-        list[Union[str, Messages]]
+        list[Union[str, Messages]],
     ],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,

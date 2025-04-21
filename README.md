@@ -190,6 +190,8 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
   - [Evaluate](#evaluate)
 
+- [Acknowledgements](#acknowledgements)
+
 # Installation
 
 You can install `openevals` like this:
@@ -3289,6 +3291,12 @@ await evaluate(
 
 > [!NOTE]
 > In the above examples, we add wrapper functions around prebuilt evaluators for clarity since some evaluators may require parameters other than `inputs`, `outputs` and `reference_outputs`/`referenceOutputs`. However, if your evaluator accepts exactly those named parameters, you may pass them directly into the `evaluate` method.
+
+# Acknowledgements
+
+- [@assaf_elovic](https://x.com/assaf_elovic) for sharing thoughts and feedback on RAG evaluation
+- The [E2B](https://e2b.dev) team (in particular Jonas, Tomas, and Teresa) for help and feedback on sandboxing
+- [@sanjeed_i](https://x.com/sanjeed_i) for chatting about evals and in particular multiturn simulation - [check out his repo here](https://github.com/sanjeed5/ai-conversation-simulator)!
 
 # Thank you!
 

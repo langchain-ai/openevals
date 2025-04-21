@@ -1602,10 +1602,6 @@ console.log(result);
 }
 ```
 
-> [!NOTE]
-> By default, internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered from from the trajectory passed between the `app` and `user` methods.
-> For more information on trajectory format, see [this section below](#trajectory-format).
-
 There are two main components:
 
 - `app`: Your application. Must accept the current trajectory as input, and returns a [trajectory update](#trajectory-format). See [the below section on trajectory format](#trajectory-format) for more.
@@ -1613,6 +1609,10 @@ There are two main components:
   - In the example above, this is an imported prebuilt function named `create_llm_simulated_user` which uses an LLM to generate user responses, though you are free to define your own function as well. See [this section](#prebuilt-simulated-user) for more information on `create_llm_simulated_user`.
 
 The simluator will use the `initial_trajectory`/`initialTrajectory` as the first input into the `app`, which should return [an update to the trajectory](#trajectory-format). The simulator will apply this update and pass it to the `user`, which will return another trajectory update.
+
+> [!NOTE]
+> By default, internal messages (those with a "role" field other than `"user"` or `"assistant"` or messages that contain tool calls) are filtered from from the trajectory passed between the `app` and `user` methods.
+> For more information on trajectory format, see [this section below](#trajectory-format).
 
 You may also pass some additional parameters:
 
@@ -1874,14 +1874,30 @@ const concisenessEvaluator = createLLMAsJudge({
   model: "openai:o3-mini",
 });
 
+const wrappedConcisenessEvaluator = async (params: {
+  inputs: Record<string, unknown>;
+  outputs: Record<string, unknown>;
+  // Unused for this evaluator
+  referenceOutputs?: Record<string, unknown>;
+}) => {
+  const evaluatorResult = await concisenessEvaluator({
+    inputs: params.inputs,
+    outputs: params.outputs,
+  });
+  return evaluatorResult;
+};
+
 await evaluate(
   (inputs) => "What color is the sky?",
   {
     data: datasetName,
-    evaluators: [concisenessEvaluator],
+    evaluators: [wrappedConcisenessEvaluator],
   }
 );
 ```
+
+> [!NOTE]
+> In the above examples, we add wrapper functions around prebuilt evaluators for clarity since some evaluators may require parameters other than `inputs`, `outputs` and `reference_outputs`/`referenceOutputs`. However, if your evaluator accepts exactly those named parameters, you may pass them directly into the `evaluate` method.
 
 # Thank you!
 

@@ -15,7 +15,7 @@ import {
   Messages,
   MultiturnSimulatorResult,
 } from "../types.js";
-import { convertToOpenAIMessage } from "../utils.js";
+import { _convertToOpenAIMessage } from "../utils.js";
 
 export {
   MultiturnSimulatorTrajectory,
@@ -69,11 +69,11 @@ function _trajectoryReducer(
 
     // Coerce to message
     const coercedLeft: ChatCompletionMessage[] = left
-      .map((msg) => convertToOpenAIMessage(msg))
+      .map((msg) => _convertToOpenAIMessage(msg))
       .filter((m) => !_isInternalMessage(m));
 
     const coercedRight: ChatCompletionMessage[] = right
-      .map((msg) => convertToOpenAIMessage(msg))
+      .map((msg) => _convertToOpenAIMessage(msg))
       .filter((m) => !_isInternalMessage(m));
 
     // Assign missing ids

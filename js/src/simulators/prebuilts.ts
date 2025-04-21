@@ -1,7 +1,7 @@
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { initChatModel } from "langchain/chat_models/universal";
 
-import { convertToOpenAIMessage } from "../utils.js";
+import { _convertToOpenAIMessage } from "../utils.js";
 import type {
   MultiturnSimulatorTrajectory,
   MultiturnSimulatorTrajectoryUpdate,
@@ -79,7 +79,7 @@ export function createLLMSimulatedUser({
 
     const messages = [];
     for (const msg of inputs.messages) {
-      const convertedMessage = convertToOpenAIMessage(msg);
+      const convertedMessage = _convertToOpenAIMessage(msg);
       if (convertedMessage.role === "user") {
         convertedMessage.role = "assistant";
         messages.push(convertedMessage);

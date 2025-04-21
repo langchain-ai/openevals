@@ -10,7 +10,7 @@ import {
   EvaluatorResult,
 } from "./types.js";
 
-export const convertToOpenAIMessage = (
+export const _convertToOpenAIMessage = (
   message: BaseMessage | ChatCompletionMessage
 ): ChatCompletionMessage => {
   if (isBaseMessage(message)) {
@@ -25,9 +25,6 @@ export const convertToOpenAIMessage = (
     return message;
   }
 };
-
-// Keep for backward compatibility
-export const _convertToOpenAIMessage = convertToOpenAIMessage;
 
 export const _normalizeToOpenAIMessagesList = (
   messages:

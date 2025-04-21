@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Awaitable, Callable, Literal, Optional
+from typing import Any, Awaitable, Callable, Literal, Optional, Union
 from openevals.types import (
     SimpleEvaluator,
     SimpleAsyncEvaluator,
@@ -17,7 +17,7 @@ from langsmith import traceable
 from langchain_core.runnables import RunnableLambda, Runnable, RunnableConfig
 
 
-def _wrap(app: Runnable | Callable[..., Any], run_name: str) -> Runnable:
+def _wrap(app: Union[Runnable, Callable[..., Any]], run_name: str) -> Runnable:
     if isinstance(app, Runnable):
         return app
     else:
@@ -119,11 +119,15 @@ def _create_static_simulated_user(
 
 def create_multiturn_simulator(
     *,
-    app: Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate]
-    | Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate],
-    user: Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate]
-    | Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate]
-    | list[str | Messages],
+    app: Union[
+        Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
+        Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate],
+    ],
+    user: Union[
+        Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
+        Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate],
+        list[Union[str, Messages]],
+    ],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
     stopping_condition: Optional[Callable[[MultiturnSimulatorTrajectory], bool]] = None,
@@ -266,15 +270,21 @@ def create_multiturn_simulator(
 
 def create_async_multiturn_simulator(
     *,
-    app: Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate]
-    | Callable[
-        [MultiturnSimulatorTrajectory], Awaitable[MultiturnSimulatorTrajectoryUpdate]
+    app: Union[
+        Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
+        Callable[
+            [MultiturnSimulatorTrajectory],
+            Awaitable[MultiturnSimulatorTrajectoryUpdate],
+        ],
     ],
-    user: Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate]
-    | Callable[
-        [MultiturnSimulatorTrajectory], Awaitable[MultiturnSimulatorTrajectoryUpdate]
-    ]
-    | list[str | Messages],
+    user: Union[
+        Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
+        Callable[
+            [MultiturnSimulatorTrajectory],
+            Awaitable[MultiturnSimulatorTrajectoryUpdate],
+        ],
+        list[Union[str, Messages]],
+    ],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,
     stopping_condition: Optional[

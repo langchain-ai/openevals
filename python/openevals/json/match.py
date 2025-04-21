@@ -421,7 +421,7 @@ def create_json_match_evaluator(
             rubric: Dict[str, str] = {},
             exclude_keys: list[str] = [],
             use_reasoning: bool = True,
-        ) -> dict | float | tuple:
+        ) -> Union[dict, float, tuple]:
             (
                 outputs,
                 reference_outputs,
@@ -551,7 +551,7 @@ def create_async_json_match_evaluator(
         outputs: Any,
         reference_outputs: Any,
         **kwargs,
-    ) -> EvaluatorResult | list[EvaluatorResult]:
+    ) -> Union[EvaluatorResult, list[EvaluatorResult]]:
         async def _ascorer(
             *,
             outputs: Any,
@@ -559,7 +559,7 @@ def create_async_json_match_evaluator(
             rubric: Dict[str, str] = {},
             exclude_keys: list[str] = [],
             use_reasoning: bool = True,
-        ) -> dict | float | tuple:
+        ) -> Union[dict, float, tuple]:
             (
                 outputs,
                 reference_outputs,

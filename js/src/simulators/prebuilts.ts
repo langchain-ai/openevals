@@ -5,7 +5,16 @@ import { _convertToOpenAIMessage } from "../utils.js";
 import type {
   MultiturnSimulatorTrajectory,
   MultiturnSimulatorTrajectoryUpdate,
+  ChatCompletionMessage,
 } from "../types.js";
+
+// Exported for testing only
+export function _isInternalMessage(message: ChatCompletionMessage): boolean {
+  return Boolean(
+    message.role !== "user" &&
+      (message.role !== "assistant" || (message.tool_calls ?? []).length > 0)
+  );
+}
 
 /**
  * Creates a simulated user powered by a language model for multi-turn conversations.
@@ -80,6 +89,9 @@ export function createLLMSimulatedUser({
     const messages = [];
     for (const msg of inputs.messages) {
       const convertedMessage = _convertToOpenAIMessage(msg);
+      if (_isInternalMessage(convertedMessage)) {
+        continue;
+      }
       if (convertedMessage.role === "user") {
         convertedMessage.role = "assistant";
         messages.push(convertedMessage);

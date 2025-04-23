@@ -1,6 +1,5 @@
 import { expect } from "vitest";
 import * as ls from "langsmith/vitest";
-import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { initChatModel } from "langchain/chat_models/universal";
 import { tool } from "@langchain/core/tools";
@@ -8,7 +7,7 @@ import { OpenAI } from "openai";
 import { z } from "zod";
 
 import { createMultiturnSimulator } from "../multiturn.js";
-import { createLLMSimulatedUser } from "../prebuilts.js";
+import { createLLMSimulatedUser, _isInternalMessage } from "../prebuilts.js";
 import { createLLMAsJudge } from "../../llm.js";
 import type { MultiturnSimulatorTrajectory } from "../../types.js";
 
@@ -39,7 +38,6 @@ ls.describe("Multiturn simulator", () => {
         tools: [giveRefund],
         prompt:
           "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
-        checkpointer: new MemorySaver(),
       });
 
       const user = createLLMSimulatedUser({
@@ -64,7 +62,6 @@ ls.describe("Multiturn simulator", () => {
 
       const result = await simulator({
         initialTrajectory: inputs,
-        runnableConfig: { configurable: { thread_id: "1" } },
       });
 
       expect(result.evaluatorResults[0].score).toBe(false);
@@ -95,7 +92,6 @@ ls.describe("Multiturn simulator", () => {
       const app = createReactAgent({
         llm: await initChatModel("openai:gpt-4.1-nano"),
         tools: [giveRefund],
-        checkpointer: new MemorySaver(),
       });
 
       const user = createLLMSimulatedUser({
@@ -119,7 +115,6 @@ ls.describe("Multiturn simulator", () => {
 
       const result = await simulator({
         initialTrajectory: inputs,
-        runnableConfig: { configurable: { thread_id: "1" } },
       });
 
       expect(result.evaluatorResults[0].score).toBe(true);
@@ -150,7 +145,6 @@ ls.describe("Multiturn simulator", () => {
       const app = createReactAgent({
         llm: await initChatModel("openai:gpt-4.1-nano"),
         tools: [giveRefund],
-        checkpointer: new MemorySaver(),
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
@@ -174,19 +168,22 @@ ls.describe("Multiturn simulator", () => {
 
       const result = await simulator({
         initialTrajectory: inputs,
-        runnableConfig: { configurable: { thread_id: "1" } },
       });
 
-      expect(result.trajectory.messages[2].content).toBe(
+      const filteredTrajectory = result.trajectory.messages.filter(
+        (m) => !_isInternalMessage(m as any)
+      );
+
+      expect(filteredTrajectory[2].content).toBe(
         "All work and no play makes Jack a dull boy 1."
       );
-      expect(result.trajectory.messages[4].content).toBe(
+      expect(filteredTrajectory[4].content).toBe(
         "All work and no play makes Jack a dull boy 2."
       );
-      expect(result.trajectory.messages[6].content).toBe(
+      expect(filteredTrajectory[6].content).toBe(
         "All work and no play makes Jack a dull boy 3."
       );
-      expect(result.trajectory.messages[8].content).toBe(
+      expect(filteredTrajectory[8].content).toBe(
         "All work and no play makes Jack a dull boy 4."
       );
     }
@@ -270,7 +267,6 @@ ls.describe("Multiturn simulator", () => {
       const app = createReactAgent({
         llm: await initChatModel("openai:gpt-4.1-nano"),
         tools: [giveRefund],
-        checkpointer: new MemorySaver(),
       });
 
       const user = createLLMSimulatedUser({
@@ -318,7 +314,6 @@ ls.describe("Multiturn simulator", () => {
 
       const result = await simulator({
         initialTrajectory: inputs,
-        runnableConfig: { configurable: { thread_id: "1" } },
       });
 
       expect(result.evaluatorResults[0].score).toBe(true);

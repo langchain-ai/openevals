@@ -40,13 +40,6 @@ function _wrap(
   }
 }
 
-function _isInternalMessage(message: ChatCompletionMessage): boolean {
-  return Boolean(
-    message.role !== "user" &&
-      (message.role !== "assistant" || (message.tool_calls ?? []).length > 0)
-  );
-}
-
 function _trajectoryReducer(
   currentTrajectory: MultiturnSimulatorTrajectory | null,
   newUpdate: MultiturnSimulatorTrajectoryUpdate,
@@ -68,13 +61,13 @@ function _trajectoryReducer(
     }
 
     // Coerce to message
-    const coercedLeft: ChatCompletionMessage[] = left
-      .map((msg) => _convertToOpenAIMessage(msg))
-      .filter((m) => !_isInternalMessage(m));
+    const coercedLeft: ChatCompletionMessage[] = left.map((msg) =>
+      _convertToOpenAIMessage(msg)
+    );
 
-    const coercedRight: ChatCompletionMessage[] = right
-      .map((msg) => _convertToOpenAIMessage(msg))
-      .filter((m) => !_isInternalMessage(m));
+    const coercedRight: ChatCompletionMessage[] = right.map((msg) =>
+      _convertToOpenAIMessage(msg)
+    );
 
     // Assign missing ids
     for (const m of coercedLeft) {

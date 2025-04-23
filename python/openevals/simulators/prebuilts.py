@@ -3,8 +3,15 @@ from typing import Optional
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
 
-from openevals.types import MultiturnSimulatorTrajectory
+from openevals.types import ChatCompletionMessage, MultiturnSimulatorTrajectory
 from openevals.utils import _convert_to_openai_message
+
+
+def _is_internal_message(message: ChatCompletionMessage) -> bool:
+    return bool(
+        message.get("role") != "user"
+        and (message.get("role") != "assistant" or message.get("tool_calls"))
+    )
 
 
 def create_llm_simulated_user(
@@ -70,6 +77,8 @@ def create_llm_simulated_user(
         messages = []
         for msg in inputs["messages"]:
             converted_message = _convert_to_openai_message(msg)
+            if _is_internal_message(converted_message):
+                continue
             if converted_message.get("role") == "user":
                 converted_message["role"] = "assistant"
                 messages.append(converted_message)
@@ -153,6 +162,8 @@ def create_async_llm_simulated_user(
         messages = []
         for msg in inputs["messages"]:
             converted_message = _convert_to_openai_message(msg)
+            if _is_internal_message(converted_message):
+                continue
             if converted_message.get("role") == "user":
                 converted_message["role"] = "assistant"
                 messages.append(converted_message)

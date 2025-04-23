@@ -1,15 +1,14 @@
 import json
 
-from langgraph.checkpoint.memory import MemorySaver
 from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import create_react_agent
 from langsmith import testing as t
 
 from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
+from openevals.simulators.prebuilts import _is_internal_message
 from openevals.llm import create_llm_as_judge
 from openevals.types import MultiturnSimulatorTrajectory
 from openai import OpenAI
-
 import pytest
 
 
@@ -27,7 +26,6 @@ def test_multiturn_failure():
         init_chat_model("openai:gpt-4.1-mini"),
         tools=[give_refund],
         prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
-        checkpointer=MemorySaver(),
     )
     user = create_llm_simulated_user(
         system="You are an angry user who is frustrated with the service and keeps making additional demands.",
@@ -46,7 +44,6 @@ def test_multiturn_failure():
     )
     res = simulator(
         initial_trajectory=initial_trajectory,
-        runnable_config={"configurable": {"thread_id": "1"}},
     )
     t.log_outputs(res)
     assert not res["evaluator_results"][0]["score"]
@@ -65,7 +62,6 @@ def test_multiturn_success():
     app = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
-        checkpointer=MemorySaver(),
     )
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
@@ -84,7 +80,6 @@ def test_multiturn_success():
     )
     res = simulator(
         initial_trajectory=initial_trajectory,
-        runnable_config={"configurable": {"thread_id": "1"}},
     )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
@@ -103,7 +98,6 @@ def test_multiturn_preset_responses():
     app = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
-        checkpointer=MemorySaver(),
     )
     trajectory_evaluator = create_llm_as_judge(
         model="openai:gpt-4o-mini",
@@ -123,23 +117,25 @@ def test_multiturn_preset_responses():
     )
     res = simulator(
         initial_trajectory=initial_trajectory,
-        runnable_config={"configurable": {"thread_id": "1"}},
     )
     t.log_outputs(res)
+    filtered_trajectory = [
+        msg for msg in res["trajectory"]["messages"] if not _is_internal_message(msg)
+    ]
     assert (
-        res["trajectory"]["messages"][2]["content"]
+        filtered_trajectory[2]["content"]
         == "All work and no play makes Jack a dull boy 1."
     )
     assert (
-        res["trajectory"]["messages"][4]["content"]
+        filtered_trajectory[4]["content"]
         == "All work and no play makes Jack a dull boy 2."
     )
     assert (
-        res["trajectory"]["messages"][6]["content"]
+        filtered_trajectory[6]["content"]
         == "All work and no play makes Jack a dull boy 3."
     )
     assert (
-        res["trajectory"]["messages"][8]["content"]
+        filtered_trajectory[8]["content"]
         == "All work and no play makes Jack a dull boy 4."
     )
 
@@ -198,7 +194,6 @@ def test_multiturn_stopping_condition():
     app = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
-        checkpointer=MemorySaver(),
     )
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
@@ -238,7 +233,6 @@ def test_multiturn_stopping_condition():
     )
     res = simulator(
         initial_trajectory=initial_trajectory,
-        runnable_config={"configurable": {"thread_id": "1"}},
     )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]

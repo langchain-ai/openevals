@@ -24,13 +24,6 @@ def _wrap(app: Union[Runnable, Callable[..., Any]], run_name: str) -> Runnable:
         return RunnableLambda(app).with_config({"run_name": run_name})
 
 
-def _is_internal_message(message: ChatCompletionMessage) -> bool:
-    return bool(
-        message.get("role") != "user"
-        and (message.get("role") != "assistant" or message.get("tool_calls"))
-    )
-
-
 def _trajectory_reducer(
     current_trajectory: Optional[MultiturnSimulatorTrajectory],
     new_update: MultiturnSimulatorTrajectoryUpdate,
@@ -49,14 +42,10 @@ def _trajectory_reducer(
             right = [right]  # type: ignore[assignment]
         # coerce to message
         coerced_left: list[ChatCompletionMessage] = [
-            m
-            for m in [_convert_to_openai_message(msg) for msg in left]
-            if not _is_internal_message(m)
+            m for m in [_convert_to_openai_message(msg) for msg in left]
         ]
         coerced_right: list[ChatCompletionMessage] = [
-            m
-            for m in [_convert_to_openai_message(msg) for msg in right]
-            if not _is_internal_message(m)
+            m for m in [_convert_to_openai_message(msg) for msg in right]
         ]
         # assign missing ids
         for m in coerced_left:

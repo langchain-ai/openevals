@@ -500,6 +500,11 @@ export function createLLMAsJudge({
       params: Record<string, unknown>
     ) => Promise<EvaluatorResult & Record<string, unknown>>)
   | ((params: Record<string, unknown>) => Promise<Record<string, unknown>>) {
+  if (outputSchema !== undefined && _isStructuredPrompt(prompt)) {
+    throw new Error(
+      "You may not provide both an `outputSchema` parameter and a LangChain prompt with output schema."
+    );
+  }
   const scorer = _createLLMAsJudgeScorer({
     prompt,
     judge,

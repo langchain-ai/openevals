@@ -534,6 +534,11 @@ def create_llm_as_judge(
         )
         ```
     """
+    if output_schema is not None and isinstance(prompt, StructuredPrompt):
+        raise ValueError(
+            "You may not provide both an `output_schema` parameter and a LangChain prompt with output schema."
+        )
+
     scorer = _create_llm_as_judge_scorer(
         prompt=prompt,
         judge=judge,
@@ -632,6 +637,11 @@ def create_async_llm_as_judge(
         )
         ```
     """
+    if output_schema is not None and isinstance(prompt, StructuredPrompt):
+        raise ValueError(
+            "You may not provide both an `output_schema` parameter and a LangChain prompt with output schema."
+        )
+
     scorer = _create_async_llm_as_judge_scorer(
         prompt=prompt,
         judge=judge,

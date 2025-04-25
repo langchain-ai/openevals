@@ -327,7 +327,7 @@ ls.describe("llm as judge", () => {
     expect(result.results.length).toBeGreaterThan(0);
   }, 60000);
 
-  ls.test.only(
+  ls.test(
     "llm as judge with mustache prompt",
     {
       inputs: { a: 1, b: 2 },

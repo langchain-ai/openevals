@@ -10,6 +10,7 @@ from langchain_openai import ChatOpenAI
 from langsmith import Client
 from langchain import hub as prompts
 from langchain_core.messages import HumanMessage
+from langchain_core.prompts.chat import ChatPromptTemplate
 
 
 @pytest.mark.langsmith
@@ -281,3 +282,19 @@ def test_llm_as_judge_with_evaluate():
     res = client.evaluate(lambda x: x, data="exact match", evaluators=[evaluator])
     for r in res:
         assert r["evaluation_results"]["results"][0].score is not None
+
+
+@pytest.mark.langsmith
+def test_llm_as_judge_mustache_prompt():
+    inputs = {"a": 1, "b": 2}
+    outputs = {"a": 1, "b": 2}
+    prompt = ChatPromptTemplate(
+        [
+            ("system", "You are an expert at determining if two objects are equal."),
+            ("human", "Are these two equal? {{inputs}} {{outputs}}"),
+        ],
+        template_format="mustache",
+    )
+    llm_as_judge = create_llm_as_judge(prompt=prompt, model="openai:gpt-4o-mini")
+    eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+    assert eval_result["score"]

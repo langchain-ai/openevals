@@ -544,7 +544,7 @@ console.log(evalResult);
 
 ### Customizing prompts
 
-The `prompt` parameter for `create_llm_as_judge` may be an f-string, LangChain prompt template, or a function that takes kwargs and returns a list of formatted messages.
+The `prompt` parameter for `create_llm_as_judge` may be an f-string, [LangChain prompt template](#customizing-with-langchain-prompt-templates), or a function that takes kwargs and returns a list of formatted messages.
 
 Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, your prompts can also require additional variables. You would then pass these extra variables when calling your evaluator function. Here's an example of a prompt that requires an extra variable named `context`:
 
@@ -621,8 +621,7 @@ const evalResult = await customPromptEvaluator({
 ```
 </details>
 
-
-For convenience, the following options are also available:
+The following options are also available for string prompts:
 
 - `system`: a string that sets a system prompt for the judge model by adding a `system` message before other parts of the prompt.
 - `few_shot_examples`: a list of example dicts that are appended to the end of the prompt. This is useful for providing the judge model with examples of good and bad outputs. The required structure looks like this:
@@ -659,6 +658,82 @@ const fewShotExamples = [
 </details>
 
 These will be appended to the end of the final user message in the prompt.
+
+#### Customizing with LangChain prompt templates
+
+You can also pass a [LangChain prompt template](https://python.langchain.com/docs/concepts/prompt_templates/) if you want more control over formatting. Here's an example that uses mustache formatting instead of f-strings:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from langchain_core.prompts.chat import ChatPromptTemplate
+
+inputs = {"a": 1, "b": 2}
+outputs = {"a": 1, "b": 2}
+
+prompt = ChatPromptTemplate([
+    ("system", "You are an expert at determining if two objects are equal."),
+    ("human", "Are these two equal? {{inputs}} {{outputs}}"),
+], template_format="mustache")
+
+llm_as_judge = create_llm_as_judge(
+    prompt=prompt,
+    model="openai:o3-mini",
+    feedback_key="equality",
+)
+
+eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
+
+print(eval_result)
+```
+
+```
+{
+    key: 'equality',
+    score: True,
+    comment: '...'
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge } from "openevals";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+
+const inputs = { a: 1, b: 2 };
+const outputs = { a: 1, b: 2 };
+
+const prompt = ChatPromptTemplate.fromMessages([
+  ["system", "You are an expert at determining if two objects are equal."],
+  ["user", "Are these two equal? {{inputs}} {{outputs}}"],
+], { templateFormat: "mustache" });
+
+const evaluator = createLLMAsJudge({
+  prompt,
+  model: "openai:o3-mini",
+  feedbackKey: "equality",
+});
+
+const result = await evaluator({ inputs, outputs });
+```
+
+```
+{
+    key: 'equality',
+    score: true,
+    comment: '...'
+}
+```
+
+</details>
+
+You can also pass in a function that takes your LLM-as-judge inputs as kwargs and returns formatted chat messages.
 
 ### Customizing the model
 

@@ -1,6 +1,6 @@
 [project]
 name = "openevals"
-version = "0.0.19"
+version = "0.0.20"
 license = {text = "MIT"}
 description = "Open-source evaluators for LLM applications"
 readme = "README.md"

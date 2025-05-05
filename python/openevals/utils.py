@@ -33,11 +33,11 @@ def _convert_to_openai_message(
         return converted  # type: ignore
     if not isinstance(message, dict):
         message = dict(message)
-    if "role" not in message or "content" not in message:
+    if "role" not in message:
         raise ValueError(
-            f"Expected a dict with 'role' and 'content' keys or a LangChain message instance, got {message}"
+            f"Expected a dict with 'role' keys or a LangChain message instance, got {message}"
         )
-    return message.copy()  # type: ignore
+    return {"content": "", **message.copy()}  # type: ignore
 
 
 def _normalize_to_openai_messages_list(

@@ -10,6 +10,7 @@ import * as hub from "langchain/hub";
 import { HumanMessage } from "@langchain/core/messages";
 
 import { z } from "zod";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 ls.describe("llm as judge", () => {
   ls.test(
@@ -325,4 +326,31 @@ ls.describe("llm as judge", () => {
     expect(result).toBeDefined();
     expect(result.results.length).toBeGreaterThan(0);
   }, 60000);
+
+  ls.test(
+    "llm as judge with mustache prompt",
+    {
+      inputs: { a: 1, b: 2 },
+    },
+    async ({ inputs }) => {
+      const outputs = { a: 1, b: 2 };
+      const prompt = ChatPromptTemplate.fromMessages(
+        [
+          [
+            "system",
+            "You are an expert at determining if two objects are equal.",
+          ],
+          ["user", "Are these two equal? {{inputs}} {{outputs}}"],
+        ],
+        { templateFormat: "mustache" }
+      );
+      const evaluator = createLLMAsJudge({
+        prompt,
+        model: "openai:gpt-4o-mini",
+      });
+      const result = await evaluator({ inputs, outputs });
+      expect(result).toBeDefined();
+      expect(result.score).toBe(true);
+    }
+  );
 });

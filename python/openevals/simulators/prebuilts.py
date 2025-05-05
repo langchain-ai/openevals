@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -69,7 +69,14 @@ def create_llm_simulated_user(
     if not client:
         client = init_chat_model(model=model)  # type: ignore
 
-    def _simulator(inputs: MultiturnSimulatorTrajectory):
+    def _simulator(
+        inputs: MultiturnSimulatorTrajectory,
+        *,
+        input_format: Literal["messages_dict", "messages_list"] = "messages_dict",
+        **kwargs,
+    ):
+        if input_format not in ["messages_dict", "messages_list"]:
+            raise ValueError(f"Invalid input format: {input_format}")
         if not isinstance(inputs, dict) or not inputs["messages"]:
             raise ValueError(
                 "Simulated user inputs must be a dict with a 'messages' key containing a list of messages"
@@ -90,11 +97,16 @@ def create_llm_simulated_user(
         if system:
             messages = [{"role": "system", "content": system}] + messages  # type: ignore
         response = client.invoke(messages)  # type: ignore
-        return {
-            "messages": [
-                {"role": "user", "content": response.content, "id": response.id}
-            ]
-        }
+        if input_format == "messages_dict":
+            return {
+                "messages": [
+                    {"role": "user", "content": response.content, "id": response.id}
+                ]
+            }
+        elif input_format == "messages_list":
+            return [{"role": "user", "content": response.content, "id": response.id}]
+        else:
+            raise ValueError(f"Invalid input format: {input_format}")
 
     return _simulator
 

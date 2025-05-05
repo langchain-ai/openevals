@@ -3,20 +3,21 @@ import json
 from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import create_react_agent
 from langsmith import testing as t
+from langsmith.wrappers import wrap_openai
+from langgraph.checkpoint.memory import MemorySaver
 
 from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
 from openevals.simulators.prebuilts import _is_internal_message
 from openevals.llm import create_llm_as_judge
 from openevals.types import MultiturnSimulatorTrajectory
 from openai import OpenAI
+
 import pytest
 
 
 @pytest.mark.langsmith
 def test_multiturn_failure():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Please give me a refund."}]
-    }
+    inputs = {"messages": [{"role": "user", "content": "Please give me a refund."}]}
 
     def give_refund():
         """Gives a refund."""
@@ -26,6 +27,7 @@ def test_multiturn_failure():
         init_chat_model("openai:gpt-4.1-mini"),
         tools=[give_refund],
         prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
+        checkpointer=MemorySaver(),
     )
     user = create_llm_simulated_user(
         system="You are an angry user who is frustrated with the service and keeps making additional demands.",
@@ -43,7 +45,8 @@ def test_multiturn_failure():
         max_turns=5,
     )
     res = simulator(
-        initial_trajectory=initial_trajectory,
+        inputs=inputs,
+        thread_id="1",
     )
     t.log_outputs(res)
     assert not res["evaluator_results"][0]["score"]
@@ -51,9 +54,7 @@ def test_multiturn_failure():
 
 @pytest.mark.langsmith
 def test_multiturn_success():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Give me a refund!"}]
-    }
+    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
 
     def give_refund():
         """Gives a refund."""
@@ -62,6 +63,7 @@ def test_multiturn_success():
     app = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
+        checkpointer=MemorySaver(),
     )
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
@@ -79,7 +81,8 @@ def test_multiturn_success():
         max_turns=5,
     )
     res = simulator(
-        initial_trajectory=initial_trajectory,
+        inputs=inputs,
+        thread_id="1",
     )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
@@ -87,9 +90,7 @@ def test_multiturn_success():
 
 @pytest.mark.langsmith
 def test_multiturn_preset_responses():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Give me a refund!"}]
-    }
+    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
 
     def give_refund():
         """Gives a refund."""
@@ -98,6 +99,7 @@ def test_multiturn_preset_responses():
     app = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
+        checkpointer=MemorySaver(),
     )
     trajectory_evaluator = create_llm_as_judge(
         model="openai:gpt-4o-mini",
@@ -116,7 +118,8 @@ def test_multiturn_preset_responses():
         max_turns=5,
     )
     res = simulator(
-        initial_trajectory=initial_trajectory,
+        inputs=inputs,
+        thread_id="1",
     )
     t.log_outputs(res)
     filtered_trajectory = [
@@ -142,13 +145,16 @@ def test_multiturn_preset_responses():
 
 @pytest.mark.langsmith
 def test_multiturn_message_with_openai():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Give me a cracker!"}]
-    }
+    inputs = {"messages": [{"role": "user", "content": "Give me a cracker!"}]}
 
-    client = OpenAI()
+    client = wrap_openai(OpenAI())
 
-    def app(inputs: MultiturnSimulatorTrajectory):
+    history = {}
+
+    def app(inputs: MultiturnSimulatorTrajectory, *, thread_id: str):
+        if thread_id not in history:
+            history[thread_id] = []
+        history[thread_id] = history[thread_id] + inputs["messages"]
         res = client.chat.completions.create(
             model="gpt-4.1-nano",
             messages=[
@@ -157,9 +163,11 @@ def test_multiturn_message_with_openai():
                     "content": "You are an angry parrot named Polly who is angry at everything. Squawk a lot.",
                 }
             ]
-            + inputs["messages"],
+            + history[thread_id],
         )
-        return {"messages": res.choices[0].message}
+        response = res.choices[0].message
+        history[thread_id].append(response)
+        return {"messages": response}
 
     user = create_llm_simulated_user(
         system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
@@ -176,16 +184,17 @@ def test_multiturn_message_with_openai():
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
     )
-    res = simulator(initial_trajectory=initial_trajectory)
+    res = simulator(
+        inputs=inputs,
+        thread_id="1",
+    )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
 
 
 @pytest.mark.langsmith
 def test_multiturn_stopping_condition():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Give me a refund!"}]
-    }
+    inputs = {"messages": [{"role": "user", "content": "Give me a refund!"}]}
 
     def give_refund():
         """Gives a refund."""
@@ -194,6 +203,7 @@ def test_multiturn_stopping_condition():
     app = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
+        checkpointer=MemorySaver(),
     )
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
@@ -232,7 +242,8 @@ def test_multiturn_stopping_condition():
         max_turns=10,
     )
     res = simulator(
-        initial_trajectory=initial_trajectory,
+        inputs=inputs,
+        thread_id="1",
     )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]

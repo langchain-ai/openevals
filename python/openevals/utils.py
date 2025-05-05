@@ -46,10 +46,14 @@ def _normalize_to_openai_messages_list(
     if messages is None:
         return []
     if isinstance(messages, dict):
-        if "messages" in messages:
+        if "role" in messages:
+            messages = [messages]
+        elif "messages" in messages:
             messages = messages["messages"]
         else:
             raise ValueError("if messages is a dict, it must contain a 'messages' key")
+    if not isinstance(messages, list):
+        messages = [messages]
     return [_convert_to_openai_message(message) for message in messages]  # type: ignore
 
 

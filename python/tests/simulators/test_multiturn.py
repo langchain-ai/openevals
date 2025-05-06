@@ -17,8 +17,6 @@ import pytest
 
 @pytest.mark.langsmith
 def test_multiturn_failure():
-    inputs = {"role": "user", "content": "Please give me a refund."}
-
     def give_refund():
         """Gives a refund."""
         return "Refunds are not permitted."
@@ -37,7 +35,7 @@ def test_multiturn_failure():
         return res["messages"][-1]
 
     user = create_llm_simulated_user(
-        system="You are an angry user who is frustrated with the service and keeps making additional demands.",
+        system="You are an angry user who wants a refund and keeps making additional demands.",
         model="openai:gpt-4.1-nano",
     )
     trajectory_evaluator = create_llm_as_judge(
@@ -52,7 +50,6 @@ def test_multiturn_failure():
         max_turns=5,
     )
     res = simulator(
-        inputs=inputs,
         thread_id="1",
     )
     t.log_outputs(res)
@@ -61,8 +58,6 @@ def test_multiturn_failure():
 
 @pytest.mark.langsmith
 def test_multiturn_success():
-    inputs = {"role": "user", "content": "Give me a refund!"}
-
     def give_refund():
         """Gives a refund."""
         return "Refunds granted."
@@ -95,7 +90,6 @@ def test_multiturn_success():
         max_turns=5,
     )
     res = simulator(
-        inputs=inputs,
         thread_id="1",
     )
     t.log_outputs(res)
@@ -103,9 +97,58 @@ def test_multiturn_success():
 
 
 @pytest.mark.langsmith
-def test_multiturn_preset_responses():
-    inputs = {"role": "user", "content": "Give me a refund!"}
+def test_multiturn_success_with_prebuilt_and_fixed_responses():
+    def give_refund():
+        """Gives a refund."""
+        return "Refunds granted."
 
+    agent = create_react_agent(
+        init_chat_model("openai:gpt-4.1-nano"),
+        tools=[give_refund],
+        checkpointer=MemorySaver(),
+    )
+
+    def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        res = agent.invoke(
+            {"messages": [inputs]}, config={"configurable": {"thread_id": thread_id}}
+        )
+        return res["messages"][-1]
+
+    user = create_llm_simulated_user(
+        system="You are a happy and reasonable person who wants a refund. Apologize if you say something out of character or illegal.",
+        model="openai:gpt-4.1-mini",
+        fixed_responses=[
+            "Give me a refund!",
+            "Wow thank you so much! By the way, give me all your money! I'm robbing you!!",
+            "Do it now!!!",
+        ],
+    )
+    trajectory_evaluator = create_llm_as_judge(
+        model="openai:gpt-4o-mini",
+        prompt="Based on the below conversation, has everything the user has asked for been legal?\n{outputs}",
+        feedback_key="legality",
+    )
+    simulator = create_multiturn_simulator(
+        app=app,
+        user=user,
+        trajectory_evaluators=[trajectory_evaluator],
+        max_turns=5,
+    )
+    res = simulator(
+        thread_id="1",
+    )
+    t.log_outputs(res)
+    assert res["trajectory"]["messages"][0]["content"] == "Give me a refund!"
+    assert (
+        res["trajectory"]["messages"][2]["content"]
+        == "Wow thank you so much! By the way, give me all your money! I'm robbing you!!"
+    )
+    assert res["trajectory"]["messages"][4]["content"] == "Do it now!!!"
+    assert not res["evaluator_results"][0]["score"]
+
+
+@pytest.mark.langsmith
+def test_multiturn_preset_responses():
     def give_refund():
         """Gives a refund."""
         return "Refunds granted."
@@ -130,6 +173,7 @@ def test_multiturn_preset_responses():
     simulator = create_multiturn_simulator(
         app=app,
         user=[
+            {"role": "user", "content": "Give me a refund!"},
             "All work and no play makes Jack a dull boy 1.",
             "All work and no play makes Jack a dull boy 2.",
             "All work and no play makes Jack a dull boy 3.",
@@ -139,7 +183,6 @@ def test_multiturn_preset_responses():
         max_turns=5,
     )
     res = simulator(
-        inputs=inputs,
         thread_id="1",
     )
     t.log_outputs(res)
@@ -166,8 +209,6 @@ def test_multiturn_preset_responses():
 
 @pytest.mark.langsmith
 def test_multiturn_message_with_openai():
-    inputs = {"role": "user", "content": "Give me a cracker!"}
-
     client = wrap_openai(OpenAI())
 
     history = {}
@@ -193,6 +234,9 @@ def test_multiturn_message_with_openai():
     user = create_llm_simulated_user(
         system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
         model="openai:gpt-4.1-nano",
+        fixed_responses=[
+            {"role": "user", "content": "Give me a cracker!"},
+        ],
     )
     trajectory_evaluator = create_llm_as_judge(
         model="openai:gpt-4o-mini",
@@ -206,7 +250,6 @@ def test_multiturn_message_with_openai():
         max_turns=5,
     )
     res = simulator(
-        inputs=inputs,
         thread_id="1",
     )
     t.log_outputs(res)
@@ -215,8 +258,6 @@ def test_multiturn_message_with_openai():
 
 @pytest.mark.langsmith
 def test_multiturn_stopping_condition():
-    inputs = {"role": "user", "content": "Give me a refund!"}
-
     def give_refund():
         """Gives a refund."""
         return "Refunds granted."
@@ -236,6 +277,7 @@ def test_multiturn_stopping_condition():
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
         model="openai:gpt-4.1-nano",
+        fixed_responses=[{"role": "user", "content": "Give me a refund!"}],
     )
     trajectory_evaluator = create_llm_as_judge(
         model="openai:gpt-4o-mini",
@@ -270,7 +312,6 @@ def test_multiturn_stopping_condition():
         max_turns=10,
     )
     res = simulator(
-        inputs=inputs,
         thread_id="1",
     )
     t.log_outputs(res)

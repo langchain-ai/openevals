@@ -213,16 +213,16 @@ def create_multiturn_simulator(
     @traceable(name="multiturn_simulator")
     def _run_simulator(
         *,
-        inputs: Messages,
         reference_outputs: Optional[Any] = None,
         thread_id: str,
-        **kwargs,
     ):
         if thread_id is None:
             raise ValueError("thread_id must be provided")
-        inputs = _coerce_and_assign_id_to_message(inputs)
         turn_counter = 0
-        current_reduced_trajectory: MultiturnSimulatorTrajectory = {"messages": []}
+        current_reduced_trajectory: MultiturnSimulatorTrajectory = {
+            "messages": [],
+            "turn_counter": 0,
+        }
         wrapped_app = _wrap(app, "app", thread_id)
         if isinstance(user, list):
             static_responses = user
@@ -234,11 +234,7 @@ def create_multiturn_simulator(
         while True:
             if max_turns is not None and turn_counter >= max_turns:
                 break
-            raw_inputs = (
-                inputs
-                if turn_counter == 0
-                else wrapped_simulated_user(current_reduced_trajectory)
-            )
+            raw_inputs = wrapped_simulated_user(current_reduced_trajectory)
             current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
@@ -248,13 +244,13 @@ def create_multiturn_simulator(
             )
             raw_outputs = wrapped_app(current_inputs)
             current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
+            turn_counter += 1
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
                 current_outputs,
                 update_source="app",
                 turn_counter=turn_counter,
             )
-            turn_counter += 1
             if stopping_condition and stopping_condition(current_reduced_trajectory):
                 break
         results = []
@@ -262,7 +258,6 @@ def create_multiturn_simulator(
         for trajectory_evaluator in trajectory_evaluators or []:
             try:
                 trajectory_eval_result = trajectory_evaluator(
-                    inputs=inputs,
                     outputs=current_reduced_trajectory,
                     reference_outputs=reference_outputs,
                 )
@@ -366,16 +361,16 @@ def create_async_multiturn_simulator(
     @traceable(name="multiturn_simulator")
     async def _run_simulator(
         *,
-        inputs: Union[dict[str, Union[list[Messages], Any]], list[Messages]],
         reference_outputs: Optional[Any] = None,
         thread_id: str,
-        **kwargs,
     ):
         if thread_id is None:
             raise ValueError("thread_id must be provided")
-        inputs = _coerce_and_assign_id_to_message(inputs)
         turn_counter = 0
-        current_reduced_trajectory: MultiturnSimulatorTrajectory = {"messages": []}
+        current_reduced_trajectory: MultiturnSimulatorTrajectory = {
+            "messages": [],
+            "turn_counter": 0,
+        }
         wrapped_app = _awrap(app, "app", thread_id)
         if isinstance(user, list):
             static_responses = user
@@ -387,11 +382,7 @@ def create_async_multiturn_simulator(
         while True:
             if max_turns is not None and turn_counter >= max_turns:
                 break
-            raw_inputs = (
-                inputs
-                if turn_counter == 0
-                else await wrapped_simulated_user(current_reduced_trajectory)
-            )
+            raw_inputs = await wrapped_simulated_user(current_reduced_trajectory)
             current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
@@ -401,13 +392,13 @@ def create_async_multiturn_simulator(
             )
             raw_outputs = await wrapped_app(current_inputs)
             current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
+            turn_counter += 1
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
                 current_outputs,
                 update_source="app",
                 turn_counter=turn_counter,
             )
-            turn_counter += 1
             if stopping_condition and await stopping_condition(
                 current_reduced_trajectory
             ):
@@ -417,7 +408,6 @@ def create_async_multiturn_simulator(
         for trajectory_evaluator in trajectory_evaluators or []:
             try:
                 trajectory_eval_result = await trajectory_evaluator(
-                    inputs=inputs,
                     outputs=current_reduced_trajectory,
                     reference_outputs=reference_outputs,
                 )

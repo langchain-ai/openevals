@@ -1,4 +1,5 @@
-from typing import Literal, Optional
+import uuid
+from typing import Optional
 
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -19,6 +20,7 @@ def create_llm_simulated_user(
     system: str,
     model: Optional[str] = None,
     client: Optional[BaseChatModel] = None,
+    fixed_responses: Optional[list[str]] = None,
 ):
     """Creates a simulated user powered by a language model for multi-turn conversations.
 
@@ -31,7 +33,9 @@ def create_llm_simulated_user(
         system: System prompt that guides the LLM's behavior as a simulated user.
         model: Optional name of the language model to use. Must be provided if client is not.
         client: Optional LangChain chat model instance. Must be provided if model is not.
-
+        fixed_responses: Optional list of fixed responses to use for the simulated user.
+            If the number of turns exceeds the number of fixed responses, the simulated user will
+            generate a response using the specified LLM.
     Returns:
         A callable simulator function that takes a MultiturnSimulatorTrajectory containing conversation messages
         and returns a MultiturnSimulatorTrajectory with the simulated user's response.
@@ -70,15 +74,26 @@ def create_llm_simulated_user(
         client = init_chat_model(model=model)  # type: ignore
 
     def _simulator(
-        inputs: ChatCompletionMessage,
+        current_trajectory: MultiturnSimulatorTrajectory,
         **kwargs,
     ):
-        if not isinstance(inputs, dict):
+        if (
+            not isinstance(current_trajectory, dict)
+            or current_trajectory.get("messages") is None
+        ):
             raise ValueError(
-                "Simulated user inputs must be a dict representing a message object"
+                "Simulated user inputs must be a dict containing a 'messages' key with a list of message objects"
             )
+        if fixed_responses and current_trajectory.get("turn_counter") < len(
+            fixed_responses
+        ):
+            res = fixed_responses[current_trajectory["turn_counter"]]
+            if isinstance(res, str):
+                return {"role": "user", "content": res, "id": str(uuid.uuid4())}
+            else:
+                return res
         messages = []
-        for msg in inputs["messages"]:
+        for msg in current_trajectory["messages"]:
             converted_message = _convert_to_openai_message(msg)
             if _is_internal_message(converted_message):
                 continue
@@ -90,8 +105,15 @@ def create_llm_simulated_user(
             ) == "assistant" and not converted_message.get("tool_calls"):
                 converted_message["role"] = "user"
                 messages.append(converted_message)
-        if system:
-            messages = [{"role": "system", "content": system}] + messages  # type: ignore
+        if len(messages) == 0:
+            messages = [
+                {
+                    "role": "user",
+                    "content": "Generate an initial query to start a conversation based on your instructions.",
+                    "id": str(uuid.uuid4()),
+                }
+            ]
+        messages = [{"role": "system", "content": system}] + messages  # type: ignore
         response = client.invoke(messages)  # type: ignore
         return {"role": "user", "content": response.content, "id": response.id}
 
@@ -103,6 +125,7 @@ def create_async_llm_simulated_user(
     system: str,
     model: Optional[str] = None,
     client: Optional[BaseChatModel] = None,
+    fixed_responses: Optional[list[str]] = None,
 ):
     """Creates an async simulated user powered by a language model for multi-turn conversations.
 
@@ -115,6 +138,9 @@ def create_async_llm_simulated_user(
         system: System prompt that guides the LLM's behavior as a simulated user.
         model: Optional name of the language model to use. Must be provided if client is not.
         client: Optional LangChain chat model instance. Must be provided if model is not.
+        fixed_responses: Optional list of fixed responses to use for the simulated user.
+            If the number of turns exceeds the number of fixed responses, the simulated user will
+            generate a response using the specified LLM.
 
     Returns:
         A callable simulator function that takes a MultiturnSimulatorTrajectory containing conversation messages
@@ -154,15 +180,26 @@ def create_async_llm_simulated_user(
         client = init_chat_model(model=model)  # type: ignore
 
     async def _simulator(
-        inputs: MultiturnSimulatorTrajectory,
+        current_trajectory: MultiturnSimulatorTrajectory,
         **kwargs,
     ):
-        if not isinstance(inputs, dict):
+        if (
+            not isinstance(current_trajectory, dict)
+            or current_trajectory.get("messages") is None
+        ):
             raise ValueError(
-                "Simulated user inputs must be a dict representing a message object"
+                "Simulated user inputs must be a dict containing a 'messages' key with a list of message objects"
             )
+        if fixed_responses and current_trajectory.get("turn_counter") < len(
+            fixed_responses
+        ):
+            res = fixed_responses[current_trajectory["turn_counter"]]
+            if isinstance(res, str):
+                return {"role": "user", "content": res, "id": str(uuid.uuid4())}
+            else:
+                return res
         messages = []
-        for msg in inputs["messages"]:
+        for msg in current_trajectory["messages"]:
             converted_message = _convert_to_openai_message(msg)
             if _is_internal_message(converted_message):
                 continue
@@ -174,8 +211,15 @@ def create_async_llm_simulated_user(
             ) == "assistant" and not converted_message.get("tool_calls"):
                 converted_message["role"] = "user"
                 messages.append(converted_message)
-        if system:
-            messages = [{"role": "system", "content": system}] + messages  # type: ignore
+        if len(messages) == 0:
+            messages = [
+                {
+                    "role": "user",
+                    "content": "Generate an initial query to start a conversation based on your instructions.",
+                    "id": str(uuid.uuid4()),
+                }
+            ]
+        messages = [{"role": "system", "content": system}] + messages  # type: ignore
         response = await client.ainvoke(messages)  # type: ignore
         return {"role": "user", "content": response.content, "id": response.id}
 

@@ -1,4 +1,5 @@
 import uuid
+import asyncio
 from typing import Any, Awaitable, Callable, Literal, Optional, Union
 from openevals.types import (
     SimpleEvaluator,
@@ -8,7 +9,6 @@ from openevals.types import (
 )
 from openevals.types import (
     MultiturnSimulatorTrajectory,
-    MultiturnSimulatorTrajectoryUpdate,
     MultiturnSimulatorResult,
 )
 from openevals.utils import (
@@ -17,28 +17,32 @@ from openevals.utils import (
 )
 from langsmith import traceable
 
-from langchain_core.runnables import Runnable, RunnableConfig
+from langchain_core.runnables import Runnable
+from langchain_core.messages import BaseMessage
 
 
-def _wrap(
-    app: Union[Runnable, Callable[..., Any]], run_name: str, thread_id: str
+def _wrap(app: Callable[..., Any], run_name: str, thread_id: str) -> Runnable:
+    @traceable(name=run_name)
+    def _wrap_app(inputs: ChatCompletionMessage, **kwargs):
+        return app(inputs, thread_id=thread_id, **kwargs)
+
+    return _wrap_app
+
+
+def _awrap(
+    app: Callable[..., Awaitable[Any]], run_name: str, thread_id: str
 ) -> Runnable:
-    if isinstance(app, Runnable):
+    @traceable(name=run_name)
+    async def _wrap_app(inputs: ChatCompletionMessage, **kwargs):
+        if asyncio.iscoroutinefunction(app):
+            return await app(inputs, thread_id=thread_id, **kwargs)
+        return app(inputs, thread_id=thread_id, **kwargs)
 
-        def _wrap_app(inputs: MultiturnSimulatorTrajectory, **kwargs):
-            return app.invoke(inputs, config={"configurable": {"thread_id": thread_id, **kwargs}})
-
-        return _wrap_app
-    else:
-
-        @traceable(name=run_name)
-        def _wrap_app(inputs: MultiturnSimulatorTrajectory, **kwargs):
-            return app(inputs, thread_id=thread_id, **kwargs)
-
-        return _wrap_app
+    return _wrap_app
 
 
-def _assign_id_to_message(message: dict) -> dict:
+def _coerce_and_assign_id_to_message(message: Union[dict, BaseMessage]) -> dict:
+    message = _convert_to_openai_message(message)
     if message.get("id") is None:
         return {**message, "id": str(uuid.uuid4())}
     return message
@@ -46,7 +50,7 @@ def _assign_id_to_message(message: dict) -> dict:
 
 def _trajectory_reducer(
     current_trajectory: Optional[MultiturnSimulatorTrajectory],
-    new_update: MultiturnSimulatorTrajectoryUpdate,
+    new_update: ChatCompletionMessage,
     *,
     update_source: Literal["app", "user"],
     turn_counter: Optional[int] = None,
@@ -62,16 +66,10 @@ def _trajectory_reducer(
             right = [right]  # type: ignore[assignment]
         # coerce to message
         coerced_left: list[ChatCompletionMessage] = [
-            m
-            for m in [
-                _assign_id_to_message(_convert_to_openai_message(msg)) for msg in left
-            ]
+            m for m in [_coerce_and_assign_id_to_message(msg) for msg in left]
         ]
         coerced_right: list[ChatCompletionMessage] = [
-            m
-            for m in [
-                _assign_id_to_message(_convert_to_openai_message(msg)) for msg in right
-            ]
+            m for m in [_coerce_and_assign_id_to_message(msg) for msg in right]
         ]
 
         # merge
@@ -90,7 +88,7 @@ def _trajectory_reducer(
         coerced_new_update = _normalize_to_openai_messages_list(new_update)
     except ValueError as e:
         raise ValueError(
-            f"Received unexpected trajectory update from {update_source}: {str(new_update)}. Expected a message, list of messages, or dictionary with a 'messages' key."
+            f"Received unexpected trajectory update from '{update_source}': {str(new_update)}. Expected a message, list of messages, or dictionary with a 'messages' key containing messages."
         )
     return {
         "messages": _combine_messages(
@@ -107,11 +105,8 @@ def _create_static_simulated_user(
     def _return_next_message(
         trajectory: MultiturnSimulatorTrajectory,
         *,
-        input_format: Literal["messages_dict", "messages_list"] = "messages_dict",
-        **kwargs,
+        thread_id: str,
     ):
-        if input_format not in ["messages_dict", "messages_list"]:
-            raise ValueError(f"Invalid input format: {input_format}")
         turns = trajectory.get("turn_counter")
         if turns is None or not isinstance(turns, int):
             raise ValueError(
@@ -129,25 +124,17 @@ def _create_static_simulated_user(
                 "content": next_response,
                 "id": str(uuid.uuid4()),
             }
-        if input_format == "messages_dict":
-            return {"messages": next_response}
-        elif input_format == "messages_list":
-            return next_response
-        else:
-            raise ValueError(f"Invalid input format: {input_format}")
+        return next_response
 
     return _return_next_message
 
 
 def create_multiturn_simulator(
     *,
-    app: Union[
-        Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
-        Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate],
-    ],
+    app: Callable[[MultiturnSimulatorTrajectory], ChatCompletionMessage],
     user: Union[
-        Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
-        Callable[[MultiturnSimulatorTrajectory], MultiturnSimulatorTrajectoryUpdate],
+        Runnable[MultiturnSimulatorTrajectory, ChatCompletionMessage],
+        Callable[[MultiturnSimulatorTrajectory], ChatCompletionMessage],
         list[Union[str, Messages]],
     ],
     max_turns: Optional[int] = None,
@@ -226,25 +213,14 @@ def create_multiturn_simulator(
     @traceable(name="multiturn_simulator")
     def _run_simulator(
         *,
-        inputs: Union[dict[str, Union[list[Messages], Any]], list[Messages]],
+        inputs: Messages,
         reference_outputs: Optional[Any] = None,
         thread_id: str,
         **kwargs,
     ):
-        if (
-            isinstance(inputs, dict)
-            and "messages" in inputs
-            and isinstance(inputs["messages"], list)
-        ):
-            input_format = "messages_dict"
-            inputs["messages"] = [_assign_id_to_message(m) for m in inputs["messages"]]
-        elif isinstance(inputs, list):
-            input_format = "messages_list"
-            inputs = [_assign_id_to_message(m) for m in inputs]
-        else:
-            raise ValueError(
-                f"Received unexpected inputs. Expected a dict with a 'messages' key, or a list of messages. Received: {inputs}"
-            )
+        if thread_id is None:
+            raise ValueError("thread_id must be provided")
+        inputs = _coerce_and_assign_id_to_message(inputs)
         turn_counter = 0
         current_reduced_trajectory: MultiturnSimulatorTrajectory = {"messages": []}
         wrapped_app = _wrap(app, "app", thread_id)
@@ -258,20 +234,20 @@ def create_multiturn_simulator(
         while True:
             if max_turns is not None and turn_counter >= max_turns:
                 break
-            current_inputs = (
+            raw_inputs = (
                 inputs
                 if turn_counter == 0
-                else wrapped_simulated_user(
-                    current_reduced_trajectory, input_format=input_format
-                )
+                else wrapped_simulated_user(current_reduced_trajectory)
             )
+            current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
                 current_inputs,
                 update_source="user",
                 turn_counter=turn_counter,
             )
-            current_outputs = wrapped_app(current_inputs)
+            raw_outputs = wrapped_app(current_inputs)
+            current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
                 current_outputs,
@@ -306,19 +282,10 @@ def create_multiturn_simulator(
 
 def create_async_multiturn_simulator(
     *,
-    app: Union[
-        Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
-        Callable[
-            [MultiturnSimulatorTrajectory],
-            Awaitable[MultiturnSimulatorTrajectoryUpdate],
-        ],
-    ],
+    app: Callable[[MultiturnSimulatorTrajectory], Awaitable[ChatCompletionMessage]],
     user: Union[
-        Runnable[MultiturnSimulatorTrajectory, MultiturnSimulatorTrajectoryUpdate],
-        Callable[
-            [MultiturnSimulatorTrajectory],
-            Awaitable[MultiturnSimulatorTrajectoryUpdate],
-        ],
+        Runnable[MultiturnSimulatorTrajectory, ChatCompletionMessage],
+        Callable[[MultiturnSimulatorTrajectory], Awaitable[ChatCompletionMessage]],
         list[Union[str, Messages]],
     ],
     max_turns: Optional[int] = None,
@@ -399,39 +366,41 @@ def create_async_multiturn_simulator(
     @traceable(name="multiturn_simulator")
     async def _run_simulator(
         *,
-        initial_trajectory: MultiturnSimulatorTrajectory,
+        inputs: Union[dict[str, Union[list[Messages], Any]], list[Messages]],
         reference_outputs: Optional[Any] = None,
-        runnable_config: Optional[RunnableConfig] = None,
+        thread_id: str,
         **kwargs,
     ):
+        if thread_id is None:
+            raise ValueError("thread_id must be provided")
+        inputs = _coerce_and_assign_id_to_message(inputs)
         turn_counter = 0
         current_reduced_trajectory: MultiturnSimulatorTrajectory = {"messages": []}
-        wrapped_app = _wrap(app, "app")
+        wrapped_app = _awrap(app, "app", thread_id)
         if isinstance(user, list):
             static_responses = user
             simulated_user = _create_static_simulated_user(static_responses)
         else:
             simulated_user = user  # type: ignore
-        wrapped_simulated_user = _wrap(simulated_user, "simulated_user")
+        wrapped_simulated_user = _awrap(simulated_user, "simulated_user", thread_id)
+
         while True:
             if max_turns is not None and turn_counter >= max_turns:
                 break
-            current_inputs = (
-                initial_trajectory
+            raw_inputs = (
+                inputs
                 if turn_counter == 0
-                else await wrapped_simulated_user.ainvoke(
-                    current_reduced_trajectory, config=runnable_config
-                )
+                else await wrapped_simulated_user(current_reduced_trajectory)
             )
+            current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
                 current_inputs,
                 update_source="user",
                 turn_counter=turn_counter,
             )
-            current_outputs = await wrapped_app.ainvoke(
-                current_reduced_trajectory, config=runnable_config
-            )
+            raw_outputs = await wrapped_app(current_inputs)
+            current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
                 current_outputs,
@@ -448,6 +417,7 @@ def create_async_multiturn_simulator(
         for trajectory_evaluator in trajectory_evaluators or []:
             try:
                 trajectory_eval_result = await trajectory_evaluator(
+                    inputs=inputs,
                     outputs=current_reduced_trajectory,
                     reference_outputs=reference_outputs,
                 )

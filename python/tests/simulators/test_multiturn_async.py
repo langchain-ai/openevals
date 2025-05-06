@@ -1,37 +1,49 @@
 import json
-
+import os
+import uuid
 from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import create_react_agent
+from langgraph_sdk import get_client
 from langsmith import testing as t
+from langsmith.wrappers import wrap_openai
+from langgraph.checkpoint.memory import MemorySaver
 
+from openevals.types import ChatCompletionMessage
 from openevals.simulators import (
     create_async_multiturn_simulator,
     create_async_llm_simulated_user,
 )
 from openevals.simulators.prebuilts import _is_internal_message
 from openevals.llm import create_async_llm_as_judge
-from openevals.types import MultiturnSimulatorTrajectory
-from openai import OpenAI
 
+from openai import OpenAI
 import pytest
 
 
 @pytest.mark.asyncio
 @pytest.mark.langsmith
 async def test_multiturn_failure():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Please give me a refund."}]
-    }
+    inputs = {"role": "user", "content": "Please give me a refund."}
 
     def give_refund():
         """Gives a refund."""
         return "Refunds are not permitted."
 
-    app = create_react_agent(
+    agent = create_react_agent(
         init_chat_model("openai:gpt-4.1-mini"),
         tools=[give_refund],
         prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
+        checkpointer=MemorySaver(),
     )
+
+    thread_id = str(uuid.uuid4())
+
+    async def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        res = await agent.ainvoke(
+            {"messages": [inputs]}, config={"configurable": {"thread_id": thread_id}}
+        )
+        return res["messages"][-1]
+
     user = create_async_llm_simulated_user(
         system="You are an angry user who is frustrated with the service and keeps making additional demands.",
         model="openai:gpt-4.1-nano",
@@ -48,7 +60,8 @@ async def test_multiturn_failure():
         max_turns=5,
     )
     res = await simulator(
-        initial_trajectory=initial_trajectory,
+        inputs=inputs,
+        thread_id=thread_id,
     )
     t.log_outputs(res)
     assert not res["evaluator_results"][0]["score"]
@@ -57,18 +70,26 @@ async def test_multiturn_failure():
 @pytest.mark.asyncio
 @pytest.mark.langsmith
 async def test_multiturn_success():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Give me a refund!"}]
-    }
+    inputs = {"role": "user", "content": "Give me a refund!"}
 
     def give_refund():
         """Gives a refund."""
         return "Refunds granted."
 
-    app = create_react_agent(
+    agent = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
+        checkpointer=MemorySaver(),
     )
+
+    thread_id = str(uuid.uuid4())
+
+    async def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        res = await agent.ainvoke(
+            {"messages": [inputs]}, config={"configurable": {"thread_id": thread_id}}
+        )
+        return res["messages"][-1]
+
     user = create_async_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
         model="openai:gpt-4.1-nano",
@@ -85,7 +106,8 @@ async def test_multiturn_success():
         max_turns=5,
     )
     res = await simulator(
-        initial_trajectory=initial_trajectory,
+        inputs=inputs,
+        thread_id=thread_id,
     )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
@@ -94,18 +116,26 @@ async def test_multiturn_success():
 @pytest.mark.asyncio
 @pytest.mark.langsmith
 async def test_multiturn_preset_responses():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Give me a refund!"}]
-    }
+    inputs = {"role": "user", "content": "Give me a refund!"}
 
     def give_refund():
         """Gives a refund."""
         return "Refunds granted."
 
-    app = create_react_agent(
+    agent = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
+        checkpointer=MemorySaver(),
     )
+
+    thread_id = str(uuid.uuid4())
+
+    async def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        res = await agent.ainvoke(
+            {"messages": [inputs]}, config={"configurable": {"thread_id": thread_id}}
+        )
+        return res["messages"][-1]
+
     trajectory_evaluator = create_async_llm_as_judge(
         model="openai:gpt-4o-mini",
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
@@ -123,7 +153,8 @@ async def test_multiturn_preset_responses():
         max_turns=5,
     )
     res = await simulator(
-        initial_trajectory=initial_trajectory,
+        inputs=inputs,
+        thread_id=thread_id,
     )
     t.log_outputs(res)
     filtered_trajectory = [
@@ -150,14 +181,17 @@ async def test_multiturn_preset_responses():
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_multiturn_message_with_openai():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Give me a cracker!"}]
-    }
+    inputs = {"role": "user", "content": "Give me a cracker!"}
 
-    client = OpenAI()
+    client = wrap_openai(OpenAI())
 
-    def app(inputs: MultiturnSimulatorTrajectory):
-        res = client.chat.completions.create(
+    history = {}
+
+    async def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        if thread_id not in history:
+            history[thread_id] = []
+        history[thread_id] = history[thread_id] + [inputs]
+        res = await client.chat.completions.create(
             model="gpt-4.1-nano",
             messages=[
                 {
@@ -165,9 +199,11 @@ async def test_multiturn_message_with_openai():
                     "content": "You are an angry parrot named Polly who is angry at everything. Squawk a lot.",
                 }
             ]
-            + inputs["messages"],
+            + history[thread_id],
         )
-        return {"messages": res.choices[0].message}
+        response = res.choices[0].message
+        history[thread_id].append(response)
+        return response
 
     user = create_async_llm_simulated_user(
         system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
@@ -184,7 +220,7 @@ async def test_multiturn_message_with_openai():
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
     )
-    res = await simulator(initial_trajectory=initial_trajectory)
+    res = await simulator(inputs=inputs, thread_id="1")
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
 
@@ -192,18 +228,26 @@ async def test_multiturn_message_with_openai():
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_multiturn_stopping_condition():
-    initial_trajectory = {
-        "messages": [{"role": "user", "content": "Give me a refund!"}]
-    }
+    inputs = {"role": "user", "content": "Give me a refund!"}
 
     def give_refund():
         """Gives a refund."""
         return "Refunds granted."
 
-    app = create_react_agent(
+    agent = create_react_agent(
         init_chat_model("openai:gpt-4.1-nano"),
         tools=[give_refund],
+        checkpointer=MemorySaver(),
     )
+
+    thread_id = str(uuid.uuid4())
+
+    async def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        res = await agent.ainvoke(
+            {"messages": [inputs]}, config={"configurable": {"thread_id": thread_id}}
+        )
+        return res["messages"][-1]
+
     user = create_async_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
         model="openai:gpt-4.1-nano",
@@ -241,8 +285,108 @@ async def test_multiturn_stopping_condition():
         max_turns=10,
     )
     res = await simulator(
-        initial_trajectory=initial_trajectory,
+        inputs=inputs,
+        thread_id=thread_id,
     )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
     assert len(res["trajectory"]["messages"]) < 20
+
+
+from llama_index.llms.openai import OpenAI as LlamaIndexOpenAI
+from llama_index.core.agent.workflow import FunctionAgent
+from llama_index.core.workflow import Context
+
+
+@pytest.mark.asyncio
+@pytest.mark.langsmith
+async def test_multiturn_llama_index():
+    inputs = {"role": "user", "content": "Give me a refund!"}
+
+    def give_refund():
+        """Gives a refund."""
+        return "Refunds granted."
+
+    llm = LlamaIndexOpenAI(model="gpt-4o-mini")
+
+    workflow = FunctionAgent(
+        tools=[give_refund],
+        llm=llm,
+        system_prompt="You are an agent that can give a refund.",
+    )
+
+    ctx = Context(workflow)
+
+    async def call_app(inputs: ChatCompletionMessage, **kwargs):
+        output = await workflow.run(user_msg=inputs["content"], ctx=ctx)
+        return {"role": "assistant", "content": str(output)}
+
+    user = create_async_llm_simulated_user(
+        system="You are a happy and reasonable person who wants a refund.",
+        model="openai:gpt-4.1-nano",
+    )
+    trajectory_evaluator = create_async_llm_as_judge(
+        model="openai:gpt-4o-mini",
+        prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
+        feedback_key="satisfaction",
+    )
+    simulator = create_async_multiturn_simulator(
+        app=call_app,
+        user=user,
+        trajectory_evaluators=[trajectory_evaluator],
+        max_turns=5,
+    )
+    res = await simulator(
+        inputs=inputs,
+        thread_id="1",
+    )
+    t.log_outputs(res)
+    assert res["evaluator_results"][0]["score"]
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+@pytest.mark.skipif(
+    not os.getenv("CHAT_LANGCHAIN_API_KEY") or not os.getenv("CHAT_LANGCHAIN_ENDPOINT"),
+    reason="Requires additional auth.",
+)
+async def test_multiturn_message_with_chat_langchain():
+    inputs = {
+        "role": "user",
+        "content": "Tell me how to use LangGraph to build a swarm-style agent.",
+    }
+
+    client = get_client(
+        url=os.getenv("CHAT_LANGCHAIN_ENDPOINT"),
+        api_key=os.getenv("CHAT_LANGCHAIN_API_KEY"),
+    )
+
+    thread_id = str(uuid.uuid4())
+
+    await client.threads.create(thread_id=thread_id, graph_id="chat")
+
+    async def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        res = await client.runs.wait(thread_id, "chat", input={"messages": [inputs]})
+        return res["messages"][-1]
+
+    user = create_async_llm_simulated_user(
+        system="Be belligerent and hostile. Keep asking followup questions, pretending your question hasn't been answered.",
+        model="openai:gpt-4.1-nano",
+    )
+
+    trajectory_evaluator = create_async_llm_as_judge(
+        model="openai:gpt-4o-mini",
+        prompt="Based on the below conversation, has the assistant been calm and helpful?\n{outputs}",
+        feedback_key="calmness",
+    )
+
+    simulator = create_async_multiturn_simulator(
+        app=app,
+        user=user,
+        trajectory_evaluators=[trajectory_evaluator],
+        max_turns=3,
+    )
+
+    res = await simulator(inputs=inputs, thread_id=thread_id)
+    t.log_outputs(res)
+    assert res["evaluator_results"][0]["score"]

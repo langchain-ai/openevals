@@ -86,10 +86,6 @@ class RunnableLike(Protocol):
 
 MultiturnSimulatorTrajectory = dict[str, Union[list[Messages], Any]]
 
-MultiturnSimulatorTrajectoryUpdate = Union[
-    dict[str, Union[list[Messages], Messages, Any]], list[Messages], Messages
-]
-
 
 class MultiturnSimulatorResult(TypedDict):
     evaluator_results: list[EvaluatorResult]

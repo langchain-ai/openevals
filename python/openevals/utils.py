@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+import openai
 
 from langsmith import testing as t, get_current_run_tree, traceable
 from langsmith.testing._internal import _TEST_CASE
@@ -19,25 +20,19 @@ __all__ = [
 ]
 
 
-if TYPE_CHECKING:
-    from langchain_core.messages import BaseMessage
-
-
 def _convert_to_openai_message(
     message: ChatCompletionMessage | BaseMessage | dict,
 ) -> ChatCompletionMessage:
+    if not isinstance(message, BaseMessage) and not isinstance(message, dict):
+        message = dict(message)
+    converted = convert_to_openai_messages([message])[0]
     if isinstance(message, BaseMessage):
-        converted = convert_to_openai_messages([message])[0]
         if message.id is not None and converted.get("id") is None:
             converted["id"] = message.id
-        return converted  # type: ignore
-    if not isinstance(message, dict):
-        message = dict(message)
-    if "role" not in message:
-        raise ValueError(
-            f"Expected a dict with 'role' keys or a LangChain message instance, got {message}"
-        )
-    return {"content": "", **message.copy()}  # type: ignore
+    else:
+        if message.get("id") is not None and converted.get("id") is None:
+            converted["id"] = message.get("id")
+    return converted  # type: ignore
 
 
 def _normalize_to_openai_messages_list(

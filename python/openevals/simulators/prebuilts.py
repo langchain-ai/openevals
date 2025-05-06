@@ -70,16 +70,12 @@ def create_llm_simulated_user(
         client = init_chat_model(model=model)  # type: ignore
 
     def _simulator(
-        inputs: MultiturnSimulatorTrajectory,
-        *,
-        input_format: Literal["messages_dict", "messages_list"] = "messages_dict",
+        inputs: ChatCompletionMessage,
         **kwargs,
     ):
-        if input_format not in ["messages_dict", "messages_list"]:
-            raise ValueError(f"Invalid input format: {input_format}")
-        if not isinstance(inputs, dict) or not inputs["messages"]:
+        if not isinstance(inputs, dict):
             raise ValueError(
-                "Simulated user inputs must be a dict with a 'messages' key containing a list of messages"
+                "Simulated user inputs must be a dict representing a message object"
             )
         messages = []
         for msg in inputs["messages"]:
@@ -97,16 +93,7 @@ def create_llm_simulated_user(
         if system:
             messages = [{"role": "system", "content": system}] + messages  # type: ignore
         response = client.invoke(messages)  # type: ignore
-        if input_format == "messages_dict":
-            return {
-                "messages": [
-                    {"role": "user", "content": response.content, "id": response.id}
-                ]
-            }
-        elif input_format == "messages_list":
-            return [{"role": "user", "content": response.content, "id": response.id}]
-        else:
-            raise ValueError(f"Invalid input format: {input_format}")
+        return {"role": "user", "content": response.content, "id": response.id}
 
     return _simulator
 
@@ -166,10 +153,13 @@ def create_async_llm_simulated_user(
     if not client:
         client = init_chat_model(model=model)  # type: ignore
 
-    async def _simulator(inputs: MultiturnSimulatorTrajectory):
-        if not isinstance(inputs, dict) or not inputs["messages"]:
+    async def _simulator(
+        inputs: MultiturnSimulatorTrajectory,
+        **kwargs,
+    ):
+        if not isinstance(inputs, dict):
             raise ValueError(
-                "Simulated user inputs must be a dict with a 'messages' key containing a list of messages"
+                "Simulated user inputs must be a dict representing a message object"
             )
         messages = []
         for msg in inputs["messages"]:
@@ -187,10 +177,6 @@ def create_async_llm_simulated_user(
         if system:
             messages = [{"role": "system", "content": system}] + messages  # type: ignore
         response = await client.ainvoke(messages)  # type: ignore
-        return {
-            "messages": [
-                {"role": "user", "content": response.content, "id": response.id}
-            ]
-        }
+        return {"role": "user", "content": response.content, "id": response.id}
 
     return _simulator

@@ -16,7 +16,7 @@ from openevals.simulators import (
 from openevals.simulators.prebuilts import _is_internal_message
 from openevals.llm import create_async_llm_as_judge
 
-from openai import OpenAI
+from openai import AsyncOpenAI
 import pytest
 
 
@@ -183,7 +183,7 @@ async def test_multiturn_preset_responses():
 async def test_multiturn_message_with_openai():
     inputs = {"role": "user", "content": "Give me a cracker!"}
 
-    client = wrap_openai(OpenAI())
+    client = wrap_openai(AsyncOpenAI())
 
     history = {}
 
@@ -257,25 +257,22 @@ async def test_multiturn_stopping_condition():
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
-    client = OpenAI()
+    client = wrap_openai(AsyncOpenAI())
 
     async def stopping_condition(current_trajectory, **kwargs):
-        res = (
-            client.chat.completions.create(
-                model="gpt-4.1-nano",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "Your job is to determine if a refund has been granted in the following conversation. Respond only with JSON with a single boolean key named 'refund_granted'.",
-                    }
-                ]
-                + current_trajectory["messages"],
-                response_format={"type": "json_object"},
-            )
-            .choices[0]
-            .message.content
+        res = await client.chat.completions.create(
+            model="gpt-4.1-nano",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Your job is to determine if a refund has been granted in the following conversation. Respond only with JSON with a single boolean key named 'refund_granted'.",
+                }
+            ]
+            + current_trajectory["messages"],
+            response_format={"type": "json_object"},
         )
-        return json.loads(res)["refund_granted"]
+
+        return json.loads(res.choices[0].message.content)["refund_granted"]
 
     simulator = create_async_multiturn_simulator(
         app=app,

@@ -6,7 +6,7 @@ from langsmith import testing as t
 from langsmith.wrappers import wrap_openai
 from langgraph.checkpoint.memory import MemorySaver
 
-from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
+from openevals.simulators import run_multiturn_simulation, create_llm_simulated_user
 from openevals.simulators.prebuilts import _is_internal_message
 from openevals.llm import create_llm_as_judge
 from openevals.types import ChatCompletionMessage
@@ -43,15 +43,15 @@ def test_multiturn_failure():
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
-    simulator = create_multiturn_simulator(
+
+    res = run_multiturn_simulation(
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
-    )
-    res = simulator(
         thread_id="1",
     )
+
     t.log_outputs(res)
     assert not res["evaluator_results"][0]["score"]
 
@@ -83,13 +83,12 @@ def test_multiturn_success():
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
-    simulator = create_multiturn_simulator(
+
+    res = run_multiturn_simulation(
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
-    )
-    res = simulator(
         thread_id="1",
     )
     t.log_outputs(res)
@@ -128,13 +127,12 @@ def test_multiturn_success_with_prebuilt_and_fixed_responses():
         prompt="Based on the below conversation, has everything the user has asked for been legal?\n{outputs}",
         feedback_key="legality",
     )
-    simulator = create_multiturn_simulator(
+
+    res = run_multiturn_simulation(
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
-    )
-    res = simulator(
         thread_id="1",
     )
     t.log_outputs(res)
@@ -170,7 +168,8 @@ def test_multiturn_preset_responses():
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
-    simulator = create_multiturn_simulator(
+
+    res = run_multiturn_simulation(
         app=app,
         user=[
             {"role": "user", "content": "Give me a refund!"},
@@ -181,8 +180,6 @@ def test_multiturn_preset_responses():
         ],
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
-    )
-    res = simulator(
         thread_id="1",
     )
     t.log_outputs(res)
@@ -243,13 +240,12 @@ def test_multiturn_message_with_openai():
         prompt="Based on the below conversation, are the parrots angry?\n{outputs}",
         feedback_key="anger",
     )
-    simulator = create_multiturn_simulator(
+
+    res = run_multiturn_simulation(
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         max_turns=5,
-    )
-    res = simulator(
         thread_id="1",
     )
     t.log_outputs(res)
@@ -304,14 +300,12 @@ def test_multiturn_stopping_condition():
         )
         return json.loads(res)["refund_granted"]
 
-    simulator = create_multiturn_simulator(
+    res = run_multiturn_simulation(
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
         stopping_condition=stopping_condition,
         max_turns=10,
-    )
-    res = simulator(
         thread_id="1",
     )
     t.log_outputs(res)

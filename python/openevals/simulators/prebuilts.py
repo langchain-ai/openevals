@@ -24,7 +24,7 @@ def create_llm_simulated_user(
 ):
     """Creates a simulated user powered by a language model for multi-turn conversations.
 
-    This function generates a simulator that can be used with the create_multiturn_simulator to create
+    This function generates a simulator that can be used with the run_multiturn_simulator method to create
     dynamic, LLM-powered user responses in a conversation. The simulator automatically handles message
     role conversion to maintain proper conversation flow, where user messages become assistant messages
     and vice versa when passed to the underlying LLM.
@@ -42,7 +42,7 @@ def create_llm_simulated_user(
 
     Example:
         ```python
-        from openevals.simulators import create_multiturn_simulator, create_llm_simulated_user
+        from openevals.simulators import run_multiturn_simulation, create_llm_simulated_user
 
         # Create a simulated user with GPT-4
         simulated_user = create_llm_simulated_user(
@@ -50,11 +50,12 @@ def create_llm_simulated_user(
             model="openai:gpt-4.1-mini"
         )
 
-        # Use with create_multiturn_simulator
-        simulator = create_multiturn_simulator(
+        # Use with run_multiturn_simulation
+        simulator = run_multiturn_simulation(
             app=my_chat_app,
             user=simulated_user,
-            max_turns=5
+            max_turns=5,
+            thread_id="1"
         )
         ```
 
@@ -63,7 +64,6 @@ def create_llm_simulated_user(
           * User messages become assistant messages when sent to the LLM
           * Assistant messages (without tool calls) become user messages when sent to the LLM
         - The system prompt is prepended to each conversation to maintain consistent behavior
-        - The simulator returns responses in the format expected by create_multiturn_simulator
     """
     if not model and not client:
         raise ValueError("Either model or client must be provided")
@@ -74,26 +74,19 @@ def create_llm_simulated_user(
         client = init_chat_model(model=model)  # type: ignore
 
     def _simulator(
-        current_trajectory: dict,
+        current_trajectory: list[ChatCompletionMessage],
+        *,
+        turn_counter: int,
         **kwargs,
     ):
-        if (
-            not isinstance(current_trajectory, dict)
-            or current_trajectory.get("trajectory") is None
-        ):
-            raise ValueError(
-                "Internal error: Simulated user inputs must be a dict containing a 'trajectory' key with a list of message objects"
-            )
-        if fixed_responses and current_trajectory.get("turn_counter") < len(
-            fixed_responses
-        ):
-            res = fixed_responses[current_trajectory["turn_counter"]]
+        if fixed_responses and turn_counter < len(fixed_responses):
+            res = fixed_responses[turn_counter]
             if isinstance(res, str):
                 return {"role": "user", "content": res, "id": str(uuid.uuid4())}
             else:
                 return res
         messages = []
-        for msg in current_trajectory["trajectory"]:
+        for msg in current_trajectory:
             converted_message = _convert_to_openai_message(msg)
             if _is_internal_message(converted_message):
                 continue
@@ -129,7 +122,7 @@ def create_async_llm_simulated_user(
 ):
     """Creates an async simulated user powered by a language model for multi-turn conversations.
 
-    This function generates a simulator that can be used with the create_async_multiturn_simulator to create
+    This function generates a simulator that can be used with the run_multiturn_simulation_async method to create
     dynamic, LLM-powered user responses in a conversation. The simulator automatically handles message
     role conversion to maintain proper conversation flow, where user messages become assistant messages
     and vice versa when passed to the underlying LLM.
@@ -148,7 +141,7 @@ def create_async_llm_simulated_user(
 
     Example:
         ```python
-        from openevals.simulators import create_async_multiturn_simulator, create_async_llm_simulated_user
+        from openevals.simulators import run_multiturn_simulation_async, create_async_llm_simulated_user
 
         # Create a simulated user with GPT-4
         simulated_user = create_async_llm_simulated_user(
@@ -156,11 +149,12 @@ def create_async_llm_simulated_user(
             model="openai:gpt-4.1-mini"
         )
 
-        # Use with create_async_multiturn_simulator
-        simulator = create_async_multiturn_simulator(
+        # Use with run_multiturn_simulation_async
+        simulator = run_multiturn_simulation_async(
             app=my_chat_app,
             user=simulated_user,
-            max_turns=5
+            max_turns=5,
+            thread_id="1"
         )
         ```
 
@@ -169,7 +163,6 @@ def create_async_llm_simulated_user(
           * User messages become assistant messages when sent to the LLM
           * Assistant messages (without tool calls) become user messages when sent to the LLM
         - The system prompt is prepended to each conversation to maintain consistent behavior
-        - The simulator returns responses in the format expected by create_async_multiturn_simulator
     """
     if not model and not client:
         raise ValueError("Either model or client must be provided")
@@ -180,26 +173,19 @@ def create_async_llm_simulated_user(
         client = init_chat_model(model=model)  # type: ignore
 
     async def _simulator(
-        current_trajectory: dict,
+        current_trajectory: list[ChatCompletionMessage],
+        *,
+        turn_counter: int,
         **kwargs,
     ):
-        if (
-            not isinstance(current_trajectory, dict)
-            or current_trajectory.get("trajectory") is None
-        ):
-            raise ValueError(
-                "Simulated user inputs must be a dict containing a 'trajectory' key with a list of message objects"
-            )
-        if fixed_responses and current_trajectory.get("turn_counter") < len(
-            fixed_responses
-        ):
-            res = fixed_responses[current_trajectory["turn_counter"]]
+        if fixed_responses and turn_counter < len(fixed_responses):
+            res = fixed_responses[turn_counter]
             if isinstance(res, str):
                 return {"role": "user", "content": res, "id": str(uuid.uuid4())}
             else:
                 return res
         messages = []
-        for msg in current_trajectory["trajectory"]:
+        for msg in current_trajectory:
             converted_message = _convert_to_openai_message(msg)
             if _is_internal_message(converted_message):
                 continue

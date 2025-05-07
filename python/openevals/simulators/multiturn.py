@@ -102,11 +102,9 @@ def _create_static_simulated_user(
     static_responses: list[str | Messages],
 ):
     def _return_next_message(
-        trajectory: dict,
-        *,
-        thread_id: str,
+        trajectory: list[ChatCompletionMessage], *, thread_id: str, turn_counter: int
     ):
-        turns = trajectory.get("turn_counter")
+        turns = turn_counter
         if turns is None or not isinstance(turns, int):
             raise ValueError(
                 "Internal error: Turn counter must be an integer in the trajectory."
@@ -266,22 +264,6 @@ def _create_multiturn_simulator(
         Returns a MultiturnSimulatorResult containing:
             - evaluator_results: List of results from trajectory evaluators
             - trajectory: The complete conversation trajectory
-
-    Example:
-        ```python
-        from openevals.simulators import create_multiturn_simulator
-
-        # Create a simulator with static user responses
-        simulator = create_multiturn_simulator(
-            app=my_chat_app,
-            user=["Hello!", "How are you?", "Goodbye"],
-            max_turns=3,
-            trajectory_evaluators=[my_evaluator]
-        )
-
-        # Run the simulation
-        result = simulator(initial_trajectory={"messages": [{"role": "user", "content": "Start"}]})
-        ```
     """
 
     if max_turns is None and stopping_condition is None:
@@ -313,7 +295,9 @@ def _create_multiturn_simulator(
         while True:
             if max_turns is not None and turn_counter >= max_turns:
                 break
-            raw_inputs = wrapped_simulated_user(current_reduced_trajectory)
+            raw_inputs = wrapped_simulated_user(
+                current_reduced_trajectory["trajectory"], turn_counter=turn_counter
+            )
             current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
@@ -330,14 +314,16 @@ def _create_multiturn_simulator(
                 update_source="app",
                 turn_counter=turn_counter,
             )
-            if stopping_condition and stopping_condition(current_reduced_trajectory):
+            if stopping_condition and stopping_condition(
+                current_reduced_trajectory["trajectory"], turn_counter=turn_counter
+            ):
                 break
         results = []
         del current_reduced_trajectory["turn_counter"]
         for trajectory_evaluator in trajectory_evaluators or []:
             try:
                 trajectory_eval_result = trajectory_evaluator(
-                    outputs=current_reduced_trajectory,
+                    outputs=current_reduced_trajectory["trajectory"],
                     reference_outputs=reference_outputs,
                 )
                 if isinstance(trajectory_eval_result, list):
@@ -492,22 +478,6 @@ def _create_async_multiturn_simulator(
         Returns an awaitable value that resolves to a MultiturnSimulatorResult containing:
             - evaluator_results: List of results from trajectory evaluators
             - trajectory: The complete conversation trajectory
-
-    Example:
-        ```python
-        from openevals.simulators import create_async_multiturn_simulator
-
-        # Create a simulator with static user responses
-        simulator = create_async_multiturn_simulator(
-            app=my_chat_app,
-            user=["Hello!", "How are you?", "Goodbye"],
-            max_turns=3,
-            trajectory_evaluators=[my_evaluator]
-        )
-
-        # Run the simulation
-        result = await simulator(initial_trajectory={"messages": [{"role": "user", "content": "Start"}]})
-        ```
     """
 
     if max_turns is None and stopping_condition is None:
@@ -539,7 +509,9 @@ def _create_async_multiturn_simulator(
         while True:
             if max_turns is not None and turn_counter >= max_turns:
                 break
-            raw_inputs = await wrapped_simulated_user(current_reduced_trajectory)
+            raw_inputs = await wrapped_simulated_user(
+                current_reduced_trajectory["trajectory"], turn_counter=turn_counter
+            )
             current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
             current_reduced_trajectory = _trajectory_reducer(
                 current_reduced_trajectory,
@@ -557,7 +529,7 @@ def _create_async_multiturn_simulator(
                 turn_counter=turn_counter,
             )
             if stopping_condition and await stopping_condition(
-                current_reduced_trajectory
+                current_reduced_trajectory["trajectory"], turn_counter=turn_counter
             ):
                 break
         results = []
@@ -565,7 +537,7 @@ def _create_async_multiturn_simulator(
         for trajectory_evaluator in trajectory_evaluators or []:
             try:
                 trajectory_eval_result = await trajectory_evaluator(
-                    outputs=current_reduced_trajectory,
+                    outputs=current_reduced_trajectory["trajectory"],
                     reference_outputs=reference_outputs,
                 )
                 if isinstance(trajectory_eval_result, list):

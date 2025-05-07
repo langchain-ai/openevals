@@ -292,7 +292,7 @@ def test_multiturn_stopping_condition():
                         "content": "Your job is to determine if a refund has been granted in the following conversation. Respond only with JSON with a single boolean key named 'refund_granted'.",
                     }
                 ]
-                + current_trajectory["trajectory"],
+                + current_trajectory,
                 response_format={"type": "json_object"},
             )
             .choices[0]

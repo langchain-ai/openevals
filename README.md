@@ -1,6 +1,6 @@
 # ⚖️ OpenEvals
 
-Much like tests in traditional software, evals are a hugely important part of bringing LLM applications to production.
+Much like tests in traditional software, evals are an important part of bringing LLM applications to production.
 The goal of this package is to help provide a starting point for you to write evals for your LLM applications, from which
 you can write more custom evals specific to your application.
 
@@ -2683,6 +2683,7 @@ client = OpenAI()
 
 history = {}
 
+# Your application logic
 def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
     if thread_id not in history:
         history[thread_id] = []
@@ -2721,7 +2722,6 @@ simulator_result = run_multiturn_simulation(
     user=user,
     trajectory_evaluators=[trajectory_evaluator],
     max_turns=5,
-    thread_id="1",
 )
 
 print(simulator_result)
@@ -2865,21 +2865,21 @@ console.log(result);
 
 There are two main components:
 
-- `app`: Your application, or a function wrapping it. Must accept a chat message (dict with `"role"` and `"content"` keys) as an input arg and a `thread_id` as a kwarg. Should accept other kwargs as others may be added in the future. Returns a chat message as output with at least role and content keys.
+- `app`: Your application, or a function wrapping it. Must accept a chat message (dict with `"role"` and `"content"` keys) as an input arg and a `thread_id` as a kwarg. Should accept other kwargs as more may be added in future releases. Returns a chat message as output with at least role and content keys.
   - Note that your `app` will only receive the next message from the simulated user as input, and therefore should statefully track the current history internally based on `thread_id` if needed.
-- `user`: The simulated user. Must accept the current trajectory as a list of messages as an input arg and kwargs for `thread_id` and `turn_counter`. Should accept other kwargs as others may be added in the future. Returns a chat message as output. May also be a list of string or message responses.
+- `user`: The simulated user. Must accept the current trajectory as a list of messages as an input arg and kwargs for `thread_id` and `turn_counter`. Should accept other kwargs as more may be added in future releases. Returns a chat message as output. May also be a list of string or message responses.
   - In the example above, this is an imported prebuilt function named `create_llm_simulated_user` which uses an LLM to generate user responses, though you are free to define your own function as well. See [this section](#simulating-users) for more information.
 
-The simluator will call the `user` first to obtain the first input for `app`, which should return a chat message. The returned message is passed back into `user`, and so on until the simulator reaches `max_turns` or an optionally passed `stopping_condition` returns `True`.
+The simulation will call the `user` first to obtain the first input for `app`, which should return a chat message. The returned message is passed back into `user`, and so on until the simulator reaches `max_turns` or an optionally passed `stopping_condition` returns `True`.
 
-The returned messages are deduped by id and added to an internal list of messages representing a **trajectory**, which is returned as part of the simulator results. If a returned message does not contain an `id` field, the simulator will automatically generate one.
+The returned messages are deduped by id and added to an internal list of messages representing a *trajectory*, which is returned as part of the simulator results. If a returned message does not contain an `id` field, the simulator will automatically generate one.
 
 The other accepted parameters are as follows:
 
-- `thread_id`/`threadId`: A thread id that identifies the current interaction, used by your `app` to load state.
+- `thread_id`/`threadId`: An optional thread id that identifies the current interaction, used by your `app` to load state. Will default to a UUID if not provided.
 - `max_turns`/`maxTurns`: The maximum number of conversation turns to simulate.
 - `stopping_condition`/`stoppingCondition`: Optional callable that determines if the simulation should end early. Takes the current trajectory as a list of messages as an input arg and a kwarg named `turn_counter`, and should return a boolean.
-- `trajectory_evaluators`/`trajectoryEvaluators`: Optional evaluators that run at the end of the simulation. These will receive the final trajectory as a kwarg named `outputs`.
+- `trajectory_evaluators`/`trajectoryEvaluators`: Optional evaluators that run at the *end* of the simulation. These will receive the final trajectory as a kwarg named `outputs`.
 - `reference_outputs`/`referenceOutputs`: An optional reference trajectory which will be passed directly through to the provided `trajectory_evaluators`.
 
 You must pass at least one of `max_turns` or `stopping_condition`. Once one of these triggers, the final trajectory will be passed to provided trajectory evaluators, which will receive the final trajectory as an `"outputs"` kwarg.
@@ -2896,11 +2896,14 @@ Where `evaluator_results` are the results from the passed `trajectory_evaluators
 
 ## Simulating users
 
-The `user` parameter is a function that accepts the current trajectory (and a `thread_id`/`threadId` kwarg), then returns a user message that will be passed back to your app. We generally suggest starting with the prebuilt method returned by `create_llm_simulated_user`, but you can also customize your own if desired.
+The `user` parameter is a function that accepts the current trajectory (and a `thread_id`/`threadId` kwarg), then returns a message with `role="user"` that will be passed back to your app. We suggest starting with the prebuilt method returned by `create_llm_simulated_user`, but you can also customize your own if desired.
+
+> [!NOTE]
+> The simulated user is pretending to be a human, and should therefore return a `user` message, not an `assistant` message!
 
 ### Prebuilt simulated user
 
-OpenEvals includes a convenient prebuilt `create_llm_simulated_user` method that uses an LLM to take on the role of a user and generate responses based on a system prompt:
+OpenEvals includes a prebuilt `create_llm_simulated_user` method that uses an LLM to take on the role of a user and generate responses based on a system prompt:
 
 ```python
 from openevals.simulators import create_llm_simulated_user
@@ -2951,7 +2954,7 @@ def my_app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
     return {"role": "assistant", "content": output, "id": "1234"}
 
 
-def my_simulated_user(trajectory: dict, *, thread_id: str, **kwargs):
+def my_simulated_user(trajectory: list[ChatCompletionMessage], *, thread_id: str, **kwargs):
     output = "Wow that's amazing!"
     return {"role": "user", "content": output, "id": "5678"}
 
@@ -2961,9 +2964,10 @@ simulator_result = run_multiturn_simulation(
     user=my_simulated_user,
     trajectory_evaluators=[],
     max_turns=1,
-    thread_id="1"
 )
 ```
+
+
 
 ## Multiturn simulation with LangGraph
 
@@ -3021,7 +3025,6 @@ simulator_result = run_multiturn_simulation(
     user=user,
     trajectory_evaluators=[trajectory_evaluator],
     max_turns=5,
-    thread_id="1"
 )
 
 print(simulator_result)

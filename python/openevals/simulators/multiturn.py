@@ -138,7 +138,7 @@ def run_multiturn_simulation(
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
     stopping_condition: Optional[Callable[[dict], bool]] = None,
     reference_outputs: Optional[Any] = None,
-    thread_id: str,
+    thread_id: Optional[str] = None,
 ) -> MultiturnSimulatorResult:
     """Runs a multi-turn simulation between an application and a simulated user.
 
@@ -218,54 +218,6 @@ def _create_multiturn_simulator(
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
     stopping_condition: Optional[Callable[[dict], bool]] = None,
 ) -> Callable[..., MultiturnSimulatorResult]:
-    """Creates a simulator for multi-turn conversations between an application and a simulated user.
-
-    This function generates a simulator that can run conversations between an app and
-    either a dynamic user simulator or a list of static user responses. The simulator supports
-    evaluation of conversation trajectories and customizable stopping conditions.
-
-    Conversation trajectories are represented as a dict containing a key named "messages" whose
-    value is a list of message objects with "role" and "content" keys. The "app" and "user"
-    params you provide will both receive this trajectory as an input, and should return a
-    trajectory update dict with a new message or new messages under the "messages" key. The simulator
-    will dedupe these messages by id and merge them into the complete trajectory.
-
-    Additional fields are also permitted as part of the trajectory dict, which allows you to pass
-    additional information between the app and user if needed.
-
-    Once "max_turns" is reached or a provided stopping condition is met, the final trajectory
-    will be passed to provided trajectory evaluators, which will receive the final trajectory
-    as an "outputs" kwarg.
-
-    When calling the created simulator, you may also provide a "reference_outputs" kwarg,
-    which will be passed directly through to the provided evaluators.
-
-    Args:
-        app: Your application. Can be either a LangChain Runnable or a
-            callable that takes the current conversation trajectory dict and returns
-            a trajectory update dict with new messages under the "messages" key (and optionally other fields).
-        user: The simulated user. Can be:
-            - A LangChain Runnable or a callable that takes the current conversation trajectory
-              and returns a trajectory update dict with new messages under the "messages" key (and optionally other fields).
-            - A list of strings or Messages representing static user responses
-        max_turns: Maximum number of conversation turns to simulate
-        trajectory_evaluators: Optional list of evaluator functions that assess the conversation
-            trajectory. Each evaluator will receive the final trajectory of the conversation as
-            a kwarg named "outputs" and a kwarg named "reference_outputs" if provided.
-        stopping_condition: Optional callable that determines if the simulation should end early.
-            Takes the current trajectory and turn counter as input and returns a boolean.
-
-    Returns:
-        A callable that runs the simulation when invoked. The callable accepts the following kwargs:
-            - initial_trajectory: Initial input to start the conversation
-            - reference_outputs: Optional reference outputs for evaluation
-            - runnable_config: Optional config that will be passed in if using LangChain Runnable components.
-            - **kwargs: Additional keyword arguments
-        Returns a MultiturnSimulatorResult containing:
-            - evaluator_results: List of results from trajectory evaluators
-            - trajectory: The complete conversation trajectory
-    """
-
     if max_turns is None and stopping_condition is None:
         raise ValueError(
             "At least one of max_turns or stopping_condition must be provided."
@@ -278,7 +230,7 @@ def _create_multiturn_simulator(
         thread_id: str,
     ):
         if thread_id is None:
-            raise ValueError("thread_id must be provided")
+            thread_id = str(uuid.uuid4())
         turn_counter = 0
         current_reduced_trajectory = {
             "trajectory": [],
@@ -352,7 +304,7 @@ async def run_multiturn_simulation_async(
     trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,
     stopping_condition: Optional[Callable[[dict], bool]] = None,
     reference_outputs: Optional[Any] = None,
-    thread_id: str,
+    thread_id: Optional[str] = None,
 ) -> MultiturnSimulatorResult:
     """Runs an async multi-turn simulation between an application and a simulated user.
 
@@ -432,54 +384,6 @@ def _create_async_multiturn_simulator(
     trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,
     stopping_condition: Optional[Callable[[dict], bool]] = None,
 ) -> Callable[..., Awaitable[MultiturnSimulatorResult]]:
-    """Creates an async simulator for multi-turn conversations between an application and a simulated user.
-
-    This function generates a simulator that can run conversations between an app and
-    either a dynamic user simulator or a list of static user responses. The simulator supports
-    evaluation of conversation trajectories and customizable stopping conditions.
-
-    Conversation trajectories are represented as a dict containing a key named "messages" whose
-    value is a list of message objects with "role" and "content" keys. The "app" and "user"
-    params you provide will both receive this trajectory as an input, and should return a
-    trajectory update dict with a new message or new messages under the "messages" key. The simulator
-    will dedupe these messages by id and merge them into the complete trajectory.
-
-    Additional fields are also permitted as part of the trajectory dict, which allows you to pass
-    additional information between the app and user if needed.
-
-    Once "max_turns" is reached or a provided stopping condition is met, the final trajectory
-    will be passed to provided trajectory evaluators, which will receive the final trajectory
-    as an "outputs" kwarg.
-
-    When calling the created simulator, you may also provide a "reference_outputs" kwarg,
-    which will be passed directly through to the provided evaluators.
-
-    Args:
-        app: Your application. Can be either a LangChain Runnable or a
-            callable that takes the current conversation trajectory dict and returns
-            a trajectory update dict with new messages under the "messages" key (and optionally other fields).
-        user: The simulated user. Can be:
-            - A LangChain Runnable or a callable that takes the current conversation trajectory
-              and returns a trajectory update dict with new messages under the "messages" key (and optionally other fields).
-            - A list of strings or Messages representing static user responses
-        max_turns: Maximum number of conversation turns to simulate
-        trajectory_evaluators: Optional list of evaluator functions that assess the conversation
-            trajectory. Each evaluator will receive the final trajectory of the conversation as
-            a kwarg named "outputs" and a kwarg named "reference_outputs" if provided.
-        stopping_condition: Optional callable that determines if the simulation should end early.
-            Takes the current trajectory and turn counter as input and returns a boolean.
-
-    Returns:
-        A callable that runs the simulation when invoked. The callable accepts the following kwargs:
-            - initial_trajectory: Initial input to start the conversation
-            - reference_outputs: Optional reference outputs for evaluation
-            - runnable_config: Optional config that will be passed in if using LangChain Runnable components.
-            - **kwargs: Additional keyword arguments
-        Returns an awaitable value that resolves to a MultiturnSimulatorResult containing:
-            - evaluator_results: List of results from trajectory evaluators
-            - trajectory: The complete conversation trajectory
-    """
-
     if max_turns is None and stopping_condition is None:
         raise ValueError(
             "At least one of max_turns or stopping_condition must be provided."
@@ -489,10 +393,10 @@ def _create_async_multiturn_simulator(
     async def _run_simulator(
         *,
         reference_outputs: Optional[Any] = None,
-        thread_id: str,
+        thread_id: Optional[str] = None,
     ):
         if thread_id is None:
-            raise ValueError("thread_id must be provided")
+            thread_id = str(uuid.uuid4())
         turn_counter = 0
         current_reduced_trajectory = {
             "trajectory": [],

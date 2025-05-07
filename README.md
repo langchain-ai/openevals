@@ -2684,36 +2684,32 @@ client = OpenAI()
 history = {}
 
 def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
-    if history[thread_id] is None:
+    if thread_id not in history:
         history[thread_id] = []
     history[thread_id].append(inputs)
     # inputs is a message object with role and content
     res = client.chat.completions.create(
-        model="gpt-4.1-nano",
+        model="gpt-4.1-mini",
         messages=[
             {
                 "role": "system",
-                "content": "You are an angry parrot named Polly who is angry at everything. Squawk a lot.",
+                "content": "You are a patient and understanding customer service agent",
             },
-            history[thread_id]
-        ],
+        ] + history[thread_id],
     )
     response_message = res.choices[0].message
     history[thread_id].append(response_message)
     return response_message
 
 user = create_llm_simulated_user(
-    system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
-    model="openai:gpt-4.1-nano",
-    fixed_responses=[
-        {"role": "user", "content": "Give me a cracker!"},
-    ],
+    system="You are an aggressive and hostile customer who wants a refund for their car.",
+    model="openai:gpt-4.1-mini",
 )
 
 trajectory_evaluator = create_llm_as_judge(
     model="openai:o3-mini",
-    prompt="Based on the below conversation, are the parrots angry?\n{outputs}",
-    feedback_key="anger",
+    prompt="Based on the below conversation, was the user satisfied?\n{outputs}",
+    feedback_key="satisfaction",
 )
 
 # Run the simulation directly with the new function
@@ -2730,42 +2726,23 @@ print(simulator_result)
 
 ```
 {
-  "trajectory": {
-    "messages": [
-      {
-        "role": "user",
-        "content": "Give me a cracker!",
-        "id": "b31f987a-cb6f-48c2-ad56-6a14dd748577"
-      },
-      {
-        "content": "Squawk! A cracker?! You think I’m just gonna hand over a cracker? No way! Squawk! Find your own silly snack!",
-        "refusal": null,
-        "role": "assistant",
-        "audio": null,
-        "function_call": null,
-        "tool_calls": null,
-        "annotations": [],
-        "id": "3a436975-e920-4140-86b2-fdfc9752c598"
-      },
-      ...
-      {
-        "content": "Squawk! You think you’re the winner? Hah! I’ve heard better squawks from a crow! Squawk! Keep talking, and I’ll be screeching louder than your pathetic yaps! Find your own damn cracker or get ready for a symphony of squawks that’ll make your head explode, you feathered buffoon!",
-        "refusal": null,
-        "role": "assistant",
-        "audio": null,
-        "function_call": null,
-        "tool_calls": null,
-        "annotations": [],
-        "id": "29474130-a89e-4b4f-b5ff-b28497b102d9"
-      }
-    ]
-  },
-  "evaluator_results": [
+  'trajectory': [
     {
-      "key": "anger",
-      "score": true,
-      "comment": "In the given conversation, both parties are using aggressive and confrontational language, with frequent insults and threats. The assistant identifies itself as an 'angry parrot' and responds to the user's requests for crackers in a hostile manner, insisting that it will not comply and making further threats. The overall tone and content of the dialogue suggest that both parrots are indeed angry with each other. Thus, the score should be: true.",
-      "metadata": null
+      'role': 'user',
+      'content': 'This car is a nightmare! I demand a full refund immediately. What are you going to do about this?',
+      'id': 'run-472c68dd-75bb-424c-bd4a-f6a0fe5ba7a8-0'
+    }, {
+      'role': 'assistant',
+      'content': "I'm really sorry to hear that you're having such a difficult experience with your car. I want to help resolve this as smoothly as possible for you. Could you please provide me with more details about the issues you're facing? This will help me understand the situation better and explore the best options available for you.",
+      'id': '72765f47-c609-4fcf-b664-cd7ee7189772'
+    },
+    ...
+  ],
+  'evaluator_results': [
+    {
+      'key': 'satisfaction',
+      'score': False,
+      'comment': "Throughout the conversation, the user consistently voiced frustration and dissatisfaction with the situation. Despite the assistant's attempts to escalate the issue and promise timely resolution, the user remained stern, issuing ultimatums and threats. This indicates that the user was not satisfied with the initial responses and was still demanding immediate action. Thus, the score should be: false.", 'metadata': None
     }
   ]
 }
@@ -2896,7 +2873,7 @@ The returned messages are deduped by id and added to an internal list of message
 
 The other accepted parameters are as follows:
 
-- `thread_id`/`threadId`: A thread id identifying the conversation
+- `thread_id`/`threadId`: A thread id that identifies the current interaction, used by your `app` to load state.
 - `max_turns`/`maxTurns`: The maximum number of conversation turns to simulate.
 - `stopping_condition`/`stoppingCondition`: Optional callable that determines if the simulation should end early. Takes the current trajectory as a list of messages as an input arg and a kwarg named `turn_counter`, and should return a boolean.
 - `trajectory_evaluators`/`trajectoryEvaluators`: Optional evaluators that run at the end of the simulation. These will receive the final trajectory as a kwarg named `outputs`.
@@ -2920,16 +2897,18 @@ The `user` parameter is a function that accepts the current trajectory (and a `t
 
 ### Prebuilt simulated user
 
-OpenEvals includes a convenient prebuilt `create_llm_simulated_user` method that uses an LLM to take on the role of a user and generate responses. You can also pass an array of `fixed_responses`, which the simulated user will return in order. After the simulated user returns all `fixed_responses`, it will generate responses via LLM using the system prompt and all externally facing messages (with role `role=user` or with `role=assistant` with no present tool calls) in the current trajectory. If you do not pass any `fixed_responses`, the prebuilt simulated user will generate an initial query based on the provided `system` prompt.
+OpenEvals includes a convenient prebuilt `create_llm_simulated_user` method that uses an LLM to take on the role of a user and generate responses based on a system prompt:
 
-The prebuilt simulated user flips message roles when calling the underlying LLM - `user` messages become `assistant` messages and vice versa. It takes the following parameters:
+```python
+from openevals.simulators import create_llm_simulated_user
 
-- `system`: A string prompt that the simulator adds to the start of the current trajectory as a system message. We suggest having the LLM take on a role corresponding to a specific type of user persona you are testing for.
-- `model`: A string matching the model name you are using. Has the same format as the LLM-as-judge evaluator param, and requires you to install the appropriate [LangChain integration package](https://python.langchain.com/docs/concepts/chat_models/) if using models other than OpenAI. Must be populated if `client` is not populated.
-- `client`: A LangChain chat model instance. Must be populated if `model` is not populated.
-- `fixed_responses`: A list of hard-coded responses that will be returned in order. If the current conversation turn is greater than the number of responses in this array, the simulated user will generate a response via LLM.
+user = create_llm_simulated_user(
+    system="You are an angry and belligerent customer who wants a refund.",
+    model="openai:gpt-4.1-mini",
+)
+```
 
-Here is an example of a simulated user set up with fixed responses for the first two conversation turns. The LLM will generate responses for subsequent turns.
+You can also pass an array of `fixed_responses`, which the simulated user will return in order. Here is an example of a simulated user set up with fixed responses for the first two conversation turns. The LLM will generate responses for subsequent turns:
 
 ```python
 from openevals.simulators import create_llm_simulated_user
@@ -2943,6 +2922,18 @@ user = create_llm_simulated_user(
     ],
 )
 ```
+
+After the simulated user returns all `fixed_responses`, it will generate responses via LLM using the system prompt and any externally facing messages (with role `role=user` or with `role=assistant` with no present tool calls) in the current trajectory. If you do not pass any `fixed_responses`, the prebuilt simulated user will generate an initial query based on the provided `system` prompt.
+
+> [!NOTE]
+> The prebuilt simulated user flips message roles when calling the underlying LLM - `user` messages become `assistant` messages and vice versa.
+
+This prebuilt takes the following parameters:
+
+- `system`: A string prompt that the simulator adds to the start of the current trajectory as a system message. We suggest having the LLM take on a role corresponding to a specific type of user persona you are testing for.
+- `model`: A string matching the model name you are using. Has the same format as the LLM-as-judge evaluator param, and requires you to install the appropriate [LangChain integration package](https://python.langchain.com/docs/concepts/chat_models/) if using models other than OpenAI. Must be populated if `client` is not populated.
+- `client`: A LangChain chat model instance. Must be populated if `model` is not populated.
+- `fixed_responses`: A list of hard-coded responses that will be returned in order. If the current conversation turn is greater than the number of responses in this array, the simulated user will generate a response via LLM.
 
 ### Custom simulated users
 

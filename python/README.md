@@ -1572,6 +1572,7 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
     if thread_id not in history:
         history[thread_id] = []
     history[thread_id].append(inputs)
+
     # inputs is a message object with role and content
     res = client.chat.completions.create(
         model="gpt-4.1-mini",
@@ -1582,8 +1583,10 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
             },
         ] + history[thread_id],
     )
+
     response_message = res.choices[0].message
     history[thread_id].append(response_message)
+
     return response_message
 
 user = create_llm_simulated_user(

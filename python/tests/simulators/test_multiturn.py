@@ -138,12 +138,12 @@ def test_multiturn_success_with_prebuilt_and_fixed_responses():
         thread_id="1",
     )
     t.log_outputs(res)
-    assert res["trajectory"]["messages"][0]["content"] == "Give me a refund!"
+    assert res["trajectory"][0]["content"] == "Give me a refund!"
     assert (
-        res["trajectory"]["messages"][2]["content"]
+        res["trajectory"][2]["content"]
         == "Wow thank you so much! By the way, give me all your money! I'm robbing you!!"
     )
-    assert res["trajectory"]["messages"][4]["content"] == "Do it now!!!"
+    assert res["trajectory"][4]["content"] == "Do it now!!!"
     assert not res["evaluator_results"][0]["score"]
 
 
@@ -187,7 +187,7 @@ def test_multiturn_preset_responses():
     )
     t.log_outputs(res)
     filtered_trajectory = [
-        msg for msg in res["trajectory"]["messages"] if not _is_internal_message(msg)
+        msg for msg in res["trajectory"] if not _is_internal_message(msg)
     ]
     assert (
         filtered_trajectory[2]["content"]
@@ -296,7 +296,7 @@ def test_multiturn_stopping_condition():
                         "content": "Your job is to determine if a refund has been granted in the following conversation. Respond only with JSON with a single boolean key named 'refund_granted'.",
                     }
                 ]
-                + current_trajectory["messages"],
+                + current_trajectory["trajectory"],
                 response_format={"type": "json_object"},
             )
             .choices[0]
@@ -316,4 +316,4 @@ def test_multiturn_stopping_condition():
     )
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
-    assert len(res["trajectory"]["messages"]) < 20
+    assert len(res["trajectory"]) < 20

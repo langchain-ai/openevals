@@ -8,7 +8,6 @@ from openevals.types import (
     ChatCompletionMessage,
 )
 from openevals.types import (
-    MultiturnSimulatorTrajectory,
     MultiturnSimulatorResult,
 )
 from openevals.utils import (
@@ -49,12 +48,12 @@ def _coerce_and_assign_id_to_message(message: Union[dict, BaseMessage]) -> dict:
 
 
 def _trajectory_reducer(
-    current_trajectory: Optional[MultiturnSimulatorTrajectory],
+    current_trajectory: Optional[dict],
     new_update: ChatCompletionMessage,
     *,
     update_source: Literal["app", "user"],
     turn_counter: Optional[int] = None,
-) -> MultiturnSimulatorTrajectory:
+) -> dict:
     def _combine_messages(
         left: list[Messages] | Messages,
         right: list[Messages] | Messages,
@@ -82,7 +81,7 @@ def _trajectory_reducer(
         return merged  # type: ignore
 
     if current_trajectory is None:
-        current_trajectory = {"messages": []}
+        current_trajectory = {"trajectory": []}
 
     try:
         coerced_new_update = _normalize_to_openai_messages_list(new_update)
@@ -91,8 +90,8 @@ def _trajectory_reducer(
             f"Received unexpected trajectory update from '{update_source}': {str(new_update)}. Expected a message, list of messages, or dictionary with a 'messages' key containing messages."
         )
     return {
-        "messages": _combine_messages(
-            current_trajectory["messages"],
+        "trajectory": _combine_messages(
+            current_trajectory["trajectory"],
             coerced_new_update,
         ),
         "turn_counter": turn_counter,
@@ -103,7 +102,7 @@ def _create_static_simulated_user(
     static_responses: list[str | Messages],
 ):
     def _return_next_message(
-        trajectory: MultiturnSimulatorTrajectory,
+        trajectory: dict,
         *,
         thread_id: str,
     ):
@@ -131,15 +130,15 @@ def _create_static_simulated_user(
 
 def create_multiturn_simulator(
     *,
-    app: Callable[[MultiturnSimulatorTrajectory], ChatCompletionMessage],
+    app: Callable[[ChatCompletionMessage], ChatCompletionMessage],
     user: Union[
-        Runnable[MultiturnSimulatorTrajectory, ChatCompletionMessage],
-        Callable[[MultiturnSimulatorTrajectory], ChatCompletionMessage],
+        Runnable[ChatCompletionMessage, ChatCompletionMessage],
+        Callable[[ChatCompletionMessage], ChatCompletionMessage],
         list[Union[str, Messages]],
     ],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
-    stopping_condition: Optional[Callable[[MultiturnSimulatorTrajectory], bool]] = None,
+    stopping_condition: Optional[Callable[[dict], bool]] = None,
 ) -> Callable[..., MultiturnSimulatorResult]:
     """Creates a simulator for multi-turn conversations between an application and a simulated user.
 
@@ -219,8 +218,8 @@ def create_multiturn_simulator(
         if thread_id is None:
             raise ValueError("thread_id must be provided")
         turn_counter = 0
-        current_reduced_trajectory: MultiturnSimulatorTrajectory = {
-            "messages": [],
+        current_reduced_trajectory = {
+            "trajectory": [],
             "turn_counter": 0,
         }
         wrapped_app = _wrap(app, "app", thread_id)
@@ -268,7 +267,7 @@ def create_multiturn_simulator(
             except Exception as e:
                 print(f"Error in trajectory evaluator {trajectory_evaluator}: {e}")
         return MultiturnSimulatorResult(
-            trajectory=current_reduced_trajectory,
+            trajectory=current_reduced_trajectory["trajectory"],
             evaluator_results=results,
         )
 
@@ -277,17 +276,15 @@ def create_multiturn_simulator(
 
 def create_async_multiturn_simulator(
     *,
-    app: Callable[[MultiturnSimulatorTrajectory], Awaitable[ChatCompletionMessage]],
+    app: Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
     user: Union[
-        Runnable[MultiturnSimulatorTrajectory, ChatCompletionMessage],
-        Callable[[MultiturnSimulatorTrajectory], Awaitable[ChatCompletionMessage]],
+        Runnable[ChatCompletionMessage, ChatCompletionMessage],
+        Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
         list[Union[str, Messages]],
     ],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,
-    stopping_condition: Optional[
-        Callable[[MultiturnSimulatorTrajectory], Awaitable[bool]]
-    ] = None,
+    stopping_condition: Optional[Callable[[dict], bool]] = None,
 ) -> Callable[..., Awaitable[MultiturnSimulatorResult]]:
     """Creates an async simulator for multi-turn conversations between an application and a simulated user.
 
@@ -367,8 +364,8 @@ def create_async_multiturn_simulator(
         if thread_id is None:
             raise ValueError("thread_id must be provided")
         turn_counter = 0
-        current_reduced_trajectory: MultiturnSimulatorTrajectory = {
-            "messages": [],
+        current_reduced_trajectory = {
+            "trajectory": [],
             "turn_counter": 0,
         }
         wrapped_app = _awrap(app, "app", thread_id)
@@ -418,7 +415,7 @@ def create_async_multiturn_simulator(
             except Exception as e:
                 print(f"Error in trajectory evaluator {trajectory_evaluator}: {e}")
         return MultiturnSimulatorResult(
-            trajectory=current_reduced_trajectory,
+            trajectory=current_reduced_trajectory["trajectory"],
             evaluator_results=results,
         )
 

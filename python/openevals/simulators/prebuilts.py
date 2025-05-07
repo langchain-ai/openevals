@@ -4,7 +4,7 @@ from typing import Optional
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
 
-from openevals.types import ChatCompletionMessage, MultiturnSimulatorTrajectory
+from openevals.types import ChatCompletionMessage
 from openevals.utils import _convert_to_openai_message
 
 
@@ -74,15 +74,15 @@ def create_llm_simulated_user(
         client = init_chat_model(model=model)  # type: ignore
 
     def _simulator(
-        current_trajectory: MultiturnSimulatorTrajectory,
+        current_trajectory: dict,
         **kwargs,
     ):
         if (
             not isinstance(current_trajectory, dict)
-            or current_trajectory.get("messages") is None
+            or current_trajectory.get("trajectory") is None
         ):
             raise ValueError(
-                "Simulated user inputs must be a dict containing a 'messages' key with a list of message objects"
+                "Internal error: Simulated user inputs must be a dict containing a 'trajectory' key with a list of message objects"
             )
         if fixed_responses and current_trajectory.get("turn_counter") < len(
             fixed_responses
@@ -93,7 +93,7 @@ def create_llm_simulated_user(
             else:
                 return res
         messages = []
-        for msg in current_trajectory["messages"]:
+        for msg in current_trajectory["trajectory"]:
             converted_message = _convert_to_openai_message(msg)
             if _is_internal_message(converted_message):
                 continue
@@ -180,15 +180,15 @@ def create_async_llm_simulated_user(
         client = init_chat_model(model=model)  # type: ignore
 
     async def _simulator(
-        current_trajectory: MultiturnSimulatorTrajectory,
+        current_trajectory: dict,
         **kwargs,
     ):
         if (
             not isinstance(current_trajectory, dict)
-            or current_trajectory.get("messages") is None
+            or current_trajectory.get("trajectory") is None
         ):
             raise ValueError(
-                "Simulated user inputs must be a dict containing a 'messages' key with a list of message objects"
+                "Simulated user inputs must be a dict containing a 'trajectory' key with a list of message objects"
             )
         if fixed_responses and current_trajectory.get("turn_counter") < len(
             fixed_responses
@@ -199,7 +199,7 @@ def create_async_llm_simulated_user(
             else:
                 return res
         messages = []
-        for msg in current_trajectory["messages"]:
+        for msg in current_trajectory["trajectory"]:
             converted_message = _convert_to_openai_message(msg)
             if _is_internal_message(converted_message):
                 continue

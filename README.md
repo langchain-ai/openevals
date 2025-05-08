@@ -1817,7 +1817,7 @@ print(result)
 }
 ```
 
-> [!CAUTION]
+> [!WARNING]
 > The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-pyright-python-only) of this evaluator.
 
 You can also pass `pyright_cli_args` to the evaluator to customize the arguments passed to the `pyright` CLI:
@@ -1910,7 +1910,7 @@ console.log(result);
 }
 ```
 
-> [!CAUTION]
+> [!WARNING]
 > The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-typescript-typescript-only) of this evaluator.
 
 ### LLM-as-judge for code

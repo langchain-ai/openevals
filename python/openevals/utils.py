@@ -21,11 +21,11 @@ __all__ = [
 
 
 def _convert_to_openai_message(
-    message: ChatCompletionMessage | BaseMessage | dict,
+    message: Union[ChatCompletionMessage, BaseMessage, dict],
 ) -> ChatCompletionMessage:
     if not isinstance(message, BaseMessage) and not isinstance(message, dict):
         message = dict(message)
-    converted = convert_to_openai_messages([message])[0]
+    converted = convert_to_openai_messages([message])[0]  # type: ignore
     if isinstance(message, BaseMessage):
         if message.id is not None and converted.get("id") is None:
             converted["id"] = message.id
@@ -36,19 +36,23 @@ def _convert_to_openai_message(
 
 
 def _normalize_to_openai_messages_list(
-    messages: Optional[Union[list[ChatCompletionMessage], list[BaseMessage], dict]],
+    messages: Optional[
+        Union[
+            list[ChatCompletionMessage], list[BaseMessage], ChatCompletionMessage, dict
+        ]
+    ],
 ) -> list[ChatCompletionMessage]:
     if messages is None:
         return []
     if isinstance(messages, dict):
         if "role" in messages:
-            messages = [messages]
+            messages = [messages]  # type: ignore
         elif "messages" in messages:
-            messages = messages["messages"]
+            messages = messages["messages"]  # type: ignore
         else:
             raise ValueError("if messages is a dict, it must contain a 'messages' key")
     if not isinstance(messages, list):
-        messages = [messages]
+        messages = [messages]  # type: ignore
     return [_convert_to_openai_message(message) for message in messages]  # type: ignore
 
 

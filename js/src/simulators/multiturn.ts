@@ -188,10 +188,10 @@ function _createStaticSimulatedUser(
  * either a dynamic user simulator or a list of static user responses. The simulation supports
  * evaluation of conversation trajectories and customizable stopping conditions.
  *
- * Conversation trajectories are represented as a dict containing a key named "messages" whose
- * value is a list of message objects with "role" and "content" keys. The "app" param you provide
- * will receives the next message in sequence as an input, and should return a message. The simulator
- * will dedupe these messages by id and merge them into the complete trajectory.
+ * Conversation trajectories are represented as lists of message objects with "role" and "content" keys.
+ * The "app" param you provide will receive the next message in sequence as an input, and should
+ * return a message. Internally, the simulation will dedupe these messages by id and merge them into
+ * a complete trajectory.
  *
  * Once "maxTurns" is reached or a provided stopping condition is met, the final trajectory
  * will be passed to provided trajectory evaluators, which will receive the final trajectory
@@ -217,7 +217,7 @@ function _createStaticSimulatedUser(
  * @param {string} [params.threadId] - Optional thread ID. If not provided, a random one will be generated.
  *
  * @returns Returns a Promise that resolves to a MultiturnSimulationResult containing:
- *     - evaluator_results: List of results from trajectory evaluators
+ *     - evaluatorResults: List of results from trajectory evaluators
  *     - trajectory: The complete conversation trajectory
  *
  * @example
@@ -233,7 +233,10 @@ function _createStaticSimulatedUser(
  * });
  * ```
  */
-export const runMultiturnSimulation = (params: MultiturnSimulationParams) => {
+export const runMultiturnSimulation = async (
+  params: MultiturnSimulationParams
+) => {
+  // Wrap at runtime to avoid side effects
   const runSimulator = traceable(
     async (params: MultiturnSimulationParams) => {
       if (params.threadId === undefined) {

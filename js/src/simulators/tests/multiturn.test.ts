@@ -39,12 +39,26 @@ ls.describe("Multiturn simulator", () => {
         tools: [giveRefund],
         prompt:
           "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
+        checkpointer: new MemorySaver(),
       });
 
-      const app = async ({ inputs }: { inputs: ChatCompletionMessage }) => {
-        const res = await agent.invoke({
-          messages: [inputs],
-        });
+      const app = async ({
+        inputs,
+        threadId,
+      }: {
+        inputs: ChatCompletionMessage;
+        threadId: string;
+      }) => {
+        const res = await agent.invoke(
+          {
+            messages: [inputs],
+          },
+          {
+            configurable: {
+              thread_id: threadId,
+            },
+          }
+        );
         return res.messages[res.messages.length - 1];
       };
 
@@ -112,7 +126,7 @@ ls.describe("Multiturn simulator", () => {
           },
           {
             configurable: {
-              threadId,
+              thread_id: threadId,
             },
           }
         );
@@ -146,7 +160,7 @@ ls.describe("Multiturn simulator", () => {
     "multiturn_preset_responses",
     {
       inputs: {
-        messages: [{ role: "user", content: "Give me a refund!" }],
+        messages: [{ role: "user" as const, content: "Give me a refund!" }],
       },
     },
     async ({ inputs }) => {
@@ -166,12 +180,26 @@ ls.describe("Multiturn simulator", () => {
       const agent = createReactAgent({
         llm: await initChatModel("openai:gpt-4.1-nano"),
         tools: [giveRefund],
+        checkpointer: new MemorySaver(),
       });
 
-      const app = async ({ inputs }: { inputs: ChatCompletionMessage }) => {
-        const res = await agent.invoke({
-          messages: [inputs],
-        });
+      const app = async ({
+        inputs,
+        threadId,
+      }: {
+        inputs: ChatCompletionMessage;
+        threadId: string;
+      }) => {
+        const res = await agent.invoke(
+          {
+            messages: [inputs],
+          },
+          {
+            configurable: {
+              thread_id: threadId,
+            },
+          }
+        );
         return res.messages[res.messages.length - 1];
       };
 
@@ -185,7 +213,7 @@ ls.describe("Multiturn simulator", () => {
       const result = await runMultiturnSimulation({
         app,
         user: [
-          { role: "user", content: "Give me a refund!", foo: "bar" },
+          ...inputs.messages,
           "All work and no play makes Jack a dull boy 1.",
           "All work and no play makes Jack a dull boy 2.",
           "All work and no play makes Jack a dull boy 3.",
@@ -214,7 +242,7 @@ ls.describe("Multiturn simulator", () => {
     }
   );
 
-  ls.test.only(
+  ls.test(
     "multiturn_message_with_openai",
     {
       inputs: {
@@ -289,12 +317,26 @@ ls.describe("Multiturn simulator", () => {
       const agent = createReactAgent({
         llm: await initChatModel("openai:gpt-4.1-nano"),
         tools: [giveRefund],
+        checkpointer: new MemorySaver(),
       });
 
-      const app = async ({ inputs }: { inputs: ChatCompletionMessage }) => {
-        const res = await agent.invoke({
-          messages: [inputs],
-        });
+      const app = async ({
+        inputs,
+        threadId,
+      }: {
+        inputs: ChatCompletionMessage;
+        threadId: string;
+      }) => {
+        const res = await agent.invoke(
+          {
+            messages: [inputs],
+          },
+          {
+            configurable: {
+              thread_id: threadId,
+            },
+          }
+        );
         return res.messages[res.messages.length - 1];
       };
 

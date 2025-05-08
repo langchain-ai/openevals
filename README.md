@@ -3199,7 +3199,7 @@ const app = async ({
   const res = await agent.invoke({
     messages: [inputs],
   }, {
-    configurable: { threadId },
+    configurable: { thread_id: threadId },
   });
   return res.messages[res.messages.length - 1];
 };

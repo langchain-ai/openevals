@@ -25,9 +25,12 @@ export function _isInternalMessage(message: ChatCompletionMessage): boolean {
  * @param {string} [params.model] - Optional name of the language model to use. Must be provided if client is not.
  * @param {BaseChatModel} [params.client] - Optional LangChain chat model instance. Must be provided if model is not.
  * @param {(string | ChatCompletionMessage)[]} [params.fixedResponses] - Optional list of fixed responses to use for the simulated user.
+ *        If provided, these responses will be used in sequence based on the turn counter before falling back to LLM generation.
  *
- * @returns A callable simulator function that takes a MultiturnSimulatorTrajectory containing conversation messages
- *          and returns a MultiturnSimulatorTrajectoryUpdate with the simulated user's response
+ * @returns A callable simulator function that takes a trajectory and turn counter, and returns a Promise resolving to a ChatCompletionMessage
+ *
+ * @throws {Error} If neither client nor model is provided
+ * @throws {Error} If both client and model are provided
  *
  * @example
  * ```typescript
@@ -51,8 +54,10 @@ export function _isInternalMessage(message: ChatCompletionMessage): boolean {
  * - The simulator automatically converts message roles to maintain proper conversation flow:
  *   * User messages become assistant messages when sent to the LLM
  *   * Assistant messages (without tool calls) become user messages when sent to the LLM
+ *   * Messages with tool calls are skipped to maintain conversation coherence
  * - The system prompt is prepended to each conversation to maintain consistent behavior
- * - The simulator returns responses in the format expected by createMultiturnSimulator
+ * - If no messages exist in the trajectory, an initial query is generated based on the system prompt
+ * - Fixed responses are used in sequence based on the turn counter before falling back to LLM generation
  */
 export function createLLMSimulatedUser({
   system,

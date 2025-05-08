@@ -16,11 +16,10 @@ from openevals.utils import (
 )
 from langsmith import traceable
 
-from langchain_core.runnables import Runnable
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, BaseMessageChunk
 
 
-def _wrap(app: Callable[..., Any], run_name: str, thread_id: str) -> Runnable:
+def _wrap(app: Callable[..., Any], run_name: str, thread_id: str) -> Callable:
     @traceable(name=run_name)
     def _wrap_app(inputs: ChatCompletionMessage, **kwargs):
         return app(inputs, thread_id=thread_id, **kwargs)
@@ -30,7 +29,7 @@ def _wrap(app: Callable[..., Any], run_name: str, thread_id: str) -> Runnable:
 
 def _awrap(
     app: Callable[..., Awaitable[Any]], run_name: str, thread_id: str
-) -> Runnable:
+) -> Callable:
     @traceable(name=run_name)
     async def _wrap_app(inputs: ChatCompletionMessage, **kwargs):
         if asyncio.iscoroutinefunction(app):
@@ -40,11 +39,13 @@ def _awrap(
     return _wrap_app
 
 
-def _coerce_and_assign_id_to_message(message: Union[dict, BaseMessage]) -> dict:
-    message = _convert_to_openai_message(message)
-    if message.get("id") is None:
-        return {**message, "id": str(uuid.uuid4())}
-    return message
+def _coerce_and_assign_id_to_message(
+    message: Union[dict, BaseMessage, BaseMessageChunk, ChatCompletionMessage],
+) -> ChatCompletionMessage:
+    converted_message = _convert_to_openai_message(message)
+    if converted_message.get("id") is None:
+        return {**converted_message, "id": str(uuid.uuid4())}
+    return converted_message
 
 
 def _trajectory_reducer(
@@ -92,7 +93,7 @@ def _trajectory_reducer(
     return {
         "trajectory": _combine_messages(
             current_trajectory["trajectory"],
-            coerced_new_update,
+            coerced_new_update,  # type: ignore
         ),
         "turn_counter": turn_counter,
     }
@@ -131,13 +132,12 @@ def run_multiturn_simulation(
     *,
     app: Callable[[ChatCompletionMessage], ChatCompletionMessage],
     user: Union[
-        Runnable[ChatCompletionMessage, ChatCompletionMessage],
         Callable[[ChatCompletionMessage], ChatCompletionMessage],
         list[Union[str, Messages]],
     ],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
-    stopping_condition: Optional[Callable[[dict], bool]] = None,
+    stopping_condition: Optional[Callable[..., bool]] = None,
     reference_outputs: Optional[Any] = None,
     thread_id: Optional[str] = None,
 ) -> MultiturnSimulationResult:
@@ -161,11 +161,10 @@ def run_multiturn_simulation(
     as an "outputs" kwarg.
 
     Args:
-        app: Your application. Can be either a LangChain Runnable or a
-            callable that takes the current conversation trajectory dict and returns
-            a trajectory update dict with new messages under the "messages" key (and optionally other fields).
+        app: Your application. Must be a callable that takes the current conversation trajectory
+            and returns a trajectory update dict with new messages under the "messages" key (and optionally other fields).
         user: The simulated user. Can be:
-            - A LangChain Runnable or a callable that takes the current conversation trajectory
+            - A callable that takes the current conversation trajectory
               and returns a trajectory update dict with new messages under the "messages" key (and optionally other fields).
             - A list of strings or Messages representing static user responses
         max_turns: Maximum number of conversation turns to simulate
@@ -196,100 +195,69 @@ def run_multiturn_simulation(
         )
         ```
     """
-    simulator = _create_multiturn_simulator(
-        app=app,
-        user=user,
-        max_turns=max_turns,
-        trajectory_evaluators=trajectory_evaluators,
-        stopping_condition=stopping_condition,
-    )
-
-    return simulator(reference_outputs=reference_outputs, thread_id=thread_id)
-
-
-def _create_multiturn_simulator(
-    *,
-    app: Callable[[ChatCompletionMessage], ChatCompletionMessage],
-    user: Union[
-        Runnable[ChatCompletionMessage, ChatCompletionMessage],
-        Callable[[ChatCompletionMessage], ChatCompletionMessage],
-        list[Union[str, Messages]],
-    ],
-    max_turns: Optional[int] = None,
-    trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
-    stopping_condition: Optional[Callable[[dict], bool]] = None,
-) -> Callable[..., MultiturnSimulationResult]:
     if max_turns is None and stopping_condition is None:
         raise ValueError(
             "At least one of max_turns or stopping_condition must be provided."
         )
+    if thread_id is None:
+        thread_id = str(uuid.uuid4())
+    turn_counter = 0
+    current_reduced_trajectory = {
+        "trajectory": [],
+        "turn_counter": 0,
+    }
+    wrapped_app = _wrap(app, "app", thread_id)
+    if isinstance(user, list):
+        static_responses = user
+        simulated_user = _create_static_simulated_user(static_responses)
+    else:
+        simulated_user = user  # type: ignore
+    wrapped_simulated_user = _wrap(simulated_user, "simulated_user", thread_id)
 
-    def _run_simulator(
-        *,
-        reference_outputs: Optional[Any] = None,
-        thread_id: str,
-    ):
-        if thread_id is None:
-            thread_id = str(uuid.uuid4())
-        turn_counter = 0
-        current_reduced_trajectory = {
-            "trajectory": [],
-            "turn_counter": 0,
-        }
-        wrapped_app = _wrap(app, "app", thread_id)
-        if isinstance(user, list):
-            static_responses = user
-            simulated_user = _create_static_simulated_user(static_responses)
-        else:
-            simulated_user = user  # type: ignore
-        wrapped_simulated_user = _wrap(simulated_user, "simulated_user", thread_id)
-
-        while True:
-            if max_turns is not None and turn_counter >= max_turns:
-                break
-            raw_inputs = wrapped_simulated_user(
-                current_reduced_trajectory["trajectory"], turn_counter=turn_counter
-            )
-            current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
-            current_reduced_trajectory = _trajectory_reducer(
-                current_reduced_trajectory,
-                current_inputs,
-                update_source="user",
-                turn_counter=turn_counter,
-            )
-            raw_outputs = wrapped_app(current_inputs)
-            current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
-            turn_counter += 1
-            current_reduced_trajectory = _trajectory_reducer(
-                current_reduced_trajectory,
-                current_outputs,
-                update_source="app",
-                turn_counter=turn_counter,
-            )
-            if stopping_condition and stopping_condition(
-                current_reduced_trajectory["trajectory"], turn_counter=turn_counter
-            ):
-                break
-        results = []
-        del current_reduced_trajectory["turn_counter"]
-        for trajectory_evaluator in trajectory_evaluators or []:
-            try:
-                trajectory_eval_result = trajectory_evaluator(
-                    outputs=current_reduced_trajectory["trajectory"],
-                    reference_outputs=reference_outputs,
-                )
-                if isinstance(trajectory_eval_result, list):
-                    results.extend(trajectory_eval_result)
-                else:
-                    results.append(trajectory_eval_result)
-            except Exception as e:
-                print(f"Error in trajectory evaluator {trajectory_evaluator}: {e}")
-        return MultiturnSimulationResult(
-            trajectory=current_reduced_trajectory["trajectory"],
-            evaluator_results=results,
+    while True:
+        if max_turns is not None and turn_counter >= max_turns:
+            break
+        raw_inputs = wrapped_simulated_user(
+            current_reduced_trajectory["trajectory"], turn_counter=turn_counter
         )
-
-    return _run_simulator
+        current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
+        current_reduced_trajectory = _trajectory_reducer(
+            current_reduced_trajectory,
+            current_inputs,
+            update_source="user",
+            turn_counter=turn_counter,
+        )
+        raw_outputs = wrapped_app(current_inputs)
+        current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
+        turn_counter += 1
+        current_reduced_trajectory = _trajectory_reducer(
+            current_reduced_trajectory,
+            current_outputs,
+            update_source="app",
+            turn_counter=turn_counter,
+        )
+        if stopping_condition and stopping_condition(
+            current_reduced_trajectory["trajectory"], turn_counter=turn_counter
+        ):
+            break
+    results = []
+    del current_reduced_trajectory["turn_counter"]
+    for trajectory_evaluator in trajectory_evaluators or []:
+        try:
+            trajectory_eval_result = trajectory_evaluator(
+                outputs=current_reduced_trajectory["trajectory"],
+                reference_outputs=reference_outputs,
+            )
+            if isinstance(trajectory_eval_result, list):
+                results.extend(trajectory_eval_result)
+            else:
+                results.append(trajectory_eval_result)
+        except Exception as e:
+            print(f"Error in trajectory evaluator {trajectory_evaluator}: {e}")
+    return MultiturnSimulationResult(
+        trajectory=current_reduced_trajectory["trajectory"],  # type: ignore
+        evaluator_results=results,
+    )
 
 
 @traceable(name="multiturn_simulator")
@@ -297,13 +265,12 @@ async def run_multiturn_simulation_async(
     *,
     app: Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
     user: Union[
-        Runnable[ChatCompletionMessage, ChatCompletionMessage],
         Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
         list[Union[str, Messages]],
     ],
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,
-    stopping_condition: Optional[Callable[[dict], bool]] = None,
+    stopping_condition: Optional[Callable[..., Awaitable[bool]]] = None,
     reference_outputs: Optional[Any] = None,
     thread_id: Optional[str] = None,
 ) -> MultiturnSimulationResult:
@@ -327,11 +294,10 @@ async def run_multiturn_simulation_async(
     as an "outputs" kwarg.
 
     Args:
-        app: Your application. Can be either a LangChain Runnable or a
-            callable that takes the current conversation trajectory dict and returns
-            a trajectory update dict with new messages under the "messages" key (and optionally other fields).
+        app: Your application. Must be a callable that takes the current conversation trajectory
+            and returns a trajectory update dict with new messages under the "messages" key (and optionally other fields).
         user: The simulated user. Can be:
-            - A LangChain Runnable or a callable that takes the current conversation trajectory
+            - A callable that takes the current conversation trajectory
               and returns a trajectory update dict with new messages under the "messages" key (and optionally other fields).
             - A list of strings or Messages representing static user responses
         max_turns: Maximum number of conversation turns to simulate
@@ -362,97 +328,66 @@ async def run_multiturn_simulation_async(
         )
         ```
     """
-    simulator = _create_async_multiturn_simulator(
-        app=app,
-        user=user,
-        max_turns=max_turns,
-        trajectory_evaluators=trajectory_evaluators,
-        stopping_condition=stopping_condition,
-    )
-
-    return await simulator(reference_outputs=reference_outputs, thread_id=thread_id)
-
-
-def _create_async_multiturn_simulator(
-    *,
-    app: Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
-    user: Union[
-        Runnable[ChatCompletionMessage, ChatCompletionMessage],
-        Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
-        list[Union[str, Messages]],
-    ],
-    max_turns: Optional[int] = None,
-    trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,
-    stopping_condition: Optional[Callable[[dict], bool]] = None,
-) -> Callable[..., Awaitable[MultiturnSimulationResult]]:
     if max_turns is None and stopping_condition is None:
         raise ValueError(
             "At least one of max_turns or stopping_condition must be provided."
         )
+    if thread_id is None:
+        thread_id = str(uuid.uuid4())
+    turn_counter = 0
+    current_reduced_trajectory = {
+        "trajectory": [],
+        "turn_counter": 0,
+    }
+    wrapped_app = _awrap(app, "app", thread_id)
+    if isinstance(user, list):
+        static_responses = user
+        simulated_user = _create_static_simulated_user(static_responses)
+    else:
+        simulated_user = user  # type: ignore
+    wrapped_simulated_user = _awrap(simulated_user, "simulated_user", thread_id)
 
-    async def _run_simulator(
-        *,
-        reference_outputs: Optional[Any] = None,
-        thread_id: Optional[str] = None,
-    ):
-        if thread_id is None:
-            thread_id = str(uuid.uuid4())
-        turn_counter = 0
-        current_reduced_trajectory = {
-            "trajectory": [],
-            "turn_counter": 0,
-        }
-        wrapped_app = _awrap(app, "app", thread_id)
-        if isinstance(user, list):
-            static_responses = user
-            simulated_user = _create_static_simulated_user(static_responses)
-        else:
-            simulated_user = user  # type: ignore
-        wrapped_simulated_user = _awrap(simulated_user, "simulated_user", thread_id)
-
-        while True:
-            if max_turns is not None and turn_counter >= max_turns:
-                break
-            raw_inputs = await wrapped_simulated_user(
-                current_reduced_trajectory["trajectory"], turn_counter=turn_counter
-            )
-            current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
-            current_reduced_trajectory = _trajectory_reducer(
-                current_reduced_trajectory,
-                current_inputs,
-                update_source="user",
-                turn_counter=turn_counter,
-            )
-            raw_outputs = await wrapped_app(current_inputs)
-            current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
-            turn_counter += 1
-            current_reduced_trajectory = _trajectory_reducer(
-                current_reduced_trajectory,
-                current_outputs,
-                update_source="app",
-                turn_counter=turn_counter,
-            )
-            if stopping_condition and await stopping_condition(
-                current_reduced_trajectory["trajectory"], turn_counter=turn_counter
-            ):
-                break
-        results = []
-        del current_reduced_trajectory["turn_counter"]
-        for trajectory_evaluator in trajectory_evaluators or []:
-            try:
-                trajectory_eval_result = await trajectory_evaluator(
-                    outputs=current_reduced_trajectory["trajectory"],
-                    reference_outputs=reference_outputs,
-                )
-                if isinstance(trajectory_eval_result, list):
-                    results.extend(trajectory_eval_result)
-                else:
-                    results.append(trajectory_eval_result)
-            except Exception as e:
-                print(f"Error in trajectory evaluator {trajectory_evaluator}: {e}")
-        return MultiturnSimulationResult(
-            trajectory=current_reduced_trajectory["trajectory"],
-            evaluator_results=results,
+    while True:
+        if max_turns is not None and turn_counter >= max_turns:
+            break
+        raw_inputs = await wrapped_simulated_user(
+            current_reduced_trajectory["trajectory"], turn_counter=turn_counter
         )
-
-    return _run_simulator
+        current_inputs = _coerce_and_assign_id_to_message(raw_inputs)
+        current_reduced_trajectory = _trajectory_reducer(
+            current_reduced_trajectory,
+            current_inputs,
+            update_source="user",
+            turn_counter=turn_counter,
+        )
+        raw_outputs = await wrapped_app(current_inputs)
+        current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
+        turn_counter += 1
+        current_reduced_trajectory = _trajectory_reducer(
+            current_reduced_trajectory,
+            current_outputs,
+            update_source="app",
+            turn_counter=turn_counter,
+        )
+        if stopping_condition and await stopping_condition(
+            current_reduced_trajectory["trajectory"], turn_counter=turn_counter
+        ):
+            break
+    results = []
+    del current_reduced_trajectory["turn_counter"]
+    for trajectory_evaluator in trajectory_evaluators or []:
+        try:
+            trajectory_eval_result = await trajectory_evaluator(
+                outputs=current_reduced_trajectory["trajectory"],
+                reference_outputs=reference_outputs,
+            )
+            if isinstance(trajectory_eval_result, list):
+                results.extend(trajectory_eval_result)
+            else:
+                results.append(trajectory_eval_result)
+        except Exception as e:
+            print(f"Error in trajectory evaluator {trajectory_evaluator}: {e}")
+    return MultiturnSimulationResult(
+        trajectory=current_reduced_trajectory["trajectory"],  # type: ignore
+        evaluator_results=results,
+    )

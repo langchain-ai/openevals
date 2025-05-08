@@ -8,7 +8,7 @@ from openevals.types import (
     ChatCompletionMessage,
 )
 from openevals.types import (
-    MultiturnSimulatorResult,
+    MultiturnSimulationResult,
 )
 from openevals.utils import (
     _convert_to_openai_message,
@@ -140,7 +140,7 @@ def run_multiturn_simulation(
     stopping_condition: Optional[Callable[[dict], bool]] = None,
     reference_outputs: Optional[Any] = None,
     thread_id: Optional[str] = None,
-) -> MultiturnSimulatorResult:
+) -> MultiturnSimulationResult:
     """Runs a multi-turn simulation between an application and a simulated user.
 
     This function simulates a conversation between an app and either a dynamic
@@ -178,7 +178,7 @@ def run_multiturn_simulation(
         thread_id: Thread ID for the simulation
 
     Returns:
-        A MultiturnSimulatorResult containing:
+        A MultiturnSimulationResult containing:
             - evaluator_results: List of results from trajectory evaluators
             - trajectory: The complete conversation trajectory
 
@@ -218,7 +218,7 @@ def _create_multiturn_simulator(
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleEvaluator]] = None,
     stopping_condition: Optional[Callable[[dict], bool]] = None,
-) -> Callable[..., MultiturnSimulatorResult]:
+) -> Callable[..., MultiturnSimulationResult]:
     if max_turns is None and stopping_condition is None:
         raise ValueError(
             "At least one of max_turns or stopping_condition must be provided."
@@ -284,7 +284,7 @@ def _create_multiturn_simulator(
                     results.append(trajectory_eval_result)
             except Exception as e:
                 print(f"Error in trajectory evaluator {trajectory_evaluator}: {e}")
-        return MultiturnSimulatorResult(
+        return MultiturnSimulationResult(
             trajectory=current_reduced_trajectory["trajectory"],
             evaluator_results=results,
         )
@@ -306,7 +306,7 @@ async def run_multiturn_simulation_async(
     stopping_condition: Optional[Callable[[dict], bool]] = None,
     reference_outputs: Optional[Any] = None,
     thread_id: Optional[str] = None,
-) -> MultiturnSimulatorResult:
+) -> MultiturnSimulationResult:
     """Runs an async multi-turn simulation between an application and a simulated user.
 
     This function simulates a conversation between an app and either a dynamic
@@ -344,7 +344,7 @@ async def run_multiturn_simulation_async(
         thread_id: Thread ID for the simulation
 
     Returns:
-        A MultiturnSimulatorResult containing:
+        A MultiturnSimulationResult containing:
             - evaluator_results: List of results from trajectory evaluators
             - trajectory: The complete conversation trajectory
 
@@ -384,7 +384,7 @@ def _create_async_multiturn_simulator(
     max_turns: Optional[int] = None,
     trajectory_evaluators: Optional[list[SimpleAsyncEvaluator]] = None,
     stopping_condition: Optional[Callable[[dict], bool]] = None,
-) -> Callable[..., Awaitable[MultiturnSimulatorResult]]:
+) -> Callable[..., Awaitable[MultiturnSimulationResult]]:
     if max_turns is None and stopping_condition is None:
         raise ValueError(
             "At least one of max_turns or stopping_condition must be provided."
@@ -450,7 +450,7 @@ def _create_async_multiturn_simulator(
                     results.append(trajectory_eval_result)
             except Exception as e:
                 print(f"Error in trajectory evaluator {trajectory_evaluator}: {e}")
-        return MultiturnSimulatorResult(
+        return MultiturnSimulationResult(
             trajectory=current_reduced_trajectory["trajectory"],
             evaluator_results=results,
         )

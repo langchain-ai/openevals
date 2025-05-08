@@ -1657,15 +1657,15 @@ The other accepted parameters are as follows:
 
 You must pass at least one of `max_turns` or `stopping_condition`. Once one of these triggers, the final trajectory will be passed to provided trajectory evaluators, which will receive the final trajectory as an `"outputs"` kwarg.
 
-The simulator itself is not an evaluator and will not return or log any feedback. Instead, it will return a `MultiturnSimulatorResult` with the following signature:
+The simulator itself is not an evaluator and will not return or log any feedback. Instead, it will return a `MultiturnSimulationResult` with the following structure:
 
 ```python
-class MultiturnSimulatorResult(TypedDict):
+class MultiturnSimulationResult(TypedDict):
     evaluator_results: list[EvaluatorResult]
     trajectory: list[ChatCompletionMessage]
 ```
 
-Where `evaluator_results` are the results from the passed `trajectory_evaluators` and `trajectory` is the final trajectory.
+Where `evaluator_results`/`evaluatorResults` are the results from the passed `trajectory_evaluators` and `trajectory` is the final trajectory.
 
 ## Simulating users
 
@@ -1730,13 +1730,12 @@ def my_simulated_user(trajectory: list[ChatCompletionMessage], *, thread_id: str
     output = "Wow that's amazing!"
     return {"role": "user", "content": output, "id": "5678"}
 
-# Run the simulation directly with the new function
+# Run the simulation directly with the customized user function
 simulator_result = run_multiturn_simulation(
     app=my_app,
     user=my_simulated_user,
     trajectory_evaluators=[],
     max_turns=1,
-    thread_id: "1",
 )
 ```
 
@@ -1775,7 +1774,7 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an angry user who is frustrated with the service and keeps making additional demands.",
-    model="openai:gpt-4.1-nano",
+    model="openai:gpt-4.1-mini",
     fixed_responses=[
         {"role": "user", "content": "Please give me a refund."},
     ],

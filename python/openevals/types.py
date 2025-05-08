@@ -84,6 +84,6 @@ class RunnableLike(Protocol):
     async def ainvoke(self, inputs: Any, **kwargs) -> Any: ...
 
 
-class MultiturnSimulatorResult(TypedDict):
+class MultiturnSimulationResult(TypedDict):
     evaluator_results: list[EvaluatorResult]
     trajectory: list[ChatCompletionMessage]

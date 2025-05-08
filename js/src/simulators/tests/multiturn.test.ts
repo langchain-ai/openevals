@@ -185,7 +185,7 @@ ls.describe("Multiturn simulator", () => {
       const result = await runMultiturnSimulation({
         app,
         user: [
-          { role: "user", content: "Give me a refund!" },
+          { role: "user", content: "Give me a refund!", foo: "bar" },
           "All work and no play makes Jack a dull boy 1.",
           "All work and no play makes Jack a dull boy 2.",
           "All work and no play makes Jack a dull boy 3.",
@@ -218,7 +218,7 @@ ls.describe("Multiturn simulator", () => {
     "multiturn_message_with_openai",
     {
       inputs: {
-        messages: [{ role: "user", content: "I want a refund!" }],
+        messages: [{ role: "user" as const, content: "I want a refund!" }],
       },
     },
     async ({ inputs }) => {
@@ -234,7 +234,7 @@ ls.describe("Multiturn simulator", () => {
               content:
                 "You are a patient and understanding customer service agent",
             },
-            inputs as any,
+            inputs,
           ],
         });
         return res.choices[0].message;
@@ -269,7 +269,7 @@ ls.describe("Multiturn simulator", () => {
     "multiturn_stopping_condition",
     {
       inputs: {
-        messages: [{ role: "user", content: "Give me a refund!" }],
+        messages: [{ role: "user" as const, content: "Give me a refund!" }],
       },
     },
     async ({ inputs }) => {

@@ -7,14 +7,42 @@ import {
   EvaluatorResult,
   SimpleEvaluator,
   Messages,
-  MultiturnSimulatorResult,
+  MultiturnSimulationResult,
 } from "../types.js";
 import {
   _convertToOpenAIMessage,
   _normalizeToOpenAIMessagesList,
 } from "../utils.js";
 
-export { MultiturnSimulatorResult };
+export { MultiturnSimulationResult };
+
+export type MultiturnSimulationParams = {
+  app: (params: {
+    inputs: ChatCompletionMessage;
+    threadId: string;
+  }) =>
+    | ChatCompletionMessage
+    | BaseMessage
+    | Promise<ChatCompletionMessage | BaseMessage>;
+  user:
+    | ((params: {
+        trajectory: ChatCompletionMessage[];
+        turnCounter: number;
+      }) =>
+        | ChatCompletionMessage
+        | BaseMessage
+        | Promise<ChatCompletionMessage | BaseMessage>)
+    | (string | Messages)[];
+  maxTurns?: number;
+  trajectoryEvaluators?: SimpleEvaluator[];
+  stoppingCondition?: (params: {
+    trajectory: ChatCompletionMessage[];
+    turnCounter: number;
+    threadId: string;
+  }) => boolean | Promise<boolean>;
+  referenceOutputs?: unknown;
+  threadId?: string;
+};
 
 type MultiturnSimulatorTrajectory = Record<string, unknown> & {
   trajectory: ChatCompletionMessage[];
@@ -188,7 +216,7 @@ function _createStaticSimulatedUser(
  * @param {unknown} [params.referenceOutputs] - Optional reference outputs for evaluation
  * @param {string} [params.threadId] - Optional thread ID. If not provided, a random one will be generated.
  *
- * @returns Returns a Promise that resolves to a MultiturnSimulatorResult containing:
+ * @returns Returns a Promise that resolves to a MultiturnSimulationResult containing:
  *     - evaluator_results: List of results from trajectory evaluators
  *     - trajectory: The complete conversation trajectory
  *
@@ -205,181 +233,119 @@ function _createStaticSimulatedUser(
  * });
  * ```
  */
-export const runMultiturnSimulation = traceable(
-  (params: {
-    app: (params: {
-      inputs: ChatCompletionMessage;
-      threadId: string;
-    }) =>
-      | ChatCompletionMessage
-      | BaseMessage
-      | Promise<ChatCompletionMessage | BaseMessage>;
-    user:
-      | ((params: {
-          trajectory: ChatCompletionMessage[];
-          turnCounter: number;
-        }) =>
-          | ChatCompletionMessage
-          | BaseMessage
-          | Promise<ChatCompletionMessage | BaseMessage>)
-      | (string | Messages)[];
-    maxTurns?: number;
-    trajectoryEvaluators?: SimpleEvaluator[];
-    stoppingCondition?: (params: {
-      trajectory: ChatCompletionMessage[];
-      turnCounter: number;
-      threadId: string;
-    }) => boolean | Promise<boolean>;
-    referenceOutputs?: unknown;
-    threadId?: string;
-  }) => {
-    const simulator = _createMultiturnSimulator(params);
-    return simulator({
-      referenceOutputs: params.referenceOutputs,
-      threadId: params.threadId ?? uuidv4(),
-    });
-  },
-  { name: "multiturn_simulator" }
-);
-
-export function _createMultiturnSimulator({
-  app,
-  user,
-  maxTurns,
-  trajectoryEvaluators = [],
-  stoppingCondition,
-}: {
-  app: (params: {
-    inputs: ChatCompletionMessage;
-    threadId: string;
-  }) =>
-    | ChatCompletionMessage
-    | BaseMessage
-    | Promise<ChatCompletionMessage | BaseMessage>;
-  user:
-    | ((params: {
-        trajectory: ChatCompletionMessage[];
-        turnCounter: number;
-      }) =>
-        | ChatCompletionMessage
-        | BaseMessage
-        | Promise<ChatCompletionMessage | BaseMessage>)
-    | (string | Messages)[];
-  maxTurns?: number;
-  trajectoryEvaluators?: SimpleEvaluator[];
-  stoppingCondition?: (params: {
-    trajectory: ChatCompletionMessage[];
-    turnCounter: number;
-    threadId: string;
-  }) => boolean | Promise<boolean>;
-}): (params: {
-  referenceOutputs?: unknown;
-  threadId: string;
-  [key: string]: unknown;
-}) => Promise<MultiturnSimulatorResult> {
-  if (maxTurns === undefined && stoppingCondition === undefined) {
-    throw new Error(
-      "At least one of maxTurns or stoppingCondition must be provided."
-    );
-  }
-
-  const _runSimulator = async ({
-    referenceOutputs,
-    threadId,
-  }: {
-    referenceOutputs?: unknown;
-    threadId: string;
-    [key: string]: unknown;
-  }): Promise<MultiturnSimulatorResult> => {
-    let turnCounter = 0;
-    let currentReducedTrajectory: MultiturnSimulatorTrajectory = {
-      trajectory: [],
-      turnCounter: 0,
-    };
-    const wrappedApp = _wrap(app, "app", threadId);
-
-    let wrappedSimulatedUser;
-    if (Array.isArray(user)) {
-      const staticResponses = user;
-      const simulatedUser = _createStaticSimulatedUser(staticResponses);
-      wrappedSimulatedUser = _wrap(simulatedUser, "simulated_user", threadId);
-    } else {
-      wrappedSimulatedUser = _wrap(user, "simulated_user", threadId);
-    }
-
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      if (maxTurns !== undefined && turnCounter >= maxTurns) {
-        break;
+export const runMultiturnSimulation = (params: MultiturnSimulationParams) => {
+  const runSimulator = traceable(
+    async (params: MultiturnSimulationParams) => {
+      if (params.threadId === undefined) {
+        // eslint-disable-next-line no-param-reassign
+        params.threadId = uuidv4();
       }
-      const rawInputs = await wrappedSimulatedUser({
-        trajectory: currentReducedTrajectory.trajectory,
-        turnCounter,
+      const {
+        app,
+        user,
+        maxTurns,
+        trajectoryEvaluators,
+        stoppingCondition,
+        referenceOutputs,
         threadId,
-      });
+      } = params;
 
-      const currentInputs = _coerceAndAssignIdToMessage(rawInputs);
+      if (maxTurns === undefined && stoppingCondition === undefined) {
+        throw new Error(
+          "At least one of maxTurns or stoppingCondition must be provided."
+        );
+      }
+      let turnCounter = 0;
+      let currentReducedTrajectory: MultiturnSimulatorTrajectory = {
+        trajectory: [],
+        turnCounter: 0,
+      };
+      const wrappedApp = _wrap(app, "app", threadId);
 
-      currentReducedTrajectory = _trajectoryReducer(
-        currentReducedTrajectory,
-        currentInputs,
-        "user",
-        turnCounter
-      );
+      let wrappedSimulatedUser;
+      if (Array.isArray(user)) {
+        const staticResponses = user;
+        const simulatedUser = _createStaticSimulatedUser(staticResponses);
+        wrappedSimulatedUser = _wrap(simulatedUser, "simulated_user", threadId);
+      } else {
+        wrappedSimulatedUser = _wrap(user, "simulated_user", threadId);
+      }
 
-      const rawOutputs = await wrappedApp({
-        inputs: currentInputs,
-        threadId,
-      });
-
-      const currentOutputs = _coerceAndAssignIdToMessage(rawOutputs);
-
-      turnCounter += 1;
-
-      currentReducedTrajectory = _trajectoryReducer(
-        currentReducedTrajectory,
-        currentOutputs,
-        "app",
-        turnCounter
-      );
-
-      if (
-        stoppingCondition !== undefined &&
-        (await stoppingCondition({
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        if (maxTurns !== undefined && turnCounter >= maxTurns) {
+          break;
+        }
+        const rawInputs = await wrappedSimulatedUser({
           trajectory: currentReducedTrajectory.trajectory,
           turnCounter,
           threadId,
-        }))
-      ) {
-        break;
-      }
-    }
-
-    const results: EvaluatorResult[] = [];
-    delete currentReducedTrajectory.turnCounter;
-
-    for (const trajectoryEvaluator of trajectoryEvaluators || []) {
-      try {
-        const trajectoryEvalResults = await trajectoryEvaluator({
-          outputs: currentReducedTrajectory.trajectory,
-          referenceOutputs,
         });
 
-        if (Array.isArray(trajectoryEvalResults)) {
-          results.push(...trajectoryEvalResults);
-        } else {
-          results.push(trajectoryEvalResults);
+        const currentInputs = _coerceAndAssignIdToMessage(rawInputs);
+
+        currentReducedTrajectory = _trajectoryReducer(
+          currentReducedTrajectory,
+          currentInputs,
+          "user",
+          turnCounter
+        );
+
+        const rawOutputs = await wrappedApp({
+          inputs: currentInputs,
+          threadId,
+        });
+
+        const currentOutputs = _coerceAndAssignIdToMessage(rawOutputs);
+
+        turnCounter += 1;
+
+        currentReducedTrajectory = _trajectoryReducer(
+          currentReducedTrajectory,
+          currentOutputs,
+          "app",
+          turnCounter
+        );
+
+        if (
+          stoppingCondition !== undefined &&
+          (await stoppingCondition({
+            trajectory: currentReducedTrajectory.trajectory,
+            turnCounter,
+            threadId,
+          }))
+        ) {
+          break;
         }
-      } catch (e) {
-        console.error(`Error in trajectory evaluator: ${e}`);
       }
-    }
 
-    return {
-      trajectory: currentReducedTrajectory.trajectory,
-      evaluatorResults: results,
-    };
-  };
+      const results: EvaluatorResult[] = [];
+      delete currentReducedTrajectory.turnCounter;
 
-  return _runSimulator;
-}
+      for (const trajectoryEvaluator of trajectoryEvaluators || []) {
+        try {
+          const trajectoryEvalResults = await trajectoryEvaluator({
+            outputs: currentReducedTrajectory.trajectory,
+            referenceOutputs,
+          });
+
+          if (Array.isArray(trajectoryEvalResults)) {
+            results.push(...trajectoryEvalResults);
+          } else {
+            results.push(trajectoryEvalResults);
+          }
+        } catch (e) {
+          console.error(`Error in trajectory evaluator: ${e}`);
+        }
+      }
+
+      return {
+        trajectory: currentReducedTrajectory.trajectory,
+        evaluatorResults: results,
+      };
+    },
+    { name: "multiturn_simulation" }
+  );
+
+  return runSimulator(params);
+};

@@ -101,13 +101,15 @@ export function createLLMSimulatedUser({
         continue;
       }
       if (convertedMessage.role === "user") {
-        convertedMessage.role = "assistant";
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (convertedMessage.role as any) = "assistant";
         messages.push(convertedMessage);
       } else if (
         convertedMessage.role === "assistant" &&
         !convertedMessage.tool_calls
       ) {
-        convertedMessage.role = "user";
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (convertedMessage.role as any) = "user";
         messages.push(convertedMessage);
       }
     }

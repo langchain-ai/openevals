@@ -2784,7 +2784,7 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
         content:
           "You are a patient and understanding customer service agent",
       },
-      inputs as any,
+      inputs,
     ],
   });
   const responseMessage = res.choices[0].message;
@@ -2873,13 +2873,13 @@ The other accepted parameters are as follows:
 
 You must pass at least one of `max_turns` or `stopping_condition`. Once one of these triggers, the final trajectory will be passed to provided trajectory evaluators, which will receive the final trajectory as an `"outputs"` kwarg.
 
-The simulator itself is not an evaluator and will not return or log any feedback. Instead, it will return a `MultiturnSimulatorResult` with the following structure:
+The simulator itself is not an evaluator and will not return or log any feedback. Instead, it will return a `MultiturnSimulationResult` with the following structure:
 
 <details open>
 <summary>Python</summary>
 
 ```python
-class MultiturnSimulatorResult(TypedDict):
+class MultiturnSimulationResult(TypedDict):
     evaluator_results: list[EvaluatorResult]
     trajectory: list[ChatCompletionMessage]
 ```
@@ -2890,7 +2890,7 @@ class MultiturnSimulatorResult(TypedDict):
 <summary>TypeScript</summary>
 
 ```ts
-type MultiturnSimulatorResult = {
+type MultiturnSimulationResult = {
   evaluatorResults: EvaluatorResult[];
   trajectory: ChatCompletionMessage[];
 };

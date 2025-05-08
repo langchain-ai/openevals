@@ -30,15 +30,31 @@ export type MultiResultScorerReturnType = {
     | { score: boolean | number; reasoning?: string };
 };
 
-export type ChatCompletionMessage = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  content: any;
-  role: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tool_calls?: Record<string, any>[];
-  tool_call_id?: string;
-  id?: string;
-};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ChatCompletionMessage = Record<string, any> &
+  (
+    | {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        content: any;
+        role: "user" | "system" | "developer";
+        id?: string;
+      }
+    | {
+        role: "assistant";
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        content: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tool_calls?: any[];
+        id?: string;
+      }
+    | {
+        role: "tool";
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        content: any;
+        tool_call_id: string;
+        id?: string;
+      }
+  );
 
 export type ChatCompletion = {
   choices: { message: ChatCompletionMessage }[];
@@ -67,7 +83,7 @@ export interface ModelClient {
 
 export type Messages = ChatCompletionMessage | BaseMessage | BaseMessageChunk;
 
-export type MultiturnSimulatorResult = {
+export type MultiturnSimulationResult = {
   evaluatorResults: EvaluatorResult[];
   trajectory: ChatCompletionMessage[];
 };

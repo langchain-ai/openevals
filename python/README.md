@@ -8,7 +8,8 @@ If you are looking for evals specific to evaluating LLM agents, please check out
 
 # Quickstart
 
-> [!TIP] If you'd like to follow along with a video walkthrough, click the image below:
+> [!TIP]
+> If you'd like to follow along with a video walkthrough, click the image below:
 > [![Video quickstart](https://img.youtube.com/vi/J-F30jRyhoA/0.jpg)](https://www.youtube.com/watch?v=J-F30jRyhoA)
 
 To get started, install `openevals`:
@@ -970,7 +971,8 @@ print(result)
 }
 ```
 
-> [!CAUTION] The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-pyright-python-only) of this evaluator.
+> [!CAUTION]
+> The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-pyright-python-only) of this evaluator.
 
 You can also pass `pyright_cli_args` to the evaluator to customize the arguments passed to the `pyright` CLI:
 
@@ -1062,7 +1064,8 @@ console.log(result);
 }
 ```
 
-> [!CAUTION] The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-typescript-typescript-only) of this evaluator.
+> [!CAUTION]
+> The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-typescript-typescript-only) of this evaluator.
 
 ### LLM-as-judge for code
 

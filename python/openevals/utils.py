@@ -3,7 +3,7 @@ import asyncio
 
 from langsmith import testing as t, get_current_run_tree, traceable
 from langsmith.testing._internal import _TEST_CASE
-from typing import Any, Callable, TYPE_CHECKING, Union, Optional
+from typing import Any, Callable, Union, Optional
 
 from openevals.types import ChatCompletionMessage, EvaluatorResult
 
@@ -19,42 +19,46 @@ __all__ = [
 ]
 
 
-if TYPE_CHECKING:
-    from langchain_core.messages import BaseMessage
-
-
 def _convert_to_openai_message(
-    message: ChatCompletionMessage | BaseMessage | dict,
+    message: Union[ChatCompletionMessage, BaseMessage, dict],
 ) -> ChatCompletionMessage:
+    if not isinstance(message, BaseMessage) and not isinstance(message, dict):
+        message = dict(message)
+    converted = convert_to_openai_messages([message])[0]  # type: ignore
     if isinstance(message, BaseMessage):
-        converted = convert_to_openai_messages([message])[0]
         if message.id is not None and converted.get("id") is None:
             converted["id"] = message.id
-        return converted  # type: ignore
-    if not isinstance(message, dict):
-        message = dict(message)
-    if "role" not in message:
-        raise ValueError(
-            f"Expected a dict with 'role' keys or a LangChain message instance, got {message}"
-        )
-    return {"content": "", **message.copy()}  # type: ignore
+    else:
+        if message.get("id") is not None and converted.get("id") is None:
+            converted["id"] = message.get("id")
+    return converted  # type: ignore
 
 
 def _normalize_to_openai_messages_list(
-    messages: Optional[Union[list[ChatCompletionMessage], list[BaseMessage], dict]],
+    messages: Optional[
+        Union[
+            list[ChatCompletionMessage], list[BaseMessage], ChatCompletionMessage, dict
+        ]
+    ],
 ) -> list[ChatCompletionMessage]:
     if messages is None:
         return []
     if isinstance(messages, dict):
-        if "messages" in messages:
-            messages = messages["messages"]
+        if "role" in messages:
+            messages = [messages]  # type: ignore
+        elif "messages" in messages:
+            messages = messages["messages"]  # type: ignore
         else:
             raise ValueError("if messages is a dict, it must contain a 'messages' key")
+    if not isinstance(messages, list):
+        messages = [messages]  # type: ignore
     return [_convert_to_openai_message(message) for message in messages]  # type: ignore
 
 
 # Helper function to process individual scores
-def _process_score(key: str, value: Any) -> tuple[float, str | None, dict | None]:
+def _process_score(
+    key: str, value: Any
+) -> tuple[float, Union[str, None], Union[dict, None]]:
     if isinstance(value, dict):
         if "score" in value:
             return value["score"], value.get("reasoning"), value.get("metadata", None)  # type: ignore
@@ -66,7 +70,7 @@ def _process_score(key: str, value: Any) -> tuple[float, str | None, dict | None
 
 def _add_metadata_to_run_tree(
     run_name: str,
-    framework: str | None = None,
+    framework: Union[str, None] = None,
     results: Optional[Union[dict, list[dict]]] = None,
 ):
     rt = get_current_run_tree()
@@ -94,7 +98,7 @@ def _run_evaluator(
     feedback_key: str,
     ls_framework: str = "openevals",
     **kwargs: Any,
-) -> EvaluatorResult | list[EvaluatorResult]:
+) -> Union[EvaluatorResult, list[EvaluatorResult]]:
     return _run_evaluator_untyped(  # type: ignore
         run_name=run_name,
         scorer=scorer,
@@ -113,7 +117,7 @@ def _run_evaluator_untyped(
     return_raw_outputs: bool = False,
     ls_framework: str = "openevals",
     **kwargs: Any,
-) -> EvaluatorResult | list[EvaluatorResult] | dict:
+) -> Union[EvaluatorResult, list[EvaluatorResult], dict]:
     @traceable(name=run_name)
     def _run_scorer(**kwargs: Any):
         # Get the initial score
@@ -201,7 +205,7 @@ async def _arun_evaluator(
     return_raw_outputs: bool = False,
     ls_framework: str = "openevals",
     **kwargs: Any,
-) -> EvaluatorResult | list[EvaluatorResult]:
+) -> Union[EvaluatorResult, list[EvaluatorResult]]:
     return await _arun_evaluator_untyped(  # type: ignore
         run_name=run_name,
         scorer=scorer,
@@ -220,7 +224,7 @@ async def _arun_evaluator_untyped(
     return_raw_outputs: bool = False,
     ls_framework: str = "openevals",
     **kwargs: Any,
-) -> EvaluatorResult | list[EvaluatorResult] | dict:
+) -> Union[EvaluatorResult, list[EvaluatorResult], dict]:
     @traceable(name=run_name)
     async def _arun_scorer(**kwargs: Any):
         # Get the initial score

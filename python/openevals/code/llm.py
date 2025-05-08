@@ -8,7 +8,7 @@ from openevals.prompts import (
     CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS,
 )
 
-from typing import Callable, Optional, Literal, Any
+from typing import Callable, Optional, Literal, Any, Union
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import Runnable
@@ -29,7 +29,7 @@ __all__ = [
 
 def create_code_llm_as_judge(
     *,
-    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
+    prompt: Union[str, Runnable, Callable[..., list[ChatCompletionMessage]]],
     feedback_key: str = "code_correctness",
     code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], str]] = None,
@@ -96,7 +96,7 @@ def create_code_llm_as_judge(
 
 def create_async_code_llm_as_judge(
     *,
-    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
+    prompt: Union[str, Runnable, Callable[..., list[ChatCompletionMessage]]],
     feedback_key: str = "code_correctness",
     code_extraction_strategy: Literal["none", "llm", "markdown_code_blocks"] = "none",
     code_extractor: Optional[Callable[[Any], str]] = None,

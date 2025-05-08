@@ -3409,9 +3409,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:^0.3.15":
-  version: 0.3.15
-  resolution: "langsmith@npm:0.3.15"
+"langsmith@npm:^0.3.25":
+  version: 0.3.25
+  resolution: "langsmith@npm:0.3.25"
   dependencies:
     "@types/uuid": ^10.0.0
     chalk: ^4.1.2
@@ -3425,7 +3425,7 @@ __metadata:
   peerDependenciesMeta:
     openai:
       optional: true
-  checksum: 26732b3a4518f8b348798fd95b6590ea63ac90a3ccdf6a0a85321171f79428349ea72aef107666ebb5cdefa0d8d1c49e0d76383c3be34f9cc1a11e11e9654f3f
+  checksum: 200eb9400b7f81ac3e3d5f827079b5c2bc48fb025ded4cf5594b7007722dc89deb9253987bae6496acaef85a3b9188697e8751fbf49144177a3ddf06e341e092
   languageName: node
   linkType: hard
 
@@ -3925,7 +3925,7 @@ __metadata:
     eslint-plugin-no-instanceof: ^1.0.1
     eslint-plugin-prettier: ^4.2.1
     langchain: ^0.3.18
-    langsmith: ^0.3.15
+    langsmith: ^0.3.25
     openai: ^4.85.1
     prettier: ^3.5.1
     typescript: ~5.1.6

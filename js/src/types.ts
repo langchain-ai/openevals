@@ -67,17 +67,7 @@ export interface ModelClient {
 
 export type Messages = ChatCompletionMessage | BaseMessage | BaseMessageChunk;
 
-export type MultiturnSimulatorTrajectory = {
-  messages: Messages[];
-  [key: string]: unknown;
-};
-
-export type MultiturnSimulatorTrajectoryUpdate = {
-  messages: Messages[] | Messages;
-  [key: string]: unknown;
-};
-
 export type MultiturnSimulatorResult = {
   evaluatorResults: EvaluatorResult[];
-  trajectory: MultiturnSimulatorTrajectory;
+  trajectory: ChatCompletionMessage[];
 };

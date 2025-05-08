@@ -126,6 +126,7 @@ def _create_static_simulated_user(
     return _return_next_message
 
 
+@traceable(name="multiturn_simulator")
 def run_multiturn_simulation(
     *,
     app: Callable[[ChatCompletionMessage], ChatCompletionMessage],
@@ -223,7 +224,6 @@ def _create_multiturn_simulator(
             "At least one of max_turns or stopping_condition must be provided."
         )
 
-    @traceable(name="multiturn_simulator")
     def _run_simulator(
         *,
         reference_outputs: Optional[Any] = None,
@@ -292,6 +292,7 @@ def _create_multiturn_simulator(
     return _run_simulator
 
 
+@traceable(name="multiturn_simulator")
 async def run_multiturn_simulation_async(
     *,
     app: Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
@@ -389,7 +390,6 @@ def _create_async_multiturn_simulator(
             "At least one of max_turns or stopping_condition must be provided."
         )
 
-    @traceable(name="multiturn_simulator")
     async def _run_simulator(
         *,
         reference_outputs: Optional[Any] = None,

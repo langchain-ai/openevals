@@ -1,12 +1,8 @@
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { initChatModel } from "langchain/chat_models/universal";
-
+import { v4 as uuidv4 } from "uuid";
 import { _convertToOpenAIMessage } from "../utils.js";
-import type {
-  MultiturnSimulatorTrajectory,
-  MultiturnSimulatorTrajectoryUpdate,
-  ChatCompletionMessage,
-} from "../types.js";
+import type { ChatCompletionMessage } from "../types.js";
 
 // Exported for testing only
 export function _isInternalMessage(message: ChatCompletionMessage): boolean {
@@ -19,7 +15,7 @@ export function _isInternalMessage(message: ChatCompletionMessage): boolean {
 /**
  * Creates a simulated user powered by a language model for multi-turn conversations.
  *
- * This function generates a simulator that can be used with the createMultiturnSimulator to create
+ * This function generates a simulator that can be used with the runMultiturnSimulation method to create
  * dynamic, LLM-powered user responses in a conversation. The simulator automatically handles message
  * role conversion to maintain proper conversation flow, where user messages become assistant messages
  * and vice versa when passed to the underlying LLM.
@@ -28,22 +24,23 @@ export function _isInternalMessage(message: ChatCompletionMessage): boolean {
  * @param {string} params.system - System prompt that guides the LLM's behavior as a simulated user
  * @param {string} [params.model] - Optional name of the language model to use. Must be provided if client is not.
  * @param {BaseChatModel} [params.client] - Optional LangChain chat model instance. Must be provided if model is not.
+ * @param {(string | ChatCompletionMessage)[]} [params.fixedResponses] - Optional list of fixed responses to use for the simulated user.
  *
  * @returns A callable simulator function that takes a MultiturnSimulatorTrajectory containing conversation messages
  *          and returns a MultiturnSimulatorTrajectoryUpdate with the simulated user's response
  *
  * @example
  * ```typescript
- * import { createMultiturnSimulator, createLLMSimulatedUser } from "openevals";
+ * import { runMultiturnSimulation, createLLMSimulatedUser } from "openevals";
  *
- * // Create a simulated user with GPT-4
+ * // Create a simulated user with GPT-4.1-mini
  * const simulatedUser = createLLMSimulatedUser({
  *   system: "You are a helpful customer service representative",
- *   model: "openai:gpt-4o-mini"
+ *   model: "openai:gpt-4.1-mini"
  * });
  *
- * // Use with createMultiturnSimulator
- * const simulator = createMultiturnSimulator({
+ * // Use with runMultiturnSimulation
+ * const simulator = runMultiturnSimulation({
  *   app: myChatApp,
  *   user: simulatedUser,
  *   maxTurns: 5
@@ -61,33 +58,44 @@ export function createLLMSimulatedUser({
   system,
   model,
   client,
+  fixedResponses,
 }: {
   system: string;
   model?: string;
   client?: BaseChatModel;
-}): (
-  inputs: MultiturnSimulatorTrajectory
-) => Promise<MultiturnSimulatorTrajectoryUpdate> {
+  fixedResponses?: (string | ChatCompletionMessage)[];
+}): (params: {
+  trajectory: ChatCompletionMessage[];
+  turnCounter: number;
+}) => Promise<ChatCompletionMessage> {
   if (!client && !model) {
     throw new Error("Either client or model must be provided");
   } else if (client && model) {
     throw new Error("Only one of client or model should be provided");
   }
-  return async function _simulator(
-    inputs: MultiturnSimulatorTrajectory
-  ): Promise<MultiturnSimulatorTrajectoryUpdate> {
-    if (!inputs || !inputs.messages || !Array.isArray(inputs.messages)) {
-      throw new Error(
-        "Simulated user inputs must be a dict with a 'messages' key containing a list of messages"
-      );
-    }
+  return async function _simulator(params: {
+    trajectory: ChatCompletionMessage[];
+    turnCounter: number;
+  }): Promise<ChatCompletionMessage> {
     if (model) {
       // eslint-disable-next-line no-param-reassign
       client = await initChatModel(model);
     }
+    if (fixedResponses && params.turnCounter < fixedResponses.length) {
+      const res = fixedResponses[params.turnCounter];
+      if (typeof res === "string") {
+        return {
+          role: "user",
+          content: res,
+          id: uuidv4(),
+        };
+      } else {
+        return res;
+      }
+    }
 
     const messages = [];
-    for (const msg of inputs.messages) {
+    for (const msg of params.trajectory) {
       const convertedMessage = _convertToOpenAIMessage(msg);
       if (_isInternalMessage(convertedMessage)) {
         continue;
@@ -104,6 +112,15 @@ export function createLLMSimulatedUser({
       }
     }
 
+    if (messages.length === 0) {
+      messages.push({
+        role: "user",
+        content:
+          "Generate an initial query to start a conversation based on your instructions. Do not respond with other text.",
+        id: uuidv4(),
+      });
+    }
+
     if (system) {
       messages.unshift({ role: "system", content: system });
     }
@@ -111,13 +128,9 @@ export function createLLMSimulatedUser({
     const response = await client!.invoke(messages);
 
     return {
-      messages: [
-        {
-          role: "user",
-          content: response.content,
-          id: response.id,
-        },
-      ],
+      role: "user",
+      content: response.content,
+      id: response.id,
     };
   };
 }

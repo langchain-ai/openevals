@@ -1736,6 +1736,7 @@ simulator_result = run_multiturn_simulation(
     user=my_simulated_user,
     trajectory_evaluators=[],
     max_turns=1,
+    thread_id: "1",
 )
 ```
 

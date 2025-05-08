@@ -30,11 +30,14 @@ export const _normalizeToOpenAIMessagesList = (
   messages:
     | (BaseMessage | ChatCompletionMessage)[]
     | { messages: (BaseMessage | ChatCompletionMessage)[] }
+    | (BaseMessage | ChatCompletionMessage)
 ): ChatCompletionMessage[] => {
   let messagesList: (BaseMessage | ChatCompletionMessage)[];
   if (!Array.isArray(messages)) {
     if ("messages" in messages && Array.isArray(messages.messages)) {
       messagesList = messages.messages;
+    } else if ("content" in messages && "role" in messages) {
+      messagesList = [messages as ChatCompletionMessage];
     } else {
       throw new Error(
         `If passing messages as an object, it must contain a "messages" key`

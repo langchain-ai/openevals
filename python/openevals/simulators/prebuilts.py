@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional
+from typing import Optional, Union
 
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -20,7 +20,7 @@ def create_llm_simulated_user(
     system: str,
     model: Optional[str] = None,
     client: Optional[BaseChatModel] = None,
-    fixed_responses: Optional[list[str]] = None,
+    fixed_responses: Optional[list[Union[str, ChatCompletionMessage]]] = None,
 ):
     """Creates a simulated user powered by a language model for multi-turn conversations.
 
@@ -102,7 +102,7 @@ def create_llm_simulated_user(
             messages = [
                 {
                     "role": "user",
-                    "content": "Generate an initial query to start a conversation based on your instructions.",
+                    "content": "Generate an initial query to start a conversation based on your instructions. Do not respond with other text.",
                     "id": str(uuid.uuid4()),
                 }
             ]
@@ -118,7 +118,7 @@ def create_async_llm_simulated_user(
     system: str,
     model: Optional[str] = None,
     client: Optional[BaseChatModel] = None,
-    fixed_responses: Optional[list[str]] = None,
+    fixed_responses: Optional[list[Union[str, ChatCompletionMessage]]] = None,
 ):
     """Creates an async simulated user powered by a language model for multi-turn conversations.
 

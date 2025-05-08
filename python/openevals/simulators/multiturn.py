@@ -56,8 +56,8 @@ def _trajectory_reducer(
     turn_counter: Optional[int] = None,
 ) -> dict:
     def _combine_messages(
-        left: list[Messages] | Messages,
-        right: list[Messages] | Messages,
+        left: Union[list[Messages], Messages],
+        right: Union[list[Messages], Messages],
     ) -> list[Messages]:
         # coerce to list
         if not isinstance(left, list):
@@ -86,7 +86,7 @@ def _trajectory_reducer(
 
     try:
         coerced_new_update = _normalize_to_openai_messages_list(new_update)
-    except ValueError as e:
+    except ValueError:
         raise ValueError(
             f"Received unexpected trajectory update from '{update_source}': {str(new_update)}. Expected a message, list of messages, or dictionary with a 'messages' key containing messages."
         )
@@ -100,7 +100,7 @@ def _trajectory_reducer(
 
 
 def _create_static_simulated_user(
-    static_responses: list[str | Messages],
+    static_responses: list[Union[str, Messages]],
 ):
     def _return_next_message(
         trajectory: list[ChatCompletionMessage], *, thread_id: str, turn_counter: int

@@ -8,6 +8,10 @@ from langsmith import testing as t
 from langsmith.wrappers import wrap_openai
 from langgraph.checkpoint.memory import MemorySaver
 
+from llama_index.llms.openai import OpenAI as LlamaIndexOpenAI
+from llama_index.core.agent.workflow import FunctionAgent
+from llama_index.core.workflow import Context
+
 from openevals.types import ChatCompletionMessage
 from openevals.simulators import (
     run_multiturn_simulation_async,
@@ -325,11 +329,6 @@ async def test_multiturn_stopping_condition():
     t.log_outputs(res)
     assert res["evaluator_results"][0]["score"]
     assert len(res["trajectory"]) < 20
-
-
-from llama_index.llms.openai import OpenAI as LlamaIndexOpenAI
-from llama_index.core.agent.workflow import FunctionAgent
-from llama_index.core.workflow import Context
 
 
 @pytest.mark.asyncio

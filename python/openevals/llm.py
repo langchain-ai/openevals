@@ -142,7 +142,7 @@ def _stringify_prompt_param(param: Any) -> Any:
 
 def _create_llm_as_judge_scorer(
     *,
-    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
+    prompt: Union[str, Runnable, Callable[..., list[ChatCompletionMessage]]],
     system: Optional[str] = None,
     schema: Optional[Union[dict, type]] = None,
     judge: Optional[
@@ -312,7 +312,7 @@ def _create_llm_as_judge_scorer(
 
 def _create_async_llm_as_judge_scorer(
     *,
-    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
+    prompt: Union[str, Runnable, Callable[..., list[ChatCompletionMessage]]],
     system: Optional[str] = None,
     schema: Optional[Union[dict, type]] = None,
     judge: Optional[
@@ -482,7 +482,7 @@ def _create_async_llm_as_judge_scorer(
 
 def create_llm_as_judge(
     *,
-    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
+    prompt: Union[str, Runnable, Callable[..., list[ChatCompletionMessage]]],
     feedback_key: str = "score",
     judge: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
@@ -557,7 +557,7 @@ def create_llm_as_judge(
         outputs: Optional[Union[str, dict]] = None,
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
-    ) -> EvaluatorResult | dict:
+    ) -> Union[EvaluatorResult, dict]:
         run_name = (
             "llm_as_judge"
             if feedback_key == "score"
@@ -585,7 +585,7 @@ def create_llm_as_judge(
 
 def create_async_llm_as_judge(
     *,
-    prompt: str | Runnable | Callable[..., list[ChatCompletionMessage]],
+    prompt: Union[str, Runnable, Callable[..., list[ChatCompletionMessage]]],
     feedback_key: str = "score",
     judge: Optional[Union[ModelClient, BaseChatModel]] = None,
     model: Optional[str] = None,
@@ -660,7 +660,7 @@ def create_async_llm_as_judge(
         outputs: Optional[Union[str, dict]] = None,
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
-    ) -> EvaluatorResult | dict:
+    ) -> Union[EvaluatorResult, dict]:
         run_name = (
             "llm_as_judge"
             if feedback_key == "score"

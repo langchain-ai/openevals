@@ -1,10 +1,9 @@
 from __future__ import annotations
 import asyncio
-import openai
 
 from langsmith import testing as t, get_current_run_tree, traceable
 from langsmith.testing._internal import _TEST_CASE
-from typing import Any, Callable, TYPE_CHECKING, Union, Optional
+from typing import Any, Callable, Union, Optional
 
 from openevals.types import ChatCompletionMessage, EvaluatorResult
 
@@ -57,7 +56,9 @@ def _normalize_to_openai_messages_list(
 
 
 # Helper function to process individual scores
-def _process_score(key: str, value: Any) -> tuple[float, str | None, dict | None]:
+def _process_score(
+    key: str, value: Any
+) -> tuple[float, Union[str, None], Union[dict, None]]:
     if isinstance(value, dict):
         if "score" in value:
             return value["score"], value.get("reasoning"), value.get("metadata", None)  # type: ignore
@@ -69,7 +70,7 @@ def _process_score(key: str, value: Any) -> tuple[float, str | None, dict | None
 
 def _add_metadata_to_run_tree(
     run_name: str,
-    framework: str | None = None,
+    framework: Union[str, None] = None,
     results: Optional[Union[dict, list[dict]]] = None,
 ):
     rt = get_current_run_tree()
@@ -97,7 +98,7 @@ def _run_evaluator(
     feedback_key: str,
     ls_framework: str = "openevals",
     **kwargs: Any,
-) -> EvaluatorResult | list[EvaluatorResult]:
+) -> Union[EvaluatorResult, list[EvaluatorResult]]:
     return _run_evaluator_untyped(  # type: ignore
         run_name=run_name,
         scorer=scorer,
@@ -116,7 +117,7 @@ def _run_evaluator_untyped(
     return_raw_outputs: bool = False,
     ls_framework: str = "openevals",
     **kwargs: Any,
-) -> EvaluatorResult | list[EvaluatorResult] | dict:
+) -> Union[EvaluatorResult, list[EvaluatorResult], dict]:
     @traceable(name=run_name)
     def _run_scorer(**kwargs: Any):
         # Get the initial score
@@ -204,7 +205,7 @@ async def _arun_evaluator(
     return_raw_outputs: bool = False,
     ls_framework: str = "openevals",
     **kwargs: Any,
-) -> EvaluatorResult | list[EvaluatorResult]:
+) -> Union[EvaluatorResult, list[EvaluatorResult]]:
     return await _arun_evaluator_untyped(  # type: ignore
         run_name=run_name,
         scorer=scorer,
@@ -223,7 +224,7 @@ async def _arun_evaluator_untyped(
     return_raw_outputs: bool = False,
     ls_framework: str = "openevals",
     **kwargs: Any,
-) -> EvaluatorResult | list[EvaluatorResult] | dict:
+) -> Union[EvaluatorResult, list[EvaluatorResult], dict]:
     @traceable(name=run_name)
     async def _arun_scorer(**kwargs: Any):
         # Get the initial score

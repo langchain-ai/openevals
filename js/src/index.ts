@@ -6,7 +6,7 @@ export { createLLMAsJudge } from "./llm.js";
 export { createCodeLLMAsJudge, type CodeLLMAsJudgeConfig } from "./code/llm.js";
 
 // Simulators
-export { runMultiturnSimulation } from "./simulators/multiturn.js";
+export * from "./simulators/multiturn.js";
 export { createLLMSimulatedUser } from "./simulators/prebuilts.js";
 
 export * from "./prompts/index.js";

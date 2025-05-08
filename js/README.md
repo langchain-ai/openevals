@@ -8,9 +8,9 @@ If you are looking for evals specific to evaluating LLM agents, please check out
 
 # Quickstart
 
-**Note:** If you'd like to follow along with a video walkthrough, click the image below:
-
-[![Video quickstart](https://img.youtube.com/vi/J-F30jRyhoA/0.jpg)](https://www.youtube.com/watch?v=J-F30jRyhoA)
+> [!TIP]
+> If you'd like to follow along with a video walkthrough, click the image below:
+> [![Video quickstart](https://img.youtube.com/vi/J-F30jRyhoA/0.jpg)](https://www.youtube.com/watch?v=J-F30jRyhoA)
 
 To get started, install `openevals`:
 
@@ -987,7 +987,8 @@ print(result)
 }
 ```
 
-**Note:** The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-pyright-python-only) of this evaluator.
+> [!WARNING]
+> The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-pyright-python-only) of this evaluator.
 
 You can also pass `pyright_cli_args` to the evaluator to customize the arguments passed to the `pyright` CLI:
 
@@ -1079,7 +1080,8 @@ console.log(result);
 }
 ```
 
-**Note:** The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-typescript-typescript-only) of this evaluator.
+> [!WARNING]
+> The evaluator will ignore `reportMissingImports` errors. If you want to run type-checking over generated dependencies, check out the [sandboxed version](#sandbox-typescript-typescript-only) of this evaluator.
 
 ### LLM-as-judge for code
 
@@ -1527,6 +1529,9 @@ result = await evaluator(inputs="San Francisco")
 
 # Multiturn Simulation
 
+> [!IMPORTANT]
+> The techniques described in this section have changed with the release of 0.1.0. If you are using version 0.0.x of OpenEvals, you can find the old documentation [here](https://github.com/langchain-ai/openevals/tree/15350b7fac640a8b22ecf65e84a0eebc3b87eb0f?tab=readme-ov-file#multiturn-simulation).
+
 Many LLM applications run across multiple conversation turns with a user. While the [LLM-as-judge](#llm-as-judge) evaluators in OpenEvals and the trajectory evaluators in [AgentEvals](https://github.com/langchain-ai/agentevals) are capable of evaluating a full thread of messages, obtaining a representative example thread of messages can be difficult.
 
 To help judge your application's performance over multiple interactions, OpenEvals includes a `run_multiturn_simulation` method (and its Python `async` counterpart `run_multiturn_simulation_async`) for simulating interactions between your app and an end user to help evaluate your app's performance from start to finish.
@@ -1957,7 +1962,7 @@ await evaluate(
 );
 ```
 
-> [!NOTE]
+> [!TIP]
 > In the above examples, we add wrapper functions around prebuilt evaluators for clarity since some evaluators may require parameters other than `inputs`, `outputs` and `reference_outputs`/`referenceOutputs`. However, if your evaluator accepts exactly those named parameters, you may pass them directly into the `evaluate` method.
 
 # Acknowledgements

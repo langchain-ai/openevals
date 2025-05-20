@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "yarn lc_build --create-entrypoints --pre --tree-shaking",
+    "bump-version": "node scripts/bump-version.js",
+    "check-version": "node scripts/check-version.js",
     "lint:eslint": "NODE_OPTIONS=--max-old-space-size=4096 eslint --cache --ext .ts,.js src/",
     "lint:dpdm": "dpdm --exit-code circular:1 --no-warning --no-tree src/*.ts src/**/*.ts",
     "lint": "yarn lint:eslint && yarn lint:dpdm",

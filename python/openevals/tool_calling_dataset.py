@@ -224,3 +224,288 @@ def run_tool_calling_evaluation(
         experiment_prefix="tool_calling_eval",
     )
 
+
+# Example usage and configuration
+if __name__ == "__main__":
+    # Example 1: Creating a simple tool calling dataset
+    def example_create_dataset():
+        """Example of creating a tool calling dataset with sample data."""
+        print("=== Example 1: Creating a Tool Calling Dataset ===")
+        
+        # Sample examples for the dataset
+        examples = [
+            {
+                "inputs": {
+                    "messages": [
+                        {"role": "user", "content": "What's the weather like in San Francisco?"},
+                        {
+                            "role": "assistant",
+                            "content": "I'll check the weather for you.",
+                            "tool_calls": [
+                                {
+                                    "id": "call_1",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "get_weather",
+                                        "arguments": '{"location": "San Francisco", "unit": "celsius"}'
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "expected_outputs": [
+                    {
+                        "id": "call_1",
+                        "name": "get_weather",
+                        "arguments": {"location": "San Francisco", "unit": "celsius"}
+                    }
+                ]
+            },
+            {
+                "inputs": {
+                    "messages": [
+                        {"role": "user", "content": "Send an email to john@example.com with subject 'Meeting' and body 'Let's meet tomorrow'"},
+                        {
+                            "role": "assistant",
+                            "content": "I'll send that email for you.",
+                            "tool_calls": [
+                                {
+                                    "id": "call_2",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "send_email",
+                                        "arguments": '{"to": "john@example.com", "subject": "Meeting", "body": "Let\'s meet tomorrow"}'
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "expected_outputs": [
+                    {
+                        "id": "call_2",
+                        "name": "send_email",
+                        "arguments": {
+                            "to": "john@example.com",
+                            "subject": "Meeting",
+                            "body": "Let's meet tomorrow"
+                        }
+                    }
+                ]
+            },
+            {
+                "inputs": {
+                    "messages": [
+                        {"role": "user", "content": "Calculate 15 * 23 and then convert the result to binary"},
+                        {
+                            "role": "assistant",
+                            "content": "I'll calculate that for you and convert to binary.",
+                            "tool_calls": [
+                                {
+                                    "id": "call_3a",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "calculate",
+                                        "arguments": '{"expression": "15 * 23"}'
+                                    }
+                                },
+                                {
+                                    "id": "call_3b",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "convert_to_binary",
+                                        "arguments": '{"number": 345}'
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "expected_outputs": [
+                    {
+                        "id": "call_3a",
+                        "name": "calculate",
+                        "arguments": {"expression": "15 * 23"}
+                    },
+                    {
+                        "id": "call_3b",
+                        "name": "convert_to_binary",
+                        "arguments": {"number": 345}
+                    }
+                ]
+            }
+        ]
+        
+        try:
+            # Create the dataset
+            dataset_id = create_tool_calling_dataset(
+                dataset_name="tool_calling_examples",
+                examples=examples,
+                description="Example dataset for testing tool calling functionality"
+            )
+            print(f"✅ Created dataset with ID: {dataset_id}")
+            return dataset_id
+        except Exception as e:
+            print(f"❌ Error creating dataset: {e}")
+            return None
+    
+    
+    # Example 2: Processing messages to extract tool calls
+    def example_process_messages():
+        """Example of processing messages to extract tool calls."""
+        print("
+        
+        # Sample messages with tool calls
+        messages = [
+            {"role": "user", "content": "Book a flight to NYC"},
+            {
+                "role": "assistant",
+                "content": "I'll help you book a flight to NYC.",
+                "tool_calls": [
+                    {
+                        "id": "flight_1",
+                        "type": "function",
+                        "function": {
+                            "name": "book_flight",
+                            "arguments": '{"destination": "NYC", "departure_date": "2024-01-15"}'
+                        }
+                    }
+                ]
+            }
+        ]
+        
+        # Extract tool calls
+        tool_calls = process_messages_to_tool_calls(messages)
+        print(f"Extracted tool calls: {json.dumps(tool_calls, indent=2)}")
+        
+        return tool_calls
+    
+    
+    # Example 3: Running evaluation with a mock target function
+    def example_run_evaluation():
+        """Example of running tool calling evaluation."""
+        print("
+        
+        # Mock target function that simulates an AI system
+        def mock_ai_system(inputs):
+            """Mock AI system that returns tool calls based on input."""
+            messages = inputs.get("messages", [])
+            
+            # Simple logic to return tool calls based on user input
+            user_message = ""
+            for msg in messages:
+                if msg.get("role") == "user":
+                    user_message = msg.get("content", "").lower()
+                    break
+            
+            # Return mock responses based on keywords
+            if "weather" in user_message:
+                return {
+                    "messages": [
+                        {
+                            "role": "assistant",
+                            "content": "I'll check the weather for you.",
+                            "tool_calls": [
+                                {
+                                    "id": "weather_call",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "get_weather",
+                                        "arguments": '{"location": "San Francisco", "unit": "celsius"}'
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            elif "email" in user_message:
+                return {
+                    "messages": [
+                        {
+                            "role": "assistant",
+                            "content": "I'll send that email for you.",
+                            "tool_calls": [
+                                {
+                                    "id": "email_call",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "send_email",
+                                        "arguments": '{"to": "john@example.com", "subject": "Meeting", "body": "Let\'s meet tomorrow"}'
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            else:
+                return {"messages": [{"role": "assistant", "content": "I can help with that."}]}
+        
+        print("Mock AI system created. In a real scenario, you would:")
+        print("1. Create a dataset using create_tool_calling_dataset()")
+        print("2. Run evaluation using run_tool_calling_evaluation()")
+        print("3. Example call: run_tool_calling_evaluation('your_dataset_name', your_ai_function)")
+        
+        # Demonstrate the evaluator directly
+        sample_inputs = {"messages": [{"role": "user", "content": "What's the weather?"}]}
+        sample_outputs = mock_ai_system(sample_inputs)
+        sample_reference = {
+            "expected_tool_calls": [
+                {
+                    "id": "weather_call",
+                    "name": "get_weather",
+                    "arguments": {"location": "San Francisco", "unit": "celsius"}
+                }
+            ]
+        }
+        
+        result = tool_calling_evaluator(sample_inputs, sample_outputs, sample_reference)
+        print(f"Evaluation result: {result}")
+    
+    
+    # Example 4: Configuration options
+    def example_configuration():
+        """Example of different configuration options."""
+        print("
+        
+        print("Configuration options for tool calling evaluation:")
+        print("1. Dataset Creation:")
+        print("   - dataset_name: Unique name for your dataset")
+        print("   - examples: List of input/output pairs")
+        print("   - description: Optional description")
+        print("   - client: Optional LangSmith client (auto-created if not provided)")
+        
+        print("
+        print("   - Supports multiple input formats:")
+        print("     * ChatCompletionMessage (OpenAI format)")
+        print("     * BaseMessage (LangChain format)")
+        print("     * Dict format")
+        
+        print("
+        print("   - Compares tool call names and arguments")
+        print("   - Returns scores from 0.0 to 1.0")
+        print("   - Provides detailed feedback in comments")
+        
+        print("
+        print("   - Set LANGSMITH_API_KEY environment variable")
+        print("   - Optionally set LANGSMITH_PROJECT for organization")
+    
+    
+    # Run all examples
+    print("🚀 Tool Calling Evaluation Script Examples")
+    print("=" * 50)
+    
+    # Run examples
+    dataset_id = example_create_dataset()
+    example_process_messages()
+    example_run_evaluation()
+    example_configuration()
+    
+    print("
+    print("✅ All examples completed!")
+    print("
+    print("1. Import the functions you need")
+    print("2. Set up your LangSmith API key")
+    print("3. Create your dataset with examples")
+    print("4. Run evaluation with your AI system")
+

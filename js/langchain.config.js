@@ -18,6 +18,7 @@ export const config = {
     /\@langchain\/core\/prompts/,
     /\@langchain\/core\/messages/,
     /langchain\/chat_models\/universal/,
+    /\@langchain\/core\/utils\/json_schema/,
   ],
   entrypoints: {
     index: "index",

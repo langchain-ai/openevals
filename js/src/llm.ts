@@ -2,6 +2,7 @@ import { RunnableInterface, Runnable } from "@langchain/core/runnables";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatPromptTemplate, StructuredPrompt } from "@langchain/core/prompts";
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
+import { toJsonSchema } from "@langchain/core/utils/json_schema";
 import { initChatModel } from "langchain/chat_models/universal";
 import { traceable } from "langsmith/traceable";
 import type { z } from "zod";
@@ -18,7 +19,6 @@ import {
   ModelClient,
   SingleResultScorerReturnType,
 } from "./types.js";
-import { toJsonSchema } from "@langchain/core/utils/json_schema";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ZodObjectAny = z.ZodObject<any>;

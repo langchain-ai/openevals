@@ -1,0 +1,56 @@
+name: Build Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  changed_files:
+    runs-on: ubuntu-latest
+    outputs:
+      js_changed: ${{ steps.check-changes.outputs.js_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for JS file changes
+        id: check-changes
+        run: |
+          if git diff --name-only origin/main HEAD | grep -E "^js/.*\.(js|ts|jsx|tsx|json)$"; then
+            echo "js_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "js_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+  js_build_test:
+    name: JS Build Test
+    needs: changed_files
+    if: >
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request' && needs.changed_files.outputs.js_changed == 'true') ||
+      (github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: js
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+          cache: "yarn"
+          cache-dependency-path: "js/yarn.lock"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build

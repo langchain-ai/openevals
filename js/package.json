@@ -17,22 +17,20 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@langchain/openai": "^0.4.4",
-    "langchain": "^0.3.18",
-    "langsmith": "^0.3.26",
-    "uuid": "^11.1.0",
-    "zod": "^3.24.2",
-    "zod-to-json-schema": "^3.24.5"
+    "@langchain/openai": ">=0.4.4",
+    "langchain": ">=0.3.18",
+    "langsmith": ">=0.3.26",
+    "uuid": "^11.1.0"
   },
   "peerDependencies": {
-    "@e2b/code-interpreter": "^1.0.4",
-    "@langchain/core": "^0.3.40",
-    "typescript": "*"
+    "@langchain/core": ">=0.3.73",
+    "typescript": "*",
+    "zod": ">=3.24.2"
   },
   "devDependencies": {
     "@e2b/code-interpreter": "^1.0.4",
-    "@langchain/core": "^0.3.40",
-    "@langchain/langgraph": "^0.2.65",
+    "@langchain/core": "^0.3.73",
+    "@langchain/langgraph": "^0.4.9",
     "@langchain/scripts": "0.1.3",
     "@tsconfig/recommended": "^1.0.8",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
@@ -46,10 +44,11 @@
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-no-instanceof": "^1.0.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "openai": "^4.85.1",
+    "openai": "^5.19.1",
     "prettier": "^3.5.1",
     "typescript": "~5.1.6",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "zod": "^4.1.5"
   },
   "peerDependenciesMeta": {
     "typescript": {

@@ -23,7 +23,7 @@
     "zod-to-json-schema": "^3.24.5"
   },
   "peerDependencies": {
-    "@langchain/core": ">=0.3.40",
+    "@langchain/core": ">=0.3.73",
     "typescript": "*",
     "zod": ">=3.24.2"
   },

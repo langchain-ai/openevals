@@ -21,7 +21,7 @@ import {
 } from "./types.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ZodObjectAny = z.ZodObject<any, any, any, any>;
+type ZodObjectAny = z.ZodObject<any>;
 
 function _isRunnableInterface(prompt: unknown): prompt is RunnableInterface {
   return Runnable.isRunnable(prompt);
@@ -206,9 +206,20 @@ export const _createLLMAsJudgeScorer = (params: {
   const { prompt, system, model, continuous, choices, fewShotExamples } =
     params;
 
-  let schema = isZodSchema(params.schema)
-    ? zodToJsonSchema(params.schema)
-    : params.schema;
+  let schema: Record<string, unknown> | undefined;
+  if (isZodSchema(params.schema)) {
+    // Zod 4
+    if (
+      "toJSONSchema" in params.schema &&
+      typeof params.schema.toJSONSchema === "function"
+    ) {
+      schema = params.schema.toJSONSchema();
+    } else {
+      schema = zodToJsonSchema(params.schema);
+    }
+  } else {
+    schema = params.schema;
+  }
 
   let judge = params.judge;
   const useReasoning = params.useReasoning ?? true;

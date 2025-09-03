@@ -16,17 +16,17 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@langchain/openai": "^0.4.4",
-    "langchain": "^0.3.18",
-    "langsmith": "^0.3.26",
+    "@langchain/openai": ">=0.4.4",
+    "langchain": ">=0.3.18",
+    "langsmith": ">=0.3.26",
     "uuid": "^11.1.0",
-    "zod": "^3.24.2",
     "zod-to-json-schema": "^3.24.5"
   },
   "peerDependencies": {
-    "@e2b/code-interpreter": "^1.0.4",
-    "@langchain/core": "^0.3.40",
-    "typescript": "*"
+    "@e2b/code-interpreter": ">=1.0.4",
+    "@langchain/core": ">=0.3.40",
+    "typescript": "*",
+    "zod": ">=3.24.2"
   },
   "devDependencies": {
     "@e2b/code-interpreter": "^1.0.4",
@@ -48,7 +48,8 @@
     "openai": "^4.85.1",
     "prettier": "^3.5.1",
     "typescript": "~5.1.6",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "zod": "^4.1.5"
   },
   "peerDependenciesMeta": {
     "typescript": {

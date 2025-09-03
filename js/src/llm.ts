@@ -4,7 +4,6 @@ import { ChatPromptTemplate, StructuredPrompt } from "@langchain/core/prompts";
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
 import { initChatModel } from "langchain/chat_models/universal";
 import { traceable } from "langsmith/traceable";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import type { z } from "zod";
 
 import {
@@ -19,6 +18,7 @@ import {
   ModelClient,
   SingleResultScorerReturnType,
 } from "./types.js";
+import { toJsonSchema } from "@langchain/core/utils/json_schema";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ZodObjectAny = z.ZodObject<any>;
@@ -208,15 +208,7 @@ export const _createLLMAsJudgeScorer = (params: {
 
   let schema: Record<string, unknown> | undefined;
   if (isZodSchema(params.schema)) {
-    // Zod 4
-    if (
-      "toJSONSchema" in params.schema &&
-      typeof params.schema.toJSONSchema === "function"
-    ) {
-      schema = params.schema.toJSONSchema();
-    } else {
-      schema = zodToJsonSchema(params.schema);
-    }
+    schema = toJsonSchema(params.schema);
   } else {
     schema = params.schema;
   }

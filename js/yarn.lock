@@ -3834,7 +3834,6 @@ __metadata:
     uuid: ^11.1.0
     vitest: ^3.0.5
     zod: ^4.1.5
-    zod-to-json-schema: ^3.24.5
   peerDependencies:
     "@langchain/core": ">=0.3.73"
     typescript: "*"
@@ -5379,15 +5378,6 @@ __metadata:
   peerDependencies:
     zod: ^3.24.1
   checksum: 7195563f611bc21ea7f44129b8e32780125a9bd98b2e6b8709ac98bd2645729fecd87b8aeeaa8789617ee3f38e6585bab23dd613e2a35c31c6c157908f7a1681
-  languageName: node
-  linkType: hard
-
-"zod-to-json-schema@npm:^3.24.5":
-  version: 3.24.5
-  resolution: "zod-to-json-schema@npm:3.24.5"
-  peerDependencies:
-    zod: ^3.24.1
-  checksum: dc4e5e4c06e9a5494e4b1d8c8363ac907f9d488f36c8e4923e1e5ac4f91f737722f99200cd92a409551e7456d960734d4cabd37935234ca95e290572468ffc08
   languageName: node
   linkType: hard
 

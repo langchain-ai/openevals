@@ -1,7 +1,6 @@
 import * as ls from "langsmith/vitest";
 import { expect, test, expectTypeOf } from "vitest";
 import { evaluate } from "langsmith/evaluation";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import { OpenAI } from "openai";
 import { ChatOpenAI } from "@langchain/openai";
 
@@ -252,7 +251,7 @@ ls.describe("llm as judge", () => {
       const outputs = { a: 1, b: 2 };
       const evaluator = createLLMAsJudge({
         prompt: "Are these two equal? {inputs} {outputs}",
-        outputSchema: zodToJsonSchema(
+        outputSchema: z.toJSONSchema(
           z.object({
             equality: z.boolean(),
             justification: z.string(),
@@ -276,7 +275,7 @@ ls.describe("llm as judge", () => {
       const outputs = { a: 1, b: 2 };
       const evaluator = createLLMAsJudge({
         prompt: "Are these two equal? {inputs} {outputs}",
-        outputSchema: zodToJsonSchema(
+        outputSchema: z.toJSONSchema(
           z.object({
             equality: z.boolean(),
             justification: z.string(),

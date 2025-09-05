@@ -8,6 +8,17 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      run-python-tests:
+        required: false
+        type: boolean
+        default: true
+        description: "Run Python integration tests"
+      run-js-tests:
+        required: false
+        type: boolean
+        default: true
+        description: "Run JS integration tests"
 
 jobs:
   changed_files:

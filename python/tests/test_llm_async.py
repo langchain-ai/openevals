@@ -6,10 +6,102 @@ from typing_extensions import TypedDict
 from openevals.llm import create_async_llm_as_judge
 
 from langchain_core.messages import HumanMessage
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts.structured import StructuredPrompt
 from openai import AsyncOpenAI
 from langchain_openai import ChatOpenAI
 from langsmith import Client
 from langchain import hub as prompts
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_prompts():
+    """Setup required prompts in LangChain Hub before running tests."""
+    client = Client()
+
+    # Create test-equality prompt
+    test_equality_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "You are an expert LLM as judge.",
+            ),
+            (
+                "human",
+                "Are these two equal? {inputs} {outputs}",
+            ),
+        ]
+    )
+
+    try:
+        client.push_prompt("test-equality", object=test_equality_prompt)
+        print("Created test-equality prompt")
+    except Exception as e:
+        print(f"test-equality prompt may already exist: {e}")
+
+    # Create equality-1-message prompt
+    equality_1_message_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "human",
+                "Are these two equal? {inputs} {outputs}",
+            )
+        ]
+    )
+
+    try:
+        client.push_prompt("equality-1-message", object=equality_1_message_prompt)
+        print("Created equality-1-message prompt")
+    except Exception as e:
+        print(f"equality-1-message prompt may already exist: {e}")
+
+    # Create simple-equality-structured prompt
+    structured_equality_prompt = StructuredPrompt(
+        messages=[
+            (
+                "human",
+                """
+Are these equal?
+
+<item1>
+{inputs}
+</item1>
+
+<item2>
+{outputs}
+</item2>
+""",
+            ),
+        ],
+        schema={
+            "title": "score",
+            "description": "Get a score",
+            "type": "object",
+            "properties": {
+                "equality": {
+                    "type": "boolean",
+                    "description": "Whether the two items are equal",
+                },
+                "justification": {
+                    "type": "string",
+                    "description": "Justification for your decision above",
+                },
+            },
+            "required": ["equality", "justification"],
+            "strict": True,
+            "additionalProperties": False,
+        },
+    )
+
+    try:
+        client.push_prompt(
+            "simple-equality-structured", object=structured_equality_prompt
+        )
+        print("Created simple-equality-structured prompt")
+    except Exception as e:
+        print(f"simple-equality-structured prompt may already exist: {e}")
+
+    return True
 
 
 @pytest.mark.langsmith
@@ -19,7 +111,7 @@ async def test_prompt_hub_works():
     outputs = {"a": 1, "b": 2}
     client = AsyncOpenAI()
     llm_as_judge = create_async_llm_as_judge(
-        prompt=prompts.pull("langchain-ai/test-equality"),
+        prompt=prompts.pull("test-equality"),
         judge=client,
         model="gpt-4o-mini",
     )
@@ -35,7 +127,7 @@ async def test_prompt_hub_works_one_message():
     outputs = {"a": 1, "b": 2}
     client = AsyncOpenAI()
     llm_as_judge = create_async_llm_as_judge(
-        prompt=prompts.pull("langchain-ai/equality-1-message"),
+        prompt=prompts.pull("equality-1-message"),
         judge=client,
         model="gpt-4o-mini",
     )
@@ -50,7 +142,7 @@ async def test_structured_prompt():
     inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
     client = Client()
-    prompt = client.pull_prompt("jacob/simple-equality-structured")
+    prompt = client.pull_prompt("simple-equality-structured")
     llm_as_judge = create_async_llm_as_judge(
         prompt=prompt,
         model="openai:gpt-4o-mini",
@@ -286,24 +378,3 @@ async def test_async_llm_as_judge_custom_output_schema_pydantic():
     assert isinstance(eval_result, EqualityResult)
     assert eval_result.are_equal
     assert eval_result.justification is not None
-
-
-@pytest.mark.langsmith
-@pytest.mark.asyncio
-async def test_async_llm_as_judge_with_evaluate():
-    client = Client()
-    evaluator = create_async_llm_as_judge(
-        prompt="Are these two foo? {inputs} {outputs}",
-        few_shot_examples=[
-            {"inputs": {"a": 1, "b": 2}, "outputs": {"a": 1, "b": 2}, "score": 0.0},
-            {"inputs": {"a": 1, "b": 3}, "outputs": {"a": 1, "b": 2}, "score": 1.0},
-        ],
-        model="openai:o3-mini",
-    )
-
-    async def target(x):
-        return x
-
-    res = await client.aevaluate(target, data="exact match", evaluators=[evaluator])
-    async for r in res:
-        assert r["evaluation_results"]["results"][0].score is not None

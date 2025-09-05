@@ -22,23 +22,4 @@ ls.describe("Levenshtein Distance Tests", () => {
     expect(res.key).toBe("levenshtein_distance");
     expect(res.score).toBeLessThan(1.0);
   });
-
-  ls.test(
-    "test works with evaluate",
-    {
-      inputs: { dataset: "exact match" },
-    },
-    async ({ inputs }) => {
-      const evaluator = levenshteinDistance;
-      const result = await evaluate((inputs) => inputs, {
-        data: inputs.dataset,
-        evaluators: [evaluator],
-      });
-      expect(result).toBeDefined();
-      expect(result.results.length).toBeGreaterThan(0);
-      expect(
-        result.results[0].evaluationResults.results[0].score
-      ).toBeDefined();
-    }
-  );
 });

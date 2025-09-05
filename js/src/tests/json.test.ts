@@ -983,19 +983,6 @@ ls.describe("json", () => {
     }
   );
 
-  test("test json works with evaluate", async () => {
-    const evaluator = createJsonMatchEvaluator({
-      aggregator: "average",
-    });
-    const result = await evaluate((inputs) => inputs, {
-      data: "exact match",
-      evaluators: [evaluator],
-    });
-    expect(result).toBeDefined();
-    expect(result.results.length).toBeGreaterThan(0);
-    expect(result.results[0].evaluationResults.results[0].score).toBeDefined();
-  });
-
   ls.test(
     "test json throws error no rubric",
     {

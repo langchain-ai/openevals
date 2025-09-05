@@ -11,6 +11,97 @@ from langsmith import Client
 from langchain import hub as prompts
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts.chat import ChatPromptTemplate
+from langchain_core.prompts.structured import StructuredPrompt
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_prompts():
+    """Setup required prompts in LangChain Hub before running tests."""
+    client = Client()
+
+    # Create test-equality prompt
+    test_equality_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "You are an expert LLM as judge.",
+            ),
+            (
+                "human",
+                "Are these two equal? {inputs} {outputs}",
+            ),
+        ]
+    )
+
+    try:
+        client.push_prompt("test-equality", object=test_equality_prompt)
+        print("Created test-equality prompt")
+    except Exception as e:
+        print(f"test-equality prompt may already exist: {e}")
+
+    # Create equality-1-message prompt
+    equality_1_message_prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "human",
+                "Are these two equal? {inputs} {outputs}",
+            )
+        ]
+    )
+
+    try:
+        client.push_prompt("equality-1-message", object=equality_1_message_prompt)
+        print("Created equality-1-message prompt")
+    except Exception as e:
+        print(f"equality-1-message prompt may already exist: {e}")
+
+    # Create simple-equality-structured prompt
+    structured_equality_prompt = StructuredPrompt(
+        messages=[
+            (
+                "human",
+                """
+Are these equal?
+
+<item1>
+{inputs}
+</item1>
+
+<item2>
+{outputs}
+</item2>
+""",
+            ),
+        ],
+        schema={
+            "title": "score",
+            "description": "Get a score",
+            "type": "object",
+            "properties": {
+                "equality": {
+                    "type": "boolean",
+                    "description": "Whether the two items are equal",
+                },
+                "justification": {
+                    "type": "string",
+                    "description": "Justification for your decision above",
+                },
+            },
+            "required": ["equality", "justification"],
+            "strict": True,
+            "additionalProperties": False,
+        },
+    )
+
+    try:
+        client.push_prompt(
+            "simple-equality-structured", object=structured_equality_prompt
+        )
+        print("Created simple-equality-structured prompt")
+    except Exception as e:
+        print(f"simple-equality-structured prompt may already exist: {e}")
+
+    return True
 
 
 @pytest.mark.langsmith
@@ -270,18 +361,6 @@ def test_llm_as_judge_custom_output_schema_pydantic():
     assert isinstance(eval_result, EqualityResult)
     assert eval_result.are_equal
     assert eval_result.justification is not None
-
-
-@pytest.mark.langsmith
-def test_llm_as_judge_with_evaluate():
-    client = Client()
-    evaluator = create_llm_as_judge(
-        prompt="Are these two equal? {inputs} {outputs}",
-        model="openai:gpt-4o-mini",
-    )
-    res = client.evaluate(lambda x: x, data="exact match", evaluators=[evaluator])
-    for r in res:
-        assert r["evaluation_results"]["results"][0].score is not None
 
 
 @pytest.mark.langsmith

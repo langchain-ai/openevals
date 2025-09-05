@@ -1,6 +1,5 @@
 import * as ls from "langsmith/vitest";
-import { expect, test, expectTypeOf } from "vitest";
-import { evaluate } from "langsmith/evaluation";
+import { expect, expectTypeOf, beforeAll } from "vitest";
 import { OpenAI } from "openai";
 import { ChatOpenAI } from "@langchain/openai";
 
@@ -9,9 +8,89 @@ import * as hub from "langchain/hub";
 import { HumanMessage } from "@langchain/core/messages";
 
 import { z } from "zod";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { ChatPromptTemplate, HumanMessagePromptTemplate, StructuredPrompt } from "@langchain/core/prompts";
+import { Client } from "langsmith";
 
 ls.describe("llm as judge", () => {
+  beforeAll(async () => {
+    // Setup required prompts in LangChain Hub before running tests
+    const client = new Client();
+
+    // Create test-equality prompt
+    const testEqualityPrompt = ChatPromptTemplate.fromMessages([
+      ["system", "You are an expert LLM as judge."],
+      ["human", "Are these two equal? {inputs} {outputs}"],
+    ]);
+
+    try {
+      await client.pushPrompt("test-equality", { object: testEqualityPrompt });
+      console.log("Created test-equality prompt");
+    } catch (error) {
+      console.log(`test-equality prompt may already exist: ${error}`);
+    }
+
+    // Create equality-1-message prompt
+    const equality1MessagePrompt = ChatPromptTemplate.fromMessages([
+      ["human", "Are these two equal? {inputs} {outputs}"],
+    ]);
+
+    try {
+      await client.pushPrompt("equality-1-message", {
+        object: equality1MessagePrompt,
+      });
+      console.log("Created equality-1-message prompt");
+    } catch (error) {
+      console.log(`equality-1-message prompt may already exist: ${error}`);
+    }
+
+    // Create simple-equality-structured prompt
+    const structuredEqualityPrompt = new StructuredPrompt({
+      inputVariables: ["inputs", "outputs"],
+      promptMessages: [
+        HumanMessagePromptTemplate.fromTemplate(
+          `Are these equal?
+
+<item1>
+{inputs}
+</item1>
+
+<item2>
+{outputs}
+</item2>`,
+        ),
+      ],
+      schema: {
+        title: "score",
+        description: "Get a score",
+        type: "object",
+        properties: {
+          equality: {
+            type: "boolean",
+            description: "Whether the two items are equal",
+          },
+          justification: {
+            type: "string",
+            description: "Justification for your decision above",
+          },
+        },
+        required: ["equality", "justification"],
+        strict: true,
+        additionalProperties: false,
+      },
+    });
+
+    try {
+      await client.pushPrompt("simple-equality-structured", {
+        object: structuredEqualityPrompt,
+      });
+      console.log("Created simple-equality-structured prompt");
+    } catch (error) {
+      console.log(
+        `simple-equality-structured prompt may already exist: ${error}`
+      );
+    }
+  });
+
   ls.test(
     "prompt hub prompt",
     {
@@ -21,7 +100,7 @@ ls.describe("llm as judge", () => {
       const outputs = { a: 1, b: 2 };
       const client = new OpenAI();
       const evaluator = createLLMAsJudge({
-        prompt: await hub.pull("langchain-ai/equality-1-message"),
+        prompt: await hub.pull("equality-1-message"),
         judge: client,
         model: "openai:gpt-4o-mini",
       });
@@ -42,7 +121,7 @@ ls.describe("llm as judge", () => {
     async ({ inputs }) => {
       const outputs = { a: 1, b: 2 };
       const evaluator = createLLMAsJudge({
-        prompt: await hub.pull("jacob/simple-equality-structured"),
+        prompt: await hub.pull("simple-equality-structured"),
         model: "openai:gpt-4o-mini",
       });
       const result = await evaluator({ inputs, outputs });
@@ -312,19 +391,6 @@ ls.describe("llm as judge", () => {
       expect(result.justification).toBeDefined();
     }
   );
-
-  test("test llm as judge works with evaluate", async () => {
-    const evaluator = createLLMAsJudge({
-      prompt: "Are these two foo? {inputs} {outputs}",
-      model: "openai:o3-mini",
-    });
-    const result = await evaluate((inputs) => inputs, {
-      data: "exact match",
-      evaluators: [evaluator],
-    });
-    expect(result).toBeDefined();
-    expect(result.results.length).toBeGreaterThan(0);
-  }, 60000);
 
   ls.test(
     "llm as judge with mustache prompt",

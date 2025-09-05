@@ -77,6 +77,7 @@ jobs:
       - name: Run integration tests
         env:
           LANGSMITH_TRACING: "true"
+          LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: uv run pytest tests
@@ -116,6 +117,7 @@ jobs:
       - name: Run JS integration tests
         env:
           LANGSMITH_TRACING: "true"
+          LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: yarn test

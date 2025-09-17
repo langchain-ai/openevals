@@ -229,7 +229,7 @@ npm install openai
 ```
 </details>
 
-It is also helpful to be familiar with some [evaluation concepts](https://docs.smith.langchain.com/evaluation/concepts).
+It is also helpful to be familiar with some [evaluation concepts](https://docs.langchain.com/langsmith/evaluation-concepts).
 
 # Evaluators
 

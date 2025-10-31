@@ -18,7 +18,7 @@ To get started, install `openevals`:
 npm install openevals @langchain/core
 ```
 
-This quickstart will use an evaluator powered by OpenAI's `o4-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
+This quickstart will use an evaluator powered by OpenAI's `o3-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
 
 ```bash
 export OPENAI_API_KEY="your_openai_api_key"
@@ -32,7 +32,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   // CONCISENESS_PROMPT is just an f-string
   prompt: CONCISENESS_PROMPT,
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const inputs = "How is the weather in San Francisco?"
@@ -173,7 +173,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 ```
 
@@ -214,7 +214,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   prompt: CONCISENESS_PROMPT,
   feedbackKey: "conciseness",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const inputs = "How is the weather in San Francisco?"
@@ -246,7 +246,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const inputs = "How much has the price of doodads changed in the past year?";
@@ -280,7 +280,7 @@ import { createLLMAsJudge, HALLUCINATION_PROMPT } from "openevals";
 const hallucinationEvaluator = createLLMAsJudge({
   prompt: HALLUCINATION_PROMPT,
   feedbackKey: "hallucination",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const inputs = "What is a doodad?"
@@ -332,7 +332,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 const customPromptEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const inputs = "What color is the sky?"
@@ -380,7 +380,7 @@ const prompt = ChatPromptTemplate.fromMessages([
 
 const evaluator = createLLMAsJudge({
   prompt,
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
   feedbackKey: "equality",
 });
 
@@ -485,7 +485,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 const customEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
   choices: [0.0, 0.5, 1.0],
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const result = await customEvaluator({
@@ -547,7 +547,7 @@ const outputs = "The rain in Spain falls mainly on the plain.";
 
 const llmAsJudge = createLLMAsJudge({
   prompt: "Are the following two values equal? {inputs} {outputs}",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
   outputSchema: equalitySchema,
 });
 
@@ -614,7 +614,7 @@ const evaluator = createJsonMatchEvaluator({
     exclude_keys=["a"],
     // The provider and name of the model to use
     judge: client,
-    model: "openai:o4-mini",
+    model: "openai:o3-mini",
 })
 
 // Invoke the evaluator with the outputs and reference outputs
@@ -673,7 +673,7 @@ const evaluator = createJsonMatchEvaluator({
     exclude_keys=["c"],
     // The provider and name of the model to use
     judge: client,
-    model: "openai:o4-mini",
+    model: "openai:o3-mini",
     // Whether to use reasoning to reason about the keys in `rubric`. Defaults to True
     useReasoning: true
 })
@@ -736,7 +736,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const inputs = "How much has the price of doodads changed in the past year?";
@@ -782,7 +782,7 @@ const outputs = {
 const helpfulnessEvaluator = createLLMAsJudge({
   prompt: RAG_HELPFULNESS_PROMPT,
   feedbackKey: "helpfulness",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const evalResult = await helpfulnessEvaluator({
@@ -813,7 +813,7 @@ import { createLLMAsJudge, RAG_GROUNDEDNESS_PROMPT } from "openevals";
 const groundednessEvaluator = createLLMAsJudge({
   prompt: RAG_GROUNDEDNESS_PROMPT,
   feedbackKey: "groundedness",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const context = {
@@ -860,7 +860,7 @@ import { createLLMAsJudge, RAG_RETRIEVAL_RELEVANCE_PROMPT } from "openevals";
 const retrievalRelevanceEvaluator = createLLMAsJudge({
   prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
   feedbackKey: "retrieval_relevance",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const inputs = {
@@ -1094,7 +1094,7 @@ import { createCodeLLMAsJudge, CODE_CORRECTNESS_PROMPT } from "openevals";
 
 const evaluator = createCodeLLMAsJudge({
   prompt: CODE_CORRECTNESS_PROMPT,
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const inputs = `Add proper TypeScript types to the following code:
@@ -1507,7 +1507,7 @@ from openevals.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -1521,7 +1521,7 @@ from openai import AsyncOpenAI
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
     judge=AsyncOpenAI(),
-    model="o4-mini",
+    model="o3-mini",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -1580,7 +1580,7 @@ const user = createLLMSimulatedUser({
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
   prompt: "Based on the below conversation, was the user satisfied?\n{outputs}",
   feedbackKey: "satisfaction",
 });
@@ -1887,7 +1887,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 ls.describe("Correctness", () => {
@@ -1937,7 +1937,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   prompt: CONCISENESS_PROMPT,
   feedbackKey: "conciseness",
-  model: "openai:o4-mini",
+  model: "openai:o3-mini",
 });
 
 const wrappedConcisenessEvaluator = async (params: {

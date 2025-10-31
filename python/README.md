@@ -18,7 +18,7 @@ To get started, install `openevals`:
 pip install openevals
 ```
 
-This quickstart will use an evaluator powered by OpenAI's `o4-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
+This quickstart will use an evaluator powered by OpenAI's `o3-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
 
 ```bash
 export OPENAI_API_KEY="your_openai_api_key"
@@ -33,7 +33,7 @@ from openevals.prompts import CONCISENESS_PROMPT
 conciseness_evaluator = create_llm_as_judge(
     # CONCISENESS_PROMPT is just an f-string
     prompt=CONCISENESS_PROMPT,
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 inputs = "How is the weather in San Francisco?"
@@ -174,7 +174,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 ```
 
@@ -219,7 +219,7 @@ outputs = "Thanks for asking! The current weather in San Francisco is sunny and 
 llm_as_judge = create_llm_as_judge(
     prompt=CONCISENESS_PROMPT,
     feedback_key="conciseness",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -246,7 +246,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 inputs = "How much has the price of doodads changed in the past year?"
@@ -285,7 +285,7 @@ context = "A doodad is a self-replicating swarm of nanobots. They are extremely 
 llm_as_judge = create_llm_as_judge(
     prompt=HALLUCINATION_PROMPT,
     feedback_key="hallucination",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 eval_result = llm_as_judge(
@@ -331,7 +331,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 custom_prompt_evaluator = create_llm_as_judge(
     prompt=MY_CUSTOM_PROMPT,
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 custom_prompt_evaluator(
@@ -377,7 +377,7 @@ prompt = ChatPromptTemplate([
 
 llm_as_judge = create_llm_as_judge(
     prompt=prompt,
-    model="openai:o4-mini",
+    model="openai:o3-mini",
     feedback_key="equality",
 )
 
@@ -488,7 +488,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 evaluator = create_llm_as_judge(
     prompt=MY_CUSTOM_PROMPT,
     choices=[0.0, 0.5, 1.0],
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 result = evaluator(
@@ -550,7 +550,7 @@ outputs = "The rain in Spain falls mainly on the plain."
 
 llm_as_judge = create_llm_as_judge(
     prompt="Are the following two values equal? {inputs} {outputs}",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
     output_schema=EqualityResult,
 )
 eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -655,7 +655,7 @@ evaluator = create_json_match_evaluator(
         "a": "Does the answer mention all the fruits in the reference answer?"
     },
     # The provider and name of the model to use
-    model="openai:o4-mini",
+    model="openai:o3-mini",
     # Whether to force the model to reason about the keys in `rubric`. Defaults to True
     # Note that this is not currently supported if there is an aggregator specified 
     use_reasoning=True
@@ -718,7 +718,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 inputs = "How much has the price of doodads changed in the past year?"
@@ -757,7 +757,7 @@ from openevals.prompts import RAG_HELPFULNESS_PROMPT
 helpfulness_evaluator = create_llm_as_judge(
     prompt=RAG_HELPFULNESS_PROMPT,
     feedback_key="helpfulness",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 inputs = {
@@ -797,7 +797,7 @@ from openevals.prompts import RAG_GROUNDEDNESS_PROMPT
 groundedness_evaluator = create_llm_as_judge(
     prompt=RAG_GROUNDEDNESS_PROMPT,
     feedback_key="groundedness",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 context = {
@@ -845,7 +845,7 @@ from openevals.prompts import RAG_RETRIEVAL_RELEVANCE_PROMPT
 retrieval_relevance_evaluator = create_llm_as_judge(
     prompt=RAG_RETRIEVAL_RELEVANCE_PROMPT,
     feedback_key="retrieval_relevance",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 inputs = {
@@ -1078,7 +1078,7 @@ from openevals.code.llm import create_code_llm_as_judge, CODE_CORRECTNESS_PROMPT
 
 llm_as_judge = create_code_llm_as_judge(
     prompt=CODE_CORRECTNESS_PROMPT,
-    model="openai:o4-mini",
+    model="openai:o3-mini",
     code_extraction_strategy="markdown_code_blocks",
 )
 
@@ -1531,7 +1531,7 @@ from openevals.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -1545,7 +1545,7 @@ from openai import AsyncOpenAI
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
     judge=AsyncOpenAI(),
-    model="o4-mini",
+    model="o3-mini",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -1601,7 +1601,7 @@ user = create_llm_simulated_user(
 )
 
 trajectory_evaluator = create_llm_as_judge(
-    model="openai:o4-mini",
+    model="openai:o3-mini",
     prompt="Based on the below conversation, was the user satisfied?\n{outputs}",
     feedback_key="satisfaction",
 )
@@ -1869,7 +1869,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 @pytest.mark.langsmith
@@ -1918,7 +1918,7 @@ client = Client()
 conciseness_evaluator = create_llm_as_judge(
     prompt=CONCISENESS_PROMPT,
     feedback_key="conciseness",
-    model="openai:o4-mini",
+    model="openai:o3-mini",
 )
 
 def wrapped_conciseness_evaluator(

@@ -171,12 +171,13 @@ async def test_json_match_rubric_with_reasoning_individual_key():
         },
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = sorted(result, key=lambda x: x["key"])
     assert len(result) == 2
-    assert result[0]["key"] == "json_match:name"
-    assert result[0]["score"] == 1.0
-    assert result[1]["key"] == "json_match:description"
-    assert result[1]["score"] == 0
-    assert result[1]["comment"] is not None
+    assert result[0]["key"] == "json_match:description"
+    assert result[0]["score"] == 0
+    assert result[0]["comment"] is not None
+    assert result[1]["key"] == "json_match:name"
+    assert result[1]["score"] == 1.0
 
 
 @pytest.mark.langsmith

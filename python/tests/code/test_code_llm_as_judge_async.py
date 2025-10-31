@@ -50,7 +50,7 @@ async def test_code_llm_as_judge_extraction_strategy_default(
 ):
     llm_as_judge = create_async_code_llm_as_judge(
         prompt=CODE_CORRECTNESS_PROMPT,
-        model="openai:o4-mini",
+        model="openai:o3-mini",
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == expected_result
@@ -98,7 +98,7 @@ async def test_code_llm_as_judge_extraction_strategy_llm(
 ):
     llm_as_judge = create_async_code_llm_as_judge(
         prompt=CODE_CORRECTNESS_PROMPT,
-        model="openai:o4-mini",
+        model="openai:o3-mini",
         code_extraction_strategy="llm",
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)

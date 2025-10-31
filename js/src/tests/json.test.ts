@@ -37,7 +37,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         aggregator: "average",
         rubric: {
           a: "Does the answer mention all the fruits in the reference answer?",
@@ -124,7 +124,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         aggregator: "all",
         rubric: {
           description:
@@ -156,7 +156,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         aggregator: "all",
         rubric: {
           description:
@@ -186,7 +186,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         rubric: {
           description:
             "Is the correct job title and company mentioned, as well as previous companies?",
@@ -216,7 +216,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         rubric: {
           description:
             "Is the correct job title and company mentioned, as well as previous companies?",
@@ -249,7 +249,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         rubric: {
           description:
             "Is the correct job title and company mentioned, as well as previous companies?",
@@ -674,7 +674,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         rubric: {
           a: "Does the answer mention all the fruits in the reference answer?",
         },
@@ -935,7 +935,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
         rubric: {
@@ -966,7 +966,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:o4-mini",
+        model: "openai:o3-mini",
         listAggregator: "average",
         aggregator: "average",
         rubric: {
@@ -997,7 +997,7 @@ ls.describe("json", () => {
       expect(() => {
         createJsonMatchEvaluator({
           judge: client,
-          model: "openai:o4-mini",
+          model: "openai:o3-mini",
           aggregator: "all",
         });
       }).toThrow();

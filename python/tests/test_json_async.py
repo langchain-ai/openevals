@@ -23,7 +23,7 @@ async def test_json_match_mix():
     outputs = {"a": "Mango, Bananas", "b": 2}
     reference_outputs = {"a": "Bananas, Mango", "b": 3}
     evaluator = create_async_json_match_evaluator(
-        model="openai:o4-mini",
+        model="openai:o3-mini",
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         aggregator="average",
     )
@@ -79,7 +79,7 @@ async def test_json_match_rubric():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
     evaluator = create_async_json_match_evaluator(
-        model="openai:o4-mini",
+        model="openai:o3-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -102,7 +102,7 @@ async def test_json_match_rubric_wrong():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
     evaluator = create_async_json_match_evaluator(
-        model="openai:o4-mini",
+        model="openai:o3-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -121,7 +121,7 @@ async def test_json_match_rubric_with_reasoning():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."
     }
     evaluator = create_async_json_match_evaluator(
-        model="openai:o4-mini",
+        model="openai:o3-mini",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
@@ -140,7 +140,7 @@ async def test_json_match_rubric_without_reasoning():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."
     }
     evaluator = create_async_json_match_evaluator(
-        model="openai:o4-mini",
+        model="openai:o3-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -165,7 +165,7 @@ async def test_json_match_rubric_with_reasoning_individual_key():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
     evaluator = create_async_json_match_evaluator(
-        model="openai:o4-mini",
+        model="openai:o3-mini",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
@@ -422,7 +422,7 @@ async def test_json_match_list_rubric():
     outputs = [{"a": "Strawberries, Melons, Bananas"}]
     reference_outputs = [{"a": "Bananas, Strawberries, Melons"}]
     evaluator = create_async_json_match_evaluator(
-        model="openai:o4-mini",
+        model="openai:o3-mini",
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         list_aggregator="average",
     )
@@ -584,7 +584,7 @@ async def test_works_with_aevaluate():
 @pytest.mark.langsmith
 def test_error_no_rubric():
     with pytest.raises(ValueError):
-        create_async_json_match_evaluator(model="openai:o4-mini")
+        create_async_json_match_evaluator(model="openai:o3-mini")
 
 
 @pytest.mark.langsmith

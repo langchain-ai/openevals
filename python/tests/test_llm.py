@@ -232,7 +232,7 @@ def test_llm_as_judge_openai_not_equal_binary_pass():
     llm_as_judge = create_llm_as_judge(
         prompt="How equal are these 2? Your score should be a fraction of how many props are equal: {inputs} {outputs}",
         judge=client,
-        model="o4-mini",
+        model="o3-mini",
         continuous=True,
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -300,7 +300,7 @@ def test_llm_as_judge_few_shot_examples():
             {"inputs": {"a": 1, "b": 2}, "outputs": {"a": 1, "b": 2}, "score": 0.0},
             {"inputs": {"a": 1, "b": 3}, "outputs": {"a": 1, "b": 2}, "score": 1.0},
         ],
-        model="openai:o4-mini",
+        model="openai:o3-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]

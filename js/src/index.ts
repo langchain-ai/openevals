@@ -13,4 +13,4 @@ export * from "./prompts/index.js";
 
 export * from "./types.js";
 
-export const __version__ = "0.1.1";
+export const __version__ = "0.1.2";

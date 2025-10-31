@@ -484,83 +484,316 @@ export const createJsonMatchEvaluator = ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     referenceOutputs?: any;
   }) => {
-    async function scorer({
-      outputs,
-      referenceOutputs,
-      rubric = {},
-      excludeKeys = [],
-      useReasoning = true,
-    }: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      outputs?: any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      referenceOutputs?: any;
-      rubric?: Record<string, string>;
-      excludeKeys?: string[];
-      useReasoning?: boolean;
-    }): Promise<MultiResultScorerReturnType> {
-      const {
-        processedOutputs,
-        processedReferenceOutputs,
-        jsonSchema,
-        scores,
-        formattedRubric,
-        useListReducer,
-      } = _prepareParameters({
-        outputs,
-        referenceOutputs,
-        rubric,
-        excludeKeys,
-        useReasoning,
-        listMatchMode,
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let scorerFn: ((params: any) => any) | undefined;
-      let outputKeys;
-      let expectedOutputKeys;
-      if (Object.keys(formattedRubric ?? {}).length > 0) {
-        outputKeys = Object.keys(jsonSchema.properties)
-          .map((key) => `${key}: ${processedOutputs[key]}`)
-          .join("\n");
-        expectedOutputKeys = Object.keys(jsonSchema.properties)
-          .map((key) => `${key}: ${processedReferenceOutputs[key]}`)
-          .join("\n");
-
-        scorerFn = _createLLMAsJudgeScorer({
-          prompt: USER_PROMPT,
-          system: SYSTEM_PROMPT,
-          schema: jsonSchema,
-          judge,
-          model,
-        });
-      }
-
-      if (scorerFn) {
-        const llmScores = await scorerFn({
-          outputs: outputKeys,
-          referenceOutputs: expectedOutputKeys,
-          rubric,
-        });
-        Object.assign(scores, llmScores);
-      }
-
-      return _aggregateResults({
-        scoreKey: "json_match",
-        scores,
-        useListReducer,
-        aggregator,
-        listAggregator,
-      });
-    }
-
-    return _runEvaluator("json_match_evaluator", scorer, "json_match", {
+    const {
+      processedOutputs,
+      processedReferenceOutputs,
+      jsonSchema,
+      scores,
+      formattedRubric,
+      useListReducer,
+    } = _prepareParameters({
       outputs,
       referenceOutputs,
       rubric,
       excludeKeys,
       useReasoning,
+      listMatchMode,
     });
+
+    // Identify which keys need LLM evaluation
+    const llmKeys =
+      Object.keys(formattedRubric ?? {}).length > 0
+        ? new Set(Object.keys(jsonSchema.properties))
+        : new Set<string>();
+
+    // Special handling when aggregator is specified - aggregate all keys at once
+    if (aggregator !== undefined) {
+      async function aggregateScorer(): Promise<MultiResultScorerReturnType> {
+        // Get LLM scores if needed
+        if (llmKeys.size > 0) {
+          const outputKeys = Object.keys(jsonSchema.properties)
+            .map((key) => `${key}: ${processedOutputs[key]}`)
+            .join("\n");
+          const expectedOutputKeys = Object.keys(jsonSchema.properties)
+            .map((key) => `${key}: ${processedReferenceOutputs[key]}`)
+            .join("\n");
+
+          const scorerFn = _createLLMAsJudgeScorer({
+            prompt: USER_PROMPT,
+            system: SYSTEM_PROMPT,
+            schema: jsonSchema,
+            judge,
+            model,
+          });
+
+          const llmScores = await scorerFn({
+            outputs: outputKeys,
+            referenceOutputs: expectedOutputKeys,
+            rubric: formattedRubric,
+          });
+          Object.assign(scores, llmScores);
+        }
+
+        // Aggregate
+        return _aggregateResults({
+          scoreKey: "json_match",
+          scores,
+          useListReducer,
+          aggregator,
+          listAggregator,
+        });
+      }
+
+      return _runEvaluator(
+        "json_match_evaluator",
+        aggregateScorer,
+        "json_match",
+        {
+          inputs: outputs,
+          referenceOutputs,
+        }
+      );
+    }
+
+    // Group raw keys by their base key for processing
+    const rawKeysByBase: Record<string, string[]> = {};
+    const allRawKeys = new Set([...Object.keys(scores), ...llmKeys]);
+
+    for (const rawKey of allRawKeys) {
+      const baseKey =
+        useListReducer && rawKey.includes("_") && rawKey.lastIndexOf("_") > 0
+          ? rawKey.substring(0, rawKey.lastIndexOf("_"))
+          : rawKey;
+      if (!rawKeysByBase[baseKey]) {
+        rawKeysByBase[baseKey] = [];
+      }
+      rawKeysByBase[baseKey].push(rawKey);
+    }
+
+    // Process each base key
+    const allResults = [];
+    for (const baseKey of Object.keys(rawKeysByBase).sort()) {
+      const rawKeys = rawKeysByBase[baseKey];
+      const needsLlm = rawKeys.some((rk) => llmKeys.has(rk));
+
+      if (needsLlm) {
+        // Create scorer that calls LLM for these keys
+        async function keyScorer(): Promise<MultiResultScorerReturnType> {
+          // Create schema for just these keys
+          const keySchema = {
+            type: "object",
+            title: "structured_match_score",
+            description: "Scores measuring the accuracy of structured outputs",
+            properties: Object.fromEntries(
+              rawKeys
+                .filter((rk) => jsonSchema.properties[rk])
+                .map((rk) => [rk, jsonSchema.properties[rk]])
+            ),
+            required: rawKeys.filter((rk) => jsonSchema.properties[rk]),
+            additionalProperties: false,
+          };
+
+          // Create LLM scorer
+          const scorerFn = _createLLMAsJudgeScorer({
+            prompt: USER_PROMPT,
+            system: SYSTEM_PROMPT,
+            schema: keySchema,
+            judge,
+            model,
+          });
+
+          // Format outputs
+          const outputStrs = rawKeys
+            .filter((rk) => processedOutputs[rk] !== undefined)
+            .map((rk) => `${rk}: ${processedOutputs[rk]}`);
+          const expectedStrs = rawKeys
+            .filter((rk) => processedReferenceOutputs[rk] !== undefined)
+            .map((rk) => `${rk}: ${processedReferenceOutputs[rk]}`);
+
+          const keyCriteria = rubric[baseKey] || "";
+          const formattedKeyRubric = keyCriteria
+            ? `Key: ${baseKey}, Criteria: ${keyCriteria}\n`
+            : "";
+
+          // Call LLM
+          const llmScores = await scorerFn({
+            outputs: outputStrs.join("\n"),
+            referenceOutputs: expectedStrs.join("\n"),
+            rubric: formattedKeyRubric,
+          });
+
+          // Combine with non-LLM scores
+          const allKeyScores: RecordStringAny = {
+            ...Object.fromEntries(
+              rawKeys
+                .filter((rk) => !llmKeys.has(rk))
+                .map((rk) => [rk, scores[rk] ?? 0])
+            ),
+            ...(typeof llmScores === "object" && llmScores !== null
+              ? llmScores
+              : {}),
+          };
+
+          // Aggregate across list items if needed
+          if (useListReducer && rawKeys.length > 1) {
+            // Fill in missing indices with 0 scores
+            const allIndices = new Set<number>();
+            for (const key of Object.keys(scores)) {
+              if (key.includes("_")) {
+                const idx = key.substring(key.lastIndexOf("_") + 1);
+                try {
+                  allIndices.add(parseInt(idx));
+                } catch (e) {
+                  // ignore non-numeric indices
+                }
+              }
+            }
+
+            // Add 0 scores for missing indices
+            for (const idx of allIndices) {
+              const expectedKey = `${baseKey}_${idx}`;
+              if (!(expectedKey in allKeyScores)) {
+                allKeyScores[expectedKey] = 0;
+              }
+            }
+
+            const aggregated = _aggregateResults({
+              scoreKey: "json_match",
+              scores: allKeyScores,
+              useListReducer: true,
+              aggregator: undefined,
+              listAggregator,
+            });
+
+            // Convert boolean scores to numbers and preserve reasoning
+            const result: RecordStringAny = {};
+            for (const [key, value] of Object.entries(aggregated)) {
+              if (
+                typeof value === "object" &&
+                value !== null &&
+                "score" in value
+              ) {
+                result[key] = {
+                  score: Number(value.score),
+                  reasoning: value.reasoning,
+                };
+              } else {
+                result[key] =
+                  typeof value === "boolean" ? Number(value) : value;
+              }
+            }
+            return result;
+          } else {
+            // Single key - return with json_match prefix
+            const value = Object.values(allKeyScores)[0];
+            if (
+              typeof value === "object" &&
+              value !== null &&
+              "score" in value
+            ) {
+              return {
+                [`json_match:${baseKey}`]: {
+                  score: Number(value.score),
+                  reasoning: value.reasoning,
+                },
+              };
+            } else {
+              return {
+                [`json_match:${baseKey}`]:
+                  typeof value === "boolean" ? Number(value) : value,
+              };
+            }
+          }
+        }
+
+        const results = await _runEvaluator(
+          "json_match_evaluator",
+          keyScorer,
+          `json_match:${baseKey}`,
+          {
+            inputs: processedOutputs[baseKey] ?? outputs,
+            referenceOutputs:
+              processedReferenceOutputs[baseKey] ?? referenceOutputs,
+          }
+        );
+        if (Array.isArray(results)) {
+          allResults.push(...results);
+        } else {
+          allResults.push(results);
+        }
+      } else {
+        // Non-LLM keys - just aggregate existing scores
+        async function keyScorer(): Promise<MultiResultScorerReturnType> {
+          const keyScores: RecordStringAny = Object.fromEntries(
+            rawKeys.map((rk) => [rk, scores[rk]])
+          );
+
+          // Aggregate across list items if needed
+          if (useListReducer && rawKeys.length > 1) {
+            // Fill in missing indices with 0 scores
+            const allIndices = new Set<number>();
+            for (const key of Object.keys(scores)) {
+              if (key.includes("_")) {
+                const idx = key.substring(key.lastIndexOf("_") + 1);
+                try {
+                  allIndices.add(parseInt(idx));
+                } catch (e) {
+                  // ignore non-numeric indices
+                }
+              }
+            }
+
+            // Add 0 scores for missing indices
+            for (const idx of allIndices) {
+              const expectedKey = `${baseKey}_${idx}`;
+              if (!(expectedKey in keyScores)) {
+                keyScores[expectedKey] = 0;
+              }
+            }
+
+            const aggregated = _aggregateResults({
+              scoreKey: "json_match",
+              scores: keyScores,
+              useListReducer: true,
+              aggregator: undefined,
+              listAggregator,
+            });
+
+            // Convert boolean scores to numbers
+            const result: RecordStringAny = {};
+            for (const [key, value] of Object.entries(aggregated)) {
+              result[key] = typeof value === "boolean" ? Number(value) : value;
+            }
+            return result;
+          } else {
+            // Single key - return with json_match prefix
+            const value = keyScores[rawKeys[0]];
+            return {
+              [`json_match:${baseKey}`]:
+                typeof value === "boolean" ? Number(value) : value,
+            };
+          }
+        }
+
+        const results = await _runEvaluator(
+          "json_match_evaluator",
+          keyScorer,
+          `json_match:${baseKey}`,
+          {
+            inputs: processedOutputs[baseKey] ?? outputs,
+            referenceOutputs:
+              processedReferenceOutputs[baseKey] ?? referenceOutputs,
+          }
+        );
+        if (Array.isArray(results)) {
+          allResults.push(...results);
+        } else {
+          allResults.push(results);
+        }
+      }
+    }
+
+    return allResults;
   };
 
   return wrappedEvaluator;

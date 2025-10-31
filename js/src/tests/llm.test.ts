@@ -8,7 +8,11 @@ import * as hub from "langchain/hub";
 import { HumanMessage } from "@langchain/core/messages";
 
 import { z } from "zod";
-import { ChatPromptTemplate, HumanMessagePromptTemplate, StructuredPrompt } from "@langchain/core/prompts";
+import {
+  ChatPromptTemplate,
+  HumanMessagePromptTemplate,
+  StructuredPrompt,
+} from "@langchain/core/prompts";
 import { Client } from "langsmith";
 
 ls.describe("llm as judge", () => {
@@ -56,7 +60,7 @@ ls.describe("llm as judge", () => {
 
 <item2>
 {outputs}
-</item2>`,
+</item2>`
         ),
       ],
       schema: {

@@ -256,7 +256,7 @@ def _aggregate_results(
             for index, group in index_grouped_scores.items():
                 if group:  # Skip empty groups
                     total = sum(
-                        float(v["score"]) if isinstance(v, dict) else v
+                        float(v["score"]) if isinstance(v, dict) else float(v)
                         for v in group.values()
                     )
                     index_scores[index] = total / len(group)
@@ -265,7 +265,7 @@ def _aggregate_results(
             for index, group in index_grouped_scores.items():
                 if group:  # Skip empty groups
                     has_non_one = any(
-                        (float(v["score"]) if isinstance(v, dict) else v) != 1
+                        (float(v["score"]) if isinstance(v, dict) else float(v)) != 1
                         for v in group.values()
                     )
                     index_scores[index] = 0 if has_non_one else 1
@@ -296,7 +296,10 @@ def _aggregate_results(
                 for key, values in scores_aggregated_across_list.items():
                     if values:
                         result[f"{score_key}:{key}"] = sum(
-                            [(v["score"] if isinstance(v, dict) else v) for v in values]
+                            [
+                                (float(v["score"]) if isinstance(v, dict) else float(v))
+                                for v in values
+                            ]
                         ) / len(values)
 
                 return result
@@ -317,7 +320,13 @@ def _aggregate_results(
                 result = {}
                 for key, values in scores_aggregated_across_list.items():
                     result[f"{score_key}:{key}"] = (
-                        0 if any(v != 1 for v in values) else 1
+                        0
+                        if any(
+                            (float(v["score"]) if isinstance(v, dict) else float(v))
+                            != 1
+                            for v in values
+                        )
+                        else 1
                     )
 
                 return result
@@ -326,7 +335,8 @@ def _aggregate_results(
     if aggregator == "average":
         score = (
             sum(
-                float(v["score"]) if isinstance(v, dict) else v for v in scores.values()
+                float(v["score"]) if isinstance(v, dict) else float(v)
+                for v in scores.values()
             )
             / len(scores)
             if scores
@@ -337,7 +347,7 @@ def _aggregate_results(
         score = (
             0
             if any(
-                (float(v["score"]) if isinstance(v, dict) else v) != 1
+                (float(v["score"]) if isinstance(v, dict) else float(v)) != 1
                 for v in scores.values()
             )
             else 1

@@ -58,6 +58,7 @@ export const processScore = (
         score: boolean | number;
         reasoning?: string;
         metadata?: Record<string, unknown>;
+        sourceRunId?: string;
       }
 ) => {
   if (typeof value === "object") {
@@ -68,6 +69,7 @@ export const processScore = (
           ? value.reasoning
           : undefined,
         value.metadata,
+        value.sourceRunId,
       ] as const;
     } else {
       throw new Error(
@@ -183,8 +185,20 @@ export async function _runEvaluatorUntyped<
       const results = [];
       for (const [key, value] of Object.entries(score)) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const [keyScore, reasoning, metadata] = processScore(key, value as any);
-        results.push({ key, score: keyScore, comment: reasoning, metadata });
+        const [keyScore, reasoning, metadata, sourceRunId] = processScore(
+          key,
+          value as any
+        );
+        const result: EvaluatorResult = {
+          key,
+          score: keyScore,
+          comment: reasoning,
+          metadata,
+        };
+        if (sourceRunId !== undefined && typeof sourceRunId === "string") {
+          result.sourceRunId = sourceRunId;
+        }
+        results.push(result);
       }
       return results;
     } else {

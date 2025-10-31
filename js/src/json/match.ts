@@ -3,6 +3,7 @@ import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ModelClient, MultiResultScorerReturnType } from "../types.js";
 import { _createLLMAsJudgeScorer } from "../llm.js";
 import { _runEvaluator } from "../utils.js";
+import { getCurrentRunTree } from "langsmith/traceable";
 
 type AggregatorType = "average" | "all" | undefined;
 type ListMatchMode = "superset" | "subset" | "same_elements" | "ordered";
@@ -629,7 +630,7 @@ export const createJsonMatchEvaluator = ({
                 .filter((rk) => !llmKeys.has(rk))
                 .map((rk) => [rk, scores[rk] ?? 0])
             ),
-            ...(typeof llmScores === "object" && llmScores !== null
+            ...(typeof llmScores === "object" && llmScores != null
               ? llmScores
               : {}),
           };
@@ -670,7 +671,7 @@ export const createJsonMatchEvaluator = ({
             for (const [key, value] of Object.entries(aggregated)) {
               if (
                 typeof value === "object" &&
-                value !== null &&
+                value != null &&
                 "score" in value
               ) {
                 result[key] = {
@@ -686,21 +687,25 @@ export const createJsonMatchEvaluator = ({
           } else {
             // Single key - return with json_match prefix
             const value = Object.values(allKeyScores)[0];
+            const sourceRunId = getCurrentRunTree(true)?.id;
             if (
               typeof value === "object" &&
-              value !== null &&
+              value != null &&
               "score" in value
             ) {
               return {
                 [`json_match:${baseKey}`]: {
                   score: Number(value.score),
                   reasoning: value.reasoning,
+                  sourceRunId,
                 },
               };
             } else {
               return {
-                [`json_match:${baseKey}`]:
-                  typeof value === "boolean" ? Number(value) : value,
+                [`json_match:${baseKey}`]: {
+                  score: typeof value === "boolean" ? Number(value) : value,
+                  sourceRunId,
+                },
               };
             }
           }
@@ -769,8 +774,10 @@ export const createJsonMatchEvaluator = ({
             // Single key - return with json_match prefix
             const value = keyScores[rawKeys[0]];
             return {
-              [`json_match:${baseKey}`]:
-                typeof value === "boolean" ? Number(value) : value,
+              [`json_match:${baseKey}`]: {
+                score: typeof value === "boolean" ? Number(value) : value,
+                sourceRunId: getCurrentRunTree(true)?.id,
+              },
             };
           }
         }

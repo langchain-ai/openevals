@@ -1,5 +1,4 @@
 import * as ls from "langsmith/vitest";
-import { evaluate } from "langsmith/evaluation";
 import { expect } from "vitest";
 
 import { levenshteinDistance } from "../levenshtein.js";

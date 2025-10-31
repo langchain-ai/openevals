@@ -11,6 +11,7 @@ from openevals.llm import (
     ModelClient,
 )
 from langchain_core.language_models.chat_models import BaseChatModel
+from langsmith import get_current_run_tree
 
 
 SYSTEM_PROMPT = """You are an LLM that evaluates the accuracy of structured outputs.
@@ -637,9 +638,12 @@ def create_json_match_evaluator(
                         return aggregated
                     else:
                         # Single key - return with json_match prefix
-                        return {
-                            f"json_match:{base_key}": list(all_key_scores.values())[0]
-                        }
+                        scorer_result = list(all_key_scores.values())[0]
+                        if isinstance(scorer_result, dict):
+                            rt = get_current_run_tree()
+                            if rt is not None:
+                                scorer_result["source_run_id"] = rt.id
+                        return {f"json_match:{base_key}": scorer_result}
             else:
                 # Non-LLM keys - just aggregate existing scores
                 def _scorer(
@@ -674,8 +678,17 @@ def create_json_match_evaluator(
                         )
                         return aggregated
                     else:
+                        rt = get_current_run_tree()
+                        source_run_id = None
+                        if rt is not None:
+                            source_run_id = rt.id
                         # Single key - return with json_match prefix
-                        return {f"json_match:{base_key}": key_scores[raw_keys[0]]}
+                        return {
+                            f"json_match:{base_key}": {
+                                "score": key_scores[raw_keys[0]],
+                                "source_run_id": source_run_id,
+                            }
+                        }
 
             # Extract the original key name for inputs/reference_outputs
             original_key = base_key
@@ -960,9 +973,12 @@ def create_async_json_match_evaluator(
                         return aggregated
                     else:
                         # Single key - return with json_match prefix
-                        return {
-                            f"json_match:{base_key}": list(all_key_scores.values())[0]
-                        }
+                        scorer_result = list(all_key_scores.values())[0]
+                        if isinstance(scorer_result, dict):
+                            rt = get_current_run_tree()
+                            if rt is not None:
+                                scorer_result["source_run_id"] = rt.id
+                        return {f"json_match:{base_key}": scorer_result}
             else:
                 # Non-LLM keys - just aggregate existing scores
                 async def _ascorer(
@@ -981,8 +997,17 @@ def create_async_json_match_evaluator(
                         )
                         return aggregated
                     else:
+                        rt = get_current_run_tree()
+                        source_run_id = None
+                        if rt is not None:
+                            source_run_id = rt.id
                         # Single key - return with json_match prefix
-                        return {f"json_match:{base_key}": key_scores[raw_keys[0]]}
+                        return {
+                            f"json_match:{base_key}": {
+                                "score": key_scores[raw_keys[0]],
+                                "source_run_id": source_run_id,
+                            }
+                        }
 
             # Extract the original key name for inputs/reference_outputs
             original_key = base_key

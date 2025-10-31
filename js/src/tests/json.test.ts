@@ -1,5 +1,6 @@
 import * as ls from "langsmith/vitest";
 import { expect, test } from "vitest";
+import { Client } from "langsmith";
 import { evaluate } from "langsmith/evaluation";
 
 import { OpenAI } from "openai";
@@ -1022,3 +1023,23 @@ ls.describe("json", () => {
     }
   );
 });
+
+test.skip("test json match works with evaluate", async () => {
+  const client = new Client();
+  const evaluator = createJsonMatchEvaluator({
+    rubric: {
+      description:
+        "Is the correct job title and company mentioned, as well as previous companies?",
+    },
+    model: "openai:o3-mini",
+  });
+
+  const result = await evaluate(async (x: unknown) => x, {
+    data: "json",
+    evaluators: [evaluator],
+  });
+  for await (const r of result) {
+    expect(r.evaluationResults.results[0].score).toBeDefined();
+    expect(r.evaluationResults.results[0].sourceRunId).toBeDefined();
+  }
+}, 60000);

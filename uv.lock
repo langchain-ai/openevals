@@ -1,5 +1,5 @@
 version = 1
-requires-python = ">=3.9, <4.0"
+requires-python = ">=3.10, <4.0"
 
 [[package]]
 name = "openevals-monorepo"

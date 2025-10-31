@@ -1,4 +1,5 @@
 from openevals.json import create_json_match_evaluator
+from langsmith import testing as t
 from langsmith import Client
 import pytest
 
@@ -6,6 +7,7 @@ import pytest
 @pytest.mark.langsmith
 def test_json_match_base():
     outputs = {"a": 1, "b": 2}
+    t.log_inputs(outputs)
     reference_outputs = {"a": 1, "b": 2}
     evaluator = create_json_match_evaluator()
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -19,9 +21,10 @@ def test_json_match_base():
 @pytest.mark.langsmith
 def test_json_match_mix():
     outputs = {"a": "Mango, Bananas", "b": 2}
+    t.log_inputs(outputs)
     reference_outputs = {"a": "Bananas, Mango", "b": 3}
     evaluator = create_json_match_evaluator(
-        model="openai:o3-mini",
+        model="openai:o4-mini",
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         aggregator="average",
     )
@@ -33,6 +36,7 @@ def test_json_match_mix():
 @pytest.mark.langsmith
 def test_json_match_average():
     outputs = {"a": 1, "b": 2}
+    t.log_inputs(outputs)
     reference_outputs = {"a": 1, "b": 3}
     evaluator = create_json_match_evaluator(aggregator="average")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -43,6 +47,7 @@ def test_json_match_average():
 @pytest.mark.langsmith
 def test_json_match_exclude():
     outputs = {"a": 1, "b": 2}
+    t.log_inputs(outputs)
     reference_outputs = {"a": 1, "b": 3}
     evaluator = create_json_match_evaluator(aggregator="average", exclude_keys=["b"])
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -53,6 +58,7 @@ def test_json_match_exclude():
 @pytest.mark.langsmith
 def test_json_match_all():
     outputs = {"a": 1, "b": 2}
+    t.log_inputs(outputs)
     reference_outputs = {"a": 1, "b": 3}
     evaluator = create_json_match_evaluator(aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -70,8 +76,9 @@ def test_json_match_rubric():
         "name": "Harrison Chase",
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
-        model="openai:o3-mini",
+        model="openai:o4-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -92,8 +99,9 @@ def test_json_match_rubric_wrong():
         "name": "Harrison Chase",
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
-        model="openai:o3-mini",
+        model="openai:o4-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -110,8 +118,9 @@ def test_json_match_rubric_with_reasoning():
     reference_outputs = {
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."
     }
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
-        model="openai:o3-mini",
+        model="openai:o4-mini",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
@@ -128,8 +137,9 @@ def test_json_match_rubric_without_reasoning():
     reference_outputs = {
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence."
     }
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
-        model="openai:o3-mini",
+        model="openai:o4-mini",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -153,18 +163,20 @@ def test_json_match_rubric_with_reasoning_individual_key():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
     evaluator = create_json_match_evaluator(
-        model="openai:o3-mini",
+        model="openai:o4-mini",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
     )
+    t.log_inputs(outputs)
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    result = sorted(result, key=lambda x: x["key"])
     assert len(result) == 2
-    assert result[0]["key"] == "json_match:name"
-    assert result[0]["score"] == 1.0
-    assert result[1]["key"] == "json_match:description"
-    assert result[1]["score"] == 0
-    assert result[1]["comment"] is not None
+    assert result[0]["key"] == "json_match:description"
+    assert result[0]["score"] == 0
+    assert result[0]["comment"] is not None
+    assert result[1]["key"] == "json_match:name"
+    assert result[1]["score"] == 1.0
 
 
 @pytest.mark.langsmith
@@ -177,6 +189,7 @@ def test_json_match_list_all_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator()
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     result = sorted(result, key=lambda x: x["key"])
@@ -197,6 +210,7 @@ def test_json_match_list_average_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(list_aggregator="average")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     result = sorted(result, key=lambda x: x["key"])
@@ -217,6 +231,7 @@ def test_json_match_list_all_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result[0]["key"] == "json_match:all"
@@ -233,6 +248,7 @@ def test_json_match_list_average_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(list_aggregator="average", aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result[0]["key"] == "json_match:all"
@@ -249,6 +265,7 @@ def test_json_match_list_all_average():
         {"a": 1, "b": 2},
         {"a": 2, "b": 2},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(aggregator="average")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result[0]["key"] == "json_match:average"
@@ -265,6 +282,7 @@ def test_json_match_list_average_average():
         {"a": 1, "b": 2},
         {"a": 1, "b": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
@@ -283,6 +301,7 @@ def test_json_match_list_mismatch_all_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator()
     results = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     results = sorted(results, key=lambda x: x["key"])
@@ -307,6 +326,7 @@ def test_json_match_list_mismatch_average_none():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(list_aggregator="average")
     results = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     results = sorted(results, key=lambda x: x["key"])
@@ -331,6 +351,7 @@ def test_json_match_list_mismatch_all_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result[0]["key"] == "json_match:all"
@@ -347,6 +368,7 @@ def test_json_match_list_mismatch_average_all():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(list_aggregator="average", aggregator="all")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result[0]["key"] == "json_match:all"
@@ -363,6 +385,7 @@ def test_json_match_list_mismatch_all_average():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(aggregator="average")
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result[0]["key"] == "json_match:average"
@@ -379,6 +402,7 @@ def test_json_match_list_mismatch_average_average():
         {"a": 1, "b": 2},
         {"a": 1, "b": 2, "c": 3},
     ]
+    t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
@@ -391,8 +415,9 @@ def test_json_match_list_mismatch_average_average():
 def test_json_match_list_rubric():
     outputs = [{"a": "Strawberries, Melons, Bananas"}]
     reference_outputs = [{"a": "Bananas, Strawberries, Melons"}]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
-        model="openai:o3-mini",
+        model="openai:o4-mini",
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         list_aggregator="average",
     )
@@ -413,6 +438,7 @@ def test_json_match_list_mismatch_output_missing():
         {"a": 1, "b": 2, "c": 3},
         {"a": 1, "b": 2, "c": 3},
     ]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
@@ -425,6 +451,7 @@ def test_json_match_list_mismatch_output_missing():
 def test_json_match_mode_exact_extra_reference():
     outputs = [{"a": 1}, {"a": 1}]
     reference_outputs = [{"a": 1}, {"a": 1}, {"a": 1}]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
@@ -440,6 +467,7 @@ def test_json_match_mode_exact_extra_output():
         {"a": 1},
         {"a": 1},
     ]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average"
     )
@@ -452,6 +480,7 @@ def test_json_match_mode_exact_extra_output():
 def test_json_match_mode_exact_unordered():
     outputs = [{"a": 1, "d": 2, "e": 2}, {"b": 1}, {"c": 1}]
     reference_outputs = [{"b": 1, "d": 2, "e": 2}, {"a": 1}, {"c": 1}]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average",
         aggregator="average",
@@ -469,6 +498,7 @@ def test_json_match_mode_subset_outputs():
         {"b": 1},
         {"a": 1},
     ]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="superset"
     )
@@ -484,6 +514,7 @@ def test_json_match_mode_subset_reference():
         {"b": 1},
     ]
     reference_outputs = [{"b": 1}, {"c": 1}, {"a": 1}]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="subset"
     )
@@ -499,6 +530,7 @@ def test_json_match_mode_order_wrong():
         {"b": 1},
     ]
     reference_outputs = [{"b": 1}, {"a": 1}]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="ordered"
     )
@@ -514,6 +546,7 @@ def test_json_match_mode_order_right():
         {"b": 1},
     ]
     reference_outputs = [{"a": 1}, {"b": 1}]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average", aggregator="average", list_match_mode="ordered"
     )
@@ -529,8 +562,9 @@ def test_json_match_mode_order_wrong_language():
         {"b": 1},
     ]
     reference_outputs = [{"a": 1, "c": "El Perro"}, {"b": 1}]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
-        model="openai:o3-mini",
+        model="openai:o4-mini",
         list_aggregator="average",
         aggregator="average",
         list_match_mode="ordered",
@@ -555,6 +589,7 @@ def test_json_match_mode_order():
         {"b": 1},
         {"d": 1},
     ]
+    t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
         list_aggregator="average",
         aggregator="average",
@@ -577,7 +612,7 @@ def test_works_with_evaluate():
 @pytest.mark.langsmith
 def test_error_no_rubric():
     with pytest.raises(ValueError):
-        create_json_match_evaluator(model="openai:o3-mini")
+        create_json_match_evaluator(model="openai:o4-mini")
 
 
 @pytest.mark.langsmith

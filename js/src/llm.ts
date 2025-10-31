@@ -304,7 +304,7 @@ export const _createLLMAsJudgeScorer = (params: {
     if (!judge) {
       if (!model) {
         throw new Error(
-          "`model` string is required (e.g. 'openai:o3-mini') when `judge` is not provided"
+          "`model` string is required (e.g. 'openai:o4-mini') when `judge` is not provided"
         );
       }
       judge = await initChatModel(model);
@@ -331,7 +331,7 @@ export const _createLLMAsJudgeScorer = (params: {
     } else {
       if (!model) {
         throw new Error(
-          "`model` string is required (e.g. 'openai:o3-mini') when `judge` is an OpenAI client"
+          "`model` string is required (e.g. 'openai:o4-mini') when `judge` is an OpenAI client"
         );
       }
       let openaiJsonSchema: Record<string, unknown> =

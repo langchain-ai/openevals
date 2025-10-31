@@ -74,7 +74,7 @@ console.log(res);
 `,
       },
       codeExtractionStrategy: "llm",
-      model: "openai:o3-mini",
+      model: "openai:o4-mini",
     },
   ])(
     "should pass basic type check",
@@ -105,7 +105,7 @@ console.log(res);
     async ({ inputs }) => {
       const evaluator = createTypeScriptEvaluator({
         codeExtractionStrategy: "llm",
-        model: "openai:o3-mini",
+        model: "openai:o4-mini",
       });
 
       const evalResult = await evaluator({ outputs: inputs.code });
@@ -124,7 +124,7 @@ console.log(res);
     async ({ inputs }) => {
       const evaluator = createTypeScriptEvaluator({
         codeExtractionStrategy: "llm",
-        model: "openai:o3-mini",
+        model: "openai:o4-mini",
       });
 
       const evalResult = await evaluator({ outputs: inputs.code });

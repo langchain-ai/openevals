@@ -126,7 +126,7 @@ async def test_mypy_extraction(outputs, expected_result, strategy):
 @pytest.mark.langsmith
 async def test_pyright_extraction_llm():
     pyright_evaluator = create_async_pyright_evaluator(
-        code_extraction_strategy="llm", model="openai:o3-mini"
+        code_extraction_strategy="llm", model="openai:o4-mini"
     )
     eval_result = await pyright_evaluator(
         outputs="Sure! Here's a function that returns the sum of two numbers: def sum_of_two_numbers(a, b): return a + b"
@@ -139,7 +139,7 @@ async def test_pyright_extraction_llm():
 async def test_pyright_extraction_llm_no_code():
     pyright_evaluator = create_async_pyright_evaluator(
         code_extraction_strategy="llm",
-        model="openai:o3-mini",
+        model="openai:o4-mini",
     )
     eval_result = await pyright_evaluator(outputs="I'm doing well, how about you?")
     assert not eval_result["score"]

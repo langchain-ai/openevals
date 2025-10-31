@@ -3,7 +3,6 @@ import pytest
 from langsmith import Client
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_base():
     outputs = {"a": 1, "b": 2}
@@ -17,7 +16,6 @@ async def test_json_match_base():
     assert result[1]["score"] == 1.0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mix():
     outputs = {"a": "Mango, Bananas", "b": 2}
@@ -32,7 +30,6 @@ async def test_json_match_mix():
     assert result[0]["score"] == 0.5
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_average():
     outputs = {"a": 1, "b": 2}
@@ -43,7 +40,6 @@ async def test_json_match_average():
     assert result[0]["score"] == 0.5
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_exclude():
     outputs = {"a": 1, "b": 2}
@@ -56,7 +52,6 @@ async def test_json_match_exclude():
     assert result[0]["score"] == 1
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_all():
     outputs = {"a": 1, "b": 2}
@@ -67,7 +62,6 @@ async def test_json_match_all():
     assert result[0]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_rubric():
     outputs = {
@@ -90,7 +84,6 @@ async def test_json_match_rubric():
     assert result[0]["score"] == 1
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_rubric_wrong():
     outputs = {
@@ -113,7 +106,6 @@ async def test_json_match_rubric_wrong():
     assert result[0]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_rubric_with_reasoning():
     outputs = {"description": "CEO of LangChain, used to work at Kensho."}
@@ -132,7 +124,6 @@ async def test_json_match_rubric_with_reasoning():
     assert result[0]["comment"] is not None
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_rubric_without_reasoning():
     outputs = {"description": "CEO of LangChain, used to work at Kensho."}
@@ -153,7 +144,6 @@ async def test_json_match_rubric_without_reasoning():
     assert result[0]["comment"] is None
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_rubric_with_reasoning_individual_key():
     outputs = {
@@ -180,7 +170,6 @@ async def test_json_match_rubric_with_reasoning_individual_key():
     assert result[1]["score"] == 1.0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_all_none():
     outputs = [
@@ -201,7 +190,6 @@ async def test_json_match_list_all_none():
     assert result[1]["score"] == 1.0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_average_none():
     outputs = [
@@ -222,7 +210,6 @@ async def test_json_match_list_average_none():
     assert result[1]["score"] == 0.5
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_all_all():
     outputs = [
@@ -239,7 +226,6 @@ async def test_json_match_list_all_all():
     assert result[0]["score"] == 1
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_average_all():
     outputs = [
@@ -258,7 +244,6 @@ async def test_json_match_list_average_all():
     assert result[0]["score"] == 0.5
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_all_average():
     outputs = [
@@ -275,7 +260,6 @@ async def test_json_match_list_all_average():
     assert result[0]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_average_average():
     outputs = [
@@ -294,7 +278,6 @@ async def test_json_match_list_average_average():
     assert result[0]["score"] == 0.75
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_mismatch_all_none():
     outputs = [
@@ -319,7 +302,6 @@ async def test_json_match_list_mismatch_all_none():
     assert results[3]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_mismatch_average_none():
     outputs = [
@@ -344,7 +326,6 @@ async def test_json_match_list_mismatch_average_none():
     assert results[3]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_mismatch_all_all():
     outputs = [
@@ -361,7 +342,6 @@ async def test_json_match_list_mismatch_all_all():
     assert result[0]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_mismatch_average_all():
     outputs = [
@@ -380,7 +360,6 @@ async def test_json_match_list_mismatch_average_all():
     assert result[0]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_mismatch_all_average():
     outputs = [
@@ -397,7 +376,6 @@ async def test_json_match_list_mismatch_all_average():
     assert result[0]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_mismatch_average_average():
     outputs = [
@@ -416,7 +394,6 @@ async def test_json_match_list_mismatch_average_average():
     assert result[0]["score"] == 0.5
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_rubric():
     outputs = [{"a": "Strawberries, Melons, Bananas"}]
@@ -431,7 +408,6 @@ async def test_json_match_list_rubric():
     assert result[0]["score"] == 1
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_list_mismatch_output_missing():
     outputs = [
@@ -452,7 +428,6 @@ async def test_json_match_list_mismatch_output_missing():
     assert result[0]["score"] == 5 / 6
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_exact_extra_reference():
     outputs = [{"a": 1}, {"a": 1}]
@@ -465,7 +440,6 @@ async def test_json_match_mode_exact_extra_reference():
     assert result[0]["score"] == 2 / 3
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_exact_extra_output():
     outputs = [{"a": 1}, {"a": 1}, {"a": 1}]
@@ -481,7 +455,6 @@ async def test_json_match_mode_exact_extra_output():
     assert result[0]["score"] == 2 / 3
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_exact_unordered():
     outputs = [{"a": 1, "d": 2, "e": 2}, {"b": 1}, {"c": 1}]
@@ -496,7 +469,6 @@ async def test_json_match_mode_exact_unordered():
     assert result[0]["score"] == 1
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_subset_outputs():
     outputs = [{"a": 1}, {"b": 1}, {"c": 1}]
@@ -512,7 +484,6 @@ async def test_json_match_mode_subset_outputs():
     assert result[0]["score"] == 1
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_subset_reference():
     outputs = [
@@ -528,7 +499,6 @@ async def test_json_match_mode_subset_reference():
     assert result[0]["score"] == 1
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_order_wrong():
     outputs = [
@@ -544,7 +514,6 @@ async def test_json_match_mode_order_wrong():
     assert result[0]["score"] == 0
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_json_match_mode_order():
     outputs = [
@@ -585,13 +554,11 @@ async def test_works_with_aevaluate():
         assert r["evaluation_results"]["results"][0].score is not None
 
 
-@pytest.mark.langsmith
 def test_error_no_rubric():
     with pytest.raises(ValueError):
         create_async_json_match_evaluator(model="openai:o3-mini")
 
 
-@pytest.mark.langsmith
 def test_error_no_model():
     with pytest.raises(ValueError):
         create_async_json_match_evaluator(rubric={"a": "foo"})

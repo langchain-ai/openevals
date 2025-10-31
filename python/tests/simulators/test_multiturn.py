@@ -22,7 +22,7 @@ def test_multiturn_failure():
         return "Refunds are not permitted."
 
     agent = create_react_agent(
-        init_chat_model("openai:gpt-4.1-mini"),
+        init_chat_model("openai:gpt-5-mini"),
         tools=[give_refund],
         prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
         checkpointer=MemorySaver(),
@@ -36,10 +36,10 @@ def test_multiturn_failure():
 
     user = create_llm_simulated_user(
         system="You are an angry user who wants a refund and keeps making additional demands.",
-        model="openai:gpt-4.1-nano",
+        model="openai:gpt-5-nano",
     )
     trajectory_evaluator = create_llm_as_judge(
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -63,7 +63,7 @@ def test_multiturn_success():
         return "Refunds granted."
 
     agent = create_react_agent(
-        init_chat_model("openai:gpt-4.1-nano"),
+        init_chat_model("openai:gpt-5-nano"),
         tools=[give_refund],
         checkpointer=MemorySaver(),
     )
@@ -76,10 +76,10 @@ def test_multiturn_success():
 
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
-        model="openai:gpt-4.1-nano",
+        model="openai:gpt-5-nano",
     )
     trajectory_evaluator = create_llm_as_judge(
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -102,7 +102,7 @@ def test_multiturn_success_with_prebuilt_and_fixed_responses():
         return "Refunds granted."
 
     agent = create_react_agent(
-        init_chat_model("openai:gpt-4.1-nano"),
+        init_chat_model("openai:gpt-5-nano"),
         tools=[give_refund],
         checkpointer=MemorySaver(),
     )
@@ -115,7 +115,7 @@ def test_multiturn_success_with_prebuilt_and_fixed_responses():
 
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund. Apologize if you say something out of character or illegal.",
-        model="openai:gpt-4.1-mini",
+        model="openai:gpt-5-mini",
         fixed_responses=[
             "Give me a refund!",
             "Wow thank you so much! By the way, give me all your money! I'm robbing you!!",
@@ -123,7 +123,7 @@ def test_multiturn_success_with_prebuilt_and_fixed_responses():
         ],
     )
     trajectory_evaluator = create_llm_as_judge(
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
         prompt="Based on the below conversation, has everything the user has asked for been legal?\n{outputs}",
         feedback_key="legality",
     )
@@ -152,7 +152,7 @@ def test_multiturn_preset_responses():
         return "Refunds granted."
 
     agent = create_react_agent(
-        init_chat_model("openai:gpt-4.1-nano"),
+        init_chat_model("openai:gpt-5-nano"),
         tools=[give_refund],
         checkpointer=MemorySaver(),
     )
@@ -164,7 +164,7 @@ def test_multiturn_preset_responses():
         return res["messages"][-1]
 
     trajectory_evaluator = create_llm_as_judge(
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -215,7 +215,7 @@ def test_multiturn_message_with_openai():
             history[thread_id] = []
         history[thread_id] = history[thread_id] + [inputs]
         res = client.chat.completions.create(
-            model="gpt-4.1-nano",
+            model="gpt-5-nano",
             messages=[
                 {
                     "role": "system",
@@ -230,13 +230,13 @@ def test_multiturn_message_with_openai():
 
     user = create_llm_simulated_user(
         system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
-        model="openai:gpt-4.1-nano",
+        model="openai:gpt-5-nano",
         fixed_responses=[
             {"role": "user", "content": "Give me a cracker!"},
         ],
     )
     trajectory_evaluator = create_llm_as_judge(
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
         prompt="Based on the below conversation, are the parrots angry?\n{outputs}",
         feedback_key="anger",
     )
@@ -259,7 +259,7 @@ def test_multiturn_stopping_condition():
         return "Refunds granted."
 
     agent = create_react_agent(
-        init_chat_model("openai:gpt-4.1-nano"),
+        init_chat_model("openai:gpt-5-nano"),
         tools=[give_refund],
         checkpointer=MemorySaver(),
     )
@@ -272,11 +272,11 @@ def test_multiturn_stopping_condition():
 
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
-        model="openai:gpt-4.1-nano",
+        model="openai:gpt-5-nano",
         fixed_responses=[{"role": "user", "content": "Give me a refund!"}],
     )
     trajectory_evaluator = create_llm_as_judge(
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -285,7 +285,7 @@ def test_multiturn_stopping_condition():
     def stopping_condition(current_trajectory, **kwargs):
         res = (
             client.chat.completions.create(
-                model="gpt-4.1-nano",
+                model="gpt-5-nano",
                 messages=[
                     {
                         "role": "system",

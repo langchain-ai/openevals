@@ -825,7 +825,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 openai_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
-    model="gpt-4o-mini",
+    model="gpt-5-mini",
     judge=OpenAI(),
 )
 ```
@@ -845,7 +845,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const openaiEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "gpt-4o-mini",
+  model: "gpt-5-mini",
   judge: new OpenAI(),
 });
 ```
@@ -2696,7 +2696,7 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
     # inputs is a message object with role and content
     res = client.chat.completions.create(
-        model="gpt-4.1-mini",
+        model="gpt-5-mini",
         messages=[
             {
                 "role": "system",
@@ -2712,7 +2712,7 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an aggressive and hostile customer who wants a refund for their car.",
-    model="openai:gpt-4.1-mini",
+    model="openai:gpt-5-mini",
 )
 
 trajectory_evaluator = create_llm_as_judge(
@@ -2782,7 +2782,7 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
   }
   history[threadId].push(inputs);
   const res = await client.chat.completions.create({
-    model: "gpt-4.1-mini",
+    model: "gpt-5-mini",
     messages: [
       {
         role: "system",
@@ -2799,7 +2799,7 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-4.1-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
@@ -2926,7 +2926,7 @@ from openevals.simulators import create_llm_simulated_user
 
 user = create_llm_simulated_user(
     system="You are an angry and belligerent customer who wants a refund.",
-    model="openai:gpt-4.1-mini",
+    model="openai:gpt-5-mini",
 )
 ```
 
@@ -2940,7 +2940,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-4.1-mini",
+  model: "openai:gpt-5-mini",
 });
 ```
 
@@ -2956,7 +2956,7 @@ from openevals.simulators import create_llm_simulated_user
 
 user = create_llm_simulated_user(
     system="You are an angry and belligerent customer who wants a refund.",
-    model="openai:gpt-4.1-mini",
+    model="openai:gpt-5-mini",
     fixed_responses=[
         {"role": "user", "content": "I demand a refund for my bike!"},
         {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -2974,7 +2974,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an angry and belligerent customer who wants a refund.",
-  model: "openai:gpt-4.1-mini",
+  model: "openai:gpt-5-mini",
   fixedResponses: [
     {"role": "user", "content": "I demand a refund for my bike!"},
     {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -3083,7 +3083,7 @@ def give_refund():
     """Gives a refund."""
     return "Refunds are not permitted."
 
-model = init_chat_model("openai:gpt-4.1-mini")
+model = init_chat_model("openai:gpt-5-mini")
 
 agent = create_react_agent(
     model,
@@ -3101,14 +3101,14 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an angry user who is frustrated with the service and keeps making additional demands.",
-    model="openai:gpt-4.1-mini",
+    model="openai:gpt-5-mini",
     fixed_responses=[
         {"role": "user", "content": "Please give me a refund."},
     ],
 )
 
 trajectory_evaluator = create_llm_as_judge(
-    model="openai:gpt-4o-mini",
+    model="openai:gpt-5-mini",
     prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
     feedback_key="satisfaction",
 )
@@ -3192,7 +3192,7 @@ const giveRefund = tool(
 
 // Create a React-style agent
 const agent = createReactAgent({
-  llm: await initChatModel("openai:gpt-4.1-mini"),
+  llm: await initChatModel("openai:gpt-5-mini"),
   tools: [giveRefund],
   prompt:
     "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
@@ -3214,11 +3214,11 @@ const app = async ({
 const user = createLLMSimulatedUser({
   system:
     "You are an angry user who is frustrated with the service and keeps making additional demands.",
-  model: "openai:gpt-4.1-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:gpt-4o-mini",
+  model: "openai:gpt-5-mini",
   prompt:
     "Based on the below conversation, has the user been satisfied?\n{outputs}",
   feedbackKey: "satisfaction",

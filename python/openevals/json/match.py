@@ -640,9 +640,12 @@ def create_json_match_evaluator(
                         # Single key - return with json_match prefix
                         scorer_result = list(all_key_scores.values())[0]
                         if isinstance(scorer_result, dict):
-                            rt = get_current_run_tree()
-                            if rt is not None:
-                                scorer_result["source_run_id"] = rt.id
+                            try:
+                                rt = get_current_run_tree()
+                                if rt is not None:
+                                    scorer_result["source_run_id"] = rt.id
+                            except Exception:
+                                pass
                         return {f"json_match:{base_key}": scorer_result}
             else:
                 # Non-LLM keys - just aggregate existing scores
@@ -678,10 +681,13 @@ def create_json_match_evaluator(
                         )
                         return aggregated
                     else:
-                        rt = get_current_run_tree()
-                        source_run_id = None
-                        if rt is not None:
-                            source_run_id = rt.id
+                        try:
+                            rt = get_current_run_tree()
+                            source_run_id = None
+                            if rt is not None:
+                                source_run_id = rt.id
+                        except Exception:
+                            pass
                         # Single key - return with json_match prefix
                         return {
                             f"json_match:{base_key}": {
@@ -975,9 +981,12 @@ def create_async_json_match_evaluator(
                         # Single key - return with json_match prefix
                         scorer_result = list(all_key_scores.values())[0]
                         if isinstance(scorer_result, dict):
-                            rt = get_current_run_tree()
-                            if rt is not None:
-                                scorer_result["source_run_id"] = rt.id
+                            try:
+                                rt = get_current_run_tree()
+                                if rt is not None:
+                                    scorer_result["source_run_id"] = rt.id
+                            except Exception:
+                                pass
                         return {f"json_match:{base_key}": scorer_result}
             else:
                 # Non-LLM keys - just aggregate existing scores
@@ -997,10 +1006,13 @@ def create_async_json_match_evaluator(
                         )
                         return aggregated
                     else:
-                        rt = get_current_run_tree()
-                        source_run_id = None
-                        if rt is not None:
-                            source_run_id = rt.id
+                        try:
+                            rt = get_current_run_tree()
+                            source_run_id = None
+                            if rt is not None:
+                                source_run_id = rt.id
+                        except Exception:
+                            pass
                         # Single key - return with json_match prefix
                         return {
                             f"json_match:{base_key}": {

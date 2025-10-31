@@ -229,7 +229,7 @@ npm install openai
 ```
 </details>
 
-It is also helpful to be familiar with some [evaluation concepts](https://docs.smith.langchain.com/evaluation/concepts).
+It is also helpful to be familiar with some [evaluation concepts](https://docs.langchain.com/langsmith/evaluation-concepts).
 
 # Evaluators
 
@@ -1069,9 +1069,9 @@ console.log(evalResult);
 
 #### Logging feedback with custom output schemas
 
-If you are using an OpenEvals evaluator with [LangSmith's `pytest` or `Vitest`/`Jest` runners](#pytest-or-vitestjest), you will need to manually [log feedback keys](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest#log-feedback).
+If you are using an OpenEvals evaluator with [LangSmith's `pytest` or `Vitest`/`Jest` runners](#pytest-or-vitestjest), you will need to manually [log feedback keys](https://docs.langchain.com/langsmith/pytest#log-feedback).
 
-If you are using `evaluate`, you will need to wrap your evaluator in another function that maps your evaluator return value to [feedback in the right format](https://docs.smith.langchain.com/evaluation/how_to_guides/custom_evaluator).
+If you are using `evaluate`, you will need to wrap your evaluator in another function that maps your evaluator return value to [feedback in the right format](https://docs.langchain.com/langsmith/code-evaluator).
 
 #### Structured prompts
 
@@ -3279,12 +3279,12 @@ console.log(result);
 
 For tracking experiments over time, you can log evaluator results to [LangSmith](https://smith.langchain.com/), a platform for building production-grade LLM applications that includes tracing, evaluation, and experimentation tools.
 
-LangSmith currently offers two ways to run evals: a [pytest](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) (Python) or [Vitest/Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest) integration and the `evaluate` function. We'll give a quick example of how to run evals using both.
+LangSmith currently offers two ways to run evals: a [pytest](https://docs.langchain.com/langsmith/pytest) (Python) or [Vitest/Jest](https://docs.langchain.com/langsmith/vitest-jest) integration and the `evaluate` function. We'll give a quick example of how to run evals using both.
 
 ## Pytest or Vitest/Jest
 
-First, follow [these instructions](https://docs.smith.langchain.com/evaluation/how_to_guides/pytest) to set up LangSmith's pytest runner,
-or these to set up [Vitest or Jest](https://docs.smith.langchain.com/evaluation/how_to_guides/vitest_jest), setting appropriate environment variables:
+First, follow [these instructions](https://docs.langchain.com/langsmith/pytest) to set up LangSmith's pytest runner,
+or these to set up [Vitest or Jest](https://docs.langchain.com/langsmith/vitest-jest), setting appropriate environment variables:
 
 ```bash
 export LANGSMITH_API_KEY="your_langsmith_api_key"
@@ -3392,7 +3392,7 @@ And you should also see the results in the experiment view in LangSmith:
 
 ## Evaluate
 
-Alternatively, you can [create a dataset in LangSmith](https://docs.smith.langchain.com/evaluation/concepts#dataset-curation) and use your created evaluators with LangSmith's [`evaluate`](https://docs.smith.langchain.com/evaluation#8-run-and-view-results) function:
+Alternatively, you can [create a dataset in LangSmith](https://docs.langchain.com/langsmith/manage-datasets-in-application) and use your created evaluators with LangSmith's [`evaluate`](https://docs.langchain.com/langsmith/evaluate-llm-application) function:
 
 <details open>
 <summary>Python</summary>

@@ -1,6 +1,11 @@
 name: release-python
-run-name: Release Python Package from ${{ inputs.working-directory }} by @${{ github.actor }}
+run-name: Release Python Package from ${{ inputs.working-directory || 'python' }} by @${{ github.actor }}
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "python/pyproject.toml"
   workflow_call:
     inputs:
       working-directory:
@@ -34,16 +39,18 @@ env:
   PYTHON_VERSION: "3.11"
   UV_FROZEN: "true"
   UV_NO_SYNC: "true"
+  WORKING_DIRECTORY: ${{ inputs.working-directory || 'python' }}
 
 jobs:
   build:
-    if: github.ref == 'refs/heads/main' || inputs.dangerous-nonmain-release
+    if: github.ref == 'refs/heads/main' || inputs.dangerous-nonmain-release == true
     environment: Scheduled testing
     runs-on: ubuntu-latest
 
     outputs:
       pkg-name: ${{ steps.check-version.outputs.pkg-name }}
       version: ${{ steps.check-version.outputs.version }}
+      should-publish: ${{ steps.check-pypi.outputs.should-publish }}
 
     steps:
       - uses: actions/checkout@v4
@@ -66,18 +73,18 @@ jobs:
       # https://github.com/pypa/gh-action-pypi-publish#non-goals
       - name: Build Python package
         run: uv build
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
       
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: ${{ inputs.working-directory }}/dist/
+          path: ${{ env.WORKING_DIRECTORY }}/dist/
 
       - name: Check Version
         id: check-version
         shell: python
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
           import os
           import tomllib
@@ -89,9 +96,41 @@ jobs:
               f.write(f"pkg-name={pkg_name}\n")
               f.write(f"version={version}\n")
 
+      - name: Check PyPI for existing version
+        id: check-pypi
+        shell: python
+        run: |
+          import json
+          import os
+          import urllib.request
+
+          pkg_name = "${{ steps.check-version.outputs.pkg-name }}"
+          version = "${{ steps.check-version.outputs.version }}"
+
+          try:
+              url = f"https://pypi.org/pypi/{pkg_name}/json"
+              with urllib.request.urlopen(url) as response:
+                  data = json.loads(response.read())
+                  if version in data.get("releases", {}):
+                      print(f"Version {version} already exists on PyPI")
+                      should_publish = "false"
+                  else:
+                      print(f"Version {version} does not exist on PyPI")
+                      should_publish = "true"
+          except urllib.error.HTTPError as e:
+              if e.code == 404:
+                  print(f"Package {pkg_name} not found on PyPI (first release)")
+                  should_publish = "true"
+              else:
+                  raise
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"should-publish={should_publish}\n")
+
   publish:
     needs:
       - build
+    if: needs.build.outputs.should-publish == 'true'
     runs-on: ubuntu-latest
     permissions:
       # This permission is used for trusted publishing:
@@ -103,7 +142,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -116,12 +155,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: dist
-          path: ${{ inputs.working-directory }}/dist/
+          path: ${{ env.WORKING_DIRECTORY }}/dist/
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: ${{ inputs.working-directory }}/dist/
+          packages-dir: ${{ env.WORKING_DIRECTORY }}/dist/
           verbose: true
           print-hash: true
           # Temp workaround since attestations are on by default as of gh-action-pypi-publish v1.11.0
@@ -131,6 +170,7 @@ jobs:
     needs:
       - build
       - publish
+    if: needs.build.outputs.should-publish == 'true'
     runs-on: ubuntu-latest
     permissions:
       # This permission is needed by `ncipollo/release-action` to
@@ -139,7 +179,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -152,12 +192,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: dist
-          path: ${{ inputs.working-directory }}/dist/
+          path: ${{ env.WORKING_DIRECTORY }}/dist/
 
       - name: Create Tag
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "${{ inputs.working-directory }}/dist/*"
+          artifacts: "${{ env.WORKING_DIRECTORY }}/dist/*"
           token: ${{ secrets.GITHUB_TOKEN }}
           generateReleaseNotes: true
           tag: ${{needs.build.outputs.pkg-name}}==${{ needs.build.outputs.version }}

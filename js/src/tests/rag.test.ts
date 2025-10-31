@@ -105,7 +105,7 @@ ls.describe("LLM as Judge RAG", () => {
       const retrievalRelevanceEvaluator = createLLMAsJudge({
         prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
         feedbackKey: "retrieval_relevance",
-        model: "openai:gpt-4o-mini",
+        model: "openai:o3-mini",
       });
 
       const context = {

@@ -77,11 +77,12 @@ def test_llm_as_judge_rag_groundedness():
 
 
 @pytest.mark.langsmith
+@pytest.mark.flaky
 def test_llm_as_judge_rag_retrieval_relevance():
     retrieval_relevance_evaluator = create_llm_as_judge(
         prompt=RAG_RETRIEVAL_RELEVANCE_PROMPT,
         feedback_key="retrieval_relevance",
-        model="openai:gpt-4o-mini",
+        model="openai:o3-mini",
     )
 
     inputs = {

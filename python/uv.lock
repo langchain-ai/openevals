@@ -1768,10 +1768,10 @@ provides-extras = ["e2b-code-interpreter"]
 [package.metadata.requires-dev]
 dev = [
     { name = "e2b-code-interpreter", specifier = ">=1.1.1" },
-    { name = "langchain-anthropic", specifier = ">=1.0.1" },
-    { name = "langchain-google-genai", specifier = ">=3.0.0" },
-    { name = "langgraph", specifier = ">=1.0.2" },
-    { name = "langgraph-sdk", specifier = ">=0.2.9" },
+    { name = "langchain-anthropic", specifier = ">=0.3.12" },
+    { name = "langchain-google-genai", specifier = ">=2.1.3" },
+    { name = "langgraph", specifier = ">=0.3.30" },
+    { name = "langgraph-sdk", specifier = ">=0.1.61" },
     { name = "llama-index", specifier = ">=0.12.34" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "openai", specifier = ">=1.61.1" },

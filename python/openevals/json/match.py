@@ -415,7 +415,7 @@ def create_json_match_evaluator(
         raise ValueError("When passing rubric, either judge or model must be provided")
     if len(rubric) == 0 and (judge or model):
         raise ValueError(
-            "When not passing rubric, either judge or model must be provided"
+            "A judge model is only used and may only be provided when also passing a rubric for grading specific keys."
         )
 
     def wrapped_evaluator(
@@ -739,7 +739,7 @@ def create_async_json_match_evaluator(
         raise ValueError("When passing rubric, either judge or model must be provided")
     if len(rubric) == 0 and (judge or model):
         raise ValueError(
-            "When not passing rubric, either judge or model must be provided"
+            "A judge model is only used and may only be provided when also passing a rubric for grading specific keys."
         )
 
     async def wrapped_evaluator(

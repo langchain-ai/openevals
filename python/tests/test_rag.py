@@ -82,7 +82,7 @@ def test_llm_as_judge_rag_retrieval_relevance():
     retrieval_relevance_evaluator = create_llm_as_judge(
         prompt=RAG_RETRIEVAL_RELEVANCE_PROMPT,
         feedback_key="retrieval_relevance",
-        model="openai:o3-mini",
+        model="openai:gpt-4o-mini",
     )
 
     inputs = {
@@ -93,7 +93,7 @@ def test_llm_as_judge_rag_retrieval_relevance():
         "documents": [
             "FoobarLand is a new country located on the dark side of the moon",
             "Space dolphins are native to FoobarLand",
-            "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+            "FoobarLand is a constitutional democracy",
             "The current weather in FoobarLand is 80 degrees and clear.",
         ],
     }

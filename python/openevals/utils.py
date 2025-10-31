@@ -58,14 +58,19 @@ def _normalize_to_openai_messages_list(
 # Helper function to process individual scores
 def _process_score(
     key: str, value: Any
-) -> tuple[float, Union[str, None], Union[dict, None]]:
+) -> tuple[float, Union[str, None], Union[dict, None], Optional[str]]:
     if isinstance(value, dict):
         if "score" in value:
-            return value["score"], value.get("reasoning"), value.get("metadata", None)  # type: ignore
+            return (
+                value["score"],
+                value.get("reasoning"),
+                value.get("metadata", None),
+                value.get("source_run_id", None),
+            )  # type: ignore
         raise ValueError(
             f"Expected a dictionary with keys 'score' and 'reasoning', but got {value}"
         )
-    return value, None, None
+    return value, None, None, None
 
 
 def _add_metadata_and_inputs_to_run_tree(
@@ -136,25 +141,31 @@ def _run_evaluator_untyped(
             for key, value in score.items():
                 if isinstance(value, list):
                     for item in value:
-                        key_score, reasoning, metadata = _process_score(key, item)
-                        results.append(
-                            EvaluatorResult(
-                                key=key,
-                                score=key_score,
-                                comment=reasoning,
-                                metadata=metadata,
-                            )
+                        key_score, reasoning, metadata, source_run_id = _process_score(
+                            key, item
                         )
-                else:
-                    key_score, reasoning, metadata = _process_score(key, value)
-                    results.append(
-                        EvaluatorResult(
+                        result = EvaluatorResult(
                             key=key,
                             score=key_score,
                             comment=reasoning,
                             metadata=metadata,
                         )
+                        if source_run_id is not None:
+                            result["source_run_id"] = source_run_id
+                        results.append(result)
+                else:
+                    key_score, reasoning, metadata, source_run_id = _process_score(
+                        key, value
                     )
+                    result = EvaluatorResult(
+                        key=key,
+                        score=key_score,
+                        comment=reasoning,
+                        metadata=metadata,
+                    )
+                    if source_run_id is not None:
+                        result["source_run_id"] = source_run_id
+                    results.append(result)
             return results
         else:
             # Handle single score
@@ -258,25 +269,31 @@ async def _arun_evaluator_untyped(
             for key, value in score.items():
                 if isinstance(value, list):
                     for item in value:
-                        key_score, reasoning, metadata = _process_score(key, item)
-                        results.append(
-                            EvaluatorResult(
-                                key=key,
-                                score=key_score,
-                                comment=reasoning,
-                                metadata=metadata,
-                            )
+                        key_score, reasoning, metadata, source_run_id = _process_score(
+                            key, item
                         )
-                else:
-                    key_score, reasoning, metadata = _process_score(key, value)
-                    results.append(
-                        EvaluatorResult(
+                        result = EvaluatorResult(
                             key=key,
                             score=key_score,
                             comment=reasoning,
                             metadata=metadata,
                         )
+                        if source_run_id is not None:
+                            result["source_run_id"] = source_run_id
+                        results.append(result)
+                else:
+                    key_score, reasoning, metadata, source_run_id = _process_score(
+                        key, value
                     )
+                    result = EvaluatorResult(
+                        key=key,
+                        score=key_score,
+                        comment=reasoning,
+                        metadata=metadata,
+                    )
+                    if source_run_id is not None:
+                        result["source_run_id"] = source_run_id
+                    results.append(result)
             return results
         else:
             # Handle single score

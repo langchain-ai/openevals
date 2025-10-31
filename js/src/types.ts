@@ -5,6 +5,7 @@ export type EvaluatorResult = {
   score: number | boolean;
   comment?: string;
   metadata?: Record<string, unknown>;
+  sourceRunId?: string;
 };
 
 export type SimpleEvaluator = (params: {
@@ -27,7 +28,7 @@ export type MultiResultScorerReturnType = {
   [key: string]:
     | boolean
     | number
-    | { score: boolean | number; reasoning?: string };
+    | { score: boolean | number; reasoning?: string; sourceRunId?: string };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

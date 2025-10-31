@@ -1,6 +1,5 @@
 import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
-import { evaluate } from "langsmith/evaluation";
 import { OpenAIEmbeddings } from "@langchain/openai";
 
 import { createEmbeddingSimilarityEvaluator } from "../embedding_similarity.js";

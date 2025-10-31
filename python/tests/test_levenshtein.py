@@ -52,7 +52,6 @@ async def test_levenshtein_with_different_values_async():
     assert res["comment"] is None
 
 
-@pytest.mark.langsmith
 def test_levenshtein_evaluate():
     client = Client()
     evaluator = levenshtein_distance
@@ -61,7 +60,6 @@ def test_levenshtein_evaluate():
         assert r["evaluation_results"]["results"][0].score is not None
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_levenshtein_aevaluate():
     client = Client()

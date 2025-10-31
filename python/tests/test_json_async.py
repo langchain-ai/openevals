@@ -567,11 +567,15 @@ async def test_json_match_mode_order():
     assert result[0]["score"] == 2 / 3
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_works_with_aevaluate():
     client = Client()
-    evaluator = create_async_json_match_evaluator()
+    evaluator = create_async_json_match_evaluator(
+        model="openai:o3-mini",
+        rubric={
+            "description": "Is the correct job title and company mentioned, as well as previous companies?"
+        },
+    )
 
     async def target(x):
         return x

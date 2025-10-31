@@ -79,7 +79,6 @@ async def test_embedding_similarity_with_different_values_async():
     assert res["comment"] is None
 
 
-@pytest.mark.langsmith
 def test_embedding_similarity_evaluate():
     client = Client()
     evaluator = create_embedding_similarity_evaluator()
@@ -88,7 +87,6 @@ def test_embedding_similarity_evaluate():
         assert r["evaluation_results"]["results"][0].score is not None
 
 
-@pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_embedding_similarity_aevaluate():
     client = Client()

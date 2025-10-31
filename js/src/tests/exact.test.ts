@@ -1,6 +1,5 @@
 import * as ls from "langsmith/vitest";
-import { evaluate } from "langsmith/evaluation";
-import { expect, test } from "vitest";
+import { expect } from "vitest";
 import { exactMatch } from "../exact.js";
 
 ls.describe("exact match", () => {

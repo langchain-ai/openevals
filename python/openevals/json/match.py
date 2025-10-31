@@ -256,7 +256,7 @@ def _aggregate_results(
             for index, group in index_grouped_scores.items():
                 if group:  # Skip empty groups
                     total = sum(
-                        float(v["score"]) if isinstance(v, dict) else v
+                        float(v["score"]) if isinstance(v, dict) else float(v)
                         for v in group.values()
                     )
                     index_scores[index] = total / len(group)
@@ -265,7 +265,7 @@ def _aggregate_results(
             for index, group in index_grouped_scores.items():
                 if group:  # Skip empty groups
                     has_non_one = any(
-                        (float(v["score"]) if isinstance(v, dict) else v) != 1
+                        (float(v["score"]) if isinstance(v, dict) else float(v)) != 1
                         for v in group.values()
                     )
                     index_scores[index] = 0 if has_non_one else 1
@@ -296,7 +296,10 @@ def _aggregate_results(
                 for key, values in scores_aggregated_across_list.items():
                     if values:
                         result[f"{score_key}:{key}"] = sum(
-                            [(v["score"] if isinstance(v, dict) else v) for v in values]
+                            [
+                                (float(v["score"]) if isinstance(v, dict) else float(v))
+                                for v in values
+                            ]
                         ) / len(values)
 
                 return result
@@ -317,7 +320,13 @@ def _aggregate_results(
                 result = {}
                 for key, values in scores_aggregated_across_list.items():
                     result[f"{score_key}:{key}"] = (
-                        0 if any(v != 1 for v in values) else 1
+                        0
+                        if any(
+                            (float(v["score"]) if isinstance(v, dict) else float(v))
+                            != 1
+                            for v in values
+                        )
+                        else 1
                     )
 
                 return result
@@ -326,7 +335,8 @@ def _aggregate_results(
     if aggregator == "average":
         score = (
             sum(
-                float(v["score"]) if isinstance(v, dict) else v for v in scores.values()
+                float(v["score"]) if isinstance(v, dict) else float(v)
+                for v in scores.values()
             )
             / len(scores)
             if scores
@@ -337,7 +347,7 @@ def _aggregate_results(
         score = (
             0
             if any(
-                (float(v["score"]) if isinstance(v, dict) else v) != 1
+                (float(v["score"]) if isinstance(v, dict) else float(v)) != 1
                 for v in scores.values()
             )
             else 1
@@ -414,77 +424,263 @@ def create_json_match_evaluator(
         reference_outputs: Any,
         **kwargs,
     ) -> list[EvaluatorResult]:
-        def _scorer(
-            *,
-            outputs: Any,
-            reference_outputs: Any,
-            rubric: Dict[str, str] = {},
-            exclude_keys: list[str] = [],
-            use_reasoning: bool = True,
-        ) -> Union[dict, float, tuple]:
-            (
-                outputs,
-                reference_outputs,
-                json_schema,
-                scores,
-                formatted_rubric,
-                use_list_reducer,
-            ) = _prepare_parameters(
-                outputs=outputs,
-                reference_outputs=reference_outputs,
-                rubric=rubric,
-                exclude_keys=exclude_keys,
-                use_reasoning=use_reasoning,
-                list_match_mode=list_match_mode,
-            )
-
-            scorer = None
-            if len(formatted_rubric) > 0:
-                output_keys = "\n".join(
-                    [f"{key}: {outputs[key]}" for key in json_schema["properties"]]
-                )
-                expected_output_keys = "\n".join(
-                    [
-                        f"{key}: {reference_outputs[key]}"
-                        for key in json_schema["properties"]
-                    ]
-                )
-                scorer = _create_llm_as_judge_scorer(
-                    system=SYSTEM_PROMPT,
-                    prompt=USER_PROMPT,
-                    schema=json_schema,
-                    judge=judge,
-                    model=model,
-                )
-            else:
-                formatted_rubric, output_keys, expected_output_keys = None, None, None
-            if scorer is not None:
-                llm_scores = scorer(
-                    outputs=output_keys,
-                    reference_outputs=expected_output_keys,
-                    rubric=rubric,
-                )
-                scores.update(llm_scores)
-
-            return _aggregate_results(
-                score_key="json_match",
-                scores=scores,
-                use_list_reducer=use_list_reducer,
-                aggregator=aggregator,
-                list_aggregator=list_aggregator,
-            )
-
-        return _run_evaluator(
-            run_name="json_match_evaluator",
-            scorer=_scorer,
-            feedback_key="json_match",
-            rubric=rubric,
+        (
+            outputs_prepared,
+            reference_outputs_prepared,
+            json_schema,
+            scores,
+            formatted_rubric,
+            use_list_reducer,
+        ) = _prepare_parameters(
             outputs=outputs,
             reference_outputs=reference_outputs,
+            rubric=rubric,
             exclude_keys=exclude_keys,
             use_reasoning=use_reasoning,
-            **kwargs,
-        )  # type: ignore
+            list_match_mode=list_match_mode,
+        )
+
+        # Identify which keys need LLM evaluation
+        llm_keys = (
+            set(json_schema["properties"].keys())
+            if len(formatted_rubric) > 0
+            else set()
+        )
+
+        # Special handling when aggregator is specified - aggregate all keys at once
+        if aggregator is not None:
+            # Create a single scorer that handles all keys
+            def _aggregate_scorer(**kwargs_inner) -> Union[dict, float, tuple]:
+                # Get LLM scores if needed
+                if llm_keys:
+                    key_scorer = _create_llm_as_judge_scorer(
+                        system=SYSTEM_PROMPT,
+                        prompt=USER_PROMPT,
+                        schema=json_schema,
+                        judge=judge,
+                        model=model,
+                    )
+
+                    # Format outputs
+                    output_strs = [
+                        f"{rk}: {outputs_prepared[rk]}"
+                        for rk in llm_keys
+                        if rk in outputs_prepared
+                    ]
+                    expected_strs = [
+                        f"{rk}: {reference_outputs_prepared[rk]}"
+                        for rk in llm_keys
+                        if rk in reference_outputs_prepared
+                    ]
+
+                    # Call LLM
+                    llm_scores = key_scorer(
+                        outputs="\n".join(output_strs),
+                        reference_outputs="\n".join(expected_strs),
+                        rubric=formatted_rubric,
+                    )
+                else:
+                    llm_scores = {}
+
+                # Combine all scores
+                all_scores = {**scores, **llm_scores}
+
+                # Aggregate
+                aggregated = _aggregate_results(
+                    score_key="json_match",
+                    scores=all_scores,
+                    use_list_reducer=use_list_reducer,
+                    aggregator=aggregator,
+                    list_aggregator=list_aggregator,
+                )
+                return aggregated
+
+            return _run_evaluator(
+                run_name="json_match_evaluator",
+                scorer=_aggregate_scorer,
+                feedback_key="json_match",
+                inputs=outputs,
+                reference_outputs=reference_outputs,
+                **kwargs,
+            )  # type: ignore
+
+        # Group raw keys by their base key for processing
+        raw_keys_by_base = {}
+        all_raw_keys = set(scores.keys()) | llm_keys
+        for raw_key in all_raw_keys:
+            base_key = (
+                raw_key[: raw_key.rfind("_")]
+                if use_list_reducer and "_" in raw_key and raw_key.rfind("_") > 0
+                else raw_key
+            )
+            if base_key not in raw_keys_by_base:
+                raw_keys_by_base[base_key] = []
+            raw_keys_by_base[base_key].append(raw_key)
+
+        # Process each base key
+        all_results = []
+        for base_key in sorted(raw_keys_by_base.keys()):
+            raw_keys = raw_keys_by_base[base_key]
+            needs_llm = any(rk in llm_keys for rk in raw_keys)
+
+            if needs_llm:
+                # Create scorer that calls LLM for these keys
+                def _scorer(
+                    *, base_key=base_key, raw_keys=raw_keys, **kwargs_inner
+                ) -> Union[dict, float, tuple]:
+                    # Create schema for just these keys
+                    key_schema = {
+                        "type": "object",
+                        "title": "structured_match_score",
+                        "description": "Scores measuring the accuracy of structured outputs",
+                        "properties": {
+                            rk: json_schema["properties"][rk]
+                            for rk in raw_keys
+                            if rk in json_schema["properties"]
+                        },
+                        "required": [
+                            rk for rk in raw_keys if rk in json_schema["properties"]
+                        ],
+                        "additionalProperties": False,
+                    }
+
+                    # Create LLM scorer
+                    key_scorer = _create_llm_as_judge_scorer(
+                        system=SYSTEM_PROMPT,
+                        prompt=USER_PROMPT,
+                        schema=key_schema,
+                        judge=judge,
+                        model=model,
+                    )
+
+                    # Format outputs
+                    output_strs = [
+                        f"{rk}: {outputs_prepared[rk]}"
+                        for rk in raw_keys
+                        if rk in outputs_prepared
+                    ]
+                    expected_strs = [
+                        f"{rk}: {reference_outputs_prepared[rk]}"
+                        for rk in raw_keys
+                        if rk in reference_outputs_prepared
+                    ]
+
+                    key_criteria = rubric.get(base_key, "")
+                    formatted_key_rubric = (
+                        f"Key: {base_key}, Criteria: {key_criteria}\n"
+                        if key_criteria
+                        else ""
+                    )
+
+                    # Call LLM
+                    llm_scores = key_scorer(
+                        outputs="\n".join(output_strs),
+                        reference_outputs="\n".join(expected_strs),
+                        rubric=formatted_key_rubric,
+                    )
+
+                    # Combine with non-LLM scores
+                    all_key_scores = {
+                        **{
+                            rk: scores.get(rk, 0)
+                            for rk in raw_keys
+                            if rk not in llm_keys
+                        },
+                        **llm_scores,
+                    }
+
+                    # Aggregate across list items if needed
+                    if use_list_reducer and len(raw_keys) > 1:
+                        # Fill in missing indices with 0 scores
+                        # Determine total number of list items from all scores
+                        all_indices = set()
+                        for key in scores.keys():
+                            if "_" in key:
+                                idx = key[key.rfind("_") + 1 :]
+                                try:
+                                    all_indices.add(int(idx))
+                                except ValueError:
+                                    pass
+
+                        # Add 0 scores for missing indices
+                        for idx in all_indices:
+                            expected_key = f"{base_key}_{idx}"
+                            if expected_key not in all_key_scores:
+                                all_key_scores[expected_key] = 0
+
+                        aggregated = _aggregate_results(
+                            score_key="json_match",
+                            scores=all_key_scores,
+                            use_list_reducer=True,
+                            aggregator=None,
+                            list_aggregator=list_aggregator,
+                        )
+                        return aggregated
+                    else:
+                        # Single key - return with json_match prefix
+                        return {
+                            f"json_match:{base_key}": list(all_key_scores.values())[0]
+                        }
+            else:
+                # Non-LLM keys - just aggregate existing scores
+                def _scorer(
+                    *, raw_keys=raw_keys, **kwargs_inner
+                ) -> Union[dict, float, tuple]:
+                    key_scores = {rk: scores[rk] for rk in raw_keys}
+
+                    # Aggregate across list items if needed
+                    if use_list_reducer and len(raw_keys) > 1:
+                        # Fill in missing indices with 0 scores
+                        all_indices = set()
+                        for key in scores.keys():
+                            if "_" in key:
+                                idx = key[key.rfind("_") + 1 :]
+                                try:
+                                    all_indices.add(int(idx))
+                                except ValueError:
+                                    pass
+
+                        # Add 0 scores for missing indices
+                        for idx in all_indices:
+                            expected_key = f"{base_key}_{idx}"
+                            if expected_key not in key_scores:
+                                key_scores[expected_key] = 0
+
+                        aggregated = _aggregate_results(
+                            score_key="json_match",
+                            scores=key_scores,
+                            use_list_reducer=True,
+                            aggregator=None,
+                            list_aggregator=list_aggregator,
+                        )
+                        return aggregated
+                    else:
+                        # Single key - return with json_match prefix
+                        return {f"json_match:{base_key}": key_scores[raw_keys[0]]}
+
+            # Extract the original key name for inputs/reference_outputs
+            original_key = base_key
+
+            results = _run_evaluator(
+                run_name="json_match_evaluator",
+                scorer=_scorer,
+                feedback_key=f"json_match:{base_key}",
+                inputs=outputs_prepared.get(original_key, outputs)
+                if original_key
+                else outputs,
+                reference_outputs=reference_outputs_prepared.get(
+                    original_key, reference_outputs
+                )
+                if original_key
+                else reference_outputs,
+                **kwargs,
+            )
+            if isinstance(results, list):
+                all_results.extend(results)
+            else:
+                all_results.append(results)
+
+        return all_results  # type: ignore
 
     return wrapped_evaluator  # type: ignore
 
@@ -552,80 +748,250 @@ def create_async_json_match_evaluator(
         reference_outputs: Any,
         **kwargs,
     ) -> Union[EvaluatorResult, list[EvaluatorResult]]:
-        async def _ascorer(
-            *,
-            outputs: Any,
-            reference_outputs: Any,
-            rubric: Dict[str, str] = {},
-            exclude_keys: list[str] = [],
-            use_reasoning: bool = True,
-        ) -> Union[dict, float, tuple]:
-            (
-                outputs,
-                reference_outputs,
-                json_schema,
-                scores,
-                formatted_rubric,
-                use_list_reducer,
-            ) = _prepare_parameters(
-                outputs=outputs,
-                reference_outputs=reference_outputs,
-                rubric=rubric,
-                exclude_keys=exclude_keys,
-                use_reasoning=use_reasoning,
-                list_match_mode=list_match_mode,
-            )
-
-            scorer = None
-            if len(formatted_rubric) > 0:
-                output_keys = "\n".join(
-                    [f"{key}: {outputs[key]}" for key in json_schema["properties"]]
-                )
-                expected_output_keys = "\n".join(
-                    [
-                        f"{key}: {reference_outputs[key]}"
-                        for key in json_schema["properties"]
-                    ]
-                )
-                scorer = _create_async_llm_as_judge_scorer(
-                    system=SYSTEM_PROMPT,
-                    prompt=USER_PROMPT,
-                    schema=json_schema,
-                    judge=judge,
-                    model=model,
-                )
-            else:
-                formatted_rubric, output_keys, expected_output_keys = None, None, None
-            if scorer is not None:
-                scorer_res = scorer(
-                    outputs=output_keys,
-                    reference_outputs=expected_output_keys,
-                    rubric=rubric,
-                )
-                if hasattr(scorer_res, "__await__"):
-                    llm_scores = await scorer_res
-                else:
-                    llm_scores = scorer_res
-                scores.update(llm_scores)
-
-            return _aggregate_results(
-                score_key="json_match",
-                scores=scores,
-                use_list_reducer=use_list_reducer,
-                aggregator=aggregator,
-                list_aggregator=list_aggregator,
-            )
-
-        return await _arun_evaluator(
-            run_name="structured_match_evaluator",
-            scorer=_ascorer,
-            feedback_key="structured_match_score",
-            rubric=rubric,
+        (
+            outputs_prepared,
+            reference_outputs_prepared,
+            json_schema,
+            scores,
+            formatted_rubric,
+            use_list_reducer,
+        ) = _prepare_parameters(
             outputs=outputs,
             reference_outputs=reference_outputs,
+            rubric=rubric,
             exclude_keys=exclude_keys,
             use_reasoning=use_reasoning,
-            **kwargs,
+            list_match_mode=list_match_mode,
         )
+
+        # Identify which keys need LLM evaluation
+        llm_keys = (
+            set(json_schema["properties"].keys())
+            if len(formatted_rubric) > 0
+            else set()
+        )
+
+        # Special handling when aggregator is specified - aggregate all keys at once
+        if aggregator is not None:
+            # Create a single scorer that handles all keys
+            async def _aggregate_scorer(**kwargs_inner) -> Union[dict, float, tuple]:
+                # Get LLM scores if needed
+                if llm_keys:
+                    key_scorer = _create_async_llm_as_judge_scorer(
+                        system=SYSTEM_PROMPT,
+                        prompt=USER_PROMPT,
+                        schema=json_schema,
+                        judge=judge,
+                        model=model,
+                    )
+
+                    # Format outputs
+                    output_strs = [
+                        f"{rk}: {outputs_prepared[rk]}"
+                        for rk in llm_keys
+                        if rk in outputs_prepared
+                    ]
+                    expected_strs = [
+                        f"{rk}: {reference_outputs_prepared[rk]}"
+                        for rk in llm_keys
+                        if rk in reference_outputs_prepared
+                    ]
+
+                    # Call LLM
+                    llm_scores = await key_scorer(
+                        outputs="\n".join(output_strs),
+                        reference_outputs="\n".join(expected_strs),
+                        rubric=formatted_rubric,
+                    )
+                else:
+                    llm_scores = {}
+
+                # Combine all scores
+                all_scores = {**scores, **llm_scores}
+
+                # Aggregate
+                aggregated = _aggregate_results(
+                    score_key="json_match",
+                    scores=all_scores,
+                    use_list_reducer=use_list_reducer,
+                    aggregator=aggregator,
+                    list_aggregator=list_aggregator,
+                )
+                return aggregated
+
+            return await _arun_evaluator(
+                run_name="json_match_evaluator",
+                scorer=_aggregate_scorer,
+                feedback_key="json_match",
+                inputs=outputs,
+                reference_outputs=reference_outputs,
+                **kwargs,
+            )  # type: ignore
+
+        # Group raw keys by their base key for processing
+        raw_keys_by_base = {}
+        all_raw_keys = set(scores.keys()) | llm_keys
+        for raw_key in all_raw_keys:
+            base_key = (
+                raw_key[: raw_key.rfind("_")]
+                if use_list_reducer and "_" in raw_key and raw_key.rfind("_") > 0
+                else raw_key
+            )
+            if base_key not in raw_keys_by_base:
+                raw_keys_by_base[base_key] = []
+            raw_keys_by_base[base_key].append(raw_key)
+
+        # Process each base key
+        all_results = []
+        for base_key in sorted(raw_keys_by_base.keys()):
+            raw_keys = raw_keys_by_base[base_key]
+            needs_llm = any(rk in llm_keys for rk in raw_keys)
+
+            if needs_llm:
+                # Create scorer that calls LLM for these keys
+                async def _ascorer(
+                    *, base_key=base_key, raw_keys=raw_keys, **kwargs_inner
+                ) -> Union[dict, float, tuple]:
+                    # Create schema for just these keys
+                    key_schema = {
+                        "type": "object",
+                        "title": "structured_match_score",
+                        "description": "Scores measuring the accuracy of structured outputs",
+                        "properties": {
+                            rk: json_schema["properties"][rk]
+                            for rk in raw_keys
+                            if rk in json_schema["properties"]
+                        },
+                        "required": [
+                            rk for rk in raw_keys if rk in json_schema["properties"]
+                        ],
+                        "additionalProperties": False,
+                    }
+
+                    # Create LLM scorer
+                    key_scorer = _create_async_llm_as_judge_scorer(
+                        system=SYSTEM_PROMPT,
+                        prompt=USER_PROMPT,
+                        schema=key_schema,
+                        judge=judge,
+                        model=model,
+                    )
+
+                    # Format outputs
+                    output_strs = [
+                        f"{rk}: {outputs_prepared[rk]}"
+                        for rk in raw_keys
+                        if rk in outputs_prepared
+                    ]
+                    expected_strs = [
+                        f"{rk}: {reference_outputs_prepared[rk]}"
+                        for rk in raw_keys
+                        if rk in reference_outputs_prepared
+                    ]
+
+                    key_criteria = rubric.get(base_key, "")
+                    formatted_key_rubric = (
+                        f"Key: {base_key}, Criteria: {key_criteria}\n"
+                        if key_criteria
+                        else ""
+                    )
+
+                    # Call LLM
+                    scorer_res = key_scorer(
+                        outputs="\n".join(output_strs),
+                        reference_outputs="\n".join(expected_strs),
+                        rubric=formatted_key_rubric,
+                    )
+                    if hasattr(scorer_res, "__await__"):
+                        llm_scores = await scorer_res
+                    else:
+                        llm_scores = scorer_res
+
+                    # Combine with non-LLM scores
+                    all_key_scores = {
+                        **{
+                            rk: scores.get(rk, 0)
+                            for rk in raw_keys
+                            if rk not in llm_keys
+                        },
+                        **llm_scores,
+                    }
+
+                    # Aggregate across list items if needed
+                    if use_list_reducer and len(raw_keys) > 1:
+                        # Fill in missing indices with 0 scores
+                        # Determine total number of list items from all scores
+                        all_indices = set()
+                        for key in scores.keys():
+                            if "_" in key:
+                                idx = key[key.rfind("_") + 1 :]
+                                try:
+                                    all_indices.add(int(idx))
+                                except ValueError:
+                                    pass
+
+                        # Add 0 scores for missing indices
+                        for idx in all_indices:
+                            expected_key = f"{base_key}_{idx}"
+                            if expected_key not in all_key_scores:
+                                all_key_scores[expected_key] = 0
+
+                        aggregated = _aggregate_results(
+                            score_key="json_match",
+                            scores=all_key_scores,
+                            use_list_reducer=True,
+                            aggregator=None,
+                            list_aggregator=list_aggregator,
+                        )
+                        return aggregated
+                    else:
+                        # Single key - return with json_match prefix
+                        return {
+                            f"json_match:{base_key}": list(all_key_scores.values())[0]
+                        }
+            else:
+                # Non-LLM keys - just aggregate existing scores
+                async def _ascorer(
+                    *, raw_keys=raw_keys, **kwargs_inner
+                ) -> Union[dict, float, tuple]:
+                    key_scores = {rk: scores[rk] for rk in raw_keys}
+
+                    # Aggregate across list items if needed
+                    if use_list_reducer and len(raw_keys) > 1:
+                        aggregated = _aggregate_results(
+                            score_key="json_match",
+                            scores=key_scores,
+                            use_list_reducer=True,
+                            aggregator=None,
+                            list_aggregator=list_aggregator,
+                        )
+                        return aggregated
+                    else:
+                        # Single key - return with json_match prefix
+                        return {f"json_match:{base_key}": key_scores[raw_keys[0]]}
+
+            # Extract the original key name for inputs/reference_outputs
+            original_key = base_key
+
+            results = await _arun_evaluator(
+                run_name="json_match_evaluator",
+                scorer=_ascorer,
+                feedback_key=f"json_match:{base_key}",
+                inputs=outputs_prepared.get(original_key, outputs)
+                if original_key
+                else outputs,
+                reference_outputs=reference_outputs_prepared.get(
+                    original_key, reference_outputs
+                )
+                if original_key
+                else reference_outputs,
+                **kwargs,
+            )
+            if isinstance(results, list):
+                all_results.extend(results)
+            else:
+                all_results.append(results)
+
+        return all_results  # type: ignore
 
     return wrapped_evaluator  # type: ignore

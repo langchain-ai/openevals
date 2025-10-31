@@ -320,22 +320,22 @@ __metadata:
   linkType: hard
 
 "@langchain/core@npm:^0.3.73":
-  version: 0.3.73
-  resolution: "@langchain/core@npm:0.3.73"
+  version: 0.3.79
+  resolution: "@langchain/core@npm:0.3.79"
   dependencies:
     "@cfworker/json-schema": ^4.0.2
     ansi-styles: ^5.0.0
     camelcase: 6
     decamelize: 1.2.0
     js-tiktoken: ^1.0.12
-    langsmith: ^0.3.46
+    langsmith: ^0.3.67
     mustache: ^4.2.0
     p-queue: ^6.6.2
     p-retry: 4
     uuid: ^10.0.0
     zod: ^3.25.32
     zod-to-json-schema: ^3.22.3
-  checksum: 4394610b0c33da807a5ee8916fbdf245949d8d6d48ae82bed989e81ecc661e271b92c486d11de4c4e642a5f8943693ac62369a5cde3e38cee170475126e04a2a
+  checksum: 1cd7431a237f90a8bcd67d135e802173a4bf742d514452f22e6f5537be2d29d54849c6465c2fbe8e2048174bb75f44f795f8f85910c8e1df981d013c37d5cd95
   languageName: node
   linkType: hard
 
@@ -351,15 +351,15 @@ __metadata:
   linkType: hard
 
 "@langchain/langgraph-sdk@npm:~0.1.0":
-  version: 0.1.0
-  resolution: "@langchain/langgraph-sdk@npm:0.1.0"
+  version: 0.1.10
+  resolution: "@langchain/langgraph-sdk@npm:0.1.10"
   dependencies:
     "@types/json-schema": ^7.0.15
     p-queue: ^6.6.2
     p-retry: 4
     uuid: ^9.0.0
   peerDependencies:
-    "@langchain/core": ">=0.2.31 <0.4.0"
+    "@langchain/core": ">=0.2.31 <0.4.0 || ^1.0.0-alpha"
     react: ^18 || ^19
     react-dom: ^18 || ^19
   peerDependenciesMeta:
@@ -369,7 +369,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: adbf0949e59d3f0c4fcc5000e311957fc070b105b0b834ab265e5bfc6fd2f1bff84776ce86b8883fbbd2f1a421967c9d434cd01c8a64b892bcacdc26c0672997
+  checksum: ce563e2732e8cd63f35730e91ccd28c09303a1bd418c48e71bd46af63191f14efd2e06d7ab76da4cce9e0ec749f7409b984e1aa00e9b38d0b935c99edc9c2aa0
   languageName: node
   linkType: hard
 
@@ -3352,6 +3352,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"langsmith@npm:^0.3.67":
+  version: 0.3.76
+  resolution: "langsmith@npm:0.3.76"
+  dependencies:
+    "@types/uuid": ^10.0.0
+    chalk: ^4.1.2
+    console-table-printer: ^2.12.1
+    p-queue: ^6.6.2
+    p-retry: 4
+    semver: ^7.6.3
+    uuid: ^10.0.0
+  peerDependencies:
+    "@opentelemetry/api": "*"
+    "@opentelemetry/exporter-trace-otlp-proto": "*"
+    "@opentelemetry/sdk-trace-base": "*"
+    openai: "*"
+  peerDependenciesMeta:
+    "@opentelemetry/api":
+      optional: true
+    "@opentelemetry/exporter-trace-otlp-proto":
+      optional: true
+    "@opentelemetry/sdk-trace-base":
+      optional: true
+    openai:
+      optional: true
+  checksum: a835d4cd3a927472a26848647ca722fb82338c8940f43c70b9db731564ff0134636dc1dbe25866c454ab3e960b4d2ebf1457c735ba353eebc2a7f65222dfc1b3
+  languageName: node
+  linkType: hard
+
 "levn@npm:^0.4.1":
   version: 0.4.1
   resolution: "levn@npm:0.4.1"
@@ -5390,11 +5419,11 @@ __metadata:
   linkType: hard
 
 "zod-to-json-schema@npm:^3.22.3":
-  version: 3.24.1
-  resolution: "zod-to-json-schema@npm:3.24.1"
+  version: 3.24.6
+  resolution: "zod-to-json-schema@npm:3.24.6"
   peerDependencies:
     zod: ^3.24.1
-  checksum: 7195563f611bc21ea7f44129b8e32780125a9bd98b2e6b8709ac98bd2645729fecd87b8aeeaa8789617ee3f38e6585bab23dd613e2a35c31c6c157908f7a1681
+  checksum: 5f4d29597cfd88d8fb8a539f0169affb8705d67ee9cbe478aa01bb1d2554e0540ca713fa4ddeb2fd834e87e7cdff61fa396f6d1925a9006de70afe6cd68bf7d2
   languageName: node
   linkType: hard
 

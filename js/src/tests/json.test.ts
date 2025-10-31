@@ -255,14 +255,15 @@ ls.describe("json", () => {
             "Is the correct job title and company mentioned, as well as previous companies?",
         },
       });
-      const result = await evaluator({ outputs, referenceOutputs });
+      let result = await evaluator({ outputs, referenceOutputs });
       expect(result).toBeDefined();
+      result = result.sort((a: any, b: any) => a.key.localeCompare(b.key));
       expect(result.length).toBe(2);
-      expect(result[0].key).toBe("json_match:name");
-      expect(result[0].score).toBe(1.0);
-      expect(result[1].key).toBe("json_match:description");
-      expect(result[1].score).toBe(0);
-      expect(result[1].comment).toBeDefined();
+      expect(result[0].key).toBe("json_match:description");
+      expect(result[0].score).toBe(0);
+      expect(result[0].comment).toBeDefined();
+      expect(result[1].key).toBe("json_match:name");
+      expect(result[1].score).toBe(1.0);
     }
   );
 

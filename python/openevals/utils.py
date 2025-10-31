@@ -68,10 +68,11 @@ def _process_score(
     return value, None, None
 
 
-def _add_metadata_to_run_tree(
+def _add_metadata_and_inputs_to_run_tree(
     run_name: str,
     framework: Union[str, None] = None,
     results: Optional[Union[dict, list[dict]]] = None,
+    inputs: Optional[Any] = None,
 ):
     rt = get_current_run_tree()
     if rt is not None:
@@ -86,6 +87,8 @@ def _add_metadata_to_run_tree(
                         rt.metadata.update(results.get("metadata", None))
                 except Exception:
                     pass
+            if inputs is not None:
+                rt.inputs = inputs
         rt.metadata["__ls_framework"] = framework
         rt.metadata["__ls_evaluator"] = run_name
         rt.metadata["__ls_language"] = "python"
@@ -174,7 +177,19 @@ def _run_evaluator_untyped(
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             results = _run_scorer(**kwargs)
-            _add_metadata_to_run_tree(run_name, ls_framework, results)
+
+            _add_metadata_and_inputs_to_run_tree(
+                run_name,
+                ls_framework,
+                results,
+                inputs={
+                    "inputs": kwargs.get("inputs", None),
+                    "reference_outputs": kwargs.get("reference_outputs", None),
+                }
+                if kwargs.get("inputs", None) is not None
+                or kwargs.get("reference_outputs", None) is not None
+                else None,
+            )
             if not return_raw_outputs:
                 if isinstance(results, list):
                     for result in results:
@@ -191,7 +206,7 @@ def _run_evaluator_untyped(
                     )
     else:
         results = _run_scorer(**kwargs)
-        _add_metadata_to_run_tree(run_name, ls_framework, results)
+        _add_metadata_and_inputs_to_run_tree(run_name, ls_framework, results)
 
     # Return single result or list of results
     return results
@@ -284,7 +299,18 @@ async def _arun_evaluator_untyped(
     if _TEST_CASE.get():
         with t.trace_feedback(name=run_name):
             results = await _arun_scorer(**kwargs)
-            _add_metadata_to_run_tree(run_name, ls_framework, results)
+            _add_metadata_and_inputs_to_run_tree(
+                run_name,
+                ls_framework,
+                results,
+                inputs={
+                    "inputs": kwargs.get("inputs", None),
+                    "reference_outputs": kwargs.get("reference_outputs", None),
+                }
+                if kwargs.get("inputs", None) is not None
+                or kwargs.get("reference_outputs", None) is not None
+                else None,
+            )
             if not return_raw_outputs:
                 if isinstance(results, list):
                     for result in results:
@@ -301,7 +327,7 @@ async def _arun_evaluator_untyped(
                     )
     else:
         results = await _arun_scorer(**kwargs)
-        _add_metadata_to_run_tree(run_name, ls_framework, results)
+        _add_metadata_and_inputs_to_run_tree(run_name, ls_framework, results)
 
     # Return single result or list of results
     return results

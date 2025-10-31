@@ -4,7 +4,7 @@ version = "0.1.0"
 license = {text = "MIT"}
 description = "Open-source evaluators for LLM applications"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "langchain>=0.3.18",
     "langchain-openai>=0.3.6",

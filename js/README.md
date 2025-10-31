@@ -440,7 +440,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const openaiEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "gpt-5-mini",
+  model: "gpt-4o-mini",
   judge: new OpenAI(),
 });
 ```
@@ -1559,7 +1559,7 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
   }
   history[threadId].push(inputs);
   const res = await client.chat.completions.create({
-    model: "gpt-5-mini",
+    model: "gpt-4.1-mini",
     messages: [
       {
         role: "system",
@@ -1576,7 +1576,7 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-5-mini",
+  model: "openai:gpt-4.1-mini",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
@@ -1682,7 +1682,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-5-mini",
+  model: "openai:gpt-4.1-mini",
 });
 ```
 
@@ -1693,7 +1693,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an angry and belligerent customer who wants a refund.",
-  model: "openai:gpt-5-mini",
+  model: "openai:gpt-4.1-mini",
   fixedResponses: [
     {"role": "user", "content": "I demand a refund for my bike!"},
     {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -1779,7 +1779,7 @@ const giveRefund = tool(
 
 // Create a React-style agent
 const agent = createReactAgent({
-  llm: await initChatModel("openai:gpt-5-mini"),
+  llm: await initChatModel("openai:gpt-4.1-mini"),
   tools: [giveRefund],
   prompt:
     "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
@@ -1801,11 +1801,11 @@ const app = async ({
 const user = createLLMSimulatedUser({
   system:
     "You are an angry user who is frustrated with the service and keeps making additional demands.",
-  model: "openai:gpt-5-mini",
+  model: "openai:gpt-4.1-mini",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:gpt-5-mini",
+  model: "openai:gpt-4o-mini",
   prompt:
     "Based on the below conversation, has the user been satisfied?\n{outputs}",
   feedbackKey: "satisfaction",

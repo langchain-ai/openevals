@@ -47,7 +47,7 @@ def create_llm_simulated_user(
         # Create a simulated user with GPT-4
         simulated_user = create_llm_simulated_user(
             system="You are a helpful customer service representative",
-            model="openai:gpt-5-mini"
+            model="openai:gpt-4.1-mini"
         )
 
         # Use with run_multiturn_simulation
@@ -146,7 +146,7 @@ def create_async_llm_simulated_user(
         # Create a simulated user with GPT-4
         simulated_user = create_async_llm_simulated_user(
             system="You are a helpful customer service representative",
-            model="openai:gpt-5-mini"
+            model="openai:gpt-4.1-mini"
         )
 
         # Use with run_multiturn_simulation_async

@@ -22,7 +22,7 @@ ls.describe("LLM Judge Hallucination", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: HALLUCINATION_PROMPT,
         feedbackKey: "hallucination",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-4o-mini",
       });
 
       const evalResult = await llmAsJudge({
@@ -53,7 +53,7 @@ ls.describe("LLM Judge Hallucination", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: HALLUCINATION_PROMPT,
         feedbackKey: "hallucination",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-4o-mini",
       });
 
       await expect(llmAsJudge({ inputs, outputs })).rejects.toThrow();

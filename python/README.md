@@ -443,7 +443,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 openai_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
-    model="gpt-5-mini",
+    model="gpt-4o-mini",
     judge=OpenAI(),
 )
 ```
@@ -1581,7 +1581,7 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
     # inputs is a message object with role and content
     res = client.chat.completions.create(
-        model="gpt-5-mini",
+        model="gpt-4.1-mini",
         messages=[
             {
                 "role": "system",
@@ -1597,7 +1597,7 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an aggressive and hostile customer who wants a refund for their car.",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-4.1-mini",
 )
 
 trajectory_evaluator = create_llm_as_judge(
@@ -1690,7 +1690,7 @@ from openevals.simulators import create_llm_simulated_user
 
 user = create_llm_simulated_user(
     system="You are an angry and belligerent customer who wants a refund.",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-4.1-mini",
 )
 ```
 
@@ -1701,7 +1701,7 @@ from openevals.simulators import create_llm_simulated_user
 
 user = create_llm_simulated_user(
     system="You are an angry and belligerent customer who wants a refund.",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-4.1-mini",
     fixed_responses=[
         {"role": "user", "content": "I demand a refund for my bike!"},
         {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -1763,7 +1763,7 @@ def give_refund():
     """Gives a refund."""
     return "Refunds are not permitted."
 
-model = init_chat_model("openai:gpt-5-mini")
+model = init_chat_model("openai:gpt-4.1-mini")
 
 agent = create_react_agent(
     model,
@@ -1781,14 +1781,14 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an angry user who is frustrated with the service and keeps making additional demands.",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-4.1-mini",
     fixed_responses=[
         {"role": "user", "content": "Please give me a refund."},
     ],
 )
 
 trajectory_evaluator = create_llm_as_judge(
-    model="openai:gpt-5-mini",
+    model="openai:gpt-4o-mini",
     prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
     feedback_key="satisfaction",
 )

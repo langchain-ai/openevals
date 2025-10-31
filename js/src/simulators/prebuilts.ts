@@ -36,10 +36,10 @@ export function _isInternalMessage(message: ChatCompletionMessage): boolean {
  * ```typescript
  * import { runMultiturnSimulation, createLLMSimulatedUser } from "openevals";
  *
- * // Create a simulated user with gpt-5-mini
+ * // Create a simulated user with GPT-4.1-mini
  * const simulatedUser = createLLMSimulatedUser({
  *   system: "You are a helpful customer service representative",
- *   model: "openai:gpt-5-mini"
+ *   model: "openai:gpt-4.1-mini"
  * });
  *
  * // Use with runMultiturnSimulation

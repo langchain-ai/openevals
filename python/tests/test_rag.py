@@ -21,7 +21,7 @@ def test_llm_as_judge_rag_helpfulnesss():
     llm_as_judge = create_llm_as_judge(
         prompt=RAG_HELPFULNESS_PROMPT,
         feedback_key="helpfulness",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-4o-mini",
     )
 
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -39,7 +39,7 @@ def test_llm_as_judge_rag_helpfulness_not_correct():
     llm_as_judge = create_llm_as_judge(
         prompt=RAG_HELPFULNESS_PROMPT,
         feedback_key="helpfulness",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-4o-mini",
     )
 
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -52,7 +52,7 @@ def test_llm_as_judge_rag_groundedness():
     retrieval_evaluator = create_llm_as_judge(
         prompt=RAG_GROUNDEDNESS_PROMPT,
         feedback_key="groundedness",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-4o-mini",
     )
 
     context = {
@@ -81,7 +81,7 @@ def test_llm_as_judge_rag_retrieval_relevance():
     retrieval_relevance_evaluator = create_llm_as_judge(
         prompt=RAG_RETRIEVAL_RELEVANCE_PROMPT,
         feedback_key="retrieval_relevance",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-4o-mini",
     )
 
     inputs = {

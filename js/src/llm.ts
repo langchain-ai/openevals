@@ -23,6 +23,30 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ZodObjectAny = z.ZodObject<any>;
 
+type LLMAsJudgeScorerParams = {
+  prompt:
+    | string
+    | RunnableInterface
+    | ((
+        ...args: unknown[]
+      ) => ChatCompletionMessage[] | Promise<ChatCompletionMessage[]>);
+  system?: string;
+  schema?: Record<string, unknown> | ZodObjectAny;
+  judge?: ModelClient | BaseChatModel;
+  model?: string;
+  continuous?: boolean;
+  choices?: number[];
+  useReasoning?: boolean;
+  fewShotExamples?: FewShotExample[];
+};
+
+export type LLMAsJudgeScorer = (params: {
+  inputs?: unknown;
+  outputs?: unknown;
+  referenceOutputs?: unknown;
+  [key: string]: unknown;
+}) => Promise<SingleResultScorerReturnType>;
+
 function _isRunnableInterface(prompt: unknown): prompt is RunnableInterface {
   return Runnable.isRunnable(prompt);
 }
@@ -187,22 +211,9 @@ function _stringifyPromptParam(param: unknown): string {
   return JSON.stringify(param);
 }
 
-export const _createLLMAsJudgeScorer = (params: {
-  prompt:
-    | string
-    | RunnableInterface
-    | ((
-        ...args: unknown[]
-      ) => ChatCompletionMessage[] | Promise<ChatCompletionMessage[]>);
-  system?: string;
-  schema?: Record<string, unknown> | ZodObjectAny;
-  judge?: ModelClient | BaseChatModel;
-  model?: string;
-  continuous?: boolean;
-  choices?: number[];
-  useReasoning?: boolean;
-  fewShotExamples?: FewShotExample[];
-}) => {
+export const _createLLMAsJudgeScorer: (
+  params: LLMAsJudgeScorerParams
+) => LLMAsJudgeScorer = (params) => {
   const { prompt, system, model, continuous, choices, fewShotExamples } =
     params;
 

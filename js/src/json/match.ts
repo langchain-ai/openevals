@@ -1,14 +1,40 @@
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { getCurrentRunTree } from "langsmith/traceable";
 
-import { ModelClient, MultiResultScorerReturnType } from "../types.js";
+import {
+  ModelClient,
+  MultiResultScorerReturnType,
+  EvaluatorResult,
+} from "../types.js";
 import { _createLLMAsJudgeScorer } from "../llm.js";
 import { _runEvaluator } from "../utils.js";
-import { getCurrentRunTree } from "langsmith/traceable";
 
 type AggregatorType = "average" | "all" | undefined;
 type ListMatchMode = "superset" | "subset" | "same_elements" | "ordered";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RecordStringAny = Record<string, any>;
+
+export type JsonMatchEvaluatorOptions = {
+  aggregator?: AggregatorType;
+  listAggregator?: "average" | "all";
+  rubric?: Record<string, string>;
+  excludeKeys?: string[];
+  judge?: ModelClient | BaseChatModel;
+  model?: string;
+  useReasoning?: boolean;
+  listMatchMode?: ListMatchMode;
+};
+
+export type JsonMatchEvaluatorParams = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  outputs?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  referenceOutputs?: any;
+};
+
+export type JsonMatchEvaluator = (
+  params: JsonMatchEvaluatorParams
+) => Promise<EvaluatorResult | EvaluatorResult[]>;
 
 const SYSTEM_PROMPT = `You are an LLM that evaluates the accuracy of structured outputs.
 Make sure to evaluate each key the users ask you to evaluate separately. Assign the score
@@ -451,7 +477,9 @@ function _aggregateResults({
  *        If "ordered", matches elements by their index position
  * @returns A function that takes outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults
  */
-export const createJsonMatchEvaluator = ({
+export const createJsonMatchEvaluator: (
+  options: JsonMatchEvaluatorOptions
+) => JsonMatchEvaluator = ({
   aggregator,
   listAggregator = "all",
   rubric = {},
@@ -460,15 +488,6 @@ export const createJsonMatchEvaluator = ({
   model,
   useReasoning = true,
   listMatchMode = "same_elements",
-}: {
-  aggregator?: AggregatorType;
-  listAggregator?: "average" | "all";
-  rubric?: Record<string, string>;
-  excludeKeys?: string[];
-  judge?: ModelClient | BaseChatModel;
-  model?: string;
-  useReasoning?: boolean;
-  listMatchMode?: ListMatchMode;
 }) => {
   if ((judge || model) && Object.keys(rubric).length === 0) {
     throw new Error("rubric must be provided if judge or model is provided");
@@ -507,44 +526,44 @@ export const createJsonMatchEvaluator = ({
         ? new Set(Object.keys(jsonSchema.properties))
         : new Set<string>();
 
-    // Special handling when aggregator is specified - aggregate all keys at once
-    if (aggregator !== undefined) {
-      async function aggregateScorer(): Promise<MultiResultScorerReturnType> {
-        // Get LLM scores if needed
-        if (llmKeys.size > 0) {
-          const outputKeys = Object.keys(jsonSchema.properties)
-            .map((key) => `${key}: ${processedOutputs[key]}`)
-            .join("\n");
-          const expectedOutputKeys = Object.keys(jsonSchema.properties)
-            .map((key) => `${key}: ${processedReferenceOutputs[key]}`)
-            .join("\n");
+    async function aggregateScorer(): Promise<MultiResultScorerReturnType> {
+      // Get LLM scores if needed
+      if (llmKeys.size > 0) {
+        const outputKeys = Object.keys(jsonSchema.properties)
+          .map((key) => `${key}: ${processedOutputs[key]}`)
+          .join("\n");
+        const expectedOutputKeys = Object.keys(jsonSchema.properties)
+          .map((key) => `${key}: ${processedReferenceOutputs[key]}`)
+          .join("\n");
 
-          const scorerFn = _createLLMAsJudgeScorer({
-            prompt: USER_PROMPT,
-            system: SYSTEM_PROMPT,
-            schema: jsonSchema,
-            judge,
-            model,
-          });
-
-          const llmScores = await scorerFn({
-            outputs: outputKeys,
-            referenceOutputs: expectedOutputKeys,
-            rubric: formattedRubric,
-          });
-          Object.assign(scores, llmScores);
-        }
-
-        // Aggregate
-        return _aggregateResults({
-          scoreKey: "json_match",
-          scores,
-          useListReducer,
-          aggregator,
-          listAggregator,
+        const scorerFn = _createLLMAsJudgeScorer({
+          prompt: USER_PROMPT,
+          system: SYSTEM_PROMPT,
+          schema: jsonSchema,
+          judge,
+          model,
         });
+
+        const llmScores = await scorerFn({
+          outputs: outputKeys,
+          referenceOutputs: expectedOutputKeys,
+          rubric: formattedRubric,
+        });
+        Object.assign(scores, llmScores);
       }
 
+      // Aggregate
+      return _aggregateResults({
+        scoreKey: "json_match",
+        scores,
+        useListReducer,
+        aggregator,
+        listAggregator,
+      });
+    }
+
+    // Special handling when aggregator is specified - aggregate all keys at once
+    if (aggregator !== undefined) {
       return _runEvaluator(
         "json_match_evaluator",
         aggregateScorer,
@@ -579,6 +598,7 @@ export const createJsonMatchEvaluator = ({
 
       if (needsLlm) {
         // Create scorer that calls LLM for these keys
+        // eslint-disable-next-line no-inner-declarations
         async function keyScorer(): Promise<MultiResultScorerReturnType> {
           // Create schema for just these keys
           const keySchema = {
@@ -643,8 +663,8 @@ export const createJsonMatchEvaluator = ({
               if (key.includes("_")) {
                 const idx = key.substring(key.lastIndexOf("_") + 1);
                 try {
-                  allIndices.add(parseInt(idx));
-                } catch (e) {
+                  allIndices.add(parseInt(idx, 10));
+                } catch {
                   // ignore non-numeric indices
                 }
               }
@@ -728,6 +748,7 @@ export const createJsonMatchEvaluator = ({
         }
       } else {
         // Non-LLM keys - just aggregate existing scores
+        // eslint-disable-next-line no-inner-declarations
         async function keyScorer(): Promise<MultiResultScorerReturnType> {
           const keyScores: RecordStringAny = Object.fromEntries(
             rawKeys.map((rk) => [rk, scores[rk]])
@@ -741,8 +762,8 @@ export const createJsonMatchEvaluator = ({
               if (key.includes("_")) {
                 const idx = key.substring(key.lastIndexOf("_") + 1);
                 try {
-                  allIndices.add(parseInt(idx));
-                } catch (e) {
+                  allIndices.add(parseInt(idx, 10));
+                } catch {
                   // ignore non-numeric indices
                 }
               }

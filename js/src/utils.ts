@@ -41,7 +41,12 @@ export const _convertToOpenAIMessage = (
   }
 };
 
-export const _normalizeToOpenAIMessagesList = (
+export const _normalizeToOpenAIMessagesList: (
+  messages:
+    | (BaseMessage | ChatCompletionMessage)[]
+    | { messages: (BaseMessage | ChatCompletionMessage)[] }
+    | (BaseMessage | ChatCompletionMessage)
+) => ChatCompletionMessage[] = (
   messages:
     | (BaseMessage | ChatCompletionMessage)[]
     | { messages: (BaseMessage | ChatCompletionMessage)[] }

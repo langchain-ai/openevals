@@ -15,6 +15,7 @@ on:
         description: "Release from a non-main branch (danger!)"
 
 permissions:
+  id-token: write # Required for OIDC
   contents: read
 
 jobs:

@@ -1,5 +1,5 @@
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
-import { _convertMessagesToOpenAIParams } from "@langchain/openai";
+import * as openAIImports from "@langchain/openai";
 import { wrapEvaluator, isInTestContext } from "langsmith/utils/jestlike";
 import { traceable } from "langsmith/traceable";
 
@@ -10,13 +10,28 @@ import {
   EvaluatorResult,
 } from "./types.js";
 
+const {
+  // @ts-expect-error Shim for older versions of @langchain/openai
+  _convertMessagesToOpenAIParams,
+  convertMessagesToCompletionsMessageParams,
+} = openAIImports;
+
+function _convertMessagesShim(message: BaseMessage) {
+  if (typeof _convertMessagesToOpenAIParams === "function") {
+    return _convertMessagesToOpenAIParams([
+      message,
+    ])[0] as ChatCompletionMessage;
+  }
+  return convertMessagesToCompletionsMessageParams({
+    messages: [message],
+  })[0] as ChatCompletionMessage;
+}
+
 export const _convertToOpenAIMessage = (
   message: BaseMessage | ChatCompletionMessage
 ): ChatCompletionMessage => {
   if (isBaseMessage(message)) {
-    const converted = _convertMessagesToOpenAIParams([
-      message,
-    ])[0] as ChatCompletionMessage;
+    const converted = _convertMessagesShim(message);
     if (message.id && !converted.id) {
       converted.id = message.id;
     }
@@ -26,7 +41,12 @@ export const _convertToOpenAIMessage = (
   }
 };
 
-export const _normalizeToOpenAIMessagesList = (
+export const _normalizeToOpenAIMessagesList: (
+  messages:
+    | (BaseMessage | ChatCompletionMessage)[]
+    | { messages: (BaseMessage | ChatCompletionMessage)[] }
+    | (BaseMessage | ChatCompletionMessage)
+) => ChatCompletionMessage[] = (
   messages:
     | (BaseMessage | ChatCompletionMessage)[]
     | { messages: (BaseMessage | ChatCompletionMessage)[] }
@@ -184,9 +204,9 @@ export async function _runEvaluatorUntyped<
     if (!Array.isArray(score) && typeof score === "object") {
       const results = [];
       for (const [key, value] of Object.entries(score)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const [keyScore, reasoning, metadata, sourceRunId] = processScore(
           key,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           value as any
         );
         const result: EvaluatorResult = {

@@ -30,10 +30,10 @@ jobs:
       run:
         working-directory: "js"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # JS Build
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.x
           cache: "yarn"
@@ -54,5 +54,4 @@ jobs:
           fi
       - name: Publish package to NPM
         if: steps.check_npm_version.outputs.should_publish == 'true'
-        run: |
-          npm publish --non-interactive
+        run: npm publish

@@ -616,7 +616,7 @@ console.log(evalResult);
 
 ### Answer relevance
 
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the how relevant an LLM's output is to the input. It takes `inputs` and `outputs` as parameters.
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores how relevant an LLM's output is to the input. It takes `inputs` and `outputs` as parameters.
 
 <details open>
 <summary>Python</summary>
@@ -686,7 +686,7 @@ console.log(evalResult);
 
 ### Plan adherence
 
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the how well an LLM's output adheres to a given plan. It takes `inputs`, `outputs`, and a `plan` as parameters.
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores how well an LLM's output adheres to a given plan. It takes `inputs`, `outputs`, and a `plan` as parameters.
 
 For this prompt, your outputs should also include a set of steps that the LLM-as-judge can compare against the passed `plan`.
 

@@ -321,8 +321,8 @@ const toxicityEvaluator = createLLMAsJudge({
   model: "openai:o3-mini",
 });
 
-const inputs = "What is a doodad?"
-const outputs = "You stink!"
+const inputs = "What is a doodad?";
+const outputs = "You stink!";
 
 const evalResult = await toxicityEvaluator({
   inputs,
@@ -354,8 +354,8 @@ const answerRelevanceEvaluator = createLLMAsJudge({
   model: "openai:o3-mini",
 });
 
-const inputs = "What is a doodad?"
-const outputs = "A doodad is a thingy."
+const inputs = "What is a doodad?";
+const outputs = "A doodad is a thingy.";
 
 const evalResult = await answerRelevanceEvaluator({
   inputs,
@@ -389,19 +389,19 @@ const planAdherenceEvaluator = createLLMAsJudge({
   model: "openai:o3-mini",
 });
 
-const inputs = "What is a doodad?"
+const inputs = "What is a doodad?";
 const plan = {
   steps: [
     "Research the definition of a doodad",
-    "Provide a concise answer"
+    "Provide a concise answer",
   ]
-}
+};
 const outputs = {
   steps: [
     "I've done my research on Google and have concluded that a doodad is a thingy."
   ],
   answer: "A doodad is a thingy."
-}
+};
 
 const evalResult = await planAdherenceEvaluator({
   inputs,

@@ -55,4 +55,4 @@ jobs:
           fi
       - name: Publish package to NPM
         if: steps.check_npm_version.outputs.should_publish == 'true'
-        run: npm publish --provenance
+        run: npm publish

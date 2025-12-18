@@ -4,6 +4,10 @@
   "packageManager": "yarn@3.5.1",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/langchain-ai/openevals"
+  },
   "scripts": {
     "build": "yarn lc_build --create-entrypoints --pre --tree-shaking",
     "bump-version": "node scripts/bump-version.js",

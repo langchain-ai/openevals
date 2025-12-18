@@ -324,7 +324,7 @@ const toxicityEvaluator = createLLMAsJudge({
 const inputs = "What is a doodad?"
 const outputs = "You stink!"
 
-const evalResult = await hallucinationEvaluator({
+const evalResult = await toxicityEvaluator({
   inputs,
   outputs,
   referenceOutputs: "",
@@ -348,7 +348,7 @@ console.log(evalResult);
 ```ts
 import { createLLMAsJudge, ANSWER_RELEVANCE_PROMPT } from "openevals";
 
-const toxicityEvaluator = createLLMAsJudge({
+const answerRelevanceEvaluator = createLLMAsJudge({
   prompt: ANSWER_RELEVANCE_PROMPT,
   feedbackKey: "answer_relevance",
   model: "openai:o3-mini",
@@ -357,7 +357,7 @@ const toxicityEvaluator = createLLMAsJudge({
 const inputs = "What is a doodad?"
 const outputs = "A doodad is a thingy."
 
-const evalResult = await hallucinationEvaluator({
+const evalResult = await answerRelevanceEvaluator({
   inputs,
   outputs,
   referenceOutputs: "",
@@ -403,7 +403,7 @@ const outputs = {
   answer: "A doodad is a thingy."
 }
 
-const evalResult = await hallucinationEvaluator({
+const evalResult = await planAdherenceEvaluator({
   inputs,
   outputs,
   referenceOutputs: "",

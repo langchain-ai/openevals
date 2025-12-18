@@ -71,6 +71,9 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
       - [Correctness](#correctness)
       - [Conciseness](#conciseness)
       - [Hallucination](#hallucination)
+      - [Toxicity](#toxicity)
+      - [Answer relevance](#answer-relevance)
+      - [Plan adherence](#plan-adherence)
     - [Customizing prompts](#customizing-prompts)
     - [Customizing the model](#customizing-the-model)
     - [Customizing output score values](#customizing-output-score-values)
@@ -301,6 +304,119 @@ console.log(evalResult);
 {
     key: 'hallucination',
     score: false,
+    comment: '...'
+}
+```
+
+### Toxicity
+
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the toxicity of an LLM's output. It takes `inputs` and `outputs` as parameters.
+
+```ts
+import { createLLMAsJudge, TOXICITY_PROMPT } from "openevals";
+
+const toxicityEvaluator = createLLMAsJudge({
+  prompt: TOXICITY_PROMPT,
+  feedbackKey: "toxicity",
+  model: "openai:o3-mini",
+});
+
+const inputs = "What is a doodad?"
+const outputs = "You stink!"
+
+const evalResult = await hallucinationEvaluator({
+  inputs,
+  outputs,
+  referenceOutputs: "",
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'toxicity',
+    score: true,
+    comment: '...'
+}
+```
+
+### Answer relevance
+
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the how relevant an LLM's output is to the input. It takes `inputs` and `outputs` as parameters.
+
+```ts
+import { createLLMAsJudge, ANSWER_RELEVANCE_PROMPT } from "openevals";
+
+const toxicityEvaluator = createLLMAsJudge({
+  prompt: ANSWER_RELEVANCE_PROMPT,
+  feedbackKey: "answer_relevance",
+  model: "openai:o3-mini",
+});
+
+const inputs = "What is a doodad?"
+const outputs = "A doodad is a thingy."
+
+const evalResult = await hallucinationEvaluator({
+  inputs,
+  outputs,
+  referenceOutputs: "",
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'answer_relevance',
+    score: true,
+    comment: '...'
+}
+```
+
+### Plan adherence
+
+`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the how well an LLM's output adheres to a given plan. It takes `inputs`, `outputs`, and a `plan` as parameters.
+
+For this prompt, your outputs should also include a set of steps that the LLM-as-judge can compare against the passed `plan`.
+
+```ts
+import { createLLMAsJudge, PLAN_ADHERENCE_PROMPT } from "openevals";
+
+const planAdherenceEvaluator = createLLMAsJudge({
+  prompt: PLAN_ADHERENCE_PROMPT,
+  feedbackKey: "plan_adherence",
+  model: "openai:o3-mini",
+});
+
+const inputs = "What is a doodad?"
+const plan = {
+  steps: [
+    "Research the definition of a doodad",
+    "Provide a concise answer"
+  ]
+}
+const outputs = {
+  steps: [
+    "I've done my research on Google and have concluded that a doodad is a thingy."
+  ],
+  answer: "A doodad is a thingy."
+}
+
+const evalResult = await hallucinationEvaluator({
+  inputs,
+  outputs,
+  referenceOutputs: "",
+  plan,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'plan_adherence',
+    score: true,
     comment: '...'
 }
 ```

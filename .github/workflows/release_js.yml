@@ -30,14 +30,15 @@ jobs:
       run:
         working-directory: "js"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # JS Build
-      - name: Use Node.js 22.x
-        uses: actions/setup-node@v3
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: "yarn"
           cache-dependency-path: "js/yarn.lock"
+          registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies
         run: yarn install --immutable
       - name: Build
@@ -54,5 +55,4 @@ jobs:
           fi
       - name: Publish package to NPM
         if: steps.check_npm_version.outputs.should_publish == 'true'
-        run: |
-          npm publish --non-interactive
+        run: npm publish

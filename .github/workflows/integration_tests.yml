@@ -27,13 +27,13 @@ jobs:
       - name: Check for file changes
         id: check-changes
         run: |
-          if git diff --name-only origin/main HEAD | grep -E "^python/.*\.py$"; then
+          if git diff --name-only origin/main HEAD | grep -E "^python/(.*\.py|pyproject\.toml|uv\.lock)$"; then
             echo "python_changed=true" >> $GITHUB_OUTPUT
           else
             echo "python_changed=false" >> $GITHUB_OUTPUT
           fi
-          
-          if git diff --name-only origin/main HEAD | grep -E "^js/.*\.(js|ts|jsx|tsx)$"; then
+
+          if git diff --name-only origin/main HEAD | grep -E "^js/(.*\.(js|ts|jsx|tsx)|package\.json|yarn\.lock)$"; then
             echo "js_changed=true" >> $GITHUB_OUTPUT
           else
             echo "js_changed=false" >> $GITHUB_OUTPUT
@@ -42,13 +42,6 @@ jobs:
   python_integration_test:
     name: Python Integration Test (${{ matrix.python-version }})
     needs: changed_files
-    if: >
-      (github.event_name == 'push') ||
-      (github.event_name == 'pull_request' && (
-        contains(github.event.pull_request.labels.*.name, 'release') ||
-        needs.changed_files.outputs.python_changed == 'true'
-      )) ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.run-python-tests == 'true')
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -77,8 +70,15 @@ jobs:
           uv sync --group dev
         shell: bash
         working-directory: python
-          
+
       - name: Run integration tests
+        if: >
+          (github.event_name == 'push') ||
+          (github.event_name == 'pull_request' && (
+            contains(github.event.pull_request.labels.*.name, 'release') ||
+            needs.changed_files.outputs.python_changed == 'true'
+          )) ||
+          (github.event_name == 'workflow_dispatch')
         env:
           LANGSMITH_TRACING: "true"
           LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}
@@ -91,13 +91,6 @@ jobs:
   js_integration_test:
     name: JS Integration Test
     needs: changed_files
-    if: >
-      (github.event_name == 'push') ||
-      (github.event_name == 'pull_request' && (
-        contains(github.event.pull_request.labels.*.name, 'release') ||
-        needs.changed_files.outputs.js_changed == 'true'
-      )) ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.run-js-tests == 'true')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -117,8 +110,14 @@ jobs:
         shell: bash
         working-directory: js
 
-
       - name: Run JS integration tests
+        if: >
+          (github.event_name == 'push') ||
+          (github.event_name == 'pull_request' && (
+            contains(github.event.pull_request.labels.*.name, 'release') ||
+            needs.changed_files.outputs.js_changed == 'true'
+          )) ||
+          (github.event_name == 'workflow_dispatch')
         env:
           LANGSMITH_TRACING: "true"
           LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}

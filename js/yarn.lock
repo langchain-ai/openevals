@@ -326,9 +326,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:^1.1.28":
-  version: 1.1.28
-  resolution: "@langchain/core@npm:1.1.28"
+"@langchain/core@npm:^1.1.29":
+  version: 1.1.29
+  resolution: "@langchain/core@npm:1.1.29"
   dependencies:
     "@cfworker/json-schema": ^4.0.2
     ansi-styles: ^5.0.0
@@ -338,9 +338,9 @@ __metadata:
     langsmith: ">=0.5.0 <1.0.0"
     mustache: ^4.2.0
     p-queue: ^6.6.2
-    uuid: ^10.0.0
+    uuid: ^11.1.0
     zod: ^3.25.76 || ^4
-  checksum: ea951a2e43e2d3bc6b3a577e5b51515d2a1c335e1cc7907716a2cdc9370058ca917af02ee8142fd43b66d0c1aaa8b34ef0c9a3544782ee16ef4776b8637925b4
+  checksum: a04f6f7ac7a62f39f90359ea1bbf8c36a2161dd01d5232bdb4fff10cbe675a2d698b795b6a4e09ae4f278f7839851bce356b477c8ea75a02025dcdb01ab0c937
   languageName: node
   linkType: hard
 
@@ -1400,13 +1400,13 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.6.7":
-  version: 1.13.5
-  resolution: "axios@npm:1.13.5"
+  version: 1.13.6
+  resolution: "axios@npm:1.13.6"
   dependencies:
     follow-redirects: ^1.15.11
     form-data: ^4.0.5
     proxy-from-env: ^1.1.0
-  checksum: 985024c4a32f837053f198f02a308fd6f8bfb4053a2f21e39e37992bc6d06917f008679c36b3e7f0f0c9060c85ffe37c61e58d2ac662595d68dc1b89cef78de8
+  checksum: 72e94640e34aa9b591a47a9cc1798a1e18f179e15e39276514dd73f6d910981bdb2117c649da858bd72fc34d91db4f84318f88c8d306e395cd4ef5d6f142ab70
   languageName: node
   linkType: hard
 
@@ -3371,18 +3371,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langchain@npm:^1.2.27":
-  version: 1.2.27
-  resolution: "langchain@npm:1.2.27"
+"langchain@npm:^1.2.28":
+  version: 1.2.28
+  resolution: "langchain@npm:1.2.28"
   dependencies:
     "@langchain/langgraph": ^1.1.2
     "@langchain/langgraph-checkpoint": ^1.0.0
     langsmith: ">=0.5.0 <1.0.0"
-    uuid: ^10.0.0
+    uuid: ^11.1.0
     zod: ^3.25.76 || ^4
   peerDependencies:
-    "@langchain/core": ^1.1.28
-  checksum: 1773bef865ec7375e3d745443b01fb4f16a65b430a92f84f5f272b4593c1dd2880b3c84582ca6b0fbfd7e8c61a212d542854fb9605444c552d3aac682229477c
+    "@langchain/core": ^1.1.29
+  checksum: fadf291e4d84de4cdb46b07d56852a734b0d7106db6393226191d84f978ec24dc2ddf9d117d1a9f99c8e3b3778e859b887bbfe8a5ae43cee42e4757724abdb9a
   languageName: node
   linkType: hard
 
@@ -3547,11 +3547,11 @@ __metadata:
   linkType: hard
 
 "minimatch@npm:^3.0.5, minimatch@npm:^3.1.1, minimatch@npm:^3.1.2":
-  version: 3.1.2
-  resolution: "minimatch@npm:3.1.2"
+  version: 3.1.5
+  resolution: "minimatch@npm:3.1.5"
   dependencies:
-    brace-expansion: "npm:^1.1.7"
-  checksum: c154e566406683e7bcb746e000b84d74465b3a832c45d59912b9b55cd50dee66e5c4b1e5566dba26154040e51672f9aa450a9aef0c97cfc7336b78b7afb9540a
+    brace-expansion: ^1.1.7
+  checksum: 47ef6f412c08be045a7291d11b1c40777925accf7252dc6d3caa39b1bfbb3a7ea390ba7aba464d762d783265c644143d2c8a204e6b5763145024d52ee65a1941
   languageName: node
   linkType: hard
 
@@ -3883,7 +3883,7 @@ __metadata:
   resolution: "openevals@workspace:."
   dependencies:
     "@e2b/code-interpreter": ^1.0.4
-    "@langchain/core": ^1.1.28
+    "@langchain/core": ^1.1.29
     "@langchain/langgraph": ^1.0.2
     "@langchain/openai": ^1.1.3
     "@langchain/scripts": 0.1.3
@@ -3900,7 +3900,7 @@ __metadata:
     eslint-plugin-jest: ^27.6.0
     eslint-plugin-no-instanceof: ^1.0.1
     eslint-plugin-prettier: ^4.2.1
-    langchain: ^1.2.27
+    langchain: ^1.2.28
     langsmith: ">=0.4.6"
     openai: ^5.19.1
     prettier: ^3.5.1

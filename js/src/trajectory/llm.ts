@@ -16,9 +16,11 @@ export { TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE } from "../prompts/trajectory
 export { TRAJECTORY_ACCURACY_PROMPT } from "../prompts/trajectory.js";
 
 // Re-export createLLMAsJudge param types for convenience
-type TrajectoryLLMAsJudgeParams = Parameters<
-  typeof _createLLMAsJudgeScorer
->[0] & {
+type TrajectoryLLMAsJudgeParams = Omit<
+  Parameters<typeof _createLLMAsJudgeScorer>[0],
+  "prompt"
+> & {
+  prompt?: Parameters<typeof _createLLMAsJudgeScorer>[0]["prompt"];
   feedbackKey?: string;
 };
 

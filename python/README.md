@@ -130,7 +130,18 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 
   </details>
 
-  - [Agent evals](#agent-evals)
+  - <details>
+      <summary><a href="#agent-trajectory">Agent trajectory</a></summary>
+
+    - [Trajectory match](#trajectory-match)
+      - [Strict match](#strict-match)
+      - [Unordered match](#unordered-match)
+      - [Subset and superset match](#subset-and-superset-match)
+      - [Tool args match modes](#tool-args-match-modes)
+    - [Trajectory LLM-as-judge](#trajectory-llm-as-judge)
+
+  </details>
+
   - [Creating your own](#creating-your-own)
   - [Python Async Support](#python-async-support)
 
@@ -1521,11 +1532,328 @@ print(result)
 }
 ```
 
-## Agent evals
+## Agent trajectory
 
-If you are building an agent, the evals in this repo are useful for evaluating specific outputs from your agent against references.
+If you are building an agent, `openevals` includes evaluators for assessing the entire **trajectory** of an agent's execution — the sequence of messages and tool calls it makes while solving a task.
 
-However, if you want to get started with more in-depth evals that take into account the entire trajectory of an agent, please check out the [`agentevals`](https://github.com/langchain-ai/agentevals) package.
+Trajectories should be formatted as lists of [OpenAI-style messages](https://platform.openai.com/docs/api-reference/messages). LangChain `BaseMessage` instances are also supported.
+
+### Trajectory match
+
+`create_trajectory_match_evaluator`/`createTrajectoryMatchEvaluator` compares an agent's trajectory against a reference trajectory. You can set `trajectory_match_mode`/`trajectoryMatchMode` to one of four modes:
+
+- `"strict"` — same tool calls in the same order
+- `"unordered"` — same tool calls in any order
+- `"subset"` — output tool calls are a subset of reference
+- `"superset"` — output tool calls are a superset of reference
+
+#### Strict match
+
+The `"strict"` mode compares two trajectories and ensures that they contain the same messages in the same order with the same tool calls. Note that it does allow for differences in message content (e.g. `"SF"` vs. `"San Francisco"`):
+
+```python
+import json
+from openevals import create_trajectory_match_evaluator
+
+outputs = [
+    {"role": "user", "content": "What is the weather in SF?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            },
+            {
+                "function": {
+                    "name": "accuweather_forecast",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            }
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny."},
+]
+reference_outputs = [
+    {"role": "user", "content": "What is the weather in San Francisco?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            }
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
+    {"role": "assistant", "content": "The weather in SF is 80˚ and sunny."},
+]
+
+evaluator = create_trajectory_match_evaluator(trajectory_match_mode="strict")
+result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+print(result)
+```
+
+```
+{'key': 'trajectory_strict_match', 'score': False, 'comment': None}
+```
+
+`"strict"` is useful if you want to ensure that tools are always called in the same order for a given query (e.g. a policy lookup tool before a tool that requests time off for an employee).
+
+**Note:** If you would like to configure the way this evaluator checks for tool call equality, see [this section](#tool-args-match-modes).
+
+#### Unordered match
+
+The `"unordered"` mode compares two trajectories and ensures that they contain the same tool calls in any order. This is useful if you want to allow flexibility in how an agent obtains the proper information, but still do care that all information was retrieved.
+
+```python
+import json
+from openevals import create_trajectory_match_evaluator
+
+outputs = [
+    {"role": "user", "content": "What is the weather in SF and is there anything fun happening?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [{"function": {"name": "get_weather", "arguments": json.dumps({"city": "San Francisco"})}}],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [{"function": {"name": "get_fun_activities", "arguments": json.dumps({"city": "San Francisco"})}}],
+    },
+    {"role": "tool", "content": "Nothing fun is happening, you should stay indoors and read!"},
+    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny, but there is nothing fun happening."},
+]
+reference_outputs = [
+    {"role": "user", "content": "What is the weather in SF and is there anything fun happening?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {"function": {"name": "get_fun_activities", "arguments": json.dumps({"city": "San Francisco"})}},
+            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "San Francisco"})}},
+        ],
+    },
+    {"role": "tool", "content": "Nothing fun is happening, you should stay indoors and read!"},
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    {"role": "assistant", "content": "In SF, it's 80˚ and sunny, but there is nothing fun happening."},
+]
+
+evaluator = create_trajectory_match_evaluator(trajectory_match_mode="unordered")
+result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+print(result)
+```
+
+```
+{'key': 'trajectory_unordered_match', 'score': True, 'comment': None}
+```
+
+`"unordered"` is useful if you want to ensure that specific tools are called at some point in the trajectory, but you don't necessarily need them to be in message order.
+
+**Note:** If you would like to configure the way this evaluator checks for tool call equality, see [this section](#tool-args-match-modes).
+
+#### Subset and superset match
+
+The `"subset"` and `"superset"` modes match partial trajectories, ensuring that a trajectory contains a subset/superset of tool calls contained in a reference trajectory.
+
+```python
+import json
+from openevals import create_trajectory_match_evaluator
+
+outputs = [
+    {"role": "user", "content": "What is the weather in SF and London?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "SF and London"})}},
+            {"function": {"name": "accuweather_forecast", "arguments": json.dumps({"city": "SF and London"})}}
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF, and 90 degrees and rainy in London."},
+    {"role": "tool", "content": "Unknown."},
+    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny. In London, it's 90 degrees and rainy."},
+]
+reference_outputs = [
+    {"role": "user", "content": "What is the weather in SF and London?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "SF and London"})}}
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco, and 90 degrees and rainy in London."},
+    {"role": "assistant", "content": "The weather in SF is 80˚ and sunny. In London, it's 90˚ and rainy."},
+]
+
+evaluator = create_trajectory_match_evaluator(trajectory_match_mode="superset")  # or "subset"
+result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+print(result)
+```
+
+```
+{'key': 'trajectory_superset_match', 'score': True, 'comment': None}
+```
+
+`"superset"` is useful if you want to ensure that some key tools were called at some point in the trajectory, but an agent calling extra tools is still acceptable. `"subset"` is the inverse and is useful if you want to ensure that the agent did not call any tools beyond the expected ones.
+
+#### Tool args match modes
+
+When checking equality between tool calls, the above evaluators will require that all tool call arguments are the exact same by default. You can configure this behavior in the following ways:
+
+- Treating any two tool calls for the same tool as equivalent by setting `tool_args_match_mode="ignore"` (Python) or `toolArgsMatchMode: "ignore"` (TypeScript)
+- Treating a tool call as equivalent if it contains a subset/superset of args compared to a reference tool call of the same name with `tool_args_match_mode="subset"/"superset"` (Python) or `toolArgsMatchMode: "subset"/"superset"` (TypeScript)
+- Setting custom matchers for all calls of a given tool using the `tool_args_match_overrides` (Python) or `toolArgsMatchOverrides` (TypeScript) param
+
+`tool_args_match_overrides`/`toolArgsMatchOverrides` takes a dictionary whose keys are tool names and whose values are either `"exact"`, `"ignore"`, `"subset"`, `"superset"`, a list of field paths that must match exactly, or a comparator function:
+
+Here's an example that allows case insensitivity for the arguments to a tool named `get_weather`:
+
+```python
+import json
+from openevals import create_trajectory_match_evaluator
+
+outputs = [
+    {"role": "user", "content": "What is the weather in SF?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "san francisco"})}}
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny."},
+]
+reference_outputs = [
+    {"role": "user", "content": "What is the weather in San Francisco?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "San Francisco"})}}
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
+    {"role": "assistant", "content": "The weather in SF is 80˚ and sunny."},
+]
+
+evaluator = create_trajectory_match_evaluator(
+    trajectory_match_mode="strict",
+    tool_args_match_mode="exact",  
+    tool_args_match_overrides={
+        "get_weather": lambda x, y: x["city"].lower() == y["city"].lower()
+    }
+)
+
+result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+print(result)
+```
+
+```
+{'key': 'trajectory_strict_match', 'score': True, 'comment': None}
+```
+
+This flexibility allows you to handle cases where you want looser equality for LLM generated arguments (`"san francisco"` to equal `"San Francisco"`) for only specific tool calls.
+
+### Trajectory LLM-as-judge
+
+`create_trajectory_llm_as_judge`/`createTrajectoryLLMAsJudge` uses an LLM to assess whether an agent's trajectory is accurate. Unlike the trajectory match evaluators, it doesn't require a reference trajectory. Use `TRAJECTORY_ACCURACY_PROMPT` for no-reference evaluation, or `TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE` to compare against a reference:
+
+```python
+import json
+from openevals import create_trajectory_llm_as_judge
+from openevals.prompts import TRAJECTORY_ACCURACY_PROMPT
+
+evaluator = create_trajectory_llm_as_judge(
+    prompt=TRAJECTORY_ACCURACY_PROMPT,
+    model="openai:o3-mini",
+)
+
+outputs = [
+    {"role": "user", "content": "What is the weather in SF?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "SF"})}}
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny."},
+]
+
+result = evaluator(outputs=outputs)
+print(result)
+```
+
+```
+{'key': 'trajectory_accuracy', 'score': True, 'comment': 'The trajectory is accurate...'}
+```
+
+If you have a reference trajectory, use `TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE` and pass `reference_outputs`/`referenceOutputs`:
+
+```python
+import json
+from openevals import create_trajectory_llm_as_judge
+from openevals.prompts import TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE
+
+evaluator = create_trajectory_llm_as_judge(
+    prompt=TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
+    model="openai:o3-mini",
+)
+
+outputs = [
+    {"role": "user", "content": "What is the weather in SF?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "SF"})}}
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny."},
+]
+reference_outputs = [
+    {"role": "user", "content": "What is the weather in SF?"},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "San Francisco"})}}
+        ],
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
+    {"role": "assistant", "content": "The weather in SF is 80˚ and sunny."},
+]
+
+result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+print(result)
+```
+
+```
+{'key': 'trajectory_accuracy', 'score': True, 'comment': 'The provided agent trajectory is consistent with the reference...'}
+```
+
+`create_trajectory_llm_as_judge`/`createTrajectoryLLMAsJudge` takes the same parameters as [`create_llm_as_judge`](#llm-as-judge), including:
+
+- `continuous`: boolean — return a float score between 0 and 1 instead of boolean. Defaults to `False`/`false`.
+- `choices`: list of floats — restrict the score to specific values.
+- `system`: string — prepend a system message to the judge prompt.
+- `few_shot_examples`/`fewShotExamples`: list of example dicts appended to the prompt.
+
+For LangGraph-specific graph trajectory evaluators, see the [`agentevals`](https://github.com/langchain-ai/agentevals) package.
 
 ## Creating your own
 

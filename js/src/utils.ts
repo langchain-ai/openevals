@@ -5,6 +5,7 @@ import { traceable } from "langsmith/traceable";
 
 import {
   ChatCompletionMessage,
+  FlexibleChatCompletionMessage,
   MultiResultScorerReturnType,
   SingleResultScorerReturnType,
   EvaluatorResult,
@@ -28,7 +29,7 @@ function _convertMessagesShim(message: BaseMessage) {
 }
 
 export const _convertToOpenAIMessage = (
-  message: BaseMessage | ChatCompletionMessage
+  message: BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
 ): ChatCompletionMessage => {
   if (isBaseMessage(message)) {
     const converted = _convertMessagesShim(message);
@@ -37,22 +38,22 @@ export const _convertToOpenAIMessage = (
     }
     return converted;
   } else {
-    return message;
+    return message as ChatCompletionMessage;
   }
 };
 
 export const _normalizeToOpenAIMessagesList: (
   messages:
-    | (BaseMessage | ChatCompletionMessage)[]
-    | { messages: (BaseMessage | ChatCompletionMessage)[] }
-    | (BaseMessage | ChatCompletionMessage)
+    | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[]
+    | { messages: (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[] }
+    | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)
 ) => ChatCompletionMessage[] = (
   messages:
-    | (BaseMessage | ChatCompletionMessage)[]
-    | { messages: (BaseMessage | ChatCompletionMessage)[] }
-    | (BaseMessage | ChatCompletionMessage)
+    | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[]
+    | { messages: (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[] }
+    | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)
 ): ChatCompletionMessage[] => {
-  let messagesList: (BaseMessage | ChatCompletionMessage)[];
+  let messagesList: (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[];
   if (!Array.isArray(messages)) {
     if ("messages" in messages && Array.isArray(messages.messages)) {
       messagesList = messages.messages;

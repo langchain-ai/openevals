@@ -11,3 +11,7 @@ export { RAG_RETRIEVAL_RELEVANCE_PROMPT } from "./rag_retrieval_relevance.js";
 export { PLAN_ADHERENCE_PROMPT } from "./plan_adherence.js";
 export { ANSWER_RELEVANCE_PROMPT } from "./answer_relevance.js";
 export { TOXICITY_PROMPT } from "./toxicity.js";
+export {
+  TRAJECTORY_ACCURACY_PROMPT,
+  TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
+} from "./trajectory.js";

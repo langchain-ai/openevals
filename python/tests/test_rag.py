@@ -92,7 +92,7 @@ def test_llm_as_judge_rag_retrieval_relevance():
         "documents": [
             "FoobarLand is a new country located on the dark side of the moon",
             "Space dolphins are native to FoobarLand",
-            "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+            "Bagatur Askaryan is a renowned marine biologist who studies space dolphins.",
             "The current weather in FoobarLand is 80 degrees and clear.",
         ],
     }

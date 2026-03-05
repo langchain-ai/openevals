@@ -1553,7 +1553,7 @@ The `"strict"` mode compares two trajectories and ensures that they contain the 
 
 ```python
 import json
-from openevals.trajectory import create_trajectory_match_evaluator
+from openevals import create_trajectory_match_evaluator
 
 outputs = [
     {"role": "user", "content": "What is the weather in SF?"},
@@ -1615,7 +1615,7 @@ The `"unordered"` mode compares two trajectories and ensures that they contain t
 
 ```python
 import json
-from openevals.trajectory import create_trajectory_match_evaluator
+from openevals import create_trajectory_match_evaluator
 
 outputs = [
     {"role": "user", "content": "What is the weather in SF and is there anything fun happening?"},
@@ -1667,7 +1667,7 @@ The `"subset"` and `"superset"` modes match partial trajectories, ensuring that 
 
 ```python
 import json
-from openevals.trajectory import create_trajectory_match_evaluator
+from openevals import create_trajectory_match_evaluator
 
 outputs = [
     {"role": "user", "content": "What is the weather in SF and London?"},
@@ -1721,7 +1721,7 @@ Here's an example that allows case insensitivity for the arguments to a tool nam
 
 ```python
 import json
-from openevals.trajectory import create_trajectory_match_evaluator
+from openevals import create_trajectory_match_evaluator
 
 outputs = [
     {"role": "user", "content": "What is the weather in SF?"},
@@ -1772,7 +1772,7 @@ This flexibility allows you to handle cases where you want looser equality for L
 
 ```python
 import json
-from openevals.trajectory import create_trajectory_llm_as_judge
+from openevals import create_trajectory_llm_as_judge
 from openevals.prompts import TRAJECTORY_ACCURACY_PROMPT
 
 evaluator = create_trajectory_llm_as_judge(
@@ -1805,7 +1805,7 @@ If you have a reference trajectory, use `TRAJECTORY_ACCURACY_PROMPT_WITH_REFEREN
 
 ```python
 import json
-from openevals.trajectory import create_trajectory_llm_as_judge
+from openevals import create_trajectory_llm_as_judge
 from openevals.prompts import TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE
 
 evaluator = create_trajectory_llm_as_judge(

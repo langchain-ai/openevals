@@ -69,10 +69,6 @@
     "index.js",
     "index.d.ts",
     "index.d.cts",
-    "trajectory.cjs",
-    "trajectory.js",
-    "trajectory.d.ts",
-    "trajectory.d.cts",
     "code/typescript.cjs",
     "code/typescript.js",
     "code/typescript.d.ts",
@@ -107,15 +103,6 @@
       },
       "import": "./index.js",
       "require": "./index.cjs"
-    },
-    "./trajectory": {
-      "types": {
-        "import": "./trajectory.d.ts",
-        "require": "./trajectory.d.cts",
-        "default": "./trajectory.d.ts"
-      },
-      "import": "./trajectory.js",
-      "require": "./trajectory.cjs"
     },
     "./code/typescript": {
       "types": {

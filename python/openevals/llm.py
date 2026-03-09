@@ -4,6 +4,7 @@ from openevals.utils import (
     _arun_evaluator_untyped,
     _convert_to_openai_message,
     _normalize_to_openai_messages_list,
+    _attachment_to_content_block,
 )
 from openevals.types import (
     EvaluatorResult,
@@ -164,6 +165,8 @@ def _create_llm_as_judge_scorer(
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ):
+        attachments = kwargs.pop("attachments", None)
+
         if system is not None and not isinstance(prompt, str):
             raise ValueError(
                 "`system` is only supported when `prompt` is a string template"
@@ -198,10 +201,17 @@ def _create_llm_as_judge_scorer(
                 nonlocal schema
                 schema = prompt.schema_
         elif isinstance(prompt, str):
+            if attachments is not None:
+                filtered_prompt_params["attachments"] = ""
             formatted_prompt = prompt.format(**filtered_prompt_params)
-            messages = [
-                {"role": "user", "content": formatted_prompt},
-            ]
+            if attachments is not None:
+                items = attachments if isinstance(attachments, list) else [attachments]
+                content: list = [{"type": "text", "text": formatted_prompt}]
+                for item in items:
+                    content.append(_attachment_to_content_block(item))
+                messages = [{"role": "user", "content": content}]
+            else:
+                messages = [{"role": "user", "content": formatted_prompt}]
         else:
             messages = prompt(
                 inputs=inputs,
@@ -334,6 +344,8 @@ def _create_async_llm_as_judge_scorer(
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ):
+        attachments = kwargs.pop("attachments", None)
+
         if system is not None and not isinstance(prompt, str):
             raise ValueError(
                 "`system` is only supported when `prompt` is a string template"
@@ -368,10 +380,17 @@ def _create_async_llm_as_judge_scorer(
                 nonlocal schema
                 schema = prompt.schema_
         elif isinstance(prompt, str):
+            if attachments is not None:
+                filtered_prompt_params["attachments"] = ""
             formatted_prompt = prompt.format(**filtered_prompt_params)
-            messages = [
-                {"role": "user", "content": formatted_prompt},
-            ]
+            if attachments is not None:
+                items = attachments if isinstance(attachments, list) else [attachments]
+                content: list = [{"type": "text", "text": formatted_prompt}]
+                for item in items:
+                    content.append(_attachment_to_content_block(item))
+                messages = [{"role": "user", "content": content}]
+            else:
+                messages = [{"role": "user", "content": formatted_prompt}]
         else:
             messages = prompt(
                 inputs=inputs,

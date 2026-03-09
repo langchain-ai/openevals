@@ -70,6 +70,50 @@ export const _normalizeToOpenAIMessagesList: (
   return messagesList.map(_convertToOpenAIMessage);
 };
 
+/**
+ * Convert an attachment to a content block for multimodal messages.
+ *
+ * Attachments should be passed in the multimodal trace format described at
+ * https://docs.langchain.com/langsmith/log-multimodal-traces:
+ * `{ mime_type: "image/png", data: "data:image/png;base64,..." }`.
+ *
+ * Also accepts plain image URL strings or pre-formatted content block objects.
+ *
+ * Supported MIME types:
+ * - `image/*`: `{ type: "image_url", image_url: { url: data } }`
+ * - `application/pdf`: `{ type: "file", file: { filename, file_data: data } }`
+ * - `audio/*`: `{ type: "input_audio", input_audio: { data: base64, format } }`
+ */
+export function _attachmentToContentBlock(
+  item: string | Record<string, unknown>
+): Record<string, unknown> {
+  if (typeof item === "object") {
+    const { mime_type: mimeType, data } = item as {
+      mime_type?: string;
+      data?: string;
+    };
+    if (mimeType !== undefined && data !== undefined) {
+      if (mimeType.startsWith("image/")) {
+        return { type: "image_url", image_url: { url: data } };
+      }
+      if (mimeType.startsWith("application/pdf")) {
+        const filename = (item.name as string | undefined) ?? "attachment.pdf";
+        return { type: "file", file: { filename, file_data: data } };
+      }
+      if (mimeType.startsWith("audio/")) {
+        const base64Data = data.startsWith("data:") ? data.split(",")[1] : data;
+        const fmt = mimeType.split("/")[1];
+        return { type: "input_audio", input_audio: { data: base64Data, format: fmt } };
+      }
+      throw new Error(
+        `Unsupported attachment MIME type: ${mimeType}. Supported types: image/*, application/pdf, audio/*`
+      );
+    }
+    return item;
+  }
+  return { type: "image_url", image_url: { url: item } };
+}
+
 export const processScore = (
   _: string,
   value:

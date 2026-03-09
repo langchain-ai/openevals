@@ -16,6 +16,7 @@ __all__ = [
     "_arun_evaluator",
     "_normalize_to_openai_messages_list",
     "_normalize_final_app_outputs_as_string",
+    "_attachment_to_content_block",
 ]
 
 
@@ -53,6 +54,43 @@ def _normalize_to_openai_messages_list(
     if not isinstance(messages, list):
         messages = [messages]  # type: ignore
     return [_convert_to_openai_message(message) for message in messages]  # type: ignore
+
+
+def _attachment_to_content_block(item: Any) -> dict:
+    """Convert an attachment to a content block dict for multimodal messages.
+
+    Attachments should be passed in the multimodal trace format described at
+    https://docs.langchain.com/langsmith/log-multimodal-traces:
+    ``{"mime_type": "image/png", "data": "data:image/png;base64,..."}``.
+
+    Also accepts plain image URL strings or pre-formatted content block dicts.
+
+    Supported MIME types:
+    - ``image/*``: ``{"type": "image_url", "image_url": {"url": data}}``
+    - ``application/pdf``: ``{"type": "file", "file": {"filename": ..., "file_data": data}}``
+    - ``audio/*``: ``{"type": "input_audio", "input_audio": {"data": base64, "format": fmt}}``
+    """
+    if isinstance(item, dict):
+        mime_type = item.get("mime_type")
+        data = item.get("data")
+        if mime_type is not None and data is not None:
+            if mime_type.startswith("image/"):
+                return {"type": "image_url", "image_url": {"url": data}}
+            if mime_type.startswith("application/pdf"):
+                filename = item.get("name", "attachment.pdf")
+                return {"type": "file", "file": {"filename": filename, "file_data": data}}
+            if mime_type.startswith("audio/"):
+                base64_data = data.split(",")[1] if data.startswith("data:") else data
+                fmt = mime_type.split("/")[1]
+                return {"type": "input_audio", "input_audio": {"data": base64_data, "format": fmt}}
+            raise ValueError(
+                f"Unsupported attachment MIME type: {mime_type}. "
+                "Supported types: image/*, application/pdf, audio/*"
+            )
+        return item
+    if isinstance(item, str):
+        return {"type": "image_url", "image_url": {"url": item}}
+    raise ValueError(f"Unsupported attachment type: {type(item)}")
 
 
 # Helper function to process individual scores

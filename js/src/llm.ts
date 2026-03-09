@@ -11,6 +11,7 @@ import {
   _normalizeToOpenAIMessagesList,
   _convertToOpenAIMessage,
   _runEvaluatorUntyped,
+  _attachmentToContentBlock,
 } from "./utils.js";
 import {
   ChatCompletionMessage,
@@ -233,7 +234,7 @@ export const _createLLMAsJudgeScorer: (
     referenceOutputs?: unknown;
     [key: string]: unknown;
   }): Promise<SingleResultScorerReturnType> => {
-    const { inputs, outputs, referenceOutputs, ...rest } = params;
+    const { inputs, outputs, referenceOutputs, attachments, ...rest } = params;
 
     if (system && typeof prompt !== "string") {
       throw new Error(
@@ -281,9 +282,22 @@ export const _createLLMAsJudgeScorer: (
         schema = prompt.schema;
       }
     } else if (typeof prompt === "string") {
+      if (attachments !== undefined) {
+        filteredPromptParams.attachments = "";
+      }
       const template = ChatPromptTemplate.fromTemplate(prompt);
       const formattedPrompt = await template.invoke(filteredPromptParams);
       messages = formattedPrompt.messages;
+      if (attachments !== undefined) {
+        const items = Array.isArray(attachments)
+          ? (attachments as (string | Record<string, unknown>)[])
+          : [attachments as string | Record<string, unknown>];
+        const lastMsg = messages[messages.length - 1] as ChatCompletionMessage;
+        lastMsg.content = [
+          { type: "text", text: lastMsg.content as string },
+          ...items.map(_attachmentToContentBlock),
+        ] as unknown as string;
+      }
     } else {
       messages = await prompt({
         inputs,

@@ -2168,7 +2168,8 @@ You can run an LLM-as-a-judge evaluator for code as follows:
 <summary>Python</summary>
 
 ```python
-from openevals.code.llm import create_code_llm_as_judge, CODE_CORRECTNESS_PROMPT
+from openevals.code.llm import create_code_llm_as_judge
+from openevals.prompts import CODE_CORRECTNESS_PROMPT
 
 llm_as_judge = create_code_llm_as_judge(
     prompt=CODE_CORRECTNESS_PROMPT,

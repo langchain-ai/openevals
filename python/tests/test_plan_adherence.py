@@ -1,7 +1,7 @@
 import pytest
 
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.plan_adherence import PLAN_ADHERENCE_PROMPT
+from openevals.prompts.trajectory.plan_adherence import PLAN_ADHERENCE_PROMPT
 
 
 @pytest.mark.langsmith

@@ -1,7 +1,7 @@
 import pytest
 
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.answer_relevance import ANSWER_RELEVANCE_PROMPT
+from openevals.prompts.quality.answer_relevance import ANSWER_RELEVANCE_PROMPT
 
 
 @pytest.mark.langsmith

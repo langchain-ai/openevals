@@ -3,9 +3,9 @@ import pytest
 from langsmith import testing as t
 
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.rag_helpfulness import RAG_HELPFULNESS_PROMPT
-from openevals.prompts.rag_groundedness import RAG_GROUNDEDNESS_PROMPT
-from openevals.prompts.rag_retrieval_relevance import RAG_RETRIEVAL_RELEVANCE_PROMPT
+from openevals.prompts.rag.helpfulness import RAG_HELPFULNESS_PROMPT
+from openevals.prompts.rag.groundedness import RAG_GROUNDEDNESS_PROMPT
+from openevals.prompts.rag.retrieval_relevance import RAG_RETRIEVAL_RELEVANCE_PROMPT
 
 
 @pytest.mark.langsmith

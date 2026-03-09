@@ -1,7 +1,7 @@
 import pytest
 
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.toxicity import TOXICITY_PROMPT
+from openevals.prompts.safety.toxicity import TOXICITY_PROMPT
 
 
 @pytest.mark.langsmith

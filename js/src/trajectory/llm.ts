@@ -10,10 +10,10 @@ import {
 } from "../types.js";
 import {
   TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-} from "../prompts/trajectory.js";
+} from "../prompts/trajectory/index.js";
 
-export { TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE } from "../prompts/trajectory.js";
-export { TRAJECTORY_ACCURACY_PROMPT } from "../prompts/trajectory.js";
+export { TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE } from "../prompts/trajectory/index.js";
+export { TRAJECTORY_ACCURACY_PROMPT } from "../prompts/trajectory/index.js";
 
 // Re-export createLLMAsJudge param types for convenience
 type TrajectoryLLMAsJudgeParams = Omit<

@@ -41,4 +41,5 @@ Grade the following trajectory:
 
 <trajectory>
 {outputs}
-</trajectory>`;
+</trajectory>
+`;

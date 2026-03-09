@@ -1,7 +1,7 @@
 import pytest
 
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.conciseness import CONCISENESS_PROMPT
+from openevals.prompts.quality.conciseness import CONCISENESS_PROMPT
 
 
 @pytest.mark.langsmith

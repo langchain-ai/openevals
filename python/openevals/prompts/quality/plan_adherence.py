@@ -1,11 +1,11 @@
-export const PLAN_ADHERENCE_PROMPT = `You are an expert evaluator assessing whether an AI agent followed its declared plan during execution. Your task is to determine whether the agent's actions align with its stated plan.
+PLAN_ADHERENCE_PROMPT = """You are an expert evaluator assessing whether an AI agent followed its declared plan during execution. Your task is to determine whether the agent's actions align with its stated plan.
 
 <Rubric>
 Plan adherence means:
 - All planned steps are executed in the trace
 - Steps are performed in the same order as the plan
 - No additional major actions beyond what was planned
-- Each step is clearly verifiable in the execution 
+- Each step is clearly verifiable in the execution
 
 Plan non-adherence includes:
 - Missing or skipped steps from the plan
@@ -44,4 +44,4 @@ Now, please grade the following example according to the above instructions:
 {outputs}
 </output>
 </example>
-`;
+"""

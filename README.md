@@ -4083,7 +4083,7 @@ from openevals.types import ChatCompletionMessage
 
 from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
 
 def give_refund():
     """Gives a refund."""
@@ -4091,7 +4091,7 @@ def give_refund():
 
 model = init_chat_model("openai:gpt-5-mini")
 
-agent = create_react_agent(
+agent = create_agent(
     model,
     tools=[give_refund],
     prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",

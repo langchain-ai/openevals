@@ -282,21 +282,46 @@ export const _createLLMAsJudgeScorer: (
         schema = prompt.schema;
       }
     } else if (typeof prompt === "string") {
-      if (attachments !== undefined) {
-        filteredPromptParams.attachments = "";
-      }
-      const template = ChatPromptTemplate.fromTemplate(prompt);
-      const formattedPrompt = await template.invoke(filteredPromptParams);
-      messages = formattedPrompt.messages;
-      if (attachments !== undefined) {
+      const attachmentPlaceholder = "{attachments}";
+      const splitIdx = prompt.indexOf(attachmentPlaceholder);
+      if (attachments !== undefined && splitIdx !== -1) {
+        const beforeTemplate = prompt.slice(0, splitIdx);
+        const afterTemplate = prompt.slice(splitIdx + attachmentPlaceholder.length);
+        const renderHalf = async (tmpl: string) => {
+          if (!tmpl) return "";
+          const t = ChatPromptTemplate.fromTemplate(tmpl);
+          const r = await t.invoke(filteredPromptParams);
+          return (r.messages[r.messages.length - 1] as ChatCompletionMessage).content as string;
+        };
+        const before = await renderHalf(beforeTemplate);
+        const after = await renderHalf(afterTemplate);
         const items = Array.isArray(attachments)
           ? (attachments as (string | Record<string, unknown>)[])
           : [attachments as string | Record<string, unknown>];
-        const lastMsg = messages[messages.length - 1] as ChatCompletionMessage;
-        lastMsg.content = [
-          { type: "text", text: lastMsg.content as string },
-          ...items.map(_attachmentToContentBlock),
-        ] as unknown as string;
+        const attachmentBlocks = items.map(_attachmentToContentBlock);
+        const content = [
+          ...(before ? [{ type: "text", text: before }] : []),
+          ...attachmentBlocks,
+          ...(after ? [{ type: "text", text: after }] : []),
+        ];
+        messages = [{ role: "user", content: content as unknown as string }];
+      } else {
+        if (attachments !== undefined) {
+          filteredPromptParams.attachments = "";
+        }
+        const template = ChatPromptTemplate.fromTemplate(prompt);
+        const formattedPrompt = await template.invoke(filteredPromptParams);
+        messages = formattedPrompt.messages;
+        if (attachments !== undefined) {
+          const items = Array.isArray(attachments)
+            ? (attachments as (string | Record<string, unknown>)[])
+            : [attachments as string | Record<string, unknown>];
+          const lastMsg = messages[messages.length - 1] as ChatCompletionMessage;
+          lastMsg.content = [
+            { type: "text", text: lastMsg.content as string },
+            ...items.map(_attachmentToContentBlock),
+          ] as unknown as string;
+        }
       }
     } else {
       messages = await prompt({

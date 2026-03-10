@@ -70,6 +70,13 @@ export const _normalizeToOpenAIMessagesList: (
   return messagesList.map(_convertToOpenAIMessage);
 };
 
+function _normalizeAttachmentMimeType(mimeType: string): string {
+  const normalized = mimeType.toLowerCase().trim();
+  if (normalized === "audio/mpeg") return "audio/mp3";
+  if (normalized === "audio/wave" || normalized === "audio/x-wav") return "audio/wav";
+  return normalized;
+}
+
 /**
  * Convert an attachment to a content block for multimodal messages.
  *
@@ -87,31 +94,43 @@ export const _normalizeToOpenAIMessagesList: (
 export function _attachmentToContentBlock(
   item: string | Record<string, unknown>
 ): Record<string, unknown> {
-  if (typeof item === "object") {
-    const { mime_type: mimeType, data } = item as {
-      mime_type?: string;
-      data?: string;
-    };
-    if (mimeType !== undefined && data !== undefined) {
-      if (mimeType.startsWith("image/")) {
-        return { type: "image_url", image_url: { url: data } };
-      }
-      if (mimeType.startsWith("application/pdf")) {
-        const filename = (item.name as string | undefined) ?? "attachment.pdf";
-        return { type: "file", file: { filename, file_data: data } };
-      }
-      if (mimeType.startsWith("audio/")) {
-        const base64Data = data.startsWith("data:") ? data.split(",")[1] : data;
-        const fmt = mimeType.split("/")[1];
-        return { type: "input_audio", input_audio: { data: base64Data, format: fmt } };
-      }
-      throw new Error(
-        `Unsupported attachment MIME type: ${mimeType}. Supported types: image/*, application/pdf, audio/*`
-      );
+  if (typeof item === "string") {
+    return { type: "image_url", image_url: { url: item } };
+  }
+  if (typeof item !== "object" || item === null) {
+    throw new Error(
+      `Unsupported attachment type: ${typeof item}. Expected a string URL or an object with mime_type and data.`
+    );
+  }
+
+  const { mime_type: rawMimeType, data } = item as { mime_type?: string; data?: string };
+
+  if (rawMimeType === undefined || data === undefined) {
+    if (!("type" in item)) {
+      const msg =
+        "Attachment dict must contain either 'mime_type' and 'data' keys, " +
+        "or a 'type' key for pre-formatted content blocks.";
+      throw new Error(msg);
     }
     return item;
   }
-  return { type: "image_url", image_url: { url: item } };
+
+  const mimeType = _normalizeAttachmentMimeType(rawMimeType);
+
+  if (mimeType.startsWith("image/")) {
+    return { type: "image_url", image_url: { url: data } };
+  }
+  if (mimeType === "application/pdf") {
+    const filename = (item.name as string | undefined) ?? "attachment.pdf";
+    return { type: "file", file: { filename, file_data: data } };
+  }
+  if (mimeType.startsWith("audio/")) {
+    const base64Data = data.startsWith("data:") ? data.split(",")[1] : data;
+    const fmt = mimeType.split("/")[1];
+    return { type: "input_audio", input_audio: { data: base64Data, format: fmt } };
+  }
+  const msg = `Unsupported attachment MIME type: ${mimeType}. Supported types: image/*, application/pdf, audio/*`;
+  throw new Error(msg);
 }
 
 export const processScore = (

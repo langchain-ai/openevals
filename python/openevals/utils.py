@@ -56,7 +56,17 @@ def _normalize_to_openai_messages_list(
     return [_convert_to_openai_message(message) for message in messages]  # type: ignore
 
 
-def _attachment_to_content_block(item: Any) -> dict:
+def _normalize_attachment_mime_type(mime_type: str) -> str:
+    """Normalize MIME aliases to canonical forms."""
+    normalized = mime_type.lower().strip()
+    if normalized == "audio/mpeg":
+        return "audio/mp3"
+    if normalized in {"audio/wave", "audio/x-wav"}:
+        return "audio/wav"
+    return normalized
+
+
+def _attachment_to_content_block(item: Any) -> dict[str, Any]:
     """Convert an attachment to a content block dict for multimodal messages.
 
     Attachments should be passed in the multimodal trace format described at
@@ -70,27 +80,43 @@ def _attachment_to_content_block(item: Any) -> dict:
     - ``application/pdf``: ``{"type": "file", "file": {"filename": ..., "file_data": data}}``
     - ``audio/*``: ``{"type": "input_audio", "input_audio": {"data": base64, "format": fmt}}``
     """
-    if isinstance(item, dict):
-        mime_type = item.get("mime_type")
-        data = item.get("data")
-        if mime_type is not None and data is not None:
-            if mime_type.startswith("image/"):
-                return {"type": "image_url", "image_url": {"url": data}}
-            if mime_type.startswith("application/pdf"):
-                filename = item.get("name", "attachment.pdf")
-                return {"type": "file", "file": {"filename": filename, "file_data": data}}
-            if mime_type.startswith("audio/"):
-                base64_data = data.split(",")[1] if data.startswith("data:") else data
-                fmt = mime_type.split("/")[1]
-                return {"type": "input_audio", "input_audio": {"data": base64_data, "format": fmt}}
-            raise ValueError(
-                f"Unsupported attachment MIME type: {mime_type}. "
-                "Supported types: image/*, application/pdf, audio/*"
-            )
-        return item
     if isinstance(item, str):
         return {"type": "image_url", "image_url": {"url": item}}
-    raise ValueError(f"Unsupported attachment type: {type(item)}")
+    if not isinstance(item, dict):
+        msg = (
+            f"Unsupported attachment type: {type(item)}. "
+            "Expected a string URL or a dict with 'mime_type' and 'data' keys."
+        )
+        raise ValueError(msg)
+
+    mime_type = item.get("mime_type")
+    data = item.get("data")
+
+    if mime_type is None or data is None:
+        if "type" not in item:
+            msg = (
+                "Attachment dict must contain either 'mime_type' and 'data' keys, "
+                "or a 'type' key for pre-formatted content blocks."
+            )
+            raise ValueError(msg)
+        return item
+
+    mime_type = _normalize_attachment_mime_type(mime_type)
+
+    if mime_type.startswith("image/"):
+        return {"type": "image_url", "image_url": {"url": data}}
+    if mime_type == "application/pdf":
+        filename = item.get("name", "attachment.pdf")
+        return {"type": "file", "file": {"filename": filename, "file_data": data}}
+    if mime_type.startswith("audio/"):
+        base64_data = data.split(",")[1] if data.startswith("data:") else data
+        fmt = mime_type.split("/")[1]
+        return {"type": "input_audio", "input_audio": {"data": base64_data, "format": fmt}}
+    msg = (
+        f"Unsupported attachment MIME type: {mime_type}. "
+        "Supported types: image/*, application/pdf, audio/*"
+    )
+    raise ValueError(msg)
 
 
 # Helper function to process individual scores

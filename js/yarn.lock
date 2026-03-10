@@ -333,11 +333,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:^1.1.28":
-  version: 1.1.28
-  resolution: "@langchain/core@npm:1.1.28"
+"@langchain/core@npm:^1.1.30":
+  version: 1.1.31
+  resolution: "@langchain/core@npm:1.1.31"
   dependencies:
     "@cfworker/json-schema": ^4.0.2
+    "@standard-schema/spec": ^1.1.0
     ansi-styles: ^5.0.0
     camelcase: 6
     decamelize: 1.2.0
@@ -345,9 +346,9 @@ __metadata:
     langsmith: ">=0.5.0 <1.0.0"
     mustache: ^4.2.0
     p-queue: ^6.6.2
-    uuid: ^10.0.0
+    uuid: ^11.1.0
     zod: ^3.25.76 || ^4
-  checksum: ea951a2e43e2d3bc6b3a577e5b51515d2a1c335e1cc7907716a2cdc9370058ca917af02ee8142fd43b66d0c1aaa8b34ef0c9a3544782ee16ef4776b8637925b4
+  checksum: d4225d22bc093977d92f9880f05cc19e7055a59cf80ea045dab0aea5652b0b8b071058a186e33fd3d10cf0d3539d11c835e2f54b11dcf925c678aba96e5f5078
   languageName: node
   linkType: hard
 
@@ -869,7 +870,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@standard-schema/spec@npm:1.1.0":
+"@standard-schema/spec@npm:1.1.0, @standard-schema/spec@npm:^1.1.0":
   version: 1.1.0
   resolution: "@standard-schema/spec@npm:1.1.0"
   checksum: 6245ebef5e698bb04752a22e996a7cc40406a404d9f68a9d4e1a7a10f2422da287247508e7b495a2f32bb38f3d57b4daf2c9ab4bf22d9bca13e20a3dc5ec575e
@@ -3902,7 +3903,7 @@ __metadata:
   resolution: "openevals@workspace:."
   dependencies:
     "@e2b/code-interpreter": ^1.0.4
-    "@langchain/core": ^1.1.28
+    "@langchain/core": ^1.1.30
     "@langchain/google-genai": ">=0.2.0"
     "@langchain/langgraph": ^1.0.2
     "@langchain/openai": ^1.1.3

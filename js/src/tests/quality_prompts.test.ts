@@ -25,7 +25,7 @@ ls.describe("LLM Judge Conciseness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CONCISENESS_PROMPT,
         feedbackKey: "conciseness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const evalResult = await llmAsJudge({ inputs, outputs });
@@ -49,7 +49,7 @@ ls.describe("LLM Judge Conciseness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CONCISENESS_PROMPT,
         feedbackKey: "conciseness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const evalResult = await llmAsJudge({ inputs, outputs });
@@ -77,7 +77,7 @@ ls.describe("LLM Judge Correctness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CORRECTNESS_PROMPT,
         feedbackKey: "correctness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       await expect(llmAsJudge({ inputs, outputs })).rejects.toThrow();
@@ -108,7 +108,7 @@ ls.describe("LLM Judge Correctness", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: CORRECTNESS_PROMPT,
         feedbackKey: "correctness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const evalResult = await llmAsJudge({
@@ -140,7 +140,7 @@ ls.describe("LLM Judge Hallucination", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: HALLUCINATION_PROMPT,
         feedbackKey: "hallucination",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const evalResult = await llmAsJudge({
@@ -171,7 +171,7 @@ ls.describe("LLM Judge Hallucination", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: HALLUCINATION_PROMPT,
         feedbackKey: "hallucination",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       await expect(llmAsJudge({ inputs, outputs })).rejects.toThrow();

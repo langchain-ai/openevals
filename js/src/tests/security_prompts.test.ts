@@ -195,7 +195,7 @@ ls.describe("LLM Judge Toxicity", () => {
     const evaluator = createLLMAsJudge({
       prompt: TOXICITY_PROMPT,
       feedbackKey: "toxicity",
-      model: "openai:gpt-4o-mini",
+      model: "openai:gpt-5-mini",
     });
     const result = await evaluator({ inputs: inputs.inputs, outputs: inputs.outputs });
     ls.logOutputs({ score: result.score });
@@ -212,7 +212,7 @@ ls.describe("LLM Judge Toxicity", () => {
     const evaluator = createLLMAsJudge({
       prompt: TOXICITY_PROMPT,
       feedbackKey: "toxicity",
-      model: "openai:gpt-4o-mini",
+      model: "openai:gpt-5-mini",
     });
     const result = await evaluator({ inputs: inputs.inputs, outputs: inputs.outputs });
     ls.logOutputs({ score: result.score });
@@ -233,7 +233,7 @@ ls.describe("LLM Judge Fairness", () => {
     const evaluator = createLLMAsJudge({
       prompt: FAIRNESS_PROMPT,
       feedbackKey: "fairness",
-      model: "openai:gpt-4o-mini",
+      model: "openai:gpt-5-mini",
     });
     const result = await evaluator({ inputs: inputs.inputs, outputs: inputs.outputs });
     ls.logOutputs({ score: result.score });
@@ -250,7 +250,7 @@ ls.describe("LLM Judge Fairness", () => {
     const evaluator = createLLMAsJudge({
       prompt: FAIRNESS_PROMPT,
       feedbackKey: "fairness",
-      model: "openai:gpt-4o-mini",
+      model: "openai:gpt-5-mini",
     });
     const result = await evaluator({ inputs: inputs.inputs, outputs: inputs.outputs });
     ls.logOutputs({ score: result.score });

@@ -111,7 +111,7 @@ def test_prompt_hub_works():
     llm_as_judge = create_llm_as_judge(
         prompt=Client().pull_prompt("test-equality"),
         judge=client,
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
@@ -126,7 +126,7 @@ def test_prompt_hub_works_one_message():
     llm_as_judge = create_llm_as_judge(
         prompt=Client().pull_prompt("equality-1-message"),
         judge=client,
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
@@ -141,7 +141,7 @@ def test_structured_prompt():
     prompt = client.pull_prompt("simple-equality-structured")
     llm_as_judge = create_llm_as_judge(
         prompt=prompt,
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["equality"] is True
@@ -156,7 +156,7 @@ def test_llm_as_judge_openai():
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         judge=client,
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] is not None
@@ -171,7 +171,7 @@ def test_llm_as_judge_openai_no_reasoning():
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         judge=client,
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
         use_reasoning=False,
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -187,7 +187,7 @@ def test_llm_as_judge_openai_not_equal():
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         judge=client,
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
@@ -201,7 +201,7 @@ def test_llm_as_judge_openai_not_equal_continuous():
     llm_as_judge = create_llm_as_judge(
         prompt="How equal are these 2? Your score should be a fraction of how many props are equal: {inputs} {outputs}",
         judge=client,
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
         continuous=True,
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -217,7 +217,7 @@ def test_llm_as_judge_openai_not_equal_binary_fail():
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         judge=client,
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
@@ -231,7 +231,7 @@ def test_llm_as_judge_openai_not_equal_binary_pass():
     llm_as_judge = create_llm_as_judge(
         prompt="How equal are these 2? Your score should be a fraction of how many props are equal: {inputs} {outputs}",
         judge=client,
-        model="o3-mini",
+        model="gpt-5-mini",
         continuous=True,
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -242,7 +242,7 @@ def test_llm_as_judge_openai_not_equal_binary_pass():
 def test_llm_as_judge_langchain():
     inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
-    client = ChatOpenAI(model="gpt-4o-mini")
+    client = ChatOpenAI(model="gpt-5-mini")
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         judge=client,
@@ -255,7 +255,7 @@ def test_llm_as_judge_langchain():
 def test_llm_as_judge_langchain_messages():
     inputs = [HumanMessage(content=json.dumps({"a": 1, "b": 2}))]
     outputs = [HumanMessage(content=json.dumps({"a": 1, "b": 3}))]
-    client = ChatOpenAI(model="gpt-4o-mini")
+    client = ChatOpenAI(model="gpt-5-mini")
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         judge=client,
@@ -268,7 +268,7 @@ def test_llm_as_judge_langchain_messages():
 def test_llm_as_judge_langchain_messages_dict():
     inputs = {"messages": [HumanMessage(content=json.dumps({"a": 1, "b": 2}))]}
     outputs = {"messages": [HumanMessage(content=json.dumps({"a": 1, "b": 3}))]}
-    client = ChatOpenAI(model="gpt-4o-mini")
+    client = ChatOpenAI(model="gpt-5-mini")
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         judge=client,
@@ -283,7 +283,7 @@ def test_llm_as_judge_init_chat_model():
     outputs = {"a": 1, "b": 2}
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
@@ -299,7 +299,7 @@ def test_llm_as_judge_few_shot_examples():
             {"inputs": {"a": 1, "b": 2}, "outputs": {"a": 1, "b": 2}, "score": 0.0},
             {"inputs": {"a": 1, "b": 3}, "outputs": {"a": 1, "b": 2}, "score": 1.0},
         ],
-        model="openai:o3-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]
@@ -316,7 +316,7 @@ def test_llm_as_judge_custom_output_schema_typed_dict():
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         output_schema=EqualityResult,
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["are_equal"]
@@ -336,7 +336,7 @@ def test_llm_as_judge_custom_output_schema_openai_client():
         prompt="Are these two equal? {inputs} {outputs}",
         output_schema=EqualityResult.model_json_schema(),
         judge=client,
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["are_equal"]
@@ -354,7 +354,7 @@ def test_llm_as_judge_custom_output_schema_pydantic():
     llm_as_judge = create_llm_as_judge(
         prompt="Are these two equal? {inputs} {outputs}",
         output_schema=EqualityResult,
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert isinstance(eval_result, EqualityResult)
@@ -373,6 +373,6 @@ def test_llm_as_judge_mustache_prompt():
         ],
         template_format="mustache",
     )
-    llm_as_judge = create_llm_as_judge(prompt=prompt, model="openai:gpt-4o-mini")
+    llm_as_judge = create_llm_as_judge(prompt=prompt, model="openai:gpt-5-mini")
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]

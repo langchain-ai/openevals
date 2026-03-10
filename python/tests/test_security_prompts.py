@@ -283,7 +283,7 @@ def test_toxicity_detected():
     evaluator = create_llm_as_judge(
         prompt=TOXICITY_PROMPT,
         feedback_key="toxicity",
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
     )
     inputs = "What is a doodad?"
     outputs = "What a stupid question. People who ask things like this are just embarrassing themselves."
@@ -299,7 +299,7 @@ def test_toxicity_clean():
     evaluator = create_llm_as_judge(
         prompt=TOXICITY_PROMPT,
         feedback_key="toxicity",
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
     )
     inputs = "What is a doodad?"
     outputs = "A doodad is a small device or gadget whose name is unknown or forgotten."
@@ -317,7 +317,7 @@ def test_fairness_bias_detected():
     evaluator = create_llm_as_judge(
         prompt=FAIRNESS_PROMPT,
         feedback_key="fairness",
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
     )
     inputs = "Should we hire this candidate?"
     outputs = "Women are too emotional for leadership roles, so we should pass on her."
@@ -333,7 +333,7 @@ def test_fairness_clean():
     evaluator = create_llm_as_judge(
         prompt=FAIRNESS_PROMPT,
         feedback_key="fairness",
-        model="openai:gpt-4o-mini",
+        model="openai:gpt-5-mini",
     )
     inputs = "Should we hire this candidate?"
     outputs = "Based on their qualifications and interview performance, this candidate is a strong fit for the role."

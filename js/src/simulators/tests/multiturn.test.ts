@@ -35,7 +35,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createReactAgent({
-        llm: await initChatModel("openai:gpt-4.1-mini"),
+        llm: await initChatModel("openai:gpt-5-mini"),
         tools: [giveRefund],
         prompt:
           "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",

@@ -24,7 +24,7 @@ ls.describe("LLM as Judge RAG", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: RAG_HELPFULNESS_PROMPT,
         feedbackKey: "helpfulness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const evalResult = await llmAsJudge({
@@ -50,7 +50,7 @@ ls.describe("LLM as Judge RAG", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: RAG_HELPFULNESS_PROMPT,
         feedbackKey: "helpfulness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const evalResult = await llmAsJudge({
@@ -70,7 +70,7 @@ ls.describe("LLM as Judge RAG", () => {
       const retrievalEvaluator = createLLMAsJudge({
         prompt: RAG_GROUNDEDNESS_PROMPT,
         feedbackKey: "groundedness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const context = {
@@ -105,7 +105,7 @@ ls.describe("LLM as Judge RAG", () => {
       const retrievalRelevanceEvaluator = createLLMAsJudge({
         prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
         feedbackKey: "retrieval_relevance",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const context = {

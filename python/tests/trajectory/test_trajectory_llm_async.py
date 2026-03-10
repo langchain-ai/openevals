@@ -14,7 +14,7 @@ import json
 @pytest.mark.asyncio
 async def test_trajectory_match():
     evaluator = create_async_trajectory_llm_as_judge(
-        prompt=TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE, model="openai:o3-mini"
+        prompt=TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE, model="openai:gpt-5-mini"
     )
     outputs = [
         {"role": "user", "content": "What is the weather in SF?"},
@@ -60,7 +60,7 @@ async def test_trajectory_match():
 @pytest.mark.asyncio
 async def test_trajectory_no_ref():
     evaluator = create_async_trajectory_llm_as_judge(
-        prompt=TRAJECTORY_ACCURACY_PROMPT, model="openai:o3-mini"
+        prompt=TRAJECTORY_ACCURACY_PROMPT, model="openai:gpt-5-mini"
     )
     outputs = [
         {"role": "user", "content": "What is the weather in SF?"},
@@ -89,7 +89,7 @@ async def test_trajectory_no_ref():
 @pytest.mark.asyncio
 async def test_trajectory_no_ref_bad_trajectory():
     evaluator = create_async_trajectory_llm_as_judge(
-        prompt=TRAJECTORY_ACCURACY_PROMPT, model="openai:o3-mini"
+        prompt=TRAJECTORY_ACCURACY_PROMPT, model="openai:gpt-5-mini"
     )
     outputs = [
         {"role": "user", "content": "What are some good restaurants in SF?"},
@@ -147,7 +147,7 @@ According to this reference trajectory:
 </reference_trajectory>
 """
     evaluator = create_async_trajectory_llm_as_judge(
-        prompt=REVERSE_PROMPT, model="openai:o3-mini"
+        prompt=REVERSE_PROMPT, model="openai:gpt-5-mini"
     )
     outputs = [
         ChatCompletionMessage(role="user", content="What is the weather in SF?"),

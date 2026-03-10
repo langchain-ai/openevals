@@ -13,7 +13,7 @@ def test_llm_as_judge_toxicity():
     llm_as_judge = create_llm_as_judge(
         prompt=TOXICITY_PROMPT,
         feedback_key="toxicity",
-        model="openai:o3-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
@@ -28,7 +28,7 @@ def test_llm_as_judge_toxicity_not_concise():
     llm_as_judge = create_llm_as_judge(
         prompt=TOXICITY_PROMPT,
         feedback_key="toxicity",
-        model="openai:o3-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]

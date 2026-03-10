@@ -21,7 +21,7 @@ def test_llm_as_judge_plan_adherence():
     llm_as_judge = create_llm_as_judge(
         prompt=PLAN_ADHERENCE_PROMPT,
         feedback_key="plan_adherence",
-        model="openai:o3-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs, plan=plan)
     assert eval_result["score"]
@@ -39,7 +39,7 @@ def test_llm_as_judge_plan_adherence_not_concise():
     llm_as_judge = create_llm_as_judge(
         prompt=PLAN_ADHERENCE_PROMPT,
         feedback_key="plan_adherence",
-        model="openai:o3-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs, plan=plan)
     assert not eval_result["score"]

@@ -259,7 +259,7 @@ ls.describe("LLM Judge Voice", () => {
     const evaluator = createLLMAsJudge({
       prompt: AUDIO_QUALITY_PROMPT,
       feedbackKey: "audio_quality",
-      model: "google_genai:gemini-2.0-flash",
+      model: "google-genai:gemini-2.0-flash",
     });
     const result = await evaluator({
       inputs: inputs.inputs,
@@ -280,7 +280,7 @@ ls.describe("LLM Judge Voice", () => {
     const evaluator = createLLMAsJudge({
       prompt: AUDIO_QUALITY_PROMPT,
       feedbackKey: "audio_quality",
-      model: "google_genai:gemini-2.0-flash",
+      model: "google-genai:gemini-2.0-flash",
     });
     const result = await evaluator({
       inputs: inputs.inputs,
@@ -301,7 +301,7 @@ ls.describe("LLM Judge Voice", () => {
     const evaluator = createLLMAsJudge({
       prompt: TRANSCRIPTION_ACCURACY_PROMPT,
       feedbackKey: "transcription_accuracy",
-      model: "google_genai:gemini-2.0-flash",
+      model: "google-genai:gemini-2.0-flash",
     });
     const result = await evaluator({
       inputs: inputs.inputs,
@@ -322,7 +322,7 @@ ls.describe("LLM Judge Voice", () => {
     const evaluator = createLLMAsJudge({
       prompt: TRANSCRIPTION_ACCURACY_PROMPT,
       feedbackKey: "transcription_accuracy",
-      model: "google_genai:gemini-2.0-flash",
+      model: "google-genai:gemini-2.0-flash",
     });
     const result = await evaluator({
       inputs: inputs.inputs,
@@ -343,7 +343,7 @@ ls.describe("LLM Judge Voice", () => {
     const evaluator = createLLMAsJudge({
       prompt: VOCAL_AFFECT_PROMPT,
       feedbackKey: "vocal_affect",
-      model: "google_genai:gemini-2.0-flash",
+      model: "google-genai:gemini-2.0-flash",
     });
     const result = await evaluator({
       inputs: inputs.inputs,
@@ -364,7 +364,7 @@ ls.describe("LLM Judge Voice", () => {
     const evaluator = createLLMAsJudge({
       prompt: VOCAL_AFFECT_PROMPT,
       feedbackKey: "vocal_affect",
-      model: "google_genai:gemini-2.0-flash",
+      model: "google-genai:gemini-2.0-flash",
     });
     const result = await evaluator({
       inputs: inputs.inputs,
@@ -385,7 +385,7 @@ ls.describe("LLM Judge Voice", () => {
     const evaluator = createLLMAsJudge({
       prompt: DIALOGUE_FLOW_PROMPT,
       feedbackKey: "dialogue_flow",
-      model: "google_genai:gemini-2.0-flash",
+      model: "google-genai:gemini-2.0-flash",
     });
     const result = await evaluator({
       inputs: inputs.inputs,
@@ -406,7 +406,7 @@ ls.describe("LLM Judge Voice", () => {
     const evaluator = createLLMAsJudge({
       prompt: DIALOGUE_FLOW_PROMPT,
       feedbackKey: "dialogue_flow",
-      model: "google_genai:gemini-2.0-flash",
+      model: "google-genai:gemini-2.0-flash",
     });
     const result = await evaluator({
       inputs: inputs.inputs,

@@ -291,7 +291,7 @@ export const _createLLMAsJudgeScorer: (
           if (!tmpl) return "";
           const t = ChatPromptTemplate.fromTemplate(tmpl);
           const r = await t.invoke(filteredPromptParams);
-          return (r.messages[r.messages.length - 1] as ChatCompletionMessage).content as string;
+          return (r.messages[r.messages.length - 1] as unknown as ChatCompletionMessage).content as string;
         };
         const before = await renderHalf(beforeTemplate);
         const after = await renderHalf(afterTemplate);

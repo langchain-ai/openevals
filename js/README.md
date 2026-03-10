@@ -495,7 +495,7 @@ Supported attachment types:
 | PDF | `application/pdf` |
 
 > [!NOTE]
-> Multimodal support depends on your model provider. Audio input and structured output (e.g. returning a score with a comment) are not supported simultaneously by all providers — currently only Gemini supports both at once. The prebuilt [Voice](#voice) prompts use `google_genai:gemini-2.0-flash` for this reason.
+> Multimodal support depends on your model provider. Audio input and structured output (e.g. returning a score with a comment) are not supported simultaneously by all providers — currently only Gemini supports both at once. The prebuilt [Voice](#voice) prompts use `google-genai:gemini-2.0-flash` for this reason.
 
 Here's an example using the prebuilt `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
 
@@ -724,7 +724,7 @@ const audioData = fs.readFileSync("audio.wav").toString("base64");
 const llmAsJudge = createLLMAsJudge({
   prompt: AUDIO_QUALITY_PROMPT,
   feedbackKey: "audio_quality",
-  model: "google_genai:gemini-2.0-flash",
+  model: "google-genai:gemini-2.0-flash",
 });
 
 const evalResult = await llmAsJudge({

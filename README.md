@@ -30,7 +30,7 @@ npm install openevals @langchain/core
 ```
 </details>
 
-This quickstart will use an evaluator powered by OpenAI's `o3-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
+This quickstart will use an evaluator powered by OpenAI's `gpt-5-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
 
 ```bash
 export OPENAI_API_KEY="your_openai_api_key"
@@ -48,7 +48,7 @@ from openevals.prompts import CONCISENESS_PROMPT
 conciseness_evaluator = create_llm_as_judge(
     # CONCISENESS_PROMPT is just an f-string
     prompt=CONCISENESS_PROMPT,
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 
 inputs = "How is the weather in San Francisco?"
@@ -81,7 +81,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   // CONCISENESS_PROMPT is just an f-string
   prompt: CONCISENESS_PROMPT,
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const inputs = "How is the weather in San Francisco?"
@@ -117,17 +117,23 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
   - <details>
       <summary><a href="#llm-as-judge">LLM-as-Judge</a></summary>
 
-    - [Prebuilt prompts](#prebuilt-prompts)
-      - [Correctness](#correctness)
-      - [Conciseness](#conciseness)
-      - [Hallucination](#hallucination)
-      - [Toxicity](#toxicity)
-      - [Answer relevance](#answer-relevance)
-      - [Plan adherence](#plan-adherence)
     - [Customizing prompts](#customizing-prompts)
     - [Customizing the model](#customizing-the-model)
     - [Customizing output score values](#customizing-output-score-values)
     - [Customizing output schema](#customizing-output-schema)
+    - [Multimodal](#multimodal)
+
+  </details>
+
+  - <details>
+      <summary><a href="#prebuilt-prompts">Prebuilt prompts</a></summary>
+
+    - [Quality](#quality)
+    - [Safety](#safety)
+    - [Security](#security)
+    - [Image](#image)
+    - [Voice](#voice)
+    - [RAG](#rag)
 
   </details>
 
@@ -136,18 +142,6 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
-
-  </details>
-
-  - <details>
-      <summary><a href="#rag">RAG</a></summary>
-
-    - [Correctness](#correctness-rag)
-    - [Helpfulness](#helpfulness)
-    - [Groundedness](#groundedness)
-    - [Retrieval relevance](#retrieval-relevance)
-      - [Retrieval relevance with LLM as judge](#retrieval-relevance-with-llm-as-judge)
-      - [Retrieval relevance with string evaluators](#retrieval-relevance-with-string-evaluators)
 
   </details>
 
@@ -172,15 +166,6 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
   </details>
 
   - <details>
-      <summary><a href="#other">Other</a></summary>
-
-    - [Exact Match](#exact-match)
-    - [Levenshtein Distance](#levenshtein-distance)
-    - [Embedding Similarity](#embedding-similarity)
-
-  </details>
-
-  - <details>
       <summary><a href="#agent-trajectory">Agent trajectory</a></summary>
 
     - [Trajectory match](#trajectory-match)
@@ -189,6 +174,16 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
       - [Subset and superset match](#subset-and-superset-match)
       - [Tool args match modes](#tool-args-match-modes)
     - [Trajectory LLM-as-judge](#trajectory-llm-as-judge)
+    - [Prebuilt trajectory prompts](#prebuilt-trajectory-prompts)
+
+  </details>
+
+  - <details>
+      <summary><a href="#other">Other</a></summary>
+
+    - [Exact Match](#exact-match)
+    - [Levenshtein Distance](#levenshtein-distance)
+    - [Embedding Similarity](#embedding-similarity)
 
   </details>
 
@@ -265,7 +260,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 ```
 </details>
@@ -278,7 +273,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 ```
 
@@ -339,452 +334,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 
 By convention, we generally suggest sticking to `inputs`, `outputs`, and `reference_outputs` as the names of the parameters for LLM-as-judge evaluators, but these will be directly formatted into the prompt so you can use any variable names you want.
 
-## Prebuilt prompts
-
-### Conciseness
-
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the conciseness of an LLM's output. It takes `inputs` and `outputs` as parameters.
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import CONCISENESS_PROMPT
-
-inputs = "How is the weather in San Francisco?"
-outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
-
-llm_as_judge = create_llm_as_judge(
-    prompt=CONCISENESS_PROMPT,
-    feedback_key="conciseness",
-    model="openai:o3-mini",
-)
-
-eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
-
-print(eval_result)
-```
-
-```
-{
-    'key': 'conciseness',
-    'score': False,
-    'comment': '...'
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
-
-const concisenessEvaluator = createLLMAsJudge({
-  prompt: CONCISENESS_PROMPT,
-  feedbackKey: "conciseness",
-  model: "openai:o3-mini",
-});
-
-const inputs = "How is the weather in San Francisco?"
-const outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
-
-const evalResult = await concisenessEvaluator({
-  inputs,
-  outputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'conciseness',
-    score: false,
-    comment: '...'
-}
-```
-
-</details>
-
-### Correctness
-
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the correctness of an LLM's output. It takes `inputs`, `outputs`, and optionally, `reference_outputs` as parameters.
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import CORRECTNESS_PROMPT
-
-correctness_evaluator = create_llm_as_judge(
-    prompt=CORRECTNESS_PROMPT,
-    feedback_key="correctness",
-    model="openai:o3-mini",
-)
-
-inputs = "How much has the price of doodads changed in the past year?"
-outputs = "Doodads have increased in price by 10% in the past year."
-reference_outputs = "The price of doodads has decreased by 50% in the past year."
-
-eval_result = correctness_evaluator(
-  inputs=inputs,
-  outputs=outputs,
-  reference_outputs=reference_outputs
-)
-
-print(eval_result)
-```
-
-```
-{
-    'key': 'correctness',
-    'score': False,
-    'comment': '...'
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const correctnessEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  feedbackKey: "correctness",
-  model: "openai:o3-mini",
-});
-
-const inputs = "How much has the price of doodads changed in the past year?";
-const outputs = "Doodads have increased in price by 10% in the past year.";
-const referenceOutputs = "The price of doodads has decreased by 50% in the past year.";
-
-const evalResult = await correctnessEvaluator({
-  inputs,
-  outputs,
-  referenceOutputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'correctness',
-    score: false,
-    comment: '...'
-}
-```
-</details>
-
-### Hallucination
-
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the hallucination of an LLM's output. It takes `inputs`, `outputs`, and optionally, `context` as parameters.
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import HALLUCINATION_PROMPT
-
-inputs = "What is a doodad?"
-outputs = "I know the answer. A doodad is a kitten."
-context = "A doodad is a self-replicating swarm of nanobots. They are extremely dangerous and should be avoided at all costs. Some safety precautions when working with them include wearing gloves and a mask."
-
-llm_as_judge = create_llm_as_judge(
-    prompt=HALLUCINATION_PROMPT,
-    feedback_key="hallucination",
-    model="openai:o3-mini",
-)
-
-eval_result = llm_as_judge(
-    inputs=inputs,
-    outputs=outputs,
-    context=context,
-    reference_outputs="",
-)
-```
-
-```
-{
-    'key': 'hallucination',
-    'score': False,
-    'comment': '...'
-}
-```
-
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, HALLUCINATION_PROMPT } from "openevals";
-
-const hallucinationEvaluator = createLLMAsJudge({
-  prompt: HALLUCINATION_PROMPT,
-  feedbackKey: "hallucination",
-  model: "openai:o3-mini",
-});
-
-const inputs = "What is a doodad?"
-const outputs = "I know the answer. A doodad is a kitten."
-const context = "A doodad is a self-replicating swarm of nanobots. They are extremely dangerous and should be avoided at all costs. Some safety precautions when working with them include wearing gloves and a mask."
-
-const evalResult = await hallucinationEvaluator({
-  inputs,
-  outputs,
-  context,
-  referenceOutputs: "",
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'hallucination',
-    score: false,
-    comment: '...'
-}
-```
-</details>
-
-### Toxicity
-
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores the toxicity of an LLM's output. It takes `inputs` and `outputs` as parameters.
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import TOXICITY_PROMPT
-
-inputs = "What is a doodad?"
-outputs = "You stink!"
-
-llm_as_judge = create_llm_as_judge(
-    prompt=TOXICITY_PROMPT,
-    feedback_key="toxicity",
-    model="openai:o3-mini",
-)
-
-eval_result = llm_as_judge(
-    inputs=inputs,
-    outputs=outputs,
-    reference_outputs="",
-)
-```
-
-```
-{
-    'key': 'toxicity',
-    'score': True,
-    'comment': '...'
-}
-```
-
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, TOXICITY_PROMPT } from "openevals";
-
-const toxicityEvaluator = createLLMAsJudge({
-  prompt: TOXICITY_PROMPT,
-  feedbackKey: "toxicity",
-  model: "openai:o3-mini",
-});
-
-const inputs = "What is a doodad?";
-const outputs = "You stink!";
-
-const evalResult = await toxicityEvaluator({
-  inputs,
-  outputs,
-  referenceOutputs: "",
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'toxicity',
-    score: true,
-    comment: '...'
-}
-```
-</details>
-
-### Answer relevance
-
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores how relevant an LLM's output is to the input. It takes `inputs` and `outputs` as parameters.
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import ANSWER_RELEVANCE_PROMPT
-
-inputs = "What is a doodad?"
-outputs = "A doodad is a thingy."
-
-llm_as_judge = create_llm_as_judge(
-    prompt=ANSWER_RELEVANCE_PROMPT,
-    feedback_key="answer_relevance",
-    model="openai:o3-mini",
-)
-
-eval_result = llm_as_judge(
-    inputs=inputs,
-    outputs=outputs,
-    reference_outputs="",
-)
-```
-
-```
-{
-    'key': 'answer_relevance',
-    'score': True,
-    'comment': '...'
-}
-```
-
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, ANSWER_RELEVANCE_PROMPT } from "openevals";
-
-const answerRelevanceEvaluator = createLLMAsJudge({
-  prompt: ANSWER_RELEVANCE_PROMPT,
-  feedbackKey: "answer_relevance",
-  model: "openai:o3-mini",
-});
-
-const inputs = "What is a doodad?";
-const outputs = "A doodad is a thingy.";
-
-const evalResult = await answerRelevanceEvaluator({
-  inputs,
-  outputs,
-  referenceOutputs: "",
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'answer_relevance',
-    score: true,
-    comment: '...'
-}
-```
-</details>
-
-### Plan adherence
-
-`openevals` includes a prebuilt prompt for `create_llm_as_judge` that scores how well an LLM's output adheres to a given plan. It takes `inputs`, `outputs`, and a `plan` as parameters.
-
-For this prompt, your outputs should also include a set of steps that the LLM-as-judge can compare against the passed `plan`.
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import PLAN_ADHERENCE_PROMPT
-
-inputs = "What is a doodad?"
-plan = {
-    "steps": [
-        "Research the definition of a doodad",
-        "Provide a concise answer"
-    ]
-}
-outputs = {
-    "steps": [
-       "I've done my research on Google and have concluded that a doodad is a thingy."
-    ],
-    "answer": "A doodad is a thingy."
-}
-
-llm_as_judge = create_llm_as_judge(
-    prompt=PLAN_ADHERENCE_PROMPT,
-    feedback_key="plan_adherence",
-    model="openai:o3-mini",
-)
-
-eval_result = llm_as_judge(inputs=inputs, outputs=outputs, plan=plan)
-```
-
-```
-{
-    'key': 'plan_adherence',
-    'score': True,
-    'comment': '...'
-}
-```
-
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, PLAN_ADHERENCE_PROMPT } from "openevals";
-
-const planAdherenceEvaluator = createLLMAsJudge({
-  prompt: PLAN_ADHERENCE_PROMPT,
-  feedbackKey: "plan_adherence",
-  model: "openai:o3-mini",
-});
-
-const inputs = "What is a doodad?";
-const plan = {
-  steps: [
-    "Research the definition of a doodad",
-    "Provide a concise answer",
-  ]
-};
-const outputs = {
-  steps: [
-    "I've done my research on Google and have concluded that a doodad is a thingy."
-  ],
-  answer: "A doodad is a thingy."
-};
-
-const evalResult = await planAdherenceEvaluator({
-  inputs,
-  outputs,
-  referenceOutputs: "",
-  plan,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'plan_adherence',
-    score: true,
-    comment: '...'
-}
-```
-</details>
+OpenEvals includes many prebuilt prompts for common evaluation scenarios. See the [Prebuilt prompts](#prebuilt-prompts) section for a full list organized by category.
 
 ### Customizing prompts
 
@@ -816,7 +366,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 custom_prompt_evaluator = create_llm_as_judge(
     prompt=MY_CUSTOM_PROMPT,
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 
 custom_prompt_evaluator(
@@ -852,7 +402,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 const customPromptEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const inputs = "What color is the sky?"
@@ -924,7 +474,7 @@ prompt = ChatPromptTemplate([
 
 llm_as_judge = create_llm_as_judge(
     prompt=prompt,
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
     feedback_key="equality",
 )
 
@@ -960,7 +510,7 @@ const prompt = ChatPromptTemplate.fromMessages([
 
 const evaluator = createLLMAsJudge({
   prompt,
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
   feedbackKey: "equality",
 });
 
@@ -1070,7 +620,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 openai_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
-    model="gpt-4o-mini",
+    model="gpt-5-mini",
     judge=OpenAI(),
 )
 ```
@@ -1090,7 +640,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const openaiEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "gpt-4o-mini",
+  model: "gpt-5-mini",
   judge: new OpenAI(),
 });
 ```
@@ -1139,7 +689,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 evaluator = create_llm_as_judge(
     prompt=MY_CUSTOM_PROMPT,
     choices=[0.0, 0.5, 1.0],
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 
 result = evaluator(
@@ -1193,7 +743,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 const customEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
   choices: [0.0, 0.5, 1.0],
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const result = await customEvaluator({
@@ -1259,7 +809,7 @@ outputs = "The rain in Spain falls mainly on the plain."
 
 llm_as_judge = create_llm_as_judge(
     prompt="Are the following two values equal? {inputs} {outputs}",
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
     output_schema=EqualityResult,
 )
 eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -1294,7 +844,7 @@ const outputs = "The rain in Spain falls mainly on the plain.";
 
 const llmAsJudge = createLLMAsJudge({
   prompt: "Are the following two values equal? {inputs} {outputs}",
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
   outputSchema: equalitySchema,
 });
 
@@ -1321,6 +871,971 @@ If you are using `evaluate`, you will need to wrap your evaluator in another fun
 #### Structured prompts
 
 Passing in a pulled prompt from the [LangChain prompt hub](https://smith.langchain.com/hub) that has an output schema set will also change the output schema for the LLM-as-judge evaluator.
+
+### Multimodal
+
+LLM-as-judge evaluators support multimodal inputs including images, audio, and PDFs. To pass multimodal content, include an `{attachments}` placeholder in your prompt and pass an `attachments` argument when calling the evaluator — either a single dict or a list of dicts with a `mime_type` and base64-encoded `data` field. The evaluator inserts the content at that placeholder. The prebuilt [Image](#image) and [Voice](#voice) prompts already include this placeholder, or you can add it to any custom prompt.
+
+Supported attachment types:
+
+| Type | `mime_type` |
+|------|-------------|
+| Images | `image/png`, `image/jpeg`, `image/gif`, `image/webp` |
+| Audio | `audio/wav`, `audio/mp3`, `audio/mpeg` |
+| PDF | `application/pdf` |
+
+> [!NOTE]
+> Multimodal support depends on your model provider. Audio input and structured output (e.g. returning a score with a comment) are not supported simultaneously by all providers — currently only Gemini supports both at once. The prebuilt [Voice](#voice) prompts use `google_genai:gemini-2.0-flash` for this reason.
+
+Here's an example using the prebuilt `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
+
+<details open>
+<summary>Python</summary>
+
+```python
+import base64
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import IMAGE_RELEVANCE_PROMPT
+
+evaluator = create_llm_as_judge(
+    prompt=IMAGE_RELEVANCE_PROMPT,
+    feedback_key="image_relevance",
+    model="openai:gpt-5-mini",
+)
+
+# Option A: pass a URL string directly
+eval_result = evaluator(
+    inputs="Show me a picture of fruits",
+    outputs="Here is an image of various fruits",
+    attachments="https://example.com/fruits.jpg",
+)
+
+# Option B: pass a base64-encoded data URI
+with open("image.jpg", "rb") as f:
+    image_data = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
+
+eval_result = evaluator(
+    inputs="Show me a picture of fruits",
+    outputs="Here is an image of various fruits",
+    attachments={"mime_type": "image/jpeg", "data": image_data},
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'image_relevance',
+    'score': True,
+    'comment': '...'
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import * as fs from "fs";
+import { createLLMAsJudge, IMAGE_RELEVANCE_PROMPT } from "openevals";
+
+const evaluator = createLLMAsJudge({
+  prompt: IMAGE_RELEVANCE_PROMPT,
+  feedbackKey: "image_relevance",
+  model: "openai:gpt-5-mini",
+});
+
+// Option A: pass a URL string directly
+const evalResult = await evaluator({
+  inputs: "Show me a picture of fruits",
+  outputs: "Here is an image of various fruits",
+  attachments: "https://example.com/fruits.jpg",
+});
+
+// Option B: pass a base64-encoded data URI
+const imageData = "data:image/jpeg;base64," + fs.readFileSync("image.jpg").toString("base64");
+
+const evalResultB64 = await evaluator({
+  inputs: "Show me a picture of fruits",
+  outputs: "Here is an image of various fruits",
+  attachments: { mime_type: "image/jpeg", data: imageData },
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'image_relevance',
+    score: true,
+    comment: '...'
+}
+```
+</details>
+
+## Prebuilt prompts
+
+OpenEvals includes prebuilt prompts for common evaluation scenarios that work out of the box with [`create_llm_as_judge`](#llm-as-judge). All prebuilt prompts are importable from `openevals.prompts` (Python) or `openevals` (TypeScript).
+
+### Quality
+
+These prompts evaluate general output quality.
+
+| Prompt | Parameters | What it evaluates |
+|--------|-----------|-------------------|
+| `CONCISENESS_PROMPT` | `inputs`, `outputs` | Whether the output is appropriately brief and avoids unnecessary padding |
+| `CORRECTNESS_PROMPT` | `inputs`, `outputs`, `reference_outputs` (optional) | Factual accuracy and completeness of the output |
+| `HALLUCINATION_PROMPT` | `inputs`, `outputs`, `context` (optional) | Whether the output contains information not supported by the provided context |
+| `ANSWER_RELEVANCE_PROMPT` | `inputs`, `outputs` | Whether the output directly addresses the question asked |
+| `PLAN_ADHERENCE_PROMPT` | `inputs`, `outputs`, `plan` | Whether the output follows a provided plan |
+| `CODE_CORRECTNESS_PROMPT` | `inputs`, `outputs` | Code correctness against the problem specification |
+| `CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS` | `inputs`, `outputs`, `reference_outputs` | Code correctness compared to a reference solution |
+
+Here's an example using `CORRECTNESS_PROMPT`:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
+
+correctness_evaluator = create_llm_as_judge(
+    prompt=CORRECTNESS_PROMPT,
+    feedback_key="correctness",
+    model="openai:gpt-5-mini",
+)
+
+inputs = "How much has the price of doodads changed in the past year?"
+outputs = "Doodads have increased in price by 10% in the past year."
+reference_outputs = "The price of doodads has decreased by 50% in the past year."
+
+eval_result = correctness_evaluator(
+  inputs=inputs,
+  outputs=outputs,
+  reference_outputs=reference_outputs
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'correctness',
+    'score': False,
+    'comment': '...'
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
+
+const correctnessEvaluator = createLLMAsJudge({
+  prompt: CORRECTNESS_PROMPT,
+  feedbackKey: "correctness",
+  model: "openai:gpt-5-mini",
+});
+
+const inputs = "How much has the price of doodads changed in the past year?";
+const outputs = "Doodads have increased in price by 10% in the past year.";
+const referenceOutputs = "The price of doodads has decreased by 50% in the past year.";
+
+const evalResult = await correctnessEvaluator({
+  inputs,
+  outputs,
+  referenceOutputs,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'correctness',
+    score: false,
+    comment: '...'
+}
+```
+</details>
+
+### Safety
+
+These prompts detect harmful or biased content in LLM outputs.
+
+| Prompt | Parameters | What it evaluates |
+|--------|-----------|-------------------|
+| `TOXICITY_PROMPT` | `inputs`, `outputs` | Harmful, offensive, or abusive language |
+| `FAIRNESS_PROMPT` | `inputs`, `outputs` | Bias or discrimination toward individuals or groups based on protected characteristics |
+
+Here's an example using `FAIRNESS_PROMPT`:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import FAIRNESS_PROMPT
+
+llm_as_judge = create_llm_as_judge(
+    prompt=FAIRNESS_PROMPT,
+    feedback_key="fairness",
+    model="openai:gpt-5-mini",
+)
+
+eval_result = llm_as_judge(
+    inputs="Should we hire this candidate?",
+    outputs="Their name is hard to pronounce — that could make clients uncomfortable.",
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'fairness',
+    'score': True,
+    'comment': '...'
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, FAIRNESS_PROMPT } from "openevals";
+
+const fairnessEvaluator = createLLMAsJudge({
+  prompt: FAIRNESS_PROMPT,
+  feedbackKey: "fairness",
+  model: "openai:gpt-5-mini",
+});
+
+const evalResult = await fairnessEvaluator({
+  inputs: "Should we hire this candidate?",
+  outputs: "Their name is hard to pronounce — that could make clients uncomfortable.",
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'fairness',
+    score: true,
+    comment: '...'
+}
+```
+</details>
+
+### Security
+
+These prompts detect security threats in LLM inputs and outputs.
+
+| Prompt | Parameters | What it evaluates |
+|--------|-----------|-------------------|
+| `PII_LEAKAGE_PROMPT` | `inputs`, `outputs` | Personally identifiable information exposed in the output |
+| `PROMPT_INJECTION_PROMPT` | `inputs` | Attempts to override or manipulate system instructions |
+| `JAILBREAK_PROMPT` | `inputs` | Social engineering attempts to bypass AI safety guidelines |
+| `CODE_INJECTION_PROMPT` | `inputs` | Malicious code or exploits embedded in inputs |
+
+Here's an example using `PII_LEAKAGE_PROMPT`:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import PII_LEAKAGE_PROMPT
+
+llm_as_judge = create_llm_as_judge(
+    prompt=PII_LEAKAGE_PROMPT,
+    feedback_key="pii_leakage",
+    model="openai:gpt-5-mini",
+)
+
+eval_result = llm_as_judge(
+    inputs="What is my account info?",
+    outputs="Your name is John Smith, your email is john.smith@example.com, and your SSN is 123-45-6789.",
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'pii_leakage',
+    'score': True,
+    'comment': '...'
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, PII_LEAKAGE_PROMPT } from "openevals";
+
+const piiEvaluator = createLLMAsJudge({
+  prompt: PII_LEAKAGE_PROMPT,
+  feedbackKey: "pii_leakage",
+  model: "openai:gpt-5-mini",
+});
+
+const evalResult = await piiEvaluator({
+  inputs: "What is my account info?",
+  outputs: "Your name is John Smith, your email is john.smith@example.com, and your SSN is 123-45-6789.",
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'pii_leakage',
+    score: true,
+    comment: '...'
+}
+```
+</details>
+
+### Image
+
+These prompts evaluate image content and its relation to the associated context. All image prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing image data. Note that your chosen model must support vision inputs (e.g. `openai:gpt-5-mini`).
+
+| Prompt | Parameters | What it evaluates |
+|--------|-----------|-------------------|
+| `IMAGE_RELEVANCE_PROMPT` | `inputs`, `outputs`, `attachments` | Whether the image matches the intent of the associated prompt or query |
+| `VISUAL_HALLUCINATION_PROMPT` | `inputs`, `outputs`, `attachments` | Factually incorrect or impossible visual content in the image |
+| `EXPLICIT_CONTENT_PROMPT` | `inputs`, `outputs`, `attachments` | Sexually explicit or graphic material inappropriate for general audiences |
+| `SENSITIVE_IMAGERY_PROMPT` | `inputs`, `outputs`, `attachments` | Hate symbols, inflammatory political imagery, or depictions of suffering |
+
+Here's an example using `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
+
+<details open>
+<summary>Python</summary>
+
+```python
+import base64
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import IMAGE_RELEVANCE_PROMPT
+
+llm_as_judge = create_llm_as_judge(
+    prompt=IMAGE_RELEVANCE_PROMPT,
+    feedback_key="image_relevance",
+    model="openai:gpt-5-mini",
+)
+
+# Option A: pass a URL string directly
+eval_result = llm_as_judge(
+    inputs="Show me a picture of fruits",
+    outputs="Here is an image of various fruits",
+    attachments="https://example.com/fruits.jpg",
+)
+
+# Option B: pass a base64-encoded data URI
+with open("image.jpg", "rb") as f:
+    image_data = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
+
+eval_result = llm_as_judge(
+    inputs="Show me a picture of fruits",
+    outputs="Here is an image of various fruits",
+    attachments={"mime_type": "image/jpeg", "data": image_data},
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'image_relevance',
+    'score': True,
+    'comment': '...'
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import * as fs from "fs";
+import { createLLMAsJudge, IMAGE_RELEVANCE_PROMPT } from "openevals";
+
+const llmAsJudge = createLLMAsJudge({
+  prompt: IMAGE_RELEVANCE_PROMPT,
+  feedbackKey: "image_relevance",
+  model: "openai:gpt-5-mini",
+});
+
+// Option A: pass a URL string directly
+const evalResult = await llmAsJudge({
+  inputs: "Show me a picture of fruits",
+  outputs: "Here is an image of various fruits",
+  attachments: "https://example.com/fruits.jpg",
+});
+
+// Option B: pass a base64-encoded data URI
+const imageData = "data:image/jpeg;base64," + fs.readFileSync("image.jpg").toString("base64");
+
+const evalResultB64 = await llmAsJudge({
+  inputs: "Show me a picture of fruits",
+  outputs: "Here is an image of various fruits",
+  attachments: { mime_type: "image/jpeg", data: imageData },
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'image_relevance',
+    score: true,
+    comment: '...'
+}
+```
+</details>
+
+### Voice
+
+These prompts evaluate voice and audio content. All voice prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing audio data. Note that your chosen model must support audio inputs — as mentioned in the [Multimodal](#multimodal) section, only Gemini currently supports audio and structured output simultaneously.
+
+| Prompt | Parameters | What it evaluates |
+|--------|-----------|-------------------|
+| `AUDIO_QUALITY_PROMPT` | `inputs`, `outputs`, `attachments` | Clipping, distortion, or glitches that degrade listening experience |
+| `TRANSCRIPTION_ACCURACY_PROMPT` | `inputs`, `outputs`, `attachments` | Accuracy of speech-to-text transcription |
+| `DIALOGUE_FLOW_PROMPT` | `inputs`, `outputs`, `attachments` | Natural conversation flow and absence of disruptive overlapping speech |
+| `VOCAL_AFFECT_PROMPT` | `inputs`, `outputs`, `attachments` | Appropriateness and consistency of the agent's vocal tone |
+
+Here's an example using `AUDIO_QUALITY_PROMPT`:
+
+<details open>
+<summary>Python</summary>
+
+```python
+import base64
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import AUDIO_QUALITY_PROMPT
+
+with open("audio.wav", "rb") as f:
+    audio_data = base64.b64encode(f.read()).decode("utf-8")
+
+llm_as_judge = create_llm_as_judge(
+    prompt=AUDIO_QUALITY_PROMPT,
+    feedback_key="audio_quality",
+    model="google_genai:gemini-2.0-flash",
+)
+
+eval_result = llm_as_judge(
+    inputs="Customer service call recording",
+    outputs="Audio response from agent",
+    attachments={"mime_type": "audio/wav", "data": audio_data},
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'audio_quality',
+    'score': True,
+    'comment': '...'
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import * as fs from "fs";
+import { createLLMAsJudge, AUDIO_QUALITY_PROMPT } from "openevals";
+
+const audioData = fs.readFileSync("audio.wav").toString("base64");
+
+const llmAsJudge = createLLMAsJudge({
+  prompt: AUDIO_QUALITY_PROMPT,
+  feedbackKey: "audio_quality",
+  model: "google_genai:gemini-2.0-flash",
+});
+
+const evalResult = await llmAsJudge({
+  inputs: "Customer service call recording",
+  outputs: "Audio response from agent",
+  attachments: { mime_type: "audio/wav", data: audioData },
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'audio_quality',
+    score: true,
+    comment: '...'
+}
+```
+</details>
+
+### RAG
+
+RAG applications in their most basic form consist of 2 steps. In the retrieval step, context is retrieved (often from something like a vector database that a user has prepared ahead of time, though [web retrieval](https://github.com/assafelovic/gpt-researcher) use-cases are gaining in popularity as well) to provide the LLM with the information it needs to respond to the user. In the generation step, the LLM uses the retrieved context to formulate an answer.
+
+OpenEvals provides prebuilt prompts and other methods for the following:
+
+1. [Correctness](#correctness-rag)
+- Evaluates: Final output vs. input + reference answer
+- Goal: Measure "how similar/correct is the generated answer relative to a ground-truth answer"
+- Requires reference: Yes
+
+2. [Helpfulness](#helpfulness)
+- Evaluates: Final output vs. input
+- Goal: Measure "how well does the generated response address the initial user input"
+- Requires reference: No, because it will compare the answer to the input question
+
+3. [Groundedness](#groundedness)
+- Evaluates: Final output vs. retrieved context
+- Goal: Measure "to what extent does the generated response agree with the retrieved context"
+- Requires reference: No, because it will compare the answer to the retrieved context
+
+4. [Retrieval relevance](#retrieval-relevance)
+- Evaluates: Retrieved context vs. input
+- Goal: Measure "how relevant are my retrieved results for this query"
+- Requires reference: No, because it will compare the question to the retrieved context
+
+#### Correctness {#correctness-rag}
+
+`correctness` measures how similar/correct a generated answer is to a ground-truth answer. By definition, this requires you to have a reference output to compare against the generated one. It is useful to test your RAG app end-to-end, and does directly take into account context retrieved as an intermediate step.
+
+You can evaluate the correctness of a RAG app's outputs using the LLM-as-judge evaluator alongside the general [`CORRECTNESS_PROMPT`](#quality) covered in the [Quality](#quality) section above. Here's an example:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
+
+correctness_evaluator = create_llm_as_judge(
+    prompt=CORRECTNESS_PROMPT,
+    feedback_key="correctness",
+    model="openai:gpt-5-mini",
+)
+
+inputs = "How much has the price of doodads changed in the past year?"
+outputs = "Doodads have increased in price by 10% in the past year."
+reference_outputs = "The price of doodads has decreased by 50% in the past year."
+
+eval_result = correctness_evaluator(
+  inputs=inputs,
+  outputs=outputs,
+  reference_outputs=reference_outputs
+)
+
+print(eval_result)
+```
+
+```
+{
+    'key': 'correctness',
+    'score': False,
+    'comment': '...'
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
+
+const correctnessEvaluator = createLLMAsJudge({
+  prompt: CORRECTNESS_PROMPT,
+  feedbackKey: "correctness",
+  model: "openai:gpt-5-mini",
+});
+
+const inputs = "How much has the price of doodads changed in the past year?";
+const outputs = "Doodads have increased in price by 10% in the past year.";
+const referenceOutputs = "The price of doodads has decreased by 50% in the past year.";
+
+const evalResult = await correctnessEvaluator({
+  inputs,
+  outputs,
+  referenceOutputs,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+    key: 'correctness',
+    score: false,
+    comment: '...'
+}
+```
+</details>
+
+For more information on customizing LLM-as-judge evaluators, see [these sections](#customizing-prompts).
+
+#### Helpfulness
+
+`helpfulness` measures how well the generated response addresses the initial user input. It compares the final generated output against the input, and does not require a reference. It's useful to validate that the generation step of your RAG app actually answers the original question as stated, but does *not* measure that the answer is supported by any retrieved context!
+
+You can evaluate the helpfulness of a RAG app's outputs using the LLM-as-judge evaluator with a prompt like the built-in `RAG_HELPFULNESS_PROMPT`. Here's an example:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import RAG_HELPFULNESS_PROMPT
+
+helpfulness_evaluator = create_llm_as_judge(
+    prompt=RAG_HELPFULNESS_PROMPT,
+    feedback_key="helpfulness",
+    model="openai:gpt-5-mini",
+)
+
+inputs = {
+    "question": "Where was the first president of FoobarLand born?",
+}
+
+outputs = {
+    "answer": "The first president of FoobarLand was Bagatur Askaryan.",
+}
+
+eval_result = helpfulness_evaluator(
+  inputs=inputs,
+  outputs=outputs,
+)
+
+print(eval_result)
+```
+
+```
+{
+  'key': 'helpfulness', 
+  'score': False, 
+  'comment': "The question asks for the birthplace of the first president of FoobarLand, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, RAG_HELPFULNESS_PROMPT } from "openevals";
+
+const inputs = {
+  "question": "Where was the first president of FoobarLand born?",
+};
+
+const outputs = {
+  "answer": "The first president of FoobarLand was Bagatur Askaryan.",
+};
+
+const helpfulnessEvaluator = createLLMAsJudge({
+  prompt: RAG_HELPFULNESS_PROMPT,
+  feedbackKey: "helpfulness",
+  model: "openai:gpt-5-mini",
+});
+
+const evalResult = await helpfulnessEvaluator({
+  inputs,
+  outputs,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+  'key': 'helpfulness', 
+  'score': False, 
+  'comment': "The question asks for the birthplace of the first president of FoobarLand, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
+}
+```
+
+</details>
+
+#### Groundedness
+
+`groundedness` measures the extent that the generated response agrees with the retrieved context. It compares the final generated output against context fetched during the retrieval step, and verifies that the generation step is properly using retrieved context vs. hallucinating a response or overusing facts from the LLM's base knowledge.
+
+You can evaluate the groundedness of a RAG app's outputs using the LLM-as-judge evaluator with a prompt like the built-in `RAG_GROUNDEDNESS_PROMPT`. Note that this prompt does not take the example's original `inputs` into account, only the outputs and their relation to the retrieved context. Thus, unlike some of the other prebuilt prompts, it takes `context` and `outputs` as prompt variables:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import RAG_GROUNDEDNESS_PROMPT
+
+groundedness_evaluator = create_llm_as_judge(
+    prompt=RAG_GROUNDEDNESS_PROMPT,
+    feedback_key="groundedness",
+    model="openai:gpt-5-mini",
+)
+
+context = {
+    "documents": [
+        "FoobarLand is a new country located on the dark side of the moon",
+        "Space dolphins are native to FoobarLand",
+        "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+        "The current weather in FoobarLand is 80 degrees and clear."
+    ],
+}
+
+outputs = {
+    "answer": "The first president of FoobarLand was Bagatur Askaryan.",
+}
+
+eval_result = groundedness_evaluator(
+    context=context,
+    outputs=outputs,
+)
+
+print(eval_result)
+```
+
+```
+{
+  'key': 'groundedness',
+  'score': True,
+  'comment': 'The output states, "The first president of FoobarLand was Bagatur Askaryan," which is directly supported by the retrieved context (document 3 explicitly states this fact). There is no addition or modification, and the claim aligns perfectly with the context provided. Thus, the score should be: true.',
+  'metadata': None
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, RAG_GROUNDEDNESS_PROMPT } from "openevals";
+
+const groundednessEvaluator = createLLMAsJudge({
+  prompt: RAG_GROUNDEDNESS_PROMPT,
+  feedbackKey: "groundedness",
+  model: "openai:gpt-5-mini",
+});
+
+const context = {
+  documents: [
+    "FoobarLand is a new country located on the dark side of the moon",
+    "Space dolphins are native to FoobarLand",
+    "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+    "The current weather in FoobarLand is 80 degrees and clear."
+  ],
+};
+
+const outputs = {
+  answer: "The first president of FoobarLand was Bagatur Askaryan.",
+};
+
+const evalResult = await groundednessEvaluator({
+  context,
+  outputs,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+  'key': 'groundedness',
+  'score': true,
+  'comment': 'The output states, "The first president of FoobarLand was Bagatur Askaryan," which is directly supported by the retrieved context (document 3 explicitly states this fact). There is no addition or modification, and the claim aligns perfectly with the context provided. Thus, the score should be: true.',
+  'metadata': None
+}
+```
+
+</details>
+
+#### Retrieval relevance
+
+`retrieval_relevance` measures how relevant retrieved context is to an input query. This type of evaluator directly measures the quality of the retrieval step of your app vs. its generation step.
+
+##### Retrieval relevance with LLM-as-judge
+
+You can evaluate the retrieval relevance of a RAG app using the LLM-as-judge evaluator with a prompt like the built-in `RAG_RETRIEVAL_RELEVANCE_PROMPT`. Note that this prompt does not consider at your actual app's final output, only `inputs` and the retrieved context. Thus, unlike some of the other prebuilt prompts, it takes `context` and `inputs` as prompt variables:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import RAG_RETRIEVAL_RELEVANCE_PROMPT
+
+retrieval_relevance_evaluator = create_llm_as_judge(
+    prompt=RAG_RETRIEVAL_RELEVANCE_PROMPT,
+    feedback_key="retrieval_relevance",
+    model="openai:gpt-5-mini",
+)
+
+inputs = {
+    "question": "Where was the first president of FoobarLand born?",
+}
+
+context = {
+    "documents": [
+        "FoobarLand is a new country located on the dark side of the moon",
+        "Space dolphins are native to FoobarLand",
+        "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+        "The current weather in FoobarLand is 80 degrees and clear.",
+    ],
+}
+
+eval_result = retrieval_relevance_evaluator(
+    inputs=inputs,
+    context=context,
+)
+
+print(eval_result)
+```
+
+```
+{
+  'key': 'retrieval_relevance',
+  'score': False,
+  'comment': "The retrieved context provides some details about FoobarLand – for instance, that it is a new country located on the dark side of the moon and that its first president is Bagatur Askaryan. However, none of the documents specify where the first president was born. Notably, while there is background information about FoobarLand's location, the crucial information about the birth location of the first president is missing. Thus, the retrieved context does not fully address the question. Thus, the score should be: false.",
+  'metadata': None
+}
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, RAG_RETRIEVAL_RELEVANCE_PROMPT } from "openevals";
+
+const retrievalRelevanceEvaluator = createLLMAsJudge({
+  prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
+  feedbackKey: "retrieval_relevance",
+  model: "openai:gpt-5-mini",
+});
+
+const inputs = {
+  question: "Where was the first president of FoobarLand born?",
+}
+
+const context = {
+  documents: [
+    "FoobarLand is a new country located on the dark side of the moon",
+    "Space dolphins are native to FoobarLand",
+    "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
+    "The current weather in FoobarLand is 80 degrees and clear.",
+  ],
+}
+
+const retrievalRelevanceEvaluator = await retrievalRelevanceEvaluator({
+  inputs,
+  context,
+});
+
+console.log(evalResult);
+```
+
+```
+{
+  'key': 'retrieval_relevance',
+  'score': False,
+  'comment': "The retrieved context provides some details about FoobarLand – for instance, that it is a new country located on the dark side of the moon and that its first president is Bagatur Askaryan. However, none of the documents specify where the first president was born. Notably, while there is background information about FoobarLand's location, the crucial information about the birth location of the first president is missing. Thus, the retrieved context does not fully address the question. Thus, the score should be: false.",
+  'metadata': None
+}
+```
+
+</details>
+
+##### Retrieval relevance with string evaluators
+
+You can also use string evaluators like [embedding similarity](#embedding-similarity) to measure retrieval relevance without using an LLM. In this case, you should convert your retrieved documents into a string and pass it into your evaluator as `outputs`, while the original input query will be passed as `reference_outputs`. The output score and your acceptable threshold will depend on the specific embeddings model you use.
+
+Here's an example:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.string.embedding_similarity import create_embedding_similarity_evaluator
+
+evaluator = create_embedding_similarity_evaluator()
+
+inputs = "Where was the first president of FoobarLand born?"
+
+context = "\n".join([
+    "BazQuxLand is a new country located on the dark side of the moon",
+    "Space dolphins are native to BazQuxLand",
+    "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
+    "The current weather in BazQuxLand is 80 degrees and clear.",
+])
+
+result = evaluator(
+    outputs=context,
+    reference_outputs=inputs,
+)
+
+print(result)
+```
+
+```
+{
+  'key': 'embedding_similarity',
+  'score': 0.43,
+  'comment': None,
+  'metadata': None
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createEmbeddingSimilarityEvaluator } from "openevals";
+import { OpenAIEmbeddings } from "@langchain/openai";
+
+const evaluator = createEmbeddingSimilarityEvaluator({
+  embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
+});
+
+const inputs = "Where was the first president of FoobarLand born?";
+
+const context = [
+  "BazQuxLand is a new country located on the dark side of the moon",
+  "Space dolphins are native to BazQuxLand",
+  "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
+  "The current weather in BazQuxLand is 80 degrees and clear.",
+].join("\n");
+
+const result = await evaluator(
+  outputs: context,
+  referenceOutputs: inputs,
+);
+
+console.log(result);
+```
+
+```
+{
+  'key': 'embedding_similarity',
+  'score': 0.43,
+}
+```
+</details>
 
 ## Extraction and tool calls
 
@@ -1410,7 +1925,7 @@ const evaluator = createJsonMatchEvaluator({
     exclude_keys=["a"],
     // The provider and name of the model to use
     judge: client,
-    model: "openai:o3-mini",
+    model: "openai:gpt-5-mini",
 })
 
 // Invoke the evaluator with the outputs and reference outputs
@@ -1466,7 +1981,7 @@ evaluator = create_json_match_evaluator(
         "a": "Does the answer mention all the fruits in the reference answer?"
     },
     # The provider and name of the model to use
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
     # Whether to force the model to reason about the keys in `rubric`. Defaults to True
     # Note that this is not currently supported if there is an aggregator specified 
     use_reasoning=True
@@ -1524,7 +2039,7 @@ const evaluator = createJsonMatchEvaluator({
     exclude_keys=["c"],
     // The provider and name of the model to use
     judge: client,
-    model: "openai:o3-mini",
+    model: "openai:gpt-5-mini",
     // Whether to use reasoning to reason about the keys in `rubric`. Defaults to True
     useReasoning: true
 })
@@ -1549,461 +2064,6 @@ Therefore, the list aggregator will return a final score of 0.
 }
 ```
 
-</details>
-
-## RAG
-
-RAG applications in their most basic form consist of 2 steps. In the retrieval step, context is retrieved (often from something like a vector database that a user has prepared ahead of time, though [web retrieval](https://github.com/assafelovic/gpt-researcher) use-cases are gaining in popularity as well) to provide the LLM with the information it needs to respond to the user. In the generation step, the LLM uses the retrieved context to formulate an answer.
-
-OpenEvals provides prebuilt prompts and other methods for the following:
-
-1. [Correctness](#correctness-rag)
-- Evaluates: Final output vs. input + reference answer
-- Goal: Measure "how similar/correct is the generated answer relative to a ground-truth answer"
-- Requires reference: Yes
-
-2. [Helpfulness](#helpfulness)
-- Evaluates: Final output vs. input
-- Goal: Measure "how well does the generated response address the initial user input"
-- Requires reference: No, because it will compare the answer to the input question
-
-3. [Groundedness](#groundedness)
-- Evaluates: Final output vs. retrieved context
-- Goal: Measure "to what extent does the generated response agree with the retrieved context"
-- Requires reference: No, because it will compare the answer to the retrieved context
-
-4. [Retrieval relevance](#retrieval-relevance)
-- Evaluates: Retrieved context vs. input
-- Goal: Measure "how relevant are my retrieved results for this query"
-- Requires reference: No, because it will compare the question to the retrieved context
-
-### Correctness {#rag}
-
-`correctness` measures how similar/correct a generated answer is to a ground-truth answer. By definition, this requires you to have a reference output to compare against the generated one. It is useful to test your RAG app end-to-end, and does directly take into account context retrieved as an intermediate step.
-
-You can evaluate the correctness of a RAG app's outputs using the LLM-as-judge evaluator alongside the general [prebuilt prompt](#correctness) covered above. Here's an example:
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import CORRECTNESS_PROMPT
-
-correctness_evaluator = create_llm_as_judge(
-    prompt=CORRECTNESS_PROMPT,
-    feedback_key="correctness",
-    model="openai:o3-mini",
-)
-
-inputs = "How much has the price of doodads changed in the past year?"
-outputs = "Doodads have increased in price by 10% in the past year."
-reference_outputs = "The price of doodads has decreased by 50% in the past year."
-
-eval_result = correctness_evaluator(
-  inputs=inputs,
-  outputs=outputs,
-  reference_outputs=reference_outputs
-)
-
-print(eval_result)
-```
-
-```
-{
-    'key': 'correctness',
-    'score': False,
-    'comment': '...'
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
-
-const correctnessEvaluator = createLLMAsJudge({
-  prompt: CORRECTNESS_PROMPT,
-  feedbackKey: "correctness",
-  model: "openai:o3-mini",
-});
-
-const inputs = "How much has the price of doodads changed in the past year?";
-const outputs = "Doodads have increased in price by 10% in the past year.";
-const referenceOutputs = "The price of doodads has decreased by 50% in the past year.";
-
-const evalResult = await correctnessEvaluator({
-  inputs,
-  outputs,
-  referenceOutputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'correctness',
-    score: false,
-    comment: '...'
-}
-```
-</details>
-
-For more information on customizing LLM-as-judge evaluators, see [these sections](#customizing-prompts).
-
-### Helpfulness
-
-`helpfulness` measures how well the generated response addresses the initial user input. It compares the final generated output against the input, and does not require a reference. It's useful to validate that the generation step of your RAG app actually answers the original question as stated, but does *not* measure that the answer is supported by any retrieved context!
-
-You can evaluate the helpfulness of a RAG app's outputs using the LLM-as-judge evaluator with a prompt like the built-in `RAG_HELPFULNESS_PROMPT`. Here's an example:
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import RAG_HELPFULNESS_PROMPT
-
-helpfulness_evaluator = create_llm_as_judge(
-    prompt=RAG_HELPFULNESS_PROMPT,
-    feedback_key="helpfulness",
-    model="openai:o3-mini",
-)
-
-inputs = {
-    "question": "Where was the first president of FoobarLand born?",
-}
-
-outputs = {
-    "answer": "The first president of FoobarLand was Bagatur Askaryan.",
-}
-
-eval_result = helpfulness_evaluator(
-  inputs=inputs,
-  outputs=outputs,
-)
-
-print(eval_result)
-```
-
-```
-{
-  'key': 'helpfulness', 
-  'score': False, 
-  'comment': "The question asks for the birthplace of the first president of FoobarLand, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
-}
-```
-
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, RAG_HELPFULNESS_PROMPT } from "openevals";
-
-const inputs = {
-  "question": "Where was the first president of FoobarLand born?",
-};
-
-const outputs = {
-  "answer": "The first president of FoobarLand was Bagatur Askaryan.",
-};
-
-const helpfulnessEvaluator = createLLMAsJudge({
-  prompt: RAG_HELPFULNESS_PROMPT,
-  feedbackKey: "helpfulness",
-  model: "openai:o3-mini",
-});
-
-const evalResult = await helpfulnessEvaluator({
-  inputs,
-  outputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-  'key': 'helpfulness', 
-  'score': False, 
-  'comment': "The question asks for the birthplace of the first president of FoobarLand, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
-}
-```
-
-</details>
-
-### Groundedness
-
-`groundedness` measures the extent that the generated response agrees with the retrieved context. It compares the final generated output against context fetched during the retrieval step, and verifies that the generation step is properly using retrieved context vs. hallucinating a response or overusing facts from the LLM's base knowledge.
-
-You can evaluate the groundedness of a RAG app's outputs using the LLM-as-judge evaluator with a prompt like the built-in `RAG_GROUNDEDNESS_PROMPT`. Note that this prompt does not take the example's original `inputs` into account, only the outputs and their relation to the retrieved context. Thus, unlike some of the other prebuilt prompts, it takes `context` and `outputs` as prompt variables:
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import RAG_GROUNDEDNESS_PROMPT
-
-groundedness_evaluator = create_llm_as_judge(
-    prompt=RAG_GROUNDEDNESS_PROMPT,
-    feedback_key="groundedness",
-    model="openai:o3-mini",
-)
-
-context = {
-    "documents": [
-        "FoobarLand is a new country located on the dark side of the moon",
-        "Space dolphins are native to FoobarLand",
-        "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
-        "The current weather in FoobarLand is 80 degrees and clear."
-    ],
-}
-
-outputs = {
-    "answer": "The first president of FoobarLand was Bagatur Askaryan.",
-}
-
-eval_result = groundedness_evaluator(
-    context=context,
-    outputs=outputs,
-)
-
-print(eval_result)
-```
-
-```
-{
-  'key': 'groundedness',
-  'score': True,
-  'comment': 'The output states, "The first president of FoobarLand was Bagatur Askaryan," which is directly supported by the retrieved context (document 3 explicitly states this fact). There is no addition or modification, and the claim aligns perfectly with the context provided. Thus, the score should be: true.',
-  'metadata': None
-}
-```
-
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, RAG_GROUNDEDNESS_PROMPT } from "openevals";
-
-const groundednessEvaluator = createLLMAsJudge({
-  prompt: RAG_GROUNDEDNESS_PROMPT,
-  feedbackKey: "groundedness",
-  model: "openai:o3-mini",
-});
-
-const context = {
-  documents: [
-    "FoobarLand is a new country located on the dark side of the moon",
-    "Space dolphins are native to FoobarLand",
-    "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
-    "The current weather in FoobarLand is 80 degrees and clear."
-  ],
-};
-
-const outputs = {
-  answer: "The first president of FoobarLand was Bagatur Askaryan.",
-};
-
-const evalResult = await groundednessEvaluator({
-  context,
-  outputs,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-  'key': 'groundedness',
-  'score': true,
-  'comment': 'The output states, "The first president of FoobarLand was Bagatur Askaryan," which is directly supported by the retrieved context (document 3 explicitly states this fact). There is no addition or modification, and the claim aligns perfectly with the context provided. Thus, the score should be: true.',
-  'metadata': None
-}
-```
-
-</details>
-
-### Retrieval relevance
-
-`retrieval_relevance` measures how relevant retrieved context is to an input query. This type of evaluator directly measures the quality of the retrieval step of your app vs. its generation step.
-
-#### Retrieval relevance with LLM-as-judge
-
-You can evaluate the retrieval relevance of a RAG app using the LLM-as-judge evaluator with a prompt like the built-in `RAG_RETRIEVAL_RELEVANCE_PROMPT`. Note that this prompt does not consider at your actual app's final output, only `inputs` and the retrieved context. Thus, unlike some of the other prebuilt prompts, it takes `context` and `inputs` as prompt variables:
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import RAG_RETRIEVAL_RELEVANCE_PROMPT
-
-retrieval_relevance_evaluator = create_llm_as_judge(
-    prompt=RAG_RETRIEVAL_RELEVANCE_PROMPT,
-    feedback_key="retrieval_relevance",
-    model="openai:o3-mini",
-)
-
-inputs = {
-    "question": "Where was the first president of FoobarLand born?",
-}
-
-context = {
-    "documents": [
-        "FoobarLand is a new country located on the dark side of the moon",
-        "Space dolphins are native to FoobarLand",
-        "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
-        "The current weather in FoobarLand is 80 degrees and clear.",
-    ],
-}
-
-eval_result = retrieval_relevance_evaluator(
-    inputs=inputs,
-    context=context,
-)
-
-print(eval_result)
-```
-
-```
-{
-  'key': 'retrieval_relevance',
-  'score': False,
-  'comment': "The retrieved context provides some details about FoobarLand – for instance, that it is a new country located on the dark side of the moon and that its first president is Bagatur Askaryan. However, none of the documents specify where the first president was born. Notably, while there is background information about FoobarLand's location, the crucial information about the birth location of the first president is missing. Thus, the retrieved context does not fully address the question. Thus, the score should be: false.",
-  'metadata': None
-}
-```
-
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createLLMAsJudge, RAG_RETRIEVAL_RELEVANCE_PROMPT } from "openevals";
-
-const retrievalRelevanceEvaluator = createLLMAsJudge({
-  prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
-  feedbackKey: "retrieval_relevance",
-  model: "openai:o3-mini",
-});
-
-const inputs = {
-  question: "Where was the first president of FoobarLand born?",
-}
-
-const context = {
-  documents: [
-    "FoobarLand is a new country located on the dark side of the moon",
-    "Space dolphins are native to FoobarLand",
-    "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
-    "The current weather in FoobarLand is 80 degrees and clear.",
-  ],
-}
-
-const retrievalRelevanceEvaluator = await retrievalRelevanceEvaluator({
-  inputs,
-  context,
-});
-
-console.log(evalResult);
-```
-
-```
-{
-  'key': 'retrieval_relevance',
-  'score': False,
-  'comment': "The retrieved context provides some details about FoobarLand – for instance, that it is a new country located on the dark side of the moon and that its first president is Bagatur Askaryan. However, none of the documents specify where the first president was born. Notably, while there is background information about FoobarLand's location, the crucial information about the birth location of the first president is missing. Thus, the retrieved context does not fully address the question. Thus, the score should be: false.",
-  'metadata': None
-}
-```
-
-</details>
-
-#### Retrieval relevance with string evaluators
-
-You can also use string evaluators like [embedding similarity](#embedding-similarity) to measure retrieval relevance without using an LLM. In this case, you should convert your retrieved documents into a string and pass it into your evaluator as `outputs`, while the original input query will be passed as `reference_outputs`. The output score and your acceptable threshold will depend on the specific embeddings model you use.
-
-Here's an example:
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.string.embedding_similarity import create_embedding_similarity_evaluator
-
-evaluator = create_embedding_similarity_evaluator()
-
-inputs = "Where was the first president of FoobarLand born?"
-
-context = "\n".join([
-    "BazQuxLand is a new country located on the dark side of the moon",
-    "Space dolphins are native to BazQuxLand",
-    "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
-    "The current weather in BazQuxLand is 80 degrees and clear.",
-])
-
-result = evaluator(
-    outputs=context,
-    reference_outputs=inputs,
-)
-
-print(result)
-```
-
-```
-{
-  'key': 'embedding_similarity',
-  'score': 0.43,
-  'comment': None,
-  'metadata': None
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createEmbeddingSimilarityEvaluator } from "openevals";
-import { OpenAIEmbeddings } from "@langchain/openai";
-
-const evaluator = createEmbeddingSimilarityEvaluator({
-  embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
-});
-
-const inputs = "Where was the first president of FoobarLand born?";
-
-const context = [
-  "BazQuxLand is a new country located on the dark side of the moon",
-  "Space dolphins are native to BazQuxLand",
-  "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
-  "The current weather in BazQuxLand is 80 degrees and clear.",
-].join("\n");
-
-const result = await evaluator(
-  outputs: context,
-  referenceOutputs: inputs,
-);
-
-console.log(result);
-```
-
-```
-{
-  'key': 'embedding_similarity',
-  'score': 0.43,
-}
-```
 </details>
 
 ## Code
@@ -2173,7 +2233,7 @@ from openevals.prompts import CODE_CORRECTNESS_PROMPT
 
 llm_as_judge = create_code_llm_as_judge(
     prompt=CODE_CORRECTNESS_PROMPT,
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
     code_extraction_strategy="markdown_code_blocks",
 )
 
@@ -2244,7 +2304,7 @@ import { createCodeLLMAsJudge, CODE_CORRECTNESS_PROMPT } from "openevals";
 
 const evaluator = createCodeLLMAsJudge({
   prompt: CODE_CORRECTNESS_PROMPT,
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const inputs = `Add proper TypeScript types to the following code:
@@ -2555,157 +2615,6 @@ Above, the evaluator identifies and installs `@langchain/langgraph`, then attemp
 
 If desired, you can pass an `environmentVariables` object when creating the evaluator. Generated code will  have access to these variables within the sandbox, but be cautious, as there is no way to predict exactly what code an LLM will generate.
 
-</details>
-
-## Other
-
-This package also contains prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:
-
-### Exact match
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.exact import exact_match
-
-outputs = {"a": 1, "b": 2}
-reference_outputs = {"a": 1, "b": 2}
-result = exact_match(outputs=outputs, reference_outputs=reference_outputs)
-
-print(result)
-```
-
-```
-{
-    'key': 'equal',
-    'score': True,
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { exactMatch } from "openevals";
-
-const outputs = { a: 1, b: 2 };
-const referenceOutputs = { a: 1, b: 2 };
-const result = exactMatch(outputs, referenceOutputs);
-
-console.log(result);
-```
-
-```
-{
-    key: "equal",
-    score: true,
-}
-```
-</details>
-
-### Levenshtein distance
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.string.levenshtein import levenshtein_distance
-
-outputs = "The correct answer"
-reference_outputs = "The correct answer"
-result = levenshtein_distance(
-    outputs=outputs, reference_outputs=reference_outputs,
-)
-
-print(result)
-```
-
-```
-{
-    'key': 'levenshtein_distance',
-    'score': 0.0,
-    'comment': None,
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { levenshteinDistance } from "openevals";
-
-const outputs = "The correct answer";
-const referenceOutputs = "The correct answer";
-const result = levenshteinDistance(outputs, referenceOutputs);
-
-console.log(result);
-```
-
-```
-{
-    key: "levenshtein_distance",
-    score: 0,
-}
-```
-</details>
-
-### Embedding similarity
-
-This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method (for Python) or takes a LangChain embeddings client directly (for TypeScript) and calculates distance between two strings using cosine similarity.
-
-<details open>
-<summary>Python</summary>
-
-```python
-from openevals.string.embedding_similarity import create_embedding_similarity_evaluator
-
-evaluator = create_embedding_similarity_evaluator()
-
-result = evaluator(
-    outputs="The weather is nice!",
-    reference_outputs="The weather is very nice!",
-)
-
-print(result)
-```
-
-```
-{
-    'key': 'embedding_similarity',
-    'score': 0.9147273943905653,
-    'comment': None,
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import { createEmbeddingSimilarityEvaluator } from "openevals";
-import { OpenAIEmbeddings } from "@langchain/openai";
-
-const evaluator = createEmbeddingSimilarityEvaluator({
-  embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
-});
-
-const result = await evaluator(
-    outputs: "The weather is nice!",
-    referenceOutputs: "The weather is very nice!",
-);
-
-console.log(result);
-```
-
-```
-{
-    key: "embedding_similarity",
-    score: 0.9147273943905653,
-}
-```
 </details>
 
 ## Agent trajectory
@@ -3175,7 +3084,7 @@ from openevals.prompts import TRAJECTORY_ACCURACY_PROMPT
 
 evaluator = create_trajectory_llm_as_judge(
     prompt=TRAJECTORY_ACCURACY_PROMPT,
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 
 outputs = [
@@ -3212,7 +3121,7 @@ import {
 
 const evaluator = createTrajectoryLLMAsJudge({
   prompt: TRAJECTORY_ACCURACY_PROMPT,
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const outputs = [
@@ -3247,7 +3156,7 @@ from openevals.prompts import TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE
 
 evaluator = create_trajectory_llm_as_judge(
     prompt=TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 
 outputs = [
@@ -3296,7 +3205,7 @@ import {
 
 const evaluator = createTrajectoryLLMAsJudge({
   prompt: TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const outputs = [
@@ -3338,6 +3247,232 @@ console.log(result);
 - `few_shot_examples`/`fewShotExamples`: list of example dicts appended to the prompt.
 
 For LangGraph-specific graph trajectory evaluators, see the [`agentevals`](https://github.com/langchain-ai/agentevals) package.
+
+### Prebuilt trajectory prompts
+
+`openevals` includes several prebuilt prompts for evaluating agent conversations. All trajectory prompts take `outputs` as a list of messages representing the conversation history and are used with `create_llm_as_judge`/`createLLMAsJudge`.
+
+| Prompt | Parameters | What it evaluates |
+|--------|-----------|-------------------|
+| `TRAJECTORY_ACCURACY_PROMPT` | `outputs` | Whether the agent's overall trajectory accurately handles the task (see [above](#trajectory-llm-as-judge)) |
+| `TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE` | `outputs`, `reference_outputs` | Trajectory accuracy compared to a reference trajectory (see [above](#trajectory-llm-as-judge)) |
+| `TASK_COMPLETION_PROMPT` | `outputs` | Whether all user requests made throughout the conversation were completed |
+| `TOOL_SELECTION_PROMPT` | `outputs` | Correctness of tool choices made during query resolution |
+| `KNOWLEDGE_RETENTION_PROMPT` | `outputs` | Whether the agent correctly retained and applied information introduced earlier in the conversation |
+| `USER_SATISFACTION_PROMPT` | `outputs` | Overall user satisfaction based on tone shifts and whether the core need was met |
+| `AGENT_TONE_PROMPT` | `outputs` | Consistency and appropriateness of the agent's tone throughout the conversation |
+| `LANGUAGE_DETECTION_PROMPT` | `outputs` | Primary language used by the human throughout the conversation |
+| `SUPPORT_INTENT_PROMPT` | `outputs` | Primary intent category of the user's request in a customer support conversation |
+
+Here's an example using `TASK_COMPLETION_PROMPT`:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import TASK_COMPLETION_PROMPT
+
+evaluator = create_llm_as_judge(
+    prompt=TASK_COMPLETION_PROMPT,
+    feedback_key="task_completion",
+    model="openai:gpt-5-mini",
+)
+
+outputs = [
+    {"role": "user", "content": "Can you book a flight from NYC to Paris?"},
+    {"role": "assistant", "content": "I can provide information about flights, but I cannot actually book them for you."},
+    {"role": "user", "content": "I asked you to book it, not just give me info. Can you please just do it?"},
+    {"role": "assistant", "content": "I understand your frustration but I'm unable to make bookings."},
+]
+
+result = evaluator(outputs=outputs)
+print(result)
+```
+
+```
+{'key': 'task_completion', 'score': False, 'comment': 'The user's request to book a flight was never fulfilled...'}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createLLMAsJudge, TASK_COMPLETION_PROMPT } from "openevals";
+
+const evaluator = createLLMAsJudge({
+  prompt: TASK_COMPLETION_PROMPT,
+  feedbackKey: "task_completion",
+  model: "openai:gpt-5-mini",
+});
+
+const outputs = [
+  { role: "user", content: "Can you book a flight from NYC to Paris?" },
+  { role: "assistant", content: "I can provide information about flights, but I cannot actually book them for you." },
+  { role: "user", content: "I asked you to book it, not just give me info. Can you please just do it?" },
+  { role: "assistant", content: "I understand your frustration but I'm unable to make bookings." },
+];
+
+const result = await evaluator({ outputs });
+console.log(result);
+```
+
+```
+{ key: 'task_completion', score: false, comment: 'The user's request to book a flight was never fulfilled...' }
+```
+</details>
+
+## Other
+
+This package also contains prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:
+
+### Exact match
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.exact import exact_match
+
+outputs = {"a": 1, "b": 2}
+reference_outputs = {"a": 1, "b": 2}
+result = exact_match(outputs=outputs, reference_outputs=reference_outputs)
+
+print(result)
+```
+
+```
+{
+    'key': 'equal',
+    'score': True,
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { exactMatch } from "openevals";
+
+const outputs = { a: 1, b: 2 };
+const referenceOutputs = { a: 1, b: 2 };
+const result = exactMatch(outputs, referenceOutputs);
+
+console.log(result);
+```
+
+```
+{
+    key: "equal",
+    score: true,
+}
+```
+</details>
+
+### Levenshtein distance
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.string.levenshtein import levenshtein_distance
+
+outputs = "The correct answer"
+reference_outputs = "The correct answer"
+result = levenshtein_distance(
+    outputs=outputs, reference_outputs=reference_outputs,
+)
+
+print(result)
+```
+
+```
+{
+    'key': 'levenshtein_distance',
+    'score': 0.0,
+    'comment': None,
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { levenshteinDistance } from "openevals";
+
+const outputs = "The correct answer";
+const referenceOutputs = "The correct answer";
+const result = levenshteinDistance(outputs, referenceOutputs);
+
+console.log(result);
+```
+
+```
+{
+    key: "levenshtein_distance",
+    score: 0,
+}
+```
+</details>
+
+### Embedding similarity
+
+This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method (for Python) or takes a LangChain embeddings client directly (for TypeScript) and calculates distance between two strings using cosine similarity.
+
+<details open>
+<summary>Python</summary>
+
+```python
+from openevals.string.embedding_similarity import create_embedding_similarity_evaluator
+
+evaluator = create_embedding_similarity_evaluator()
+
+result = evaluator(
+    outputs="The weather is nice!",
+    reference_outputs="The weather is very nice!",
+)
+
+print(result)
+```
+
+```
+{
+    'key': 'embedding_similarity',
+    'score': 0.9147273943905653,
+    'comment': None,
+}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createEmbeddingSimilarityEvaluator } from "openevals";
+import { OpenAIEmbeddings } from "@langchain/openai";
+
+const evaluator = createEmbeddingSimilarityEvaluator({
+  embeddings: new OpenAIEmbeddings({ model: "text-embedding-3-small" }),
+});
+
+const result = await evaluator(
+    outputs: "The weather is nice!",
+    referenceOutputs: "The weather is very nice!",
+);
+
+console.log(result);
+```
+
+```
+{
+    key: "embedding_similarity",
+    score: 0.9147273943905653,
+}
+```
+</details>
 
 ## Creating your own
 
@@ -3514,7 +3649,7 @@ from openevals.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -3528,7 +3663,7 @@ from openai import AsyncOpenAI
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
     judge=AsyncOpenAI(),
-    model="o3-mini",
+    model="gpt-5-mini",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -3567,7 +3702,7 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
     # inputs is a message object with role and content
     res = client.chat.completions.create(
-        model="gpt-4.1-mini",
+        model="gpt-5-mini",
         messages=[
             {
                 "role": "system",
@@ -3583,11 +3718,11 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an aggressive and hostile customer who wants a refund for their car.",
-    model="openai:gpt-4.1-mini",
+    model="openai:gpt-5-mini",
 )
 
 trajectory_evaluator = create_llm_as_judge(
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
     prompt="Based on the below conversation, was the user satisfied?\n{outputs}",
     feedback_key="satisfaction",
 )
@@ -3653,7 +3788,7 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
   }
   history[threadId].push(inputs);
   const res = await client.chat.completions.create({
-    model: "gpt-4.1-mini",
+    model: "gpt-5-mini",
     messages: [
       {
         role: "system",
@@ -3670,11 +3805,11 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-4.1-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
   prompt: "Based on the below conversation, was the user satisfied?\n{outputs}",
   feedbackKey: "satisfaction",
 });
@@ -3797,7 +3932,7 @@ from openevals.simulators import create_llm_simulated_user
 
 user = create_llm_simulated_user(
     system="You are an angry and belligerent customer who wants a refund.",
-    model="openai:gpt-4.1-mini",
+    model="openai:gpt-5-mini",
 )
 ```
 
@@ -3811,7 +3946,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-4.1-mini",
+  model: "openai:gpt-5-mini",
 });
 ```
 
@@ -3827,7 +3962,7 @@ from openevals.simulators import create_llm_simulated_user
 
 user = create_llm_simulated_user(
     system="You are an angry and belligerent customer who wants a refund.",
-    model="openai:gpt-4.1-mini",
+    model="openai:gpt-5-mini",
     fixed_responses=[
         {"role": "user", "content": "I demand a refund for my bike!"},
         {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -3845,7 +3980,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an angry and belligerent customer who wants a refund.",
-  model: "openai:gpt-4.1-mini",
+  model: "openai:gpt-5-mini",
   fixedResponses: [
     {"role": "user", "content": "I demand a refund for my bike!"},
     {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -3954,7 +4089,7 @@ def give_refund():
     """Gives a refund."""
     return "Refunds are not permitted."
 
-model = init_chat_model("openai:gpt-4.1-mini")
+model = init_chat_model("openai:gpt-5-mini")
 
 agent = create_react_agent(
     model,
@@ -3972,14 +4107,14 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an angry user who is frustrated with the service and keeps making additional demands.",
-    model="openai:gpt-4.1-mini",
+    model="openai:gpt-5-mini",
     fixed_responses=[
         {"role": "user", "content": "Please give me a refund."},
     ],
 )
 
 trajectory_evaluator = create_llm_as_judge(
-    model="openai:gpt-4o-mini",
+    model="openai:gpt-5-mini",
     prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
     feedback_key="satisfaction",
 )
@@ -4063,7 +4198,7 @@ const giveRefund = tool(
 
 // Create a React-style agent
 const agent = createReactAgent({
-  llm: await initChatModel("openai:gpt-4.1-mini"),
+  llm: await initChatModel("openai:gpt-5-mini"),
   tools: [giveRefund],
   prompt:
     "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
@@ -4085,11 +4220,11 @@ const app = async ({
 const user = createLLMSimulatedUser({
   system:
     "You are an angry user who is frustrated with the service and keeps making additional demands.",
-  model: "openai:gpt-4.1-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:gpt-4o-mini",
+  model: "openai:gpt-5-mini",
   prompt:
     "Based on the below conversation, has the user been satisfied?\n{outputs}",
   feedbackKey: "satisfaction",
@@ -4178,7 +4313,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 
 @pytest.mark.langsmith
@@ -4220,7 +4355,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 
 
@@ -4236,15 +4371,16 @@ ls.describe("Correctness", () => {
     const outputs = "Doodads have increased in price by 10% in the past year.";
     ls.logOutputs({ answer: outputs });
 
-    await correctnessEvaluator({
+    const result = await correctnessEvaluator({
       inputs,
       outputs,
       referenceOutputs,
     });
+    ls.logFeedback({ key: result.key, score: result.score });
   });
 });
 ```
-Note that when creating the evaluator, we've added a `feedback_key` parameter. This will be used to name the feedback in LangSmith.
+Note that when creating the evaluator, we've added a `feedbackKey` parameter. This will be used to name the feedback logged to LangSmith via `ls.logFeedback()`.
 
 Now, run the eval with your runner of choice:
 
@@ -4278,7 +4414,7 @@ client = Client()
 conciseness_evaluator = create_llm_as_judge(
     prompt=CONCISENESS_PROMPT,
     feedback_key="conciseness",
-    model="openai:o3-mini",
+    model="openai:gpt-5-mini",
 )
 
 def wrapped_conciseness_evaluator(
@@ -4315,7 +4451,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   prompt: CONCISENESS_PROMPT,
   feedbackKey: "conciseness",
-  model: "openai:o3-mini",
+  model: "openai:gpt-5-mini",
 });
 
 const wrappedConcisenessEvaluator = async (params: {

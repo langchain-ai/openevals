@@ -3,11 +3,9 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 
 import { createLLMAsJudge } from "../llm.js";
-import {
-  CONCISENESS_PROMPT,
-  CORRECTNESS_PROMPT,
-  HALLUCINATION_PROMPT,
-} from "../prompts/quality/index.js";
+import { CONCISENESS_PROMPT } from "../prompts/quality/conciseness.js";
+import { CORRECTNESS_PROMPT } from "../prompts/quality/correctness.js";
+import { HALLUCINATION_PROMPT } from "../prompts/quality/hallucination.js";
 
 // ── CONCISENESS_PROMPT ────────────────────────────────────────────────────────
 

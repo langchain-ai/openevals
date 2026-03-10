@@ -3,13 +3,11 @@ import { expect, beforeAll } from "vitest";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { _attachmentToContentBlock } from "../utils.js";
 import { _createLLMAsJudgeScorer, createLLMAsJudge } from "../llm.js";
-import { IMAGE_RELEVANCE_PROMPT } from "../prompts/image/index.js";
-import {
-  AUDIO_QUALITY_PROMPT,
-  TRANSCRIPTION_ACCURACY_PROMPT,
-  VOCAL_AFFECT_PROMPT,
-  DIALOGUE_FLOW_PROMPT,
-} from "../prompts/voice/index.js";
+import { IMAGE_RELEVANCE_PROMPT } from "../prompts/image/image_relevance.js";
+import { AUDIO_QUALITY_PROMPT } from "../prompts/voice/audio_quality.js";
+import { TRANSCRIPTION_ACCURACY_PROMPT } from "../prompts/voice/transcription_accuracy.js";
+import { VOCAL_AFFECT_PROMPT } from "../prompts/voice/vocal_affect.js";
+import { DIALOGUE_FLOW_PROMPT } from "../prompts/voice/dialogue_flow.js";
 
 const TINY_PNG_DATA_URI =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==";

@@ -2,10 +2,7 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 
 import { createTrajectoryLLMAsJudge } from "../llm.js";
-import {
-  TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-  TRAJECTORY_ACCURACY_PROMPT,
-} from "../../prompts/trajectory/index.js";
+import { TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE, TRAJECTORY_ACCURACY_PROMPT } from "../../prompts/trajectory/accuracy.js";
 
 ls.describe("trajectory llm", () => {
   ls.test.each([{ inputs: {} }])("trajectory match", async () => {

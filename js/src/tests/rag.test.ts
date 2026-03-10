@@ -3,7 +3,9 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 
 import { createLLMAsJudge } from "../llm.js";
-import { RAG_HELPFULNESS_PROMPT, RAG_GROUNDEDNESS_PROMPT, RAG_RETRIEVAL_RELEVANCE_PROMPT } from "../prompts/rag/index.js";
+import { RAG_HELPFULNESS_PROMPT } from "../prompts/rag/helpfulness.js";
+import { RAG_GROUNDEDNESS_PROMPT } from "../prompts/rag/groundedness.js";
+import { RAG_RETRIEVAL_RELEVANCE_PROMPT } from "../prompts/rag/retrieval_relevance.js";
 
 
 

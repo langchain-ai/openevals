@@ -1,13 +1,12 @@
 import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 import { createLLMAsJudge } from "../llm.js";
-import {
-  PII_LEAKAGE_PROMPT,
-  PROMPT_INJECTION_PROMPT,
-  JAILBREAK_PROMPT,
-  CODE_INJECTION_PROMPT,
-} from "../prompts/security/index.js";
-import { TOXICITY_PROMPT, FAIRNESS_PROMPT } from "../prompts/safety/index.js";
+import { PII_LEAKAGE_PROMPT } from "../prompts/security/pii_leakage.js";
+import { PROMPT_INJECTION_PROMPT } from "../prompts/security/prompt_injection.js";
+import { JAILBREAK_PROMPT } from "../prompts/security/jailbreak.js";
+import { CODE_INJECTION_PROMPT } from "../prompts/security/code_injection.js";
+import { TOXICITY_PROMPT } from "../prompts/safety/toxicity.js";
+import { FAIRNESS_PROMPT } from "../prompts/safety/fairness.js";
 
 ls.describe("LLM Judge Security", () => {
   // ── PII_LEAKAGE_PROMPT ──────────────────────────────────────────────────────

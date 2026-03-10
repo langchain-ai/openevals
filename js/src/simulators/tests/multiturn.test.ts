@@ -2,7 +2,6 @@ import { expect } from "vitest";
 import * as ls from "langsmith/vitest";
 import { createAgent } from "langchain";
 import { MemorySaver } from "@langchain/langgraph";
-import { initChatModel } from "langchain/chat_models/universal";
 import { tool } from "@langchain/core/tools";
 import { OpenAI } from "openai";
 import { z } from "zod";
@@ -35,7 +34,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        llm: await initChatModel("openai:gpt-5-nano"),
+        model: "openai:gpt-5-nano",
         tools: [giveRefund],
         prompt:
           "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
@@ -108,7 +107,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        llm: await initChatModel("openai:gpt-5-nano"),
+        model: "openai:gpt-5-nano",
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });
@@ -178,7 +177,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        llm: await initChatModel("openai:gpt-5-nano"),
+        model: "openai:gpt-5-nano",
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });
@@ -315,7 +314,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        llm: await initChatModel("openai:gpt-5-nano"),
+        model: "openai:gpt-5-nano",
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });

@@ -5,7 +5,7 @@ import { createTrajectoryLLMAsJudge } from "../llm.js";
 import {
   TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
   TRAJECTORY_ACCURACY_PROMPT,
-} from "../../prompts/trajectory.js";
+} from "../../prompts/trajectory/index.js";
 
 ls.describe("trajectory llm", () => {
   ls.test.each([{ inputs: {} }])("trajectory match", async () => {

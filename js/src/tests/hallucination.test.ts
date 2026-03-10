@@ -3,7 +3,7 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 
 import { createLLMAsJudge } from "../llm.js";
-import { HALLUCINATION_PROMPT } from "../prompts/hallucination.js";
+import { HALLUCINATION_PROMPT } from "../prompts/quality/index.js";
 
 ls.describe("LLM Judge Hallucination", () => {
   ls.test(

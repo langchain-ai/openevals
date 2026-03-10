@@ -271,6 +271,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@google/generative-ai@npm:^0.24.0":
+  version: 0.24.1
+  resolution: "@google/generative-ai@npm:0.24.1"
+  checksum: d999b98acf1a6dba36a3e3693e02fde270c21b8d20333e2d458cf085e90508b24fad6c8d05d9475817fdf9d1ff1bf4082c86a4b09d2e59af739d391e59bca7ed
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.13.0":
   version: 0.13.0
   resolution: "@humanwhocodes/config-array@npm:0.13.0"
@@ -341,6 +348,18 @@ __metadata:
     uuid: ^10.0.0
     zod: ^3.25.76 || ^4
   checksum: ea951a2e43e2d3bc6b3a577e5b51515d2a1c335e1cc7907716a2cdc9370058ca917af02ee8142fd43b66d0c1aaa8b34ef0c9a3544782ee16ef4776b8637925b4
+  languageName: node
+  linkType: hard
+
+"@langchain/google-genai@npm:>=0.2.0":
+  version: 2.1.24
+  resolution: "@langchain/google-genai@npm:2.1.24"
+  dependencies:
+    "@google/generative-ai": ^0.24.0
+    uuid: ^11.1.0
+  peerDependencies:
+    "@langchain/core": ^1.1.30
+  checksum: 83563fa0be5d4809c0e9ce9e26edfb51043b492a0c08584db4d4423736f858cb675053c1821e041548166af72bebeee5fdd8fb32898b58e645a4613b544edc5b
   languageName: node
   linkType: hard
 
@@ -3884,6 +3903,7 @@ __metadata:
   dependencies:
     "@e2b/code-interpreter": ^1.0.4
     "@langchain/core": ^1.1.28
+    "@langchain/google-genai": ">=0.2.0"
     "@langchain/langgraph": ^1.0.2
     "@langchain/openai": ^1.1.3
     "@langchain/scripts": 0.1.3

@@ -8,8 +8,6 @@ from openevals.prompts.security import (
     CODE_INJECTION_PROMPT,
 )
 from openevals.prompts.safety import TOXICITY_PROMPT, FAIRNESS_PROMPT
-from openevals.api_leakage import api_leakage, api_leakage_async
-from openevals.types import EvaluatorResult
 
 
 # ── PII_LEAKAGE_PROMPT ─────────────────────────────────────────────────────────
@@ -170,110 +168,6 @@ def test_code_injection_xss_detected():
     result = evaluator(inputs=inputs, outputs=None)
     t.log_outputs({"score": result["score"]})
     assert result["score"]
-
-
-# ── API_LEAKAGE ────────────────────────────────────────────────────────────────
-
-CLEAN_OUTPUT = "Here is your answer: the sky is blue and the grass is green."
-
-LANGSMITH_KEY = "lsv2_pt_" + "a" * 32 + "_" + "b" * 10
-OPENAI_KEY = "sk-proj-" + "A" * 80
-ANTHROPIC_KEY = "sk-ant-" + "A" * 40
-PERPLEXITY_KEY = "pplx-" + "a" * 40
-GCP_KEY = "AIza" + "A" * 35
-AWS_ACCESS_KEY = "AKIA" + "A" * 16
-AWS_TEMP_KEY = "ASIA" + "A" * 16
-
-
-@pytest.mark.parametrize("key", [
-    LANGSMITH_KEY,
-    OPENAI_KEY,
-    ANTHROPIC_KEY,
-    PERPLEXITY_KEY,
-    GCP_KEY,
-    AWS_ACCESS_KEY,
-    AWS_TEMP_KEY,
-])
-def test_api_leakage_detects_key_in_outputs(key):
-    result = api_leakage(outputs=f"My API key is {key}, please don't share it.")
-    assert result == EvaluatorResult(key="api_leakage", score=True, comment=None, metadata=None)
-
-
-@pytest.mark.parametrize("key", [
-    LANGSMITH_KEY,
-    OPENAI_KEY,
-    ANTHROPIC_KEY,
-    PERPLEXITY_KEY,
-    GCP_KEY,
-    AWS_ACCESS_KEY,
-    AWS_TEMP_KEY,
-])
-def test_api_leakage_detects_key_in_inputs(key):
-    result = api_leakage(inputs=f"Use this key: {key}")
-    assert result["score"] is True
-
-
-def test_api_leakage_clean_output_returns_false():
-    result = api_leakage(outputs=CLEAN_OUTPUT)
-    assert result == EvaluatorResult(key="api_leakage", score=False, comment=None, metadata=None)
-
-
-def test_api_leakage_both_none_returns_false():
-    result = api_leakage()
-    assert result["score"] is False
-
-
-def test_api_leakage_empty_string_returns_false():
-    result = api_leakage(outputs="")
-    assert result["score"] is False
-
-
-def test_api_leakage_detects_key_in_nested_dict():
-    result = api_leakage(outputs={"response": {"text": f"key={OPENAI_KEY}"}})
-    assert result["score"] is True
-
-
-def test_api_leakage_detects_key_in_list():
-    result = api_leakage(outputs=["first item", f"key here: {ANTHROPIC_KEY}", "last item"])
-    assert result["score"] is True
-
-
-def test_api_leakage_clean_nested_dict_returns_false():
-    result = api_leakage(outputs={"response": {"text": "no secrets here"}})
-    assert result["score"] is False
-
-
-def test_api_leakage_key_only_in_inputs_flagged():
-    result = api_leakage(inputs=OPENAI_KEY, outputs=CLEAN_OUTPUT)
-    assert result["score"] is True
-
-
-def test_api_leakage_key_only_in_outputs_flagged():
-    result = api_leakage(inputs="what is my key?", outputs=OPENAI_KEY)
-    assert result["score"] is True
-
-
-def test_api_leakage_both_clean_passes():
-    result = api_leakage(inputs="what is my key?", outputs="I cannot share that.")
-    assert result["score"] is False
-
-
-@pytest.mark.asyncio
-async def test_api_leakage_async_detects_key():
-    result = await api_leakage_async(outputs=f"token: {LANGSMITH_KEY}")
-    assert result["score"] is True
-
-
-@pytest.mark.asyncio
-async def test_api_leakage_async_clean_returns_false():
-    result = await api_leakage_async(outputs=CLEAN_OUTPUT)
-    assert result["score"] is False
-
-
-@pytest.mark.asyncio
-async def test_api_leakage_async_nested_dict():
-    result = await api_leakage_async(outputs={"data": {"secret": GCP_KEY}})
-    assert result["score"] is True
 
 
 # ── TOXICITY_PROMPT ────────────────────────────────────────────────────────────

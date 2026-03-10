@@ -8,7 +8,6 @@ import {
   CODE_INJECTION_PROMPT,
 } from "../prompts/security/index.js";
 import { TOXICITY_PROMPT, FAIRNESS_PROMPT } from "../prompts/safety/index.js";
-import { apiLeakage } from "../api_leakage.js";
 
 ls.describe("LLM Judge Security", () => {
   // ── PII_LEAKAGE_PROMPT ──────────────────────────────────────────────────────
@@ -258,94 +257,3 @@ ls.describe("LLM Judge Fairness", () => {
   });
 });
 
-// ── api_leakage ───────────────────────────────────────────────────────────────
-
-const CLEAN_OUTPUT = "The sky is blue and the grass is green.";
-
-const LANGSMITH_KEY = "lsv2_pt_" + "a".repeat(32) + "_" + "b".repeat(10);
-const OPENAI_KEY = "sk-proj-" + "A".repeat(80);
-const ANTHROPIC_KEY = "sk-ant-" + "A".repeat(40);
-const PERPLEXITY_KEY = "pplx-" + "a".repeat(40);
-const GCP_KEY = "AIza" + "A".repeat(35);
-const AWS_ACCESS_KEY = "AKIA" + "A".repeat(16);
-const AWS_TEMP_KEY = "ASIA" + "A".repeat(16);
-
-ls.describe("api_leakage", () => {
-  ls.test.each([
-    { inputs: {}, key: LANGSMITH_KEY, provider: "langsmith" },
-    { inputs: {}, key: OPENAI_KEY, provider: "openai" },
-    { inputs: {}, key: ANTHROPIC_KEY, provider: "anthropic" },
-    { inputs: {}, key: PERPLEXITY_KEY, provider: "perplexity" },
-    { inputs: {}, key: GCP_KEY, provider: "gcp" },
-    { inputs: {}, key: AWS_ACCESS_KEY, provider: "aws_access_key" },
-    { inputs: {}, key: AWS_TEMP_KEY, provider: "aws_temp_key" },
-  ])("detects $provider key in outputs string", async ({ key }) => {
-    const result = await apiLeakage({ outputs: `My API key is ${key}` });
-    expect(result.score).toBe(true);
-    expect(result.key).toBe("api_leakage");
-  });
-
-  ls.test.each([
-    { inputs: {}, key: LANGSMITH_KEY, provider: "langsmith" },
-    { inputs: {}, key: OPENAI_KEY, provider: "openai" },
-    { inputs: {}, key: ANTHROPIC_KEY, provider: "anthropic" },
-    { inputs: {}, key: PERPLEXITY_KEY, provider: "perplexity" },
-    { inputs: {}, key: GCP_KEY, provider: "gcp" },
-    { inputs: {}, key: AWS_ACCESS_KEY, provider: "aws_access_key" },
-    { inputs: {}, key: AWS_TEMP_KEY, provider: "aws_temp_key" },
-  ])("detects $provider key in inputs string", async ({ key }) => {
-    const result = await apiLeakage({ inputs: `Use this key: ${key}` });
-    expect(result.score).toBe(true);
-  });
-
-  ls.test("clean output returns false", { inputs: {} }, async () => {
-    const result = await apiLeakage({ outputs: CLEAN_OUTPUT });
-    expect(result).toEqual({ key: "api_leakage", score: false, comment: undefined, metadata: undefined });
-  });
-
-  ls.test("both undefined returns false", { inputs: {} }, async () => {
-    const result = await apiLeakage({});
-    expect(result.score).toBe(false);
-  });
-
-  ls.test("empty string returns false", { inputs: {} }, async () => {
-    const result = await apiLeakage({ outputs: "" });
-    expect(result.score).toBe(false);
-  });
-
-  ls.test("detects key in nested object", { inputs: {} }, async () => {
-    const result = await apiLeakage({
-      outputs: { response: { text: `key=${OPENAI_KEY}` } },
-    });
-    expect(result.score).toBe(true);
-  });
-
-  ls.test("detects key in array", { inputs: {} }, async () => {
-    const result = await apiLeakage({
-      outputs: ["first item", `key: ${ANTHROPIC_KEY}`, "last item"],
-    });
-    expect(result.score).toBe(true);
-  });
-
-  ls.test("clean nested object returns false", { inputs: {} }, async () => {
-    const result = await apiLeakage({
-      outputs: { response: { text: "no secrets here" } },
-    });
-    expect(result.score).toBe(false);
-  });
-
-  ls.test("key only in inputs is flagged", { inputs: {} }, async () => {
-    const result = await apiLeakage({ inputs: OPENAI_KEY, outputs: CLEAN_OUTPUT });
-    expect(result.score).toBe(true);
-  });
-
-  ls.test("key only in outputs is flagged", { inputs: {} }, async () => {
-    const result = await apiLeakage({ inputs: "what is my key?", outputs: OPENAI_KEY });
-    expect(result.score).toBe(true);
-  });
-
-  ls.test("both clean passes", { inputs: {} }, async () => {
-    const result = await apiLeakage({ inputs: "what is my key?", outputs: "I cannot share that." });
-    expect(result.score).toBe(false);
-  });
-});

@@ -1,5 +1,4 @@
 export { exactMatch } from "./exact.js";
-export { apiLeakage } from "./api_leakage.js";
 export { createEmbeddingSimilarityEvaluator } from "./string/embedding_similarity.js";
 export { levenshteinDistance } from "./string/levenshtein.js";
 export { createJsonMatchEvaluator } from "./json/match.js";

@@ -11,6 +11,8 @@ export { createLLMSimulatedUser } from "./simulators/prebuilts.js";
 
 export * from "./prompts/index.js";
 
+export * from "./trajectory/index.js";
+
 export * from "./types.js";
 
 export const __version__ = "0.1.4";

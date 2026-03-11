@@ -1,5 +1,7 @@
 from typing import (
     Any,
+    Callable,
+    Literal,
     Optional,
     Protocol,
     Union,
@@ -88,3 +90,10 @@ class RunnableLike(Protocol):
 class MultiturnSimulationResult(TypedDict):
     evaluator_results: list[EvaluatorResult]
     trajectory: list[ChatCompletionMessage]
+
+
+ToolArgsMatchMode = Literal["exact", "ignore", "subset", "superset"]
+
+ToolArgsMatchOverrides = dict[
+    str, Union[ToolArgsMatchMode, list[str], Callable[[dict, dict], bool]]
+]

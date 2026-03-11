@@ -11,7 +11,6 @@ from langchain_core.prompts.structured import StructuredPrompt
 from openai import AsyncOpenAI
 from langchain_openai import ChatOpenAI
 from langsmith import Client
-from langchain import hub as prompts
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -111,7 +110,7 @@ async def test_prompt_hub_works():
     outputs = {"a": 1, "b": 2}
     client = AsyncOpenAI()
     llm_as_judge = create_async_llm_as_judge(
-        prompt=prompts.pull("test-equality"),
+        prompt=Client().pull_prompt("test-equality"),
         judge=client,
         model="gpt-4o-mini",
     )
@@ -127,7 +126,7 @@ async def test_prompt_hub_works_one_message():
     outputs = {"a": 1, "b": 2}
     client = AsyncOpenAI()
     llm_as_judge = create_async_llm_as_judge(
-        prompt=prompts.pull("equality-1-message"),
+        prompt=Client().pull_prompt("equality-1-message"),
         judge=client,
         model="gpt-4o-mini",
     )

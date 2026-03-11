@@ -8,7 +8,6 @@ from openevals.llm import create_llm_as_judge
 from openai import OpenAI
 from langchain_openai import ChatOpenAI
 from langsmith import Client
-from langchain import hub as prompts
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts.chat import ChatPromptTemplate
 from langchain_core.prompts.structured import StructuredPrompt
@@ -110,7 +109,7 @@ def test_prompt_hub_works():
     outputs = {"a": 1, "b": 2}
     client = OpenAI()
     llm_as_judge = create_llm_as_judge(
-        prompt=prompts.pull("test-equality"),
+        prompt=Client().pull_prompt("test-equality"),
         judge=client,
         model="gpt-4o-mini",
     )
@@ -125,7 +124,7 @@ def test_prompt_hub_works_one_message():
     outputs = {"a": 1, "b": 2}
     client = OpenAI()
     llm_as_judge = create_llm_as_judge(
-        prompt=prompts.pull("equality-1-message"),
+        prompt=Client().pull_prompt("equality-1-message"),
         judge=client,
         model="gpt-4o-mini",
     )

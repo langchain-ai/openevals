@@ -73,12 +73,14 @@ jobs:
 
       - name: Run integration tests
         if: >
-          (github.event_name == 'push') ||
-          (github.event_name == 'pull_request' && (
-            contains(github.event.pull_request.labels.*.name, 'release') ||
-            needs.changed_files.outputs.python_changed == 'true'
-          )) ||
-          (github.event_name == 'workflow_dispatch')
+          github.actor != 'dependabot[bot]' && (
+            (github.event_name == 'push') ||
+            (github.event_name == 'pull_request' && (
+              contains(github.event.pull_request.labels.*.name, 'release') ||
+              needs.changed_files.outputs.python_changed == 'true'
+            )) ||
+            (github.event_name == 'workflow_dispatch')
+          )
         env:
           LANGSMITH_TRACING: "true"
           LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}
@@ -112,12 +114,14 @@ jobs:
 
       - name: Run JS integration tests
         if: >
-          (github.event_name == 'push') ||
-          (github.event_name == 'pull_request' && (
-            contains(github.event.pull_request.labels.*.name, 'release') ||
-            needs.changed_files.outputs.js_changed == 'true'
-          )) ||
-          (github.event_name == 'workflow_dispatch')
+          github.actor != 'dependabot[bot]' && (
+            (github.event_name == 'push') ||
+            (github.event_name == 'pull_request' && (
+              contains(github.event.pull_request.labels.*.name, 'release') ||
+              needs.changed_files.outputs.js_changed == 'true'
+            )) ||
+            (github.event_name == 'workflow_dispatch')
+          )
         env:
           LANGSMITH_TRACING: "true"
           LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}

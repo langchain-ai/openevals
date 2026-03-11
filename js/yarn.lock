@@ -333,7 +333,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:^1.1.30":
+"@langchain/core@npm:^1.1.31":
   version: 1.1.31
   resolution: "@langchain/core@npm:1.1.31"
   dependencies:
@@ -3903,7 +3903,7 @@ __metadata:
   resolution: "openevals@workspace:."
   dependencies:
     "@e2b/code-interpreter": ^1.0.4
-    "@langchain/core": ^1.1.30
+    "@langchain/core": ^1.1.31
     "@langchain/google-genai": ">=0.2.0"
     "@langchain/langgraph": ^1.0.2
     "@langchain/openai": ^1.1.3

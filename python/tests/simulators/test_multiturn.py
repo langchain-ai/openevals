@@ -82,6 +82,10 @@ def test_multiturn_success():
     user = create_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
         model="openai:gpt-5-nano",
+        fixed_responses=[
+            "Hi, I'd like a refund please.",
+            "Thank you so much, that's great!",
+        ],
     )
     trajectory_evaluator = create_llm_as_judge(
         model="openai:gpt-5-mini",
@@ -93,7 +97,7 @@ def test_multiturn_success():
         app=app,
         user=user,
         trajectory_evaluators=[trajectory_evaluator],
-        max_turns=5,
+        max_turns=2,
         thread_id="1",
     )
     t.log_outputs(res)

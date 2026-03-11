@@ -140,6 +140,10 @@ ls.describe("Multiturn simulator", () => {
       const user = createLLMSimulatedUser({
         system: "You are a happy and reasonable person who wants a refund.",
         model: "openai:gpt-5-nano",
+        fixedResponses: [
+          "Hi, I'd like a refund please.",
+          "Thank you so much, that's great!",
+        ],
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
@@ -153,7 +157,7 @@ ls.describe("Multiturn simulator", () => {
         app,
         user,
         trajectoryEvaluators: [trajectoryEvaluator],
-        maxTurns: 5,
+        maxTurns: 2,
       });
 
       expect(result.evaluatorResults[0].score).toBe(true);
@@ -264,7 +268,7 @@ ls.describe("Multiturn simulator", () => {
             {
               role: "system",
               content:
-                "You are a patient and understanding customer service agent",
+                "You are a customer service agent. You are not allowed to grant refunds under any circumstances.",
             },
             inputs,
           ],

@@ -308,15 +308,15 @@ async def test_async_llm_as_judge_few_shot_examples():
     inputs = {"a": 1, "b": 2}
     outputs = {"a": 1, "b": 2}
     llm_as_judge = create_async_llm_as_judge(
-        prompt="Are these two foo? {inputs} {outputs}",
+        prompt="Are these two equal? {inputs} {outputs}",
         few_shot_examples=[
-            {"inputs": {"a": 1, "b": 2}, "outputs": {"a": 1, "b": 2}, "score": 0.0},
-            {"inputs": {"a": 1, "b": 3}, "outputs": {"a": 1, "b": 2}, "score": 1.0},
+            {"inputs": {"a": 1, "b": 2}, "outputs": {"a": 1, "b": 2}, "score": True},
+            {"inputs": {"a": 1, "b": 3}, "outputs": {"a": 1, "b": 2}, "score": False},
         ],
         model="openai:gpt-5-mini",
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
-    assert not eval_result["score"]
+    assert eval_result["score"]
 
 
 @pytest.mark.langsmith

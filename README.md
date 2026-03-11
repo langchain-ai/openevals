@@ -112,62 +112,47 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 
 # Table of Contents
 
+- [⚖️ OpenEvals](#️-openevals)
+- [Quickstart](#quickstart)
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Evaluators](#evaluators)
-  - <details>
-      <summary><a href="#llm-as-judge">LLM-as-Judge</a></summary>
-
+  - [LLM-as-judge](#llm-as-judge)
     - [Customizing prompts](#customizing-prompts)
+      - [Customizing with LangChain prompt templates](#customizing-with-langchain-prompt-templates)
     - [Customizing the model](#customizing-the-model)
     - [Customizing output score values](#customizing-output-score-values)
     - [Customizing output schema](#customizing-output-schema)
+      - [Logging feedback with custom output schemas](#logging-feedback-with-custom-output-schemas)
+      - [Structured prompts](#structured-prompts)
     - [Multimodal](#multimodal)
-
-  </details>
-
-  - <details>
-      <summary><a href="#prebuilt-prompts">Prebuilt prompts</a></summary>
-
+  - [Prebuilt prompts](#prebuilt-prompts)
     - [Quality](#quality)
     - [Safety](#safety)
     - [Security](#security)
     - [Image](#image)
     - [Voice](#voice)
     - [RAG](#rag)
-
-  </details>
-
-  - <details>
-      <summary><a href="#extraction-and-tool-calls">Extraction and tool calls</a></summary>
-
+      - [Correctness {#correctness-rag}](#correctness-correctness-rag)
+      - [Helpfulness](#helpfulness)
+      - [Groundedness](#groundedness)
+      - [Retrieval relevance](#retrieval-relevance)
+        - [Retrieval relevance with LLM-as-judge](#retrieval-relevance-with-llm-as-judge)
+        - [Retrieval relevance with string evaluators](#retrieval-relevance-with-string-evaluators)
+  - [Extraction and tool calls](#extraction-and-tool-calls)
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
-
-  </details>
-
-  - <details>
-      <summary><a href="#code">Code</a></summary>
-
+  - [Code](#code)
     - [Extracting code outputs](#extracting-code-outputs)
     - [Pyright (Python-only)](#pyright-python-only)
     - [Mypy (Python-only)](#mypy-python-only)
     - [TypeScript type-checking (TypeScript-only)](#typescript-type-checking-typescript-only)
     - [LLM-as-judge for code](#llm-as-judge-for-code)
-
-  </details>
-
-  - <details>
-      <summary><a href="#sandboxed-code">Sandboxed code</a></summary>
-
-    - [Sandboxed Pyright (Python-only)](#sandbox-pyright-python-only)
-    - [Sandboxed TypeScript type-checking (TypeScript-only)](#sandbox-typescript-type-checking-typescript-only)
-    - [Sandboxed Execution](#sandbox-execution)
-
-  </details>
-
-  - <details>
-      <summary><a href="#agent-trajectory">Agent trajectory</a></summary>
-
+  - [Sandboxed code](#sandboxed-code)
+    - [Sandbox Pyright (Python-only)](#sandbox-pyright-python-only)
+    - [Sandbox TypeScript type-checking (TypeScript-only)](#sandbox-typescript-type-checking-typescript-only)
+    - [Sandbox Execution](#sandbox-execution)
+  - [Agent trajectory](#agent-trajectory)
     - [Trajectory match](#trajectory-match)
       - [Strict match](#strict-match)
       - [Unordered match](#unordered-match)
@@ -175,30 +160,25 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
       - [Tool args match modes](#tool-args-match-modes)
     - [Trajectory LLM-as-judge](#trajectory-llm-as-judge)
     - [Prebuilt trajectory prompts](#prebuilt-trajectory-prompts)
-
-  </details>
-
-  - <details>
-      <summary><a href="#other">Other</a></summary>
-
-    - [Exact Match](#exact-match)
-    - [Levenshtein Distance](#levenshtein-distance)
-    - [Embedding Similarity](#embedding-similarity)
-
-  </details>
-
+  - [Other](#other)
+    - [Exact match](#exact-match)
+    - [Levenshtein distance](#levenshtein-distance)
+    - [Embedding similarity](#embedding-similarity)
   - [Creating your own](#creating-your-own)
-  - [Python Async Support](#python-async-support)
-
+    - [Evaluator interface](#evaluator-interface)
+    - [Logging to LangSmith](#logging-to-langsmith)
+    - [Example](#example)
+  - [Python async support](#python-async-support)
 - [Multiturn Simulation](#multiturn-simulation)
   - [Simulating users](#simulating-users)
+    - [Prebuilt simulated user](#prebuilt-simulated-user)
+    - [Custom simulated users](#custom-simulated-users)
   - [Multiturn simulation with LangGraph](#multiturn-simulation-with-langgraph)
-
 - [LangSmith Integration](#langsmith-integration)
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
   - [Evaluate](#evaluate)
-
 - [Acknowledgements](#acknowledgements)
+- [Thank you!](#thank-you)
 
 # Installation
 
@@ -3320,6 +3300,76 @@ console.log(result);
 
 ```
 { key: 'task_completion', score: false, comment: 'The user's request to book a flight was never fulfilled...' }
+```
+</details>
+
+Since `LANGUAGE_DETECTION_PROMPT` should return a categorical language name rather than a boolean score, use it with a custom `output_schema` to capture the result:
+
+<details open>
+<summary>Python</summary>
+
+```python
+from typing_extensions import TypedDict
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import LANGUAGE_DETECTION_PROMPT
+
+class LanguageDetectionResult(TypedDict):
+    reasoning: str
+    detected_language: str
+
+evaluator = create_llm_as_judge(
+    prompt=LANGUAGE_DETECTION_PROMPT,
+    feedback_key="language_detection",
+    model="openai:gpt-5-mini",
+    output_schema=LanguageDetectionResult,
+)
+
+outputs = [
+    {"role": "user", "content": "Hola, ¿cómo estás?"},
+    {"role": "assistant", "content": "¡Hola! Estoy bien, gracias. ¿En qué puedo ayudarte?"},
+    {"role": "user", "content": "Necesito ayuda con mi cuenta."},
+]
+
+result = evaluator(outputs=outputs)
+print(result)
+```
+
+```
+{'reasoning': 'The human is speaking in Spanish throughout the conversation.', 'detected_language': 'Spanish'}
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { z } from "zod";
+import { createLLMAsJudge, LANGUAGE_DETECTION_PROMPT } from "openevals";
+
+const languageDetectionSchema = z.object({
+  reasoning: z.string(),
+  detected_language: z.string().describe("The detected language name in English"),
+});
+
+const evaluator = createLLMAsJudge({
+  prompt: LANGUAGE_DETECTION_PROMPT,
+  feedbackKey: "language_detection",
+  model: "openai:gpt-5-mini",
+  outputSchema: languageDetectionSchema,
+});
+
+const outputs = [
+  { role: "user", content: "Hola, ¿cómo estás?" },
+  { role: "assistant", content: "¡Hola! Estoy bien, gracias. ¿En qué puedo ayudarte?" },
+  { role: "user", content: "Necesito ayuda con mi cuenta." },
+];
+
+const result = await evaluator({ outputs });
+console.log(result);
+```
+
+```
+{ reasoning: 'The human is speaking in Spanish throughout the conversation.', detected_language: 'Spanish' }
 ```
 </details>
 

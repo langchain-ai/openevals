@@ -1874,6 +1874,38 @@ print(result)
 {'key': 'task_completion', 'score': False, 'comment': 'The user\'s request to book a flight was never fulfilled...'}
 ```
 
+Since `LANGUAGE_DETECTION_PROMPT` should return a categorical language name rather than a boolean score, use it with a custom `output_schema` to capture the result:
+
+```python
+from typing_extensions import TypedDict
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import LANGUAGE_DETECTION_PROMPT
+
+class LanguageDetectionResult(TypedDict):
+    reasoning: str
+    detected_language: str
+
+evaluator = create_llm_as_judge(
+    prompt=LANGUAGE_DETECTION_PROMPT,
+    feedback_key="language_detection",
+    model="openai:gpt-5-mini",
+    output_schema=LanguageDetectionResult,
+)
+
+outputs = [
+    {"role": "user", "content": "Hola, ¿cómo estás?"},
+    {"role": "assistant", "content": "¡Hola! Estoy bien, gracias. ¿En qué puedo ayudarte?"},
+    {"role": "user", "content": "Necesito ayuda con mi cuenta."},
+]
+
+result = evaluator(outputs=outputs)
+print(result)
+```
+
+```
+{'reasoning': 'The human is speaking in Spanish throughout the conversation.', 'detected_language': 'Spanish'}
+```
+
 ## Other
 
 This package also contains prebuilt evaluators for calculating common metrics such as Levenshtein distance, exact match, etc. You can import and use them as follows:

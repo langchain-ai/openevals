@@ -1,5 +1,6 @@
 import pytest
 from langsmith import testing as t
+from typing_extensions import TypedDict
 from openevals.llm import create_llm_as_judge
 from openevals.prompts.trajectory import (
     TASK_COMPLETION_PROMPT,
@@ -177,21 +178,18 @@ def test_knowledge_retention_forgot_context():
 
 # ── LANGUAGE_DETECTION_PROMPT ──────────────────────────────────────────────────
 
+class LanguageDetectionResult(TypedDict):
+    reasoning: str
+    detected_language: str
+
+
 @pytest.mark.langsmith
 def test_language_detection_spanish():
     evaluator = create_llm_as_judge(
         prompt=LANGUAGE_DETECTION_PROMPT,
         feedback_key="language_detection",
         model="openai:gpt-5-mini",
-        output_schema={
-            "type": "object",
-            "properties": {
-                "reasoning": {"type": "string"},
-                "score": {"type": "string", "description": "The detected language name in English"},
-            },
-            "required": ["reasoning", "score"],
-            "additionalProperties": False,
-        },
+        output_schema=LanguageDetectionResult,
     )
     conversation = [
         {"role": "user", "content": "Hola, ¿cómo estás?"},
@@ -199,10 +197,10 @@ def test_language_detection_spanish():
         {"role": "user", "content": "Necesito ayuda con mi cuenta."},
     ]
     t.log_inputs({"conversation": conversation})
-    t.log_reference_outputs({"score": "Spanish"})
+    t.log_reference_outputs({"detected_language": "Spanish"})
     result = evaluator(outputs=conversation)
-    t.log_outputs({"score": result["score"]})
-    assert result["score"].lower() == "spanish"
+    t.log_outputs({"detected_language": result["detected_language"]})
+    assert result["detected_language"].lower() == "spanish"
 
 
 @pytest.mark.langsmith
@@ -211,15 +209,7 @@ def test_language_detection_french():
         prompt=LANGUAGE_DETECTION_PROMPT,
         feedback_key="language_detection",
         model="openai:gpt-5-mini",
-        output_schema={
-            "type": "object",
-            "properties": {
-                "reasoning": {"type": "string"},
-                "score": {"type": "string", "description": "The detected language name in English"},
-            },
-            "required": ["reasoning", "score"],
-            "additionalProperties": False,
-        },
+        output_schema=LanguageDetectionResult,
     )
     conversation = [
         {"role": "user", "content": "Bonjour, j'ai besoin d'aide."},
@@ -227,7 +217,7 @@ def test_language_detection_french():
         {"role": "user", "content": "Je ne comprends pas cette fonctionnalité."},
     ]
     t.log_inputs({"conversation": conversation})
-    t.log_reference_outputs({"score": "French"})
+    t.log_reference_outputs({"detected_language": "French"})
     result = evaluator(outputs=conversation)
-    t.log_outputs({"score": result["score"]})
-    assert result["score"].lower() == "french"
+    t.log_outputs({"detected_language": result["detected_language"]})
+    assert result["detected_language"].lower() == "french"

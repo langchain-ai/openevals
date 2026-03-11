@@ -1,5 +1,6 @@
 import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
+import { z } from "zod";
 import { createLLMAsJudge } from "../llm.js";
 import { TASK_COMPLETION_PROMPT } from "../prompts/trajectory/task_completion.js";
 import { USER_SATISFACTION_PROMPT } from "../prompts/trajectory/user_satisfaction.js";
@@ -183,6 +184,11 @@ ls.describe("LLM Judge Trajectory", () => {
 
   // ── LANGUAGE_DETECTION_PROMPT ───────────────────────────────────────────────
 
+  const languageDetectionSchema = z.object({
+    reasoning: z.string(),
+    detected_language: z.string().describe("The detected language name in English"),
+  });
+
   ls.test("language detection — Spanish", {
     inputs: {
       conversation: [
@@ -191,25 +197,17 @@ ls.describe("LLM Judge Trajectory", () => {
         { role: "user", content: "Necesito ayuda con mi cuenta." },
       ],
     },
-    referenceOutputs: { score: "Spanish" },
+    referenceOutputs: { detected_language: "Spanish" },
   }, async ({ inputs }) => {
     const evaluator = createLLMAsJudge({
       prompt: LANGUAGE_DETECTION_PROMPT,
       feedbackKey: "language_detection",
       model: "openai:gpt-5-mini",
-      outputSchema: {
-        type: "object",
-        properties: {
-          reasoning: { type: "string" },
-          score: { type: "string", description: "The detected language name in English" },
-        },
-        required: ["reasoning", "score"],
-        additionalProperties: false,
-      },
+      outputSchema: languageDetectionSchema,
     });
     const result = await evaluator({ outputs: inputs.conversation });
-    ls.logOutputs({ score: (result as any).score });
-    expect((result as any).score.toLowerCase()).toBe("spanish");
+    ls.logOutputs({ detected_language: (result as any).detected_language });
+    expect((result as any).detected_language.toLowerCase()).toBe("spanish");
   });
 
   ls.test("language detection — French", {
@@ -220,24 +218,16 @@ ls.describe("LLM Judge Trajectory", () => {
         { role: "user", content: "Je ne comprends pas cette fonctionnalité." },
       ],
     },
-    referenceOutputs: { score: "French" },
+    referenceOutputs: { detected_language: "French" },
   }, async ({ inputs }) => {
     const evaluator = createLLMAsJudge({
       prompt: LANGUAGE_DETECTION_PROMPT,
       feedbackKey: "language_detection",
       model: "openai:gpt-5-mini",
-      outputSchema: {
-        type: "object",
-        properties: {
-          reasoning: { type: "string" },
-          score: { type: "string", description: "The detected language name in English" },
-        },
-        required: ["reasoning", "score"],
-        additionalProperties: false,
-      },
+      outputSchema: languageDetectionSchema,
     });
     const result = await evaluator({ outputs: inputs.conversation });
-    ls.logOutputs({ score: (result as any).score });
-    expect((result as any).score.toLowerCase()).toBe("french");
+    ls.logOutputs({ detected_language: (result as any).detected_language });
+    expect((result as any).detected_language.toLowerCase()).toBe("french");
   });
 });

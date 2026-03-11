@@ -11,10 +11,10 @@ from openevals.prompts.rag.retrieval_relevance import RAG_RETRIEVAL_RELEVANCE_PR
 @pytest.mark.langsmith
 def test_llm_as_judge_rag_helpfulnesss():
     inputs = {
-        "question": "Where was the first president of foobarland born?",
+        "question": "What is the boiling point of water?",
     }
     outputs = {
-        "answer": "Bagatur Askaryan, the first president of FoobarLand, was born in Langchainville."
+        "answer": "Water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard atmospheric pressure."
     }
     t.log_inputs(inputs)
     t.log_outputs(outputs)

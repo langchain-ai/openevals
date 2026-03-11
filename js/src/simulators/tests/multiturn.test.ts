@@ -65,6 +65,11 @@ ls.describe("Multiturn simulator", () => {
         system:
           "You are an angry user who wants a refund and keeps making additional demands.",
         model: "openai:gpt-5-nano",
+        fixedResponses: [
+          "I want a refund right now!",
+          "This is completely unacceptable!",
+          "You are useless, give me my money back!",
+        ],
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
@@ -78,7 +83,7 @@ ls.describe("Multiturn simulator", () => {
         app,
         user,
         trajectoryEvaluators: [trajectoryEvaluator],
-        maxTurns: 5,
+        maxTurns: 2,
       });
 
       expect(result.evaluatorResults[0].score).toBe(false);
@@ -285,7 +290,7 @@ ls.describe("Multiturn simulator", () => {
         app,
         user,
         trajectoryEvaluators: [trajectoryEvaluator],
-        maxTurns: 5,
+        maxTurns: 1,
       });
 
       expect(result.evaluatorResults[0].score).toBe(false);

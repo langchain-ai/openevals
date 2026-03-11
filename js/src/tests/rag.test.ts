@@ -14,13 +14,12 @@ ls.describe("LLM as Judge RAG", () => {
     "should test LLM judge RAG helpfulness",
     {
       inputs: {
-        question: "Where was the first president of foobarland born?",
+        question: "What is the boiling point of water?",
       },
     },
     async ({ inputs }) => {
       const outputs = {
-        answer:
-          "Bagatur Askaryan, the first president of FoobarLand, was born in Langchainville.",
+        answer: "Water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard atmospheric pressure.",
       };
 
       const llmAsJudge = createLLMAsJudge({

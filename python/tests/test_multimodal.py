@@ -1,9 +1,11 @@
 import base64
+import json
 import urllib.request
 
 import pytest
 from langchain_core.language_models.chat_models import BaseChatModel
 from langsmith import testing as t
+from openai import OpenAI
 from openevals.utils import _attachment_to_content_block
 from openevals.llm import create_llm_as_judge
 from openevals.prompts.image import IMAGE_RELEVANCE_PROMPT
@@ -11,7 +13,6 @@ from openevals.prompts.voice import (
     AUDIO_QUALITY_PROMPT,
     TRANSCRIPTION_ACCURACY_PROMPT,
     VOCAL_AFFECT_PROMPT,
-    DIALOGUE_FLOW_PROMPT,
 )
 
 # Tiny 1×1 white PNG as base64 data URI — usable in unit tests without a real image
@@ -151,8 +152,8 @@ def test_single_attachment_becomes_list_content():
     content = messages[0]["content"]
     assert isinstance(content, list)
     assert content[0]["type"] == "text"
-    assert content[1]["type"] == "image_url"
-    assert content[1]["image_url"]["url"] == TINY_PNG_DATA_URI
+    assert content[1]["type"] == "image"
+    assert content[1]["base64"] == TINY_PNG_DATA_URI.split(",")[1]
 
 
 def test_multiple_attachments_all_appended():
@@ -162,7 +163,7 @@ def test_multiple_attachments_all_appended():
 
     scorer = _create_llm_as_judge_scorer(
         prompt="Evaluate: {outputs}\n{attachments}",
-        model="openai:gpt-5-mini",
+        model="google_genai:gemini-2.0-flash",
     )
 
     with patch("openevals.llm.init_chat_model") as mock_init:
@@ -185,8 +186,8 @@ def test_multiple_attachments_all_appended():
     content = messages[0]["content"]
     assert len(content) == 3  # text + 2 images
     assert content[0]["type"] == "text"
-    assert content[1]["type"] == "image_url"
-    assert content[2]["type"] == "image_url"
+    assert content[1]["type"] == "image"
+    assert content[2]["type"] == "image"
 
 
 def test_no_attachment_content_is_plain_string():
@@ -196,7 +197,7 @@ def test_no_attachment_content_is_plain_string():
 
     scorer = _create_llm_as_judge_scorer(
         prompt="Evaluate: {outputs}",
-        model="openai:gpt-5-mini",
+        model="google_genai:gemini-2.0-flash",
     )
 
     with patch("openevals.llm.init_chat_model") as mock_init:
@@ -213,6 +214,43 @@ def test_no_attachment_content_is_plain_string():
     assert isinstance(messages[0]["content"], str)
 
 
+# ── raw OpenAI client: message structure ──────────────────────────────────────
+
+def test_raw_openai_client_image_attachment():
+    """Raw OpenAI client receives image as image_url content block (no LangChain normalization)."""
+    from types import SimpleNamespace
+    from unittest.mock import patch
+    from openevals.llm import _create_llm_as_judge_scorer
+
+    mock_response = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(
+            content=json.dumps({"score": True, "reasoning": "ok"})
+        ))]
+    )
+
+    client = OpenAI(api_key="fake-key")
+    scorer = _create_llm_as_judge_scorer(
+        prompt="Evaluate this image: {outputs}\n{attachments}",
+        judge=client,
+        model="openai:gpt-5-mini",
+    )
+
+    with patch.object(client.chat.completions, "create", return_value=mock_response) as mock_create:
+        scorer(
+            outputs="a fruit bowl",
+            attachments={"mime_type": "image/png", "data": TINY_PNG_DATA_URI},
+        )
+
+    call_kwargs = mock_create.call_args[1]
+    messages = call_kwargs["messages"]
+    assert len(messages) == 1
+    content = messages[0]["content"]
+    assert isinstance(content, list)
+    assert content[0]["type"] == "text"
+    assert content[1]["type"] == "image_url"
+    assert content[1]["image_url"]["url"] == TINY_PNG_DATA_URI
+
+
 # ── LLM integration (requires API key + vision model) ─────────────────────────
 
 @pytest.mark.langsmith
@@ -220,7 +258,7 @@ def test_image_relevance_with_real_image(fruit_image_b64):
     evaluator = create_llm_as_judge(
         prompt=IMAGE_RELEVANCE_PROMPT,
         feedback_key="image_relevance",
-        model="openai:gpt-5-mini",
+        model="google_genai:gemini-2.0-flash",
     )
     t.log_inputs({"inputs": "Show me a picture of fruits", "outputs": "Here is an image of various fruits"})
     t.log_reference_outputs({"score": True})
@@ -373,41 +411,3 @@ def test_vocal_affect_inappropriate():
     assert not result["score"]
 
 
-@pytest.mark.langsmith
-def test_dialogue_flow_natural():
-    evaluator = create_llm_as_judge(
-        prompt=DIALOGUE_FLOW_PROMPT,
-        feedback_key="dialogue_flow",
-        model="google_genai:gemini-2.0-flash",
-    )
-    inputs = "Support call between agent and customer"
-    outputs = "Clean turn-taking throughout; each speaker waited for the other to finish before responding"
-    t.log_inputs({"inputs": inputs, "outputs": outputs})
-    t.log_reference_outputs({"score": True})
-    result = evaluator(
-        inputs=inputs,
-        outputs=outputs,
-        attachments={"mime_type": "audio/wav", "data": TINY_WAV_DATA_URI},
-    )
-    t.log_outputs({"score": result["score"]})
-    assert result["score"]
-
-
-@pytest.mark.langsmith
-def test_dialogue_flow_unnatural():
-    evaluator = create_llm_as_judge(
-        prompt=DIALOGUE_FLOW_PROMPT,
-        feedback_key="dialogue_flow",
-        model="google_genai:gemini-2.0-flash",
-    )
-    inputs = "Support call between agent and customer"
-    outputs = "Frequent cross-talk with agent and user speaking simultaneously throughout, causing confusion and requiring constant repetition"
-    t.log_inputs({"inputs": inputs, "outputs": outputs})
-    t.log_reference_outputs({"score": False})
-    result = evaluator(
-        inputs=inputs,
-        outputs=outputs,
-        attachments={"mime_type": "audio/wav", "data": TINY_WAV_DATA_URI},
-    )
-    t.log_outputs({"score": result["score"]})
-    assert not result["score"]

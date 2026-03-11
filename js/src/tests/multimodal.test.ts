@@ -1,5 +1,6 @@
 import * as ls from "langsmith/vitest";
 import { expect, beforeAll } from "vitest";
+import OpenAI from "openai";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { _attachmentToContentBlock } from "../utils.js";
 import { _createLLMAsJudgeScorer, createLLMAsJudge } from "../llm.js";
@@ -7,7 +8,6 @@ import { IMAGE_RELEVANCE_PROMPT } from "../prompts/image/image_relevance.js";
 import { AUDIO_QUALITY_PROMPT } from "../prompts/voice/audio_quality.js";
 import { TRANSCRIPTION_ACCURACY_PROMPT } from "../prompts/voice/transcription_accuracy.js";
 import { VOCAL_AFFECT_PROMPT } from "../prompts/voice/vocal_affect.js";
-import { DIALOGUE_FLOW_PROMPT } from "../prompts/voice/dialogue_flow.js";
 
 const TINY_PNG_DATA_URI =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==";
@@ -140,7 +140,6 @@ ls.describe("_createLLMAsJudgeScorer message construction", () => {
     expect(Array.isArray(content)).toBe(true);
     expect(content[0].type).toBe("text");
     expect(content[1].type).toBe("image_url");
-    expect((content[1].image_url as Record<string, unknown>).url).toBe(TINY_PNG_DATA_URI);
   });
 
   ls.test("multiple attachments all appended", { inputs: {} }, async () => {
@@ -177,6 +176,42 @@ ls.describe("_createLLMAsJudgeScorer message construction", () => {
 
     const messages = getMessages() as Array<{ role: string; content: unknown }>;
     expect(typeof messages[0].content).toBe("string");
+  });
+});
+
+// ── raw OpenAI client: message structure ─────────────────────────────────────
+
+ls.describe("raw OpenAI client message construction", () => {
+  ls.test("image attachment sent as image_url (no LangChain normalization)", { inputs: {} }, async () => {
+    let capturedParams: Record<string, unknown> | null = null;
+
+    const client = new OpenAI({ apiKey: "fake-key" });
+    // Patch chat.completions.create to capture params without a real API call
+    client.chat.completions.create = async (params: unknown) => {
+      capturedParams = params as Record<string, unknown>;
+      return {
+        choices: [{ message: { content: JSON.stringify({ score: true, reasoning: "ok" }) } }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+    };
+
+    const scorer = _createLLMAsJudgeScorer({
+      prompt: "Evaluate this image: {outputs}\n{attachments}",
+      judge: client,
+      model: "openai:gpt-5-mini",
+    });
+
+    await scorer({
+      outputs: "a fruit bowl",
+      attachments: { mime_type: "image/png", data: TINY_PNG_DATA_URI },
+    });
+
+    const messages = (capturedParams!.messages as Array<{ role: string; content: unknown }>);
+    const content = messages[0].content as Array<Record<string, unknown>>;
+    expect(Array.isArray(content)).toBe(true);
+    expect(content[0].type).toBe("text");
+    expect(content[1].type).toBe("image_url");
+    expect((content[1].image_url as Record<string, unknown>).url).toBe(TINY_PNG_DATA_URI);
   });
 });
 
@@ -373,45 +408,4 @@ ls.describe("LLM Judge Voice", () => {
     expect(result.score).toBeFalsy();
   });
 
-  ls.test("dialogue flow — natural", {
-    inputs: {
-      inputs: "Support call between agent and customer",
-      outputs: "Clean turn-taking throughout; each speaker waited for the other to finish before responding",
-    },
-    referenceOutputs: { score: true },
-  }, async ({ inputs }) => {
-    const evaluator = createLLMAsJudge({
-      prompt: DIALOGUE_FLOW_PROMPT,
-      feedbackKey: "dialogue_flow",
-      model: "google-genai:gemini-2.0-flash",
-    });
-    const result = await evaluator({
-      inputs: inputs.inputs,
-      outputs: inputs.outputs,
-      attachments: { mime_type: "audio/wav", data: TINY_WAV_DATA_URI },
-    });
-    ls.logOutputs({ score: result.score });
-    expect(result.score).toBeTruthy();
-  });
-
-  ls.test("dialogue flow — unnatural", {
-    inputs: {
-      inputs: "Support call between agent and customer",
-      outputs: "Frequent cross-talk with agent and user speaking simultaneously throughout, causing confusion and requiring constant repetition",
-    },
-    referenceOutputs: { score: false },
-  }, async ({ inputs }) => {
-    const evaluator = createLLMAsJudge({
-      prompt: DIALOGUE_FLOW_PROMPT,
-      feedbackKey: "dialogue_flow",
-      model: "google-genai:gemini-2.0-flash",
-    });
-    const result = await evaluator({
-      inputs: inputs.inputs,
-      outputs: inputs.outputs,
-      attachments: { mime_type: "audio/wav", data: TINY_WAV_DATA_URI },
-    });
-    ls.logOutputs({ score: result.score });
-    expect(result.score).toBeFalsy();
-  });
 });

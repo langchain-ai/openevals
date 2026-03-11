@@ -214,7 +214,6 @@ def _create_llm_as_judge_scorer(
                 content.extend(attachment_blocks)
                 if after:
                     content.append({"type": "text", "text": after})
-                content = _normalize_content_blocks(content)
                 messages = [{"role": "user", "content": content}]
             else:
                 formatted_prompt = prompt.format(**filtered_prompt_params)
@@ -261,7 +260,12 @@ def _create_llm_as_judge_scorer(
                 **default_json_schema,
             }
             judge_with_structured_output = judge.with_structured_output(_schema)
-            response = judge_with_structured_output.invoke(messages)  # type: ignore
+            normalized_messages = [
+                {**msg, "content": _normalize_content_blocks(msg["content"])}  # type: ignore[arg-type]
+                if isinstance(msg.get("content"), list) else msg
+                for msg in messages
+            ]
+            response = judge_with_structured_output.invoke(normalized_messages)  # type: ignore
             if schema is None:
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore
@@ -396,7 +400,6 @@ def _create_async_llm_as_judge_scorer(
                 content.extend(attachment_blocks)
                 if after:
                     content.append({"type": "text", "text": after})
-                content = _normalize_content_blocks(content)
                 messages = [{"role": "user", "content": content}]
             else:
                 formatted_prompt = prompt.format(**filtered_prompt_params)
@@ -443,7 +446,12 @@ def _create_async_llm_as_judge_scorer(
                 **default_json_schema,
             }
             judge_with_structured_output = judge.with_structured_output(_schema)
-            response = await judge_with_structured_output.ainvoke(messages)  # type: ignore
+            normalized_messages = [
+                {**msg, "content": _normalize_content_blocks(msg["content"])}  # type: ignore[arg-type]
+                if isinstance(msg.get("content"), list) else msg
+                for msg in messages
+            ]
+            response = await judge_with_structured_output.ainvoke(normalized_messages)  # type: ignore
             if schema is None:
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore

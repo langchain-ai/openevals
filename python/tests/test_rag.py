@@ -14,7 +14,7 @@ def test_llm_as_judge_rag_helpfulnesss():
         "question": "Where was the first president of foobarland born?",
     }
     outputs = {
-        "answer": "The first president of foobarland was born in langchainland. His name was Bagatur Askaryan."
+        "answer": "Bagatur Askaryan, the first president of FoobarLand, was born in Langchainville."
     }
     t.log_inputs(inputs)
     t.log_outputs(outputs)
@@ -90,10 +90,10 @@ def test_llm_as_judge_rag_retrieval_relevance():
 
     context = {
         "documents": [
-            "FoobarLand is a new country located on the dark side of the moon",
-            "Space dolphins are native to FoobarLand",
-            "Bagatur Askaryan is a renowned marine biologist who studies space dolphins.",
-            "The current weather in FoobarLand is 80 degrees and clear.",
+            "The Eiffel Tower was constructed between 1887 and 1889 in Paris, France.",
+            "Photosynthesis is the process by which plants convert sunlight into energy.",
+            "The Amazon River is the largest river in the world by discharge volume.",
+            "Water boils at 100 degrees Celsius at standard atmospheric pressure.",
         ],
     }
 

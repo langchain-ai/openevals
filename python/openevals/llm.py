@@ -253,18 +253,11 @@ def _create_llm_as_judge_scorer(
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
-            if schema is not None:
-                _schema = (
-                    {"title": "score", **schema}
-                    if isinstance(schema, dict) and "title" not in schema and "name" not in schema
-                    else schema
-                )
-            else:
-                _schema = {
-                    "title": "score",
-                    "description": description,
-                    **default_json_schema,
-                }
+            _schema = schema if schema is not None else {
+                "title": "score",
+                "description": description,
+                **default_json_schema,
+            }
             judge_with_structured_output = judge.with_structured_output(_schema)
             response = judge_with_structured_output.invoke(messages)  # type: ignore
             if schema is None:
@@ -441,18 +434,11 @@ def _create_async_llm_as_judge_scorer(
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
-            if schema is not None:
-                _schema = (
-                    {"title": "score", **schema}
-                    if isinstance(schema, dict) and "title" not in schema and "name" not in schema
-                    else schema
-                )
-            else:
-                _schema = {
-                    "title": "score",
-                    "description": description,
-                    **default_json_schema,
-                }
+            _schema = schema if schema is not None else {
+                "title": "score",
+                "description": description,
+                **default_json_schema,
+            }
             judge_with_structured_output = judge.with_structured_output(_schema)
             response = await judge_with_structured_output.ainvoke(messages)  # type: ignore
             if schema is None:

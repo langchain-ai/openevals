@@ -304,7 +304,7 @@ export const _createLLMAsJudgeScorer: (
           ...attachmentBlocks,
           ...(after ? [{ type: "text", text: after }] : []),
         ];
-        messages = [{ role: "user", content: content as unknown as string }];
+        messages = [{ role: "user", content }];
       } else {
         if (attachments !== undefined) {
           filteredPromptParams.attachments = "";
@@ -320,7 +320,7 @@ export const _createLLMAsJudgeScorer: (
           lastMsg.content = [
             { type: "text", text: lastMsg.content as string },
             ...items.map(_attachmentToContentBlock),
-          ] as unknown as string;
+          ];
         }
       }
     } else {

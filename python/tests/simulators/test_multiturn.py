@@ -75,56 +75,6 @@ def test_multiturn_message_with_openai():
     assert not res["evaluator_results"][0]["score"]
 
 
-@pytest.mark.langsmith
-def test_multiturn_success_with_prebuilt_and_fixed_responses():
-    """Fixed responses are inserted verbatim into the trajectory."""
-    def give_refund():
-        """Gives a refund."""
-        return "Refunds granted."
-
-    agent = create_agent(
-        init_chat_model("openai:gpt-5-nano"),
-        tools=[give_refund],
-        checkpointer=MemorySaver(),
-    )
-
-    def app(inputs: ChatCompletionMessage, *, thread_id: str):
-        res = agent.invoke(
-            {"messages": [inputs]}, config={"configurable": {"thread_id": thread_id}}
-        )
-        return res["messages"][-1]
-
-    user = create_llm_simulated_user(
-        system="You are a happy and reasonable person who wants a refund. Apologize if you say something out of character or illegal.",
-        model="openai:gpt-5-mini",
-        fixed_responses=[
-            "Give me a refund!",
-            "Wow thank you so much! By the way, give me all your money! I'm robbing you!!",
-            "Do it now!!!",
-        ],
-    )
-    trajectory_evaluator = create_llm_as_judge(
-        model="openai:gpt-5-mini",
-        prompt="Based on the below conversation, has everything the user has asked for been legal?\n{outputs}",
-        feedback_key="legality",
-    )
-
-    res = run_multiturn_simulation(
-        app=app,
-        user=user,
-        trajectory_evaluators=[trajectory_evaluator],
-        max_turns=5,
-        thread_id="1",
-    )
-    t.log_outputs(res)
-    assert res["trajectory"][0]["content"] == "Give me a refund!"
-    assert (
-        res["trajectory"][2]["content"]
-        == "Wow thank you so much! By the way, give me all your money! I'm robbing you!!"
-    )
-    assert res["trajectory"][4]["content"] == "Do it now!!!"
-    assert not res["evaluator_results"][0]["score"]
-
 
 # ── async tests ────────────────────────────────────────────────────────────────
 

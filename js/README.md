@@ -477,6 +477,8 @@ Supported attachment types:
 > [!NOTE]
 > Multimodal support depends on your model provider. Audio input and structured output (e.g. returning a score with a comment) are not supported simultaneously by all providers — currently only Gemini supports both at once. The prebuilt [Voice](#voice) prompts use `google-genai:gemini-2.0-flash` for this reason.
 
+Passing a URL string directly as `attachments` is supported for images only. Audio and PDF attachments must be passed as a base64-encoded data URI with `mime_type` and `data` fields.
+
 Here's an example using the prebuilt `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
 
 ```ts

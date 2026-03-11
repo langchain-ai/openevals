@@ -2294,7 +2294,7 @@ model = init_chat_model("openai:gpt-5-mini")
 agent = create_agent(
     model,
     tools=[give_refund],
-    prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
+    system_prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
     checkpointer=MemorySaver(),
 )
 

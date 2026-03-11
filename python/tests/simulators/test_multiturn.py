@@ -24,7 +24,7 @@ def test_multiturn_failure():
     agent = create_agent(
         init_chat_model("openai:gpt-5-nano"),
         tools=[give_refund],
-        prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
+        system_prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
         checkpointer=MemorySaver(),
     )
 

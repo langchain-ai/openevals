@@ -1,4 +1,4 @@
-import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
+import { BaseMessage, HumanMessage, isBaseMessage } from "@langchain/core/messages";
 import * as openAIImports from "@langchain/openai";
 import { wrapEvaluator, isInTestContext } from "langsmith/utils/jestlike";
 import { traceable } from "langsmith/traceable";
@@ -75,6 +75,23 @@ function _normalizeAttachmentMimeType(mimeType: string): string {
   if (normalized === "audio/mpeg") return "audio/mp3";
   if (normalized === "audio/wave" || normalized === "audio/x-wav") return "audio/wav";
   return normalized;
+}
+
+/**
+ * Normalize content blocks via LangChain's canonical form for cross-provider compatibility.
+ */
+export function _normalizeContentBlocks(
+  blocks: Record<string, unknown>[]
+): Record<string, unknown>[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const msg = new HumanMessage({ content: blocks as any });
+    const normalized = msg.contentBlocks;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (normalized as any[]).filter((b) => typeof b === "object" && b !== null);
+  } catch {
+    return blocks;
+  }
 }
 
 /**

@@ -8,7 +8,7 @@ from typing import Any, Callable, Union, Optional
 from openevals.types import ChatCompletionMessage, EvaluatorResult
 
 from langchain_core.messages.utils import convert_to_openai_messages
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, HumanMessage
 
 __all__ = [
     "_chat_completion_messages_to_string",
@@ -17,6 +17,7 @@ __all__ = [
     "_normalize_to_openai_messages_list",
     "_normalize_final_app_outputs_as_string",
     "_attachment_to_content_block",
+    "_normalize_content_blocks",
 ]
 
 
@@ -64,6 +65,15 @@ def _normalize_attachment_mime_type(mime_type: str) -> str:
     if normalized in {"audio/wave", "audio/x-wav"}:
         return "audio/wav"
     return normalized
+
+
+def _normalize_content_blocks(blocks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Normalize content blocks via LangChain's canonical form for cross-provider compatibility."""
+    try:
+        normalized = HumanMessage(content=blocks).content_blocks  # type: ignore[attr-defined]
+        return [b for b in normalized if isinstance(b, dict)]
+    except Exception:
+        return blocks
 
 
 def _attachment_to_content_block(item: Any) -> dict[str, Any]:

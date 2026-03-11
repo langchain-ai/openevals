@@ -5,6 +5,7 @@ from openevals.utils import (
     _convert_to_openai_message,
     _normalize_to_openai_messages_list,
     _attachment_to_content_block,
+    _normalize_content_blocks,
 )
 from openevals.types import (
     EvaluatorResult,
@@ -213,6 +214,7 @@ def _create_llm_as_judge_scorer(
                 content.extend(attachment_blocks)
                 if after:
                     content.append({"type": "text", "text": after})
+                content = _normalize_content_blocks(content)
                 messages = [{"role": "user", "content": content}]
             else:
                 formatted_prompt = prompt.format(**filtered_prompt_params)
@@ -394,6 +396,7 @@ def _create_async_llm_as_judge_scorer(
                 content.extend(attachment_blocks)
                 if after:
                     content.append({"type": "text", "text": after})
+                content = _normalize_content_blocks(content)
                 messages = [{"role": "user", "content": content}]
             else:
                 formatted_prompt = prompt.format(**filtered_prompt_params)

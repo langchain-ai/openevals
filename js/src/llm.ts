@@ -12,6 +12,7 @@ import {
   _convertToOpenAIMessage,
   _runEvaluatorUntyped,
   _attachmentToContentBlock,
+  _normalizeContentBlocks,
 } from "./utils.js";
 import {
   ChatCompletionMessage,
@@ -299,11 +300,11 @@ export const _createLLMAsJudgeScorer: (
           ? (attachments as (string | Record<string, unknown>)[])
           : [attachments as string | Record<string, unknown>];
         const attachmentBlocks = items.map(_attachmentToContentBlock);
-        const content = [
+        const content = _normalizeContentBlocks([
           ...(before ? [{ type: "text", text: before }] : []),
           ...attachmentBlocks,
           ...(after ? [{ type: "text", text: after }] : []),
-        ];
+        ]);
         messages = [{ role: "user", content }];
       } else {
         if (attachments !== undefined) {
@@ -317,10 +318,10 @@ export const _createLLMAsJudgeScorer: (
             ? (attachments as (string | Record<string, unknown>)[])
             : [attachments as string | Record<string, unknown>];
           const lastMsg = messages[messages.length - 1] as ChatCompletionMessage;
-          lastMsg.content = [
+          lastMsg.content = _normalizeContentBlocks([
             { type: "text", text: lastMsg.content as string },
             ...items.map(_attachmentToContentBlock),
-          ];
+          ]);
         }
       }
     } else {

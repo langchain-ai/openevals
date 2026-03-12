@@ -130,8 +130,6 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Multimodal](#multimodal)
       - [Option 1: `attachments` parameter](#option-1-attachments-parameter)
       - [Option 2: LangChain prompt template](#option-2-langchain-prompt-template)
-  - [Prebuilt prompts](#prebuilt-prompts)
-
   </details>
 
   - <details>

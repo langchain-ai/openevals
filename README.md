@@ -854,7 +854,14 @@ Passing in a pulled prompt from the [LangChain prompt hub](https://smith.langcha
 
 ### Multimodal
 
-LLM-as-judge evaluators support multimodal inputs including images, audio, and PDFs. To pass multimodal content, include an `{attachments}` placeholder in your prompt and pass an `attachments` argument when calling the evaluator — either a single dict or a list of dicts with a `mime_type` and base64-encoded `data` field. The evaluator inserts the content at that placeholder. The prebuilt [Image](#image) and [Voice](#voice) prompts already include this placeholder, or you can add it to any custom prompt.
+LLM-as-judge evaluators support multimodal inputs including images, audio, and PDFs. There are two ways to pass multimodal content:
+
+- **`attachments` parameter** — include an `{attachments}` placeholder in your prompt and pass the content via the `attachments` kwarg.
+- **LangChain prompt template** — introduce multimodal content directly into the prompt message. See the [LangChain multimodal messages docs](https://docs.langchain.com/oss/python/langchain/messages#multimodal) for details.
+
+#### Option 1: `attachments` parameter
+
+The `attachments` parameter supports a single dict or a list of dicts with a `mime_type` and base64-encoded `data` field. The prebuilt [Image](#image) and [Voice](#voice) prompts already include the `{attachments}` placeholder, or you can add it to any custom prompt.
 
 Supported attachment types:
 
@@ -954,6 +961,10 @@ console.log(evalResult);
 }
 ```
 </details>
+
+#### Option 2: LangChain prompt template
+
+You can also introduce multimodal content into the prompt using a LangChain prompt template. See the [LangChain multimodal messages docs](https://docs.langchain.com/oss/python/langchain/messages#multimodal) for details.
 
 ## Prebuilt prompts
 

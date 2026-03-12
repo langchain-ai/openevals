@@ -139,13 +139,17 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Security](#security)
     - [Image](#image)
     - [Voice](#voice)
-    - [RAG](#rag)
+    - <details>
+        <summary><a href="#rag">RAG</a></summary>
+
       - [Correctness](#correctness-rag)
       - [Helpfulness](#helpfulness)
       - [Groundedness](#groundedness)
       - [Retrieval relevance](#retrieval-relevance)
         - [Retrieval relevance with LLM-as-judge](#retrieval-relevance-with-llm-as-judge)
         - [Retrieval relevance with string evaluators](#retrieval-relevance-with-string-evaluators)
+
+    </details>
 
   </details>
 

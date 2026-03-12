@@ -3,7 +3,7 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 
 import { createCodeLLMAsJudge } from "../llm.js";
-import { CODE_CORRECTNESS_PROMPT } from "../../prompts/code_correctness.js";
+import { CODE_CORRECTNESS_PROMPT } from "../../prompts/quality/code_correctness.js";
 
 ls.describe("Code LLM As Judge", () => {
   ls.test.each([

@@ -3,28 +3,29 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 
 import { createLLMAsJudge } from "../llm.js";
-import { RAG_HELPFULNESS_PROMPT } from "../prompts/rag_helpfulness.js";
-import { RAG_GROUNDEDNESS_PROMPT } from "../prompts/rag_groundedness.js";
-import { RAG_RETRIEVAL_RELEVANCE_PROMPT } from "../prompts/rag_retrieval_relevance.js";
+import { RAG_HELPFULNESS_PROMPT } from "../prompts/rag/helpfulness.js";
+import { RAG_GROUNDEDNESS_PROMPT } from "../prompts/rag/groundedness.js";
+import { RAG_RETRIEVAL_RELEVANCE_PROMPT } from "../prompts/rag/retrieval_relevance.js";
+
+
 
 ls.describe("LLM as Judge RAG", () => {
   ls.test(
     "should test LLM judge RAG helpfulness",
     {
       inputs: {
-        question: "Where was the first president of foobarland born?",
+        question: "What is the boiling point of water?",
       },
     },
     async ({ inputs }) => {
       const outputs = {
-        answer:
-          "The first president of foobarland was born in langchainland. His name was Bagatur Askaryan.",
+        answer: "Water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard atmospheric pressure.",
       };
 
       const llmAsJudge = createLLMAsJudge({
         prompt: RAG_HELPFULNESS_PROMPT,
         feedbackKey: "helpfulness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const evalResult = await llmAsJudge({
@@ -50,7 +51,7 @@ ls.describe("LLM as Judge RAG", () => {
       const llmAsJudge = createLLMAsJudge({
         prompt: RAG_HELPFULNESS_PROMPT,
         feedbackKey: "helpfulness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const evalResult = await llmAsJudge({
@@ -70,7 +71,7 @@ ls.describe("LLM as Judge RAG", () => {
       const retrievalEvaluator = createLLMAsJudge({
         prompt: RAG_GROUNDEDNESS_PROMPT,
         feedbackKey: "groundedness",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const context = {
@@ -105,15 +106,15 @@ ls.describe("LLM as Judge RAG", () => {
       const retrievalRelevanceEvaluator = createLLMAsJudge({
         prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
         feedbackKey: "retrieval_relevance",
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5-mini",
       });
 
       const context = {
         documents: [
-          "FoobarLand is a new country located on the dark side of the moon",
-          "Space dolphins are native to FoobarLand",
-          "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
-          "The current weather in FoobarLand is 80 degrees and clear.",
+          "The Eiffel Tower was constructed between 1887 and 1889 in Paris, France.",
+          "Photosynthesis is the process by which plants convert sunlight into energy.",
+          "The Amazon River is the largest river in the world by discharge volume.",
+          "Water boils at 100 degrees Celsius at standard atmospheric pressure.",
         ],
       };
 

@@ -39,7 +39,7 @@ export function _isInternalMessage(message: ChatCompletionMessage): boolean {
  * // Create a simulated user with GPT-4.1-mini
  * const simulatedUser = createLLMSimulatedUser({
  *   system: "You are a helpful customer service representative",
- *   model: "openai:gpt-4.1-mini"
+ *   model: "openai:gpt-5-mini"
  * });
  *
  * // Use with runMultiturnSimulation

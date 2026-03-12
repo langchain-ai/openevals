@@ -1,4 +1,4 @@
-export const RAG_RETRIEVAL_RELEVANCE_PROMPT = `You are an expert data labeler evaluating retrieved context for relevance to the input. Your task is to assign a score based on the following rubric:
+RAG_RETRIEVAL_RELEVANCE_PROMPT = """You are an expert data labeler evaluating retrieved context for relevance to the input. Your task is to assign a score based on the following rubric:
 
 <Rubric>
 - Relevant retrieved context:
@@ -27,11 +27,11 @@ export const RAG_RETRIEVAL_RELEVANCE_PROMPT = `You are an expert data labeler ev
 - Note any context that are completely irrelevant, i.e. contain no relevant facts for answering the input
 </Instruction>
 
-<Reminder>  
+<Reminder>
 - Focus solely on whether the retrieved context provides useful information for answering the input.
-- Think deeply about why the context is or isn’t relevant.
+- Think deeply about why the context is or isn't relevant.
 - Use partial credit where applicable, recognizing context that is somewhat helpful even if incomplete.
-</Reminder> 
+</Reminder>
 
 <inputs>
 {inputs}
@@ -40,4 +40,4 @@ export const RAG_RETRIEVAL_RELEVANCE_PROMPT = `You are an expert data labeler ev
 <retrieved_context>
 {context}
 </retrieved_context>
-`;
+"""

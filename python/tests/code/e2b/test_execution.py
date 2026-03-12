@@ -99,7 +99,7 @@ import os
 class TestReactAgent(unittest.TestCase):
     def setUp(self):
         # Define the agent inline for testing
-        from langgraph.prebuilt import create_react_agent
+        from langchain.agents import create_agent
 
         def search(query: str):
             \"\"\"Call to surf the web.\"\"\"
@@ -111,7 +111,7 @@ class TestReactAgent(unittest.TestCase):
         # We'll patch the actual creation of the agent in each test
         # rather than creating it here, to allow for proper mocking
 
-    @patch("langgraph.prebuilt.create_react_agent")
+    @patch("langchain.agents.create_agent")
     def test_search_function_sf(self, mock_create_agent):
         \"\"\"Test that search function returns correct response for SF queries\"\"\"
         result = self.search_function("What's the weather in SF?")
@@ -120,7 +120,7 @@ class TestReactAgent(unittest.TestCase):
         result = self.search_function("Tell me about San Francisco weather")
         self.assertEqual(result, "It's 60 degrees and foggy.")
 
-    @patch("langgraph.prebuilt.create_react_agent")
+    @patch("langchain.agents.create_agent")
     def test_search_function_other_location(self, mock_create_agent):
         \"\"\"Test that search function returns default response for non-SF queries\"\"\"
         result = self.search_function("What's the weather in LA?")
@@ -129,7 +129,7 @@ class TestReactAgent(unittest.TestCase):
         result = self.search_function("Tell me about Chicago weather")
         self.assertEqual(result, "It's 90 degrees and sunny.")
 
-    @patch("langgraph.prebuilt.create_react_agent")
+    @patch("langchain.agents.create_agent")
     def test_agent_creation(self, mock_create_agent):
         \"\"\"Test that agent is created with the correct parameters\"\"\"
         # Create a mock agent instance
@@ -144,10 +144,10 @@ class TestReactAgent(unittest.TestCase):
             return "It's 90 degrees and sunny."
 
         # Create the agent
-        from langgraph.prebuilt import create_react_agent
-        agent = create_react_agent("anthropic:claude-3-7-sonnet-latest", tools=[search])
+        from langchain.agents import create_agent
+        agent = create_agent("anthropic:claude-3-7-sonnet-latest", tools=[search])
 
-        # Verify that create_react_agent was called with the correct parameters
+        # Verify that create_agent was called with the correct parameters
         mock_create_agent.assert_called_once_with(
             "anthropic:claude-3-7-sonnet-latest", 
             tools=[search]
@@ -156,7 +156,7 @@ class TestReactAgent(unittest.TestCase):
         # Verify that the returned agent is what we expect
         self.assertEqual(agent, mock_agent)
 
-    @patch("langgraph.prebuilt.create_react_agent")
+    @patch("langchain.agents.create_agent")
     def test_agent_invocation(self, mock_create_agent):
         \"\"\"Test that agent can be invoked and returns expected results\"\"\"
         # Create a mock agent that returns a predetermined response
@@ -172,8 +172,8 @@ class TestReactAgent(unittest.TestCase):
                 return "It's 60 degrees and foggy."
             return "It's 90 degrees and sunny."
 
-        from langgraph.prebuilt import create_react_agent
-        agent = create_react_agent("anthropic:claude-3-7-sonnet-latest", tools=[search])
+        from langchain.agents import create_agent
+        agent = create_agent("anthropic:claude-3-7-sonnet-latest", tools=[search])
 
         # Invoke the agent
         result = agent.invoke({"input": "What's the weather in San Francisco?"})
@@ -184,12 +184,12 @@ class TestReactAgent(unittest.TestCase):
         # Check the result
         self.assertEqual(result, expected_response)
 
-    @patch("langgraph.prebuilt.create_react_agent")
+    @patch("langchain.agents.create_agent")
     def test_integration_with_environment_variables(self, mock_create_agent):
         \"\"\"Test that the agent uses the environment variables correctly\"\"\"
         # This test would check if the anthropic API key is properly used
         # For a unit test, we'll verify that the environment variable exists
-        # and that create_react_agent is called with the correct model string
+        # and that create_agent is called with the correct model string
 
         # Check if ANTHROPIC_API_KEY is set
         self.assertIn("ANTHROPIC_API_KEY", os.environ, 
@@ -206,10 +206,10 @@ class TestReactAgent(unittest.TestCase):
                 return "It's 60 degrees and foggy."
             return "It's 90 degrees and sunny."
 
-        from langgraph.prebuilt import create_react_agent
-        agent = create_react_agent("anthropic:claude-3-7-sonnet-latest", tools=[search])
+        from langchain.agents import create_agent
+        agent = create_agent("anthropic:claude-3-7-sonnet-latest", tools=[search])
 
-        # Verify that create_react_agent was called with the correct model
+        # Verify that create_agent was called with the correct model
         mock_create_agent.assert_called_once_with(
             "anthropic:claude-3-7-sonnet-latest", 
             tools=[search]

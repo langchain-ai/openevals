@@ -4,6 +4,8 @@ from openevals.utils import (
     _arun_evaluator_untyped,
     _convert_to_openai_message,
     _normalize_to_openai_messages_list,
+    _attachment_to_content_block,
+    _normalize_content_blocks,
 )
 from openevals.types import (
     EvaluatorResult,
@@ -164,6 +166,8 @@ def _create_llm_as_judge_scorer(
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ):
+        attachments = kwargs.pop("attachments", None)
+
         if system is not None and not isinstance(prompt, str):
             raise ValueError(
                 "`system` is only supported when `prompt` is a string template"
@@ -198,10 +202,22 @@ def _create_llm_as_judge_scorer(
                 nonlocal schema
                 schema = prompt.schema_
         elif isinstance(prompt, str):
-            formatted_prompt = prompt.format(**filtered_prompt_params)
-            messages = [
-                {"role": "user", "content": formatted_prompt},
-            ]
+            if attachments is not None:
+                before_template, _, after_template = prompt.partition("{attachments}")
+                before = before_template.format(**filtered_prompt_params)
+                after = after_template.format(**filtered_prompt_params) if after_template else ""
+                items = attachments if isinstance(attachments, list) else [attachments]
+                attachment_blocks = [_attachment_to_content_block(item) for item in items]
+                content: list = []
+                if before:
+                    content.append({"type": "text", "text": before})
+                content.extend(attachment_blocks)
+                if after:
+                    content.append({"type": "text", "text": after})
+                messages = [{"role": "user", "content": content}]
+            else:
+                formatted_prompt = prompt.format(**filtered_prompt_params)
+                messages = [{"role": "user", "content": formatted_prompt}]
         else:
             messages = prompt(
                 inputs=inputs,
@@ -238,16 +254,18 @@ def _create_llm_as_judge_scorer(
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
-            judge_with_structured_output = judge.with_structured_output(
-                schema
-                if schema is not None
-                else {
-                    "title": "score",
-                    "description": description,
-                    **default_json_schema,
-                }
-            )
-            response = judge_with_structured_output.invoke(messages)  # type: ignore
+            _schema = schema if schema is not None else {
+                "title": "score",
+                "description": description,
+                **default_json_schema,
+            }
+            judge_with_structured_output = judge.with_structured_output(_schema)
+            normalized_messages = [
+                {**msg, "content": _normalize_content_blocks(msg["content"])}  # type: ignore[arg-type]
+                if isinstance(msg.get("content"), list) else msg
+                for msg in messages
+            ]
+            response = judge_with_structured_output.invoke(normalized_messages)  # type: ignore
             if schema is None:
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore
@@ -334,6 +352,8 @@ def _create_async_llm_as_judge_scorer(
         reference_outputs: Optional[Union[str, dict]] = None,
         **kwargs,
     ):
+        attachments = kwargs.pop("attachments", None)
+
         if system is not None and not isinstance(prompt, str):
             raise ValueError(
                 "`system` is only supported when `prompt` is a string template"
@@ -368,10 +388,22 @@ def _create_async_llm_as_judge_scorer(
                 nonlocal schema
                 schema = prompt.schema_
         elif isinstance(prompt, str):
-            formatted_prompt = prompt.format(**filtered_prompt_params)
-            messages = [
-                {"role": "user", "content": formatted_prompt},
-            ]
+            if attachments is not None:
+                before_template, _, after_template = prompt.partition("{attachments}")
+                before = before_template.format(**filtered_prompt_params)
+                after = after_template.format(**filtered_prompt_params) if after_template else ""
+                items = attachments if isinstance(attachments, list) else [attachments]
+                attachment_blocks = [_attachment_to_content_block(item) for item in items]
+                content: list = []
+                if before:
+                    content.append({"type": "text", "text": before})
+                content.extend(attachment_blocks)
+                if after:
+                    content.append({"type": "text", "text": after})
+                messages = [{"role": "user", "content": content}]
+            else:
+                formatted_prompt = prompt.format(**filtered_prompt_params)
+                messages = [{"role": "user", "content": formatted_prompt}]
         else:
             messages = prompt(
                 inputs=inputs,
@@ -408,16 +440,18 @@ def _create_async_llm_as_judge_scorer(
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
-            judge_with_structured_output = judge.with_structured_output(
-                schema
-                if schema is not None
-                else {
-                    "title": "score",
-                    "description": description,
-                    **default_json_schema,
-                }
-            )
-            response = await judge_with_structured_output.ainvoke(messages)  # type: ignore
+            _schema = schema if schema is not None else {
+                "title": "score",
+                "description": description,
+                **default_json_schema,
+            }
+            judge_with_structured_output = judge.with_structured_output(_schema)
+            normalized_messages = [
+                {**msg, "content": _normalize_content_blocks(msg["content"])}  # type: ignore[arg-type]
+                if isinstance(msg.get("content"), list) else msg
+                for msg in messages
+            ]
+            response = await judge_with_structured_output.ainvoke(normalized_messages)  # type: ignore
             if schema is None:
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore

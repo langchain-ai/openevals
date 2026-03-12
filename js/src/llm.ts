@@ -11,6 +11,7 @@ import {
   _normalizeToOpenAIMessagesList,
   _convertToOpenAIMessage,
   _runEvaluatorUntyped,
+  _attachmentToContentBlock,
 } from "./utils.js";
 import {
   ChatCompletionMessage,
@@ -233,7 +234,7 @@ export const _createLLMAsJudgeScorer: (
     referenceOutputs?: unknown;
     [key: string]: unknown;
   }): Promise<SingleResultScorerReturnType> => {
-    const { inputs, outputs, referenceOutputs, ...rest } = params;
+    const { inputs, outputs, referenceOutputs, attachments, ...rest } = params;
 
     if (system && typeof prompt !== "string") {
       throw new Error(
@@ -281,9 +282,47 @@ export const _createLLMAsJudgeScorer: (
         schema = prompt.schema;
       }
     } else if (typeof prompt === "string") {
-      const template = ChatPromptTemplate.fromTemplate(prompt);
-      const formattedPrompt = await template.invoke(filteredPromptParams);
-      messages = formattedPrompt.messages;
+      const attachmentPlaceholder = "{attachments}";
+      const splitIdx = prompt.indexOf(attachmentPlaceholder);
+      if (attachments !== undefined && splitIdx !== -1) {
+        const beforeTemplate = prompt.slice(0, splitIdx);
+        const afterTemplate = prompt.slice(splitIdx + attachmentPlaceholder.length);
+        const renderHalf = async (tmpl: string) => {
+          if (!tmpl) return "";
+          const t = ChatPromptTemplate.fromTemplate(tmpl);
+          const r = await t.invoke(filteredPromptParams);
+          return (r.messages[r.messages.length - 1] as unknown as ChatCompletionMessage).content as string;
+        };
+        const before = await renderHalf(beforeTemplate);
+        const after = await renderHalf(afterTemplate);
+        const items = Array.isArray(attachments)
+          ? (attachments as (string | Record<string, unknown>)[])
+          : [attachments as string | Record<string, unknown>];
+        const attachmentBlocks = items.map(_attachmentToContentBlock);
+        const content = [
+          ...(before ? [{ type: "text", text: before }] : []),
+          ...attachmentBlocks,
+          ...(after ? [{ type: "text", text: after }] : []),
+        ];
+        messages = [{ role: "user", content }];
+      } else {
+        if (attachments !== undefined) {
+          filteredPromptParams.attachments = "";
+        }
+        const template = ChatPromptTemplate.fromTemplate(prompt);
+        const formattedPrompt = await template.invoke(filteredPromptParams);
+        messages = formattedPrompt.messages;
+        if (attachments !== undefined) {
+          const items = Array.isArray(attachments)
+            ? (attachments as (string | Record<string, unknown>)[])
+            : [attachments as string | Record<string, unknown>];
+          const lastMsg = messages[messages.length - 1] as ChatCompletionMessage;
+          lastMsg.content = [
+            { type: "text", text: lastMsg.content as string },
+            ...items.map(_attachmentToContentBlock),
+          ];
+        }
+      }
     } else {
       messages = await prompt({
         inputs,
@@ -330,7 +369,24 @@ export const _createLLMAsJudgeScorer: (
           ...defaultJsonSchema,
         }
       );
-      response = await judgeWithStructuredOutput.invoke(normalizedMessages);
+      // Convert input_audio to LangChain canonical format { type: "audio", source_type: "base64", ... }
+      // so both @langchain/openai and @langchain/google-genai dispatch via fromStandardAudioBlock.
+      // image_url blocks are left as-is: both JS providers handle them natively.
+      const lcMessages = normalizedMessages.map((msg) => {
+        if (!Array.isArray(msg.content)) return msg;
+        return {
+          ...msg,
+          content: msg.content.map((block) => {
+            const b = block as Record<string, unknown>;
+            if (b.type === "input_audio" && typeof b.input_audio === "object" && b.input_audio !== null) {
+              const { data, format } = b.input_audio as { data: string; format: string };
+              return { type: "audio", source_type: "base64", data, mime_type: `audio/${format}` };
+            }
+            return block;
+          }),
+        };
+      });
+      response = await judgeWithStructuredOutput.invoke(lcMessages);
       if (schema === undefined) {
         if (useReasoning) {
           return [response.score, response.reasoning];

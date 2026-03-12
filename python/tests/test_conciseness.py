@@ -1,7 +1,7 @@
 import pytest
 
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.conciseness import CONCISENESS_PROMPT
+from openevals.prompts.quality.conciseness import CONCISENESS_PROMPT
 
 
 @pytest.mark.langsmith
@@ -13,7 +13,7 @@ def test_llm_as_judge_conciseness():
     llm_as_judge = create_llm_as_judge(
         prompt=CONCISENESS_PROMPT,
         feedback_key="conciseness",
-        model="openai:o3-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
@@ -30,7 +30,7 @@ def test_llm_as_judge_conciseness_not_concise():
     llm_as_judge = create_llm_as_judge(
         prompt=CONCISENESS_PROMPT,
         feedback_key="conciseness",
-        model="openai:o3-mini",
+        model="openai:gpt-5-mini",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert not eval_result["score"]

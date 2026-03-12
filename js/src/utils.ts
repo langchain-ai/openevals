@@ -1,4 +1,4 @@
-import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
+import { BaseMessage, HumanMessage, isBaseMessage } from "@langchain/core/messages";
 import * as openAIImports from "@langchain/openai";
 import { wrapEvaluator, isInTestContext } from "langsmith/utils/jestlike";
 import { traceable } from "langsmith/traceable";
@@ -69,6 +69,86 @@ export const _normalizeToOpenAIMessagesList: (
   }
   return messagesList.map(_convertToOpenAIMessage);
 };
+
+function _normalizeAttachmentMimeType(mimeType: string): string {
+  const normalized = mimeType.toLowerCase().trim();
+  if (normalized === "audio/mpeg") return "audio/mp3";
+  if (normalized === "audio/wave" || normalized === "audio/x-wav") return "audio/wav";
+  return normalized;
+}
+
+/**
+ * Normalize content blocks via LangChain's canonical form for cross-provider compatibility.
+ */
+export function _normalizeContentBlocks(
+  blocks: Record<string, unknown>[]
+): Record<string, unknown>[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const msg = new HumanMessage({ content: blocks as any });
+    const normalized = msg.contentBlocks;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (normalized as any[]).filter((b) => typeof b === "object" && b !== null);
+  } catch {
+    return blocks;
+  }
+}
+
+/**
+ * Convert an attachment to a content block for multimodal messages.
+ *
+ * Attachments should be passed in the multimodal trace format described at
+ * https://docs.langchain.com/langsmith/log-multimodal-traces:
+ * `{ mime_type: "image/png", data: "data:image/png;base64,..." }`.
+ *
+ * Also accepts plain image URL strings or pre-formatted content block objects.
+ *
+ * Supported MIME types:
+ * - `image/*`: `{ type: "image_url", image_url: { url: data } }`
+ * - `application/pdf`: `{ type: "file", file: { filename, file_data: data } }`
+ * - `audio/*`: `{ type: "input_audio", input_audio: { data: base64, format } }`
+ */
+export function _attachmentToContentBlock(
+  item: string | Record<string, unknown>
+): Record<string, unknown> {
+  if (typeof item === "string") {
+    return { type: "image_url", image_url: { url: item } };
+  }
+  if (typeof item !== "object" || item === null) {
+    throw new Error(
+      `Unsupported attachment type: ${typeof item}. Expected a string URL or an object with mime_type and data.`
+    );
+  }
+
+  const { mime_type: rawMimeType, data } = item as { mime_type?: string; data?: string };
+
+  if (rawMimeType === undefined || data === undefined) {
+    if (!("type" in item)) {
+      const msg =
+        "Attachment dict must contain either 'mime_type' and 'data' keys, " +
+        "or a 'type' key for pre-formatted content blocks.";
+      throw new Error(msg);
+    }
+    return item;
+  }
+
+  const mimeType = _normalizeAttachmentMimeType(rawMimeType);
+
+  if (mimeType.startsWith("image/")) {
+    return { type: "image_url", image_url: { url: data } };
+  }
+  if (mimeType === "application/pdf") {
+    const filename = (item.name as string | undefined) ?? "attachment.pdf";
+    return { type: "file", file: { filename, file_data: data } };
+  }
+  if (mimeType.startsWith("audio/")) {
+    const base64Data = data.startsWith("data:") ? data.split(",")[1] : data;
+    const fmt = mimeType.split("/")[1];
+    return { type: "input_audio", input_audio: { data: base64Data, format: fmt } };
+  }
+  const msg = `Unsupported attachment MIME type: ${mimeType}. Supported types: image/*, application/pdf, audio/*`;
+  throw new Error(msg);
+}
 
 export const processScore = (
   _: string,

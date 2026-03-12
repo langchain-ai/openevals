@@ -1,4 +1,4 @@
-export const RAG_HELPFULNESS_PROMPT = `You are an expert evaluator assessing how helpful and relevant outputs are in addressing an input query. Your evaluation should focus on the following criteria:
+RAG_HELPFULNESS_PROMPT = """You are an expert evaluator assessing how helpful and relevant outputs are in addressing an input query. Your evaluation should focus on the following criteria:
 
 <Rubric>
 A helpful and relevant output should:
@@ -30,7 +30,7 @@ An unhelpful or irrelevant output:
 - Identify specific strengths and weaknesses in the response
 - Provide clear reasoning for your assessment
 - Remember that correct information may differ from your built-in knowledge based on internal retrieved context
-</Reminder> 
+</Reminder>
 
 <inputs>
 {inputs}
@@ -39,4 +39,4 @@ An unhelpful or irrelevant output:
 <outputs>
 {outputs}
 </outputs>
-`;
+"""

@@ -18,7 +18,7 @@ To get started, install `openevals`:
 pip install openevals
 ```
 
-This quickstart will use an evaluator powered by OpenAI's `gpt-5-mini` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
+This quickstart will use an evaluator powered by OpenAI's `gpt-5.4` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
 
 ```bash
 export OPENAI_API_KEY="your_openai_api_key"
@@ -33,7 +33,7 @@ from openevals.prompts import CONCISENESS_PROMPT
 conciseness_evaluator = create_llm_as_judge(
     # CONCISENESS_PROMPT is just an f-string
     prompt=CONCISENESS_PROMPT,
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 inputs = "How is the weather in San Francisco?"
@@ -78,7 +78,8 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
       - [Logging feedback with custom output schemas](#logging-feedback-with-custom-output-schemas)
       - [Structured prompts](#structured-prompts)
     - [Multimodal](#multimodal)
-
+      - [Option 1: `attachments` parameter](#option-1-attachments-parameter)
+      - [Option 2: LangChain prompt template](#option-2-langchain-prompt-template)
   </details>
 
   - <details>
@@ -205,7 +206,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 ```
 
@@ -264,7 +265,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 custom_prompt_evaluator = create_llm_as_judge(
     prompt=MY_CUSTOM_PROMPT,
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 custom_prompt_evaluator(
@@ -310,7 +311,7 @@ prompt = ChatPromptTemplate([
 
 llm_as_judge = create_llm_as_judge(
     prompt=prompt,
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     feedback_key="equality",
 )
 
@@ -376,7 +377,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 
 openai_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
-    model="gpt-5-mini",
+    model="gpt-5.4",
     judge=OpenAI(),
 )
 ```
@@ -421,7 +422,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 evaluator = create_llm_as_judge(
     prompt=MY_CUSTOM_PROMPT,
     choices=[0.0, 0.5, 1.0],
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 result = evaluator(
@@ -483,7 +484,7 @@ outputs = "The rain in Spain falls mainly on the plain."
 
 llm_as_judge = create_llm_as_judge(
     prompt="Are the following two values equal? {inputs} {outputs}",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     output_schema=EqualityResult,
 )
 eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
@@ -510,7 +511,14 @@ Passing in a pulled prompt from the [LangChain prompt hub](https://smith.langcha
 
 ### Multimodal
 
-LLM-as-judge evaluators support multimodal inputs including images, audio, and PDFs. To pass multimodal content, include an `{attachments}` placeholder in your prompt and pass an `attachments` argument when calling the evaluator, which is either a single dict or a list of dicts with a `mime_type` and base64-encoded `data` field. The evaluator inserts the content at that placeholder. The prebuilt [Image](#image) and [Voice](#voice) prompts already include this placeholder, or you can add it to any custom prompt.
+LLM-as-judge evaluators support multimodal inputs including images, audio, and PDFs. There are two ways to pass multimodal content:
+
+- **`attachments` parameter** — include an `{attachments}` placeholder in your prompt and pass the content via the `attachments` kwarg.
+- **LangChain prompt template** — introduce multimodal content directly into the prompt message. See the [LangChain multimodal messages docs](https://docs.langchain.com/oss/python/langchain/messages#multimodal) for details.
+
+#### Option 1: `attachments` parameter
+
+The `attachments` parameter supports a single dict or a list of dicts with a `mime_type` and base64-encoded `data` field. The prebuilt [Image](#image) and [Voice](#voice) prompts already include the `{attachments}` placeholder, or you can add it to any custom prompt.
 
 Supported attachment types:
 
@@ -536,7 +544,7 @@ from openevals.prompts import IMAGE_RELEVANCE_PROMPT
 evaluator = create_llm_as_judge(
     prompt=IMAGE_RELEVANCE_PROMPT,
     feedback_key="image_relevance",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 # Option A: pass a URL string directly
@@ -567,6 +575,10 @@ print(eval_result)
 }
 ```
 
+#### Option 2: LangChain prompt template
+
+You can also introduce multimodal content into the prompt using a LangChain prompt template. See the [LangChain multimodal messages docs](https://docs.langchain.com/oss/python/langchain/messages#multimodal) for details.
+
 ## Prebuilt prompts
 
 OpenEvals includes prebuilt prompts for common evaluation scenarios that work out of the box with [`create_llm_as_judge`](#llm-as-judge). All prebuilt prompts are importable from `openevals.prompts`.
@@ -594,7 +606,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 inputs = "How much has the price of doodads changed in the past year?"
@@ -636,7 +648,7 @@ from openevals.prompts import FAIRNESS_PROMPT
 llm_as_judge = create_llm_as_judge(
     prompt=FAIRNESS_PROMPT,
     feedback_key="fairness",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 eval_result = llm_as_judge(
@@ -675,7 +687,7 @@ from openevals.prompts import PII_LEAKAGE_PROMPT
 llm_as_judge = create_llm_as_judge(
     prompt=PII_LEAKAGE_PROMPT,
     feedback_key="pii_leakage",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 eval_result = llm_as_judge(
@@ -696,7 +708,7 @@ print(eval_result)
 
 ### Image
 
-These prompts evaluate image content and its relation to the associated context. All image prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing image data. Note that your chosen model must support vision inputs (e.g. `openai:gpt-5-mini`).
+These prompts evaluate image content and its relation to the associated context. All image prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing image data. Note that your chosen model must support vision inputs (e.g. `openai:gpt-5.4`).
 
 | Prompt | Parameters | What it evaluates |
 |--------|-----------|-------------------|
@@ -718,7 +730,7 @@ with open("image.jpg", "rb") as f:
 llm_as_judge = create_llm_as_judge(
     prompt=IMAGE_RELEVANCE_PROMPT,
     feedback_key="image_relevance",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 eval_result = llm_as_judge(
@@ -822,7 +834,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 inputs = "How much has the price of doodads changed in the past year?"
@@ -861,7 +873,7 @@ from openevals.prompts import RAG_HELPFULNESS_PROMPT
 helpfulness_evaluator = create_llm_as_judge(
     prompt=RAG_HELPFULNESS_PROMPT,
     feedback_key="helpfulness",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 inputs = {
@@ -901,7 +913,7 @@ from openevals.prompts import RAG_GROUNDEDNESS_PROMPT
 groundedness_evaluator = create_llm_as_judge(
     prompt=RAG_GROUNDEDNESS_PROMPT,
     feedback_key="groundedness",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 context = {
@@ -949,7 +961,7 @@ from openevals.prompts import RAG_RETRIEVAL_RELEVANCE_PROMPT
 retrieval_relevance_evaluator = create_llm_as_judge(
     prompt=RAG_RETRIEVAL_RELEVANCE_PROMPT,
     feedback_key="retrieval_relevance",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 inputs = {
@@ -1099,7 +1111,7 @@ evaluator = create_json_match_evaluator(
         "a": "Does the answer mention all the fruits in the reference answer?"
     },
     # The provider and name of the model to use
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     # Whether to force the model to reason about the keys in `rubric`. Defaults to True
     # Note that this is not currently supported if there is an aggregator specified 
     use_reasoning=True
@@ -1286,7 +1298,7 @@ from openevals.code.llm import create_code_llm_as_judge, CODE_CORRECTNESS_PROMPT
 
 llm_as_judge = create_code_llm_as_judge(
     prompt=CODE_CORRECTNESS_PROMPT,
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     code_extraction_strategy="markdown_code_blocks",
 )
 
@@ -1796,7 +1808,7 @@ from openevals.prompts import TRAJECTORY_ACCURACY_PROMPT
 
 evaluator = create_trajectory_llm_as_judge(
     prompt=TRAJECTORY_ACCURACY_PROMPT,
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 outputs = [
@@ -1829,7 +1841,7 @@ from openevals.prompts import TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE
 
 evaluator = create_trajectory_llm_as_judge(
     prompt=TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 outputs = [
@@ -1900,7 +1912,7 @@ from openevals.prompts import TASK_COMPLETION_PROMPT
 evaluator = create_llm_as_judge(
     prompt=TASK_COMPLETION_PROMPT,
     feedback_key="task_completion",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 outputs = [
@@ -1932,7 +1944,7 @@ class LanguageDetectionResult(TypedDict):
 evaluator = create_llm_as_judge(
     prompt=LANGUAGE_DETECTION_PROMPT,
     feedback_key="language_detection",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     output_schema=LanguageDetectionResult,
 )
 
@@ -2133,7 +2145,7 @@ from openevals.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -2147,7 +2159,7 @@ from openai import AsyncOpenAI
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
     judge=AsyncOpenAI(),
-    model="gpt-5-mini",
+    model="gpt-5.4",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -2183,7 +2195,7 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
     # inputs is a message object with role and content
     res = client.chat.completions.create(
-        model="gpt-5-mini",
+        model="gpt-5.4",
         messages=[
             {
                 "role": "system",
@@ -2199,11 +2211,11 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an aggressive and hostile customer who wants a refund for their car.",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 trajectory_evaluator = create_llm_as_judge(
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     prompt="Based on the below conversation, was the user satisfied?\n{outputs}",
     feedback_key="satisfaction",
 )
@@ -2292,7 +2304,7 @@ from openevals.simulators import create_llm_simulated_user
 
 user = create_llm_simulated_user(
     system="You are an angry and belligerent customer who wants a refund.",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 ```
 
@@ -2303,7 +2315,7 @@ from openevals.simulators import create_llm_simulated_user
 
 user = create_llm_simulated_user(
     system="You are an angry and belligerent customer who wants a refund.",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     fixed_responses=[
         {"role": "user", "content": "I demand a refund for my bike!"},
         {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -2365,7 +2377,7 @@ def give_refund():
     """Gives a refund."""
     return "Refunds are not permitted."
 
-model = init_chat_model("openai:gpt-5-mini")
+model = init_chat_model("openai:gpt-5.4")
 
 agent = create_agent(
     model,
@@ -2383,14 +2395,14 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
 
 user = create_llm_simulated_user(
     system="You are an angry user who is frustrated with the service and keeps making additional demands.",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     fixed_responses=[
         {"role": "user", "content": "Please give me a refund."},
     ],
 )
 
 trajectory_evaluator = create_llm_as_judge(
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
     prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
     feedback_key="satisfaction",
 )
@@ -2471,7 +2483,7 @@ from openevals.prompts import CORRECTNESS_PROMPT
 correctness_evaluator = create_llm_as_judge(
     prompt=CORRECTNESS_PROMPT,
     feedback_key="correctness",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 @pytest.mark.langsmith
@@ -2520,7 +2532,7 @@ client = Client()
 conciseness_evaluator = create_llm_as_judge(
     prompt=CONCISENESS_PROMPT,
     feedback_key="conciseness",
-    model="openai:gpt-5-mini",
+    model="openai:gpt-5.4",
 )
 
 def wrapped_conciseness_evaluator(

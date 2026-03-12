@@ -126,6 +126,8 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
       - [Logging feedback with custom output schemas](#logging-feedback-with-custom-output-schemas)
       - [Structured prompts](#structured-prompts)
     - [Multimodal](#multimodal)
+      - [Option 1: `attachments` parameter](#option-1-attachments-parameter)
+      - [Option 2: LangChain prompt template](#option-2-langchain-prompt-template)
   - [Prebuilt prompts](#prebuilt-prompts)
     - [Quality](#quality)
     - [Safety](#safety)

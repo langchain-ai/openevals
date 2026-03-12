@@ -67,7 +67,9 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 - [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Evaluators](#evaluators)
-  - [LLM-as-judge](#llm-as-judge)
+  - <details>
+      <summary><a href="#llm-as-judge">LLM-as-Judge</a></summary>
+
     - [Customizing prompts](#customizing-prompts)
       - [Customizing with LangChain prompt templates](#customizing-with-langchain-prompt-templates)
     - [Customizing the model](#customizing-the-model)
@@ -79,32 +81,62 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
       - [Option 1: `attachments` parameter](#option-1-attachments-parameter)
       - [Option 2: LangChain prompt template](#option-2-langchain-prompt-template)
   - [Prebuilt prompts](#prebuilt-prompts)
+
+  </details>
+
+  - <details>
+      <summary><a href="#prebuilt-prompts">Prebuilt prompts</a></summary>
+
     - [Quality](#quality)
     - [Safety](#safety)
     - [Security](#security)
     - [Image](#image)
     - [Voice](#voice)
-    - [RAG](#rag)
-      - [Correctness {#rag}](#correctness-rag)
+    - <details>
+        <summary><a href="#rag">RAG</a></summary>
+
+      - [Correctness](#correctness-rag)
       - [Helpfulness](#helpfulness)
       - [Groundedness](#groundedness)
       - [Retrieval relevance](#retrieval-relevance)
         - [Retrieval relevance with LLM-as-judge](#retrieval-relevance-with-llm-as-judge)
         - [Retrieval relevance with string evaluators](#retrieval-relevance-with-string-evaluators)
-  - [Extraction and tool calls](#extraction-and-tool-calls)
+
+    </details>
+
+  </details>
+
+  - <details>
+      <summary><a href="#extraction-and-tool-calls">Extraction and tool calls</a></summary>
+
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
-  - [Code](#code)
+
+  </details>
+
+  - <details>
+      <summary><a href="#code">Code</a></summary>
+
     - [Extracting code outputs](#extracting-code-outputs)
     - [Pyright (Python-only)](#pyright-python-only)
     - [Mypy (Python-only)](#mypy-python-only)
     - [TypeScript type-checking (TypeScript-only)](#typescript-type-checking-typescript-only)
     - [LLM-as-judge for code](#llm-as-judge-for-code)
-  - [Sandboxed code](#sandboxed-code)
+
+  </details>
+
+  - <details>
+      <summary><a href="#sandboxed-code">Sandboxed code</a></summary>
+
     - [Sandbox Pyright (Python-only)](#sandbox-pyright-python-only)
     - [Sandbox TypeScript type-checking (TypeScript-only)](#sandbox-typescript-type-checking-typescript-only)
     - [Sandbox Execution](#sandbox-execution)
-  - [Agent trajectory](#agent-trajectory)
+
+  </details>
+
+  - <details>
+      <summary><a href="#agent-trajectory">Agent trajectory</a></summary>
+
     - [Trajectory match](#trajectory-match)
       - [Strict match](#strict-match)
       - [Unordered match](#unordered-match)
@@ -112,23 +144,34 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
       - [Tool args match modes](#tool-args-match-modes)
     - [Trajectory LLM-as-judge](#trajectory-llm-as-judge)
     - [Prebuilt trajectory prompts](#prebuilt-trajectory-prompts)
-  - [Other](#other)
+
+  </details>
+
+  - <details>
+      <summary><a href="#other">Other</a></summary>
+
     - [Exact match](#exact-match)
     - [Levenshtein distance](#levenshtein-distance)
     - [Embedding similarity](#embedding-similarity)
+
+  </details>
+
   - [Creating your own](#creating-your-own)
     - [Evaluator interface](#evaluator-interface)
     - [Logging to LangSmith](#logging-to-langsmith)
     - [Example](#example)
   - [Python async support](#python-async-support)
+
 - [Multiturn Simulation](#multiturn-simulation)
   - [Simulating users](#simulating-users)
     - [Prebuilt simulated user](#prebuilt-simulated-user)
     - [Custom simulated users](#custom-simulated-users)
   - [Multiturn simulation with LangGraph](#multiturn-simulation-with-langgraph)
+
 - [LangSmith Integration](#langsmith-integration)
   - [Pytest or Vitest/Jest](#pytest-or-vitestjest)
   - [Evaluate](#evaluate)
+
 - [Acknowledgements](#acknowledgements)
 - [Thank you!](#thank-you)
 

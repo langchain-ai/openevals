@@ -159,5 +159,16 @@
       "require": "./utils.cjs"
     },
     "./package.json": "./package.json"
+  },
+  "resolutions": {
+    "axios": ">=1.8.2",
+    "esbuild": ">=0.25.0",
+    "form-data": ">=4.0.4",
+    "glob": ">=10.5.0",
+    "js-yaml": ">=4.1.1",
+    "langsmith": ">=0.4.6",
+    "lodash": ">=4.17.23",
+    "tar": ">=7.5.8",
+    "vite": ">=6.4.1 <7"
   }
 }

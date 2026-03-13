@@ -86,6 +86,10 @@
     "prompts.js",
     "prompts.d.ts",
     "prompts.d.cts",
+    "experimental/prompts.cjs",
+    "experimental/prompts.js",
+    "experimental/prompts.d.ts",
+    "experimental/prompts.d.cts",
     "types.cjs",
     "types.js",
     "types.d.ts",
@@ -140,6 +144,15 @@
       },
       "import": "./prompts.js",
       "require": "./prompts.cjs"
+    },
+    "./experimental/prompts": {
+      "types": {
+        "import": "./experimental/prompts.d.ts",
+        "require": "./experimental/prompts.d.cts",
+        "default": "./experimental/prompts.d.ts"
+      },
+      "import": "./experimental/prompts.js",
+      "require": "./experimental/prompts.cjs"
     },
     "./types": {
       "types": {

@@ -1,7 +1,3 @@
-console.warn(
-  "[openevals] Voice prompts are in beta and may change in future releases."
-);
-
 export const AUDIO_QUALITY_PROMPT = `You are an expert audio quality evaluator. You will be provided with metadata or signals from an audio recording.
 Your task is to determine whether the audio contains quality issues that would degrade the listener's experience.
 

@@ -1,7 +1,3 @@
-console.warn(
-  "[openevals] Voice prompts are in beta and may change in future releases."
-);
-
 export const VOCAL_AFFECT_PROMPT = `You are an expert voice quality evaluator. You will be provided with the audio for a conversation between an agent and a user.
 Your task is to assess whether the agent's vocal affect was appropriate, consistent, and natural throughout the interaction.
 

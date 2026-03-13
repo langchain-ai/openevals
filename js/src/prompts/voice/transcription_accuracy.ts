@@ -1,7 +1,3 @@
-console.warn(
-  "[openevals] Voice prompts are in beta and may change in future releases."
-);
-
 export const TRANSCRIPTION_ACCURACY_PROMPT = `You are an expert transcription evaluator. You will be provided with an audio transcription alongside a reference transcript.
 Your task is to determine whether the transcription accurately reflects the spoken content.
 

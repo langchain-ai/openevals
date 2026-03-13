@@ -1358,7 +1358,7 @@ Here's an example using `AUDIO_QUALITY_PROMPT`:
 ```python
 import base64
 from openevals.llm import create_llm_as_judge
-from openevals.prompts import AUDIO_QUALITY_PROMPT
+from openevals.experimental import AUDIO_QUALITY_PROMPT
 
 with open("audio.wav", "rb") as f:
     audio_data = base64.b64encode(f.read()).decode("utf-8")
@@ -1392,7 +1392,8 @@ print(eval_result)
 
 ```ts
 import * as fs from "fs";
-import { createLLMAsJudge, AUDIO_QUALITY_PROMPT } from "openevals";
+import { createLLMAsJudge } from "openevals";
+import { AUDIO_QUALITY_PROMPT } from "openevals/experimental";
 
 const audioData = fs.readFileSync("audio.wav").toString("base64");
 

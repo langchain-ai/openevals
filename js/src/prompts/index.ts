@@ -31,7 +31,3 @@ export { IMAGE_RELEVANCE_PROMPT } from "./image/image_relevance.js";
 export { VISUAL_HALLUCINATION_PROMPT } from "./image/visual_hallucination.js";
 export { EXPLICIT_CONTENT_PROMPT } from "./image/explicit_content.js";
 export { SENSITIVE_IMAGERY_PROMPT } from "./image/sensitive_imagery.js";
-export { AUDIO_QUALITY_PROMPT } from "./voice/audio_quality.js";
-export { TRANSCRIPTION_ACCURACY_PROMPT } from "./voice/transcription_accuracy.js";
-export { DIALOGUE_FLOW_PROMPT } from "./voice/dialogue_flow.js";
-export { VOCAL_AFFECT_PROMPT } from "./voice/vocal_affect.js";

@@ -755,7 +755,8 @@ Here's an example using `AUDIO_QUALITY_PROMPT`:
 
 ```ts
 import * as fs from "fs";
-import { createLLMAsJudge, AUDIO_QUALITY_PROMPT } from "openevals";
+import { createLLMAsJudge } from "openevals";
+import { AUDIO_QUALITY_PROMPT } from "openevals/experimental";
 
 const audioData = fs.readFileSync("audio.wav").toString("base64");
 

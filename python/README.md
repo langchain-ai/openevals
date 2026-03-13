@@ -750,7 +750,7 @@ print(eval_result)
 }
 ```
 
-### Voice *(beta)*
+### Voice
 
 > **Beta**: Voice prompts are in beta and may change in future releases.
 
@@ -768,7 +768,7 @@ Here's an example using `AUDIO_QUALITY_PROMPT`:
 ```python
 import base64
 from openevals.llm import create_llm_as_judge
-from openevals.experimental import AUDIO_QUALITY_PROMPT
+from openevals.experimental.prompts import AUDIO_QUALITY_PROMPT
 
 with open("audio.wav", "rb") as f:
     audio_data = base64.b64encode(f.read()).decode("utf-8")

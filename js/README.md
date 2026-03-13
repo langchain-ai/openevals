@@ -738,7 +738,7 @@ console.log(evalResult);
 }
 ```
 
-### Voice *(beta)*
+### Voice
 
 > **Beta**: Voice prompts are in beta and may change in future releases.
 
@@ -756,7 +756,7 @@ Here's an example using `AUDIO_QUALITY_PROMPT`:
 ```ts
 import * as fs from "fs";
 import { createLLMAsJudge } from "openevals";
-import { AUDIO_QUALITY_PROMPT } from "openevals/experimental";
+import { AUDIO_QUALITY_PROMPT } from "openevals/experimental/prompts";
 
 const audioData = fs.readFileSync("audio.wav").toString("base64");
 

@@ -1,3 +1,7 @@
+console.warn(
+  "[openevals] Voice prompts are in beta and may change in future releases."
+);
+
 export const DIALOGUE_FLOW_PROMPT = `You are an expert conversation evaluator. You will be provided with a voice recording of a conversation between a user and an AI agent.
 Your task is to assess whether the dialogue flow felt natural or whether it became awkward due to overlapping speech or frequent interruptions.
 

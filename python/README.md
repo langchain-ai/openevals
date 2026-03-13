@@ -89,7 +89,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Safety](#safety)
     - [Security](#security)
     - [Image](#image)
-    - [Voice](#voice)
+    - [Voice](#voice) *(beta)*
     - <details>
         <summary><a href="#rag">RAG</a></summary>
 
@@ -750,7 +750,9 @@ print(eval_result)
 }
 ```
 
-### Voice
+### Voice *(beta)*
+
+> **Beta**: Voice prompts are in beta and may change in future releases.
 
 These prompts evaluate voice and audio content. All voice prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing audio data. Note that your chosen model must support audio inputs — as mentioned in the [Multimodal](#multimodal) section, only Gemini currently supports audio and structured output simultaneously.
 

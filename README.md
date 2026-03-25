@@ -227,7 +227,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 
 You can install `openevals` like this:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```bash
@@ -245,7 +245,7 @@ npm install openevals @langchain/core
 
 For LLM-as-judge evaluators, you will also need an LLM client. By default, `openevals` will use [LangChain chat model integrations](https://python.langchain.com/docs/integrations/chat/) and comes with `langchain_openai` installed by default. However, if you prefer, you may use the OpenAI client directly:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```bash
@@ -274,7 +274,7 @@ that handles converting parameters into strings and parsing the judge LLM's outp
 
 To use the `create_llm_as_judge` function, you need to provide a prompt and a model. To get started, OpenEvals has some prebuilt prompts in the `openevals.prompts` module that you can use out of the box. Here's an example:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -304,7 +304,7 @@ const correctnessEvaluator = createLLMAsJudge({
 
 Note that `CORRECTNESS_PROMPT` is a simple f-string that you can log and edit as needed for your specific use case:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -365,7 +365,7 @@ The `prompt` parameter for `create_llm_as_judge` may be an f-string, [LangChain 
 
 Though we suggest sticking to conventional names (`inputs`, `outputs`, and `reference_outputs`) as prompt variables, your prompts can also require additional variables. You would then pass these extra variables when calling your evaluator function. Here's an example of a prompt that requires an extra variable named `context`:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -443,7 +443,7 @@ The following options are also available for string prompts:
 - `system`: a string that sets a system prompt for the judge model by adding a `system` message before other parts of the prompt.
 - `few_shot_examples`: a list of example dicts that are appended to the end of the prompt. This is useful for providing the judge model with examples of good and bad outputs. The required structure looks like this:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -480,7 +480,7 @@ These will be appended to the end of the final user message in the prompt.
 
 You can also pass a [LangChain prompt template](https://python.langchain.com/docs/concepts/prompt_templates/) if you want more control over formatting. Here's an example that uses mustache formatting instead of f-strings:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -556,7 +556,7 @@ You can also pass in a function that takes your LLM-as-judge inputs as kwargs an
 
 There are a few ways you can customize the model used for evaluation. You can pass a string formatted as `PROVIDER:MODEL` (e.g. `model=anthropic:claude-3-5-sonnet-latest`) as the `model`, in which case the package will [attempt to import and initialize a LangChain chat model instance](https://python.langchain.com/docs/how_to/chat_models_universal_init/). This requires you to install the appropriate LangChain integration package installed. Here's an example:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```bash
@@ -594,7 +594,7 @@ const anthropicEvaluator = createLLMAsJudge({
 
 You can also directly pass a LangChain chat model instance as `judge`. Note that your chosen model must support [structured output](https://python.langchain.com/docs/integrations/chat/):
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -628,7 +628,7 @@ This is useful in scenarios where you need to initialize your model with specifi
 
 Finally, you can pass a model name as `model` and a `judge` parameter set to an OpenAI client instance:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```bash
@@ -680,7 +680,7 @@ These parameters are mutually exclusive. When using either of them, you should m
 
 For example, here's an example of how to define a less harsh definition of correctness that only penalizes incorrect answers by 50% if they are on-topic:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -814,7 +814,7 @@ Note that if you are using an OpenAI client directly, only JSON schema and OpenA
 
 Here's an example:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -921,7 +921,7 @@ Passing a URL string directly as `attachments` is supported for images only. Aud
 
 Here's an example using the prebuilt `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1029,7 +1029,7 @@ These prompts evaluate general output quality.
 
 Here's an example using `CORRECTNESS_PROMPT`:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1109,7 +1109,7 @@ These prompts detect harmful or biased content in LLM outputs.
 
 Here's an example using `FAIRNESS_PROMPT`:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1181,7 +1181,7 @@ These prompts detect security threats in LLM inputs and outputs.
 
 Here's an example using `PII_LEAKAGE_PROMPT`:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1253,7 +1253,7 @@ These prompts evaluate image content and its relation to the associated context.
 
 Here's an example using `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1352,7 +1352,7 @@ These prompts evaluate voice and audio content. All voice prompts require an `at
 
 Here's an example using `AUDIO_QUALITY_PROMPT`:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1453,7 +1453,7 @@ OpenEvals provides prebuilt prompts and other methods for the following:
 
 You can evaluate the correctness of a RAG app's outputs using the LLM-as-judge evaluator alongside the general [`CORRECTNESS_PROMPT`](#quality) covered in the [Quality](#quality) section above. Here's an example:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1530,7 +1530,7 @@ For more information on customizing LLM-as-judge evaluators, see [these sections
 
 You can evaluate the helpfulness of a RAG app's outputs using the LLM-as-judge evaluator with a prompt like the built-in `RAG_HELPFULNESS_PROMPT`. Here's an example:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1613,7 +1613,7 @@ console.log(evalResult);
 
 You can evaluate the groundedness of a RAG app's outputs using the LLM-as-judge evaluator with a prompt like the built-in `RAG_GROUNDEDNESS_PROMPT`. Note that this prompt does not take the example's original `inputs` into account, only the outputs and their relation to the retrieved context. Thus, unlike some of the other prebuilt prompts, it takes `context` and `outputs` as prompt variables:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1710,7 +1710,7 @@ console.log(evalResult);
 
 You can evaluate the retrieval relevance of a RAG app using the LLM-as-judge evaluator with a prompt like the built-in `RAG_RETRIEVAL_RELEVANCE_PROMPT`. Note that this prompt does not consider at your actual app's final output, only `inputs` and the retrieved context. Thus, unlike some of the other prebuilt prompts, it takes `context` and `inputs` as prompt variables:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1805,7 +1805,7 @@ You can also use string evaluators like [embedding similarity](#embedding-simila
 
 Here's an example:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1892,7 +1892,7 @@ Note that this evaluator may return multiple scores based on key and aggregation
 
 Use exact match evaluation when there is a clear right or wrong answer. A common scenario is text extraction from images or PDFs where you expect specific values.
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -1996,7 +1996,7 @@ Therefore, the list aggregator will return a final score of 0.5.
 Use LLM-as-a-judge to evaluate structured output or tools calls when the criteria is more subjective (for example the output is a kind of fruit or mentions all the fruits). 
 
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -2263,7 +2263,7 @@ OpenEvals includes a prebuilt LLM-as-a-judge evaluator for code. The primary dif
 
 You can run an LLM-as-a-judge evaluator for code as follows:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -2516,7 +2516,7 @@ To further evaluate code correctness, OpenEvals has a sandbox execution evaluato
 
 The evaluator will run a script to parse out package names from generated code, then will install those packages in the sandbox. The evaluator will then attempt to run the generated code return any analyzed errors in its comment.
 
-<details open>
+<details>
 <summary>Python</summary>
 
 You will need to install the `e2b-code-interpreter` package, available as an extra:
@@ -2675,7 +2675,7 @@ Trajectories should be formatted as lists of [OpenAI-style messages](https://pla
 
 The `"strict"` mode compares two trajectories and ensures that they contain the same messages in the same order with the same tool calls. Note that it does allow for differences in message content (e.g. `"SF"` vs. `"San Francisco"`):
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -2796,7 +2796,7 @@ console.log(result);
 
 The `"unordered"` mode compares two trajectories and ensures that they contain the same tool calls in any order. This is useful if you want to allow flexibility in how an agent obtains the proper information, but still do care that all information was retrieved.
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -2903,7 +2903,7 @@ console.log(result);
 
 The `"subset"` and `"superset"` modes match partial trajectories, ensuring that a trajectory contains a subset/superset of tool calls contained in a reference trajectory.
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3008,7 +3008,7 @@ When checking equality between tool calls, the above evaluators will require tha
 
 Here's an example that allows case insensitivity for the arguments to a tool named `get_weather`:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3113,7 +3113,7 @@ This flexibility allows you to handle cases where you want looser equality for L
 
 `create_trajectory_llm_as_judge`/`createTrajectoryLLMAsJudge` uses an LLM to assess whether an agent's trajectory is accurate. Unlike the trajectory match evaluators, it doesn't require a reference trajectory. Use `TRAJECTORY_ACCURACY_PROMPT` for no-reference evaluation, or `TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE` to compare against a reference:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3185,7 +3185,7 @@ console.log(result);
 
 If you have a reference trajectory, use `TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE` and pass `reference_outputs`/`referenceOutputs`:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3305,7 +3305,7 @@ For LangGraph-specific graph trajectory evaluators, see the [`agentevals`](https
 
 Here's an example using `TASK_COMPLETION_PROMPT`:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3364,7 +3364,7 @@ console.log(result);
 
 Since `LANGUAGE_DETECTION_PROMPT` should return a categorical language name rather than a boolean score, use it with a custom `output_schema` to capture the result:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3438,7 +3438,7 @@ This package also contains prebuilt evaluators for calculating common metrics su
 
 ### Exact match
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3482,7 +3482,7 @@ console.log(result);
 
 ### Levenshtein distance
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3531,7 +3531,7 @@ console.log(result);
 
 This evaluator uses LangChain's [`init_embedding`](https://python.langchain.com/api_reference/langchain/embeddings/langchain.embeddings.base.init_embeddings.html) method (for Python) or takes a LangChain embeddings client directly (for TypeScript) and calculates distance between two strings using cosine similarity.
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3623,7 +3623,7 @@ This method takes a `scorer` function as part of its input that returns either:
 
 Here's an example of how you might define a very simple custom evaluator. It only takes into account the outputs of your app and compares them against a regex pattern. It uses a factory function to create the evaluator, since `regex` is an extra param.
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3789,7 +3789,7 @@ To help judge your application's performance over multiple interactions, OpenEva
 
 Here's an example using the OpenAI client directly as a simple chatbot:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -3995,7 +3995,7 @@ You must pass at least one of `max_turns` or `stopping_condition`. Once one of t
 
 The simulator itself is not an evaluator and will not return or log any feedback. Instead, it will return a `MultiturnSimulationResult` with the following structure:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -4033,7 +4033,7 @@ The `user` parameter is a function that accepts the current trajectory (and a `t
 
 OpenEvals includes a prebuilt `create_llm_simulated_user` method that uses an LLM to take on the role of a user and generate responses based on a system prompt:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -4063,7 +4063,7 @@ const user = createLLMSimulatedUser({
 
 You can also pass an array of `fixed_responses`, which the simulated user will return in order. Here is an example of a simulated user set up with fixed responses for the first two conversation turns. The LLM will generate responses for subsequent turns:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -4115,7 +4115,7 @@ This prebuilt takes the following parameters:
 
 If you need other functionality beyond the prebuilt simulated user, you can create your own by wrapping it in a function with the correct signature:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -4182,7 +4182,7 @@ const simulatorResult = runMultiturnSimulation({
 
 If your `app` (or simulated `user`) is built using LangGraph and relies on a [checkpointer for persistence](https://langchain-ai.github.io/langgraph/concepts/persistence/), the provided `thread_id` param can be used to populate the field in `config.configurable`.
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python
@@ -4406,7 +4406,7 @@ export LANGSMITH_API_KEY="your_langsmith_api_key"
 export LANGSMITH_TRACING="true"
 ```
 
-<details open>
+<details>
 <summary>Python</summary>
 
 Then, set up a file named `test_correctness.py` with the following contents:
@@ -4510,7 +4510,7 @@ And you should also see the results in the experiment view in LangSmith:
 
 Alternatively, you can [create a dataset in LangSmith](https://docs.langchain.com/langsmith/manage-datasets-in-application) and use your created evaluators with LangSmith's [`evaluate`](https://docs.langchain.com/langsmith/evaluate-llm-application) function:
 
-<details open>
+<details>
 <summary>Python</summary>
 
 ```python

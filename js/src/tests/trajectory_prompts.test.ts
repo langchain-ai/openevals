@@ -2,11 +2,11 @@ import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
 import { z } from "zod";
 import { createLLMAsJudge } from "../llm.js";
-import { TASK_COMPLETION_PROMPT } from "../prompts/trajectory/task_completion.js";
-import { USER_SATISFACTION_PROMPT } from "../prompts/trajectory/user_satisfaction.js";
-import { AGENT_TONE_PROMPT } from "../prompts/trajectory/agent_tone.js";
-import { KNOWLEDGE_RETENTION_PROMPT } from "../prompts/trajectory/knowledge_retention.js";
-import { LANGUAGE_DETECTION_PROMPT } from "../prompts/trajectory/language_detection.js";
+import { TASK_COMPLETION_PROMPT } from "../prompts/conversation/task_completion.js";
+import { USER_SATISFACTION_PROMPT } from "../prompts/conversation/user_satisfaction.js";
+import { AGENT_TONE_PROMPT } from "../prompts/conversation/agent_tone.js";
+import { KNOWLEDGE_RETENTION_PROMPT } from "../prompts/conversation/knowledge_retention.js";
+import { LANGUAGE_DETECTION_PROMPT } from "../prompts/conversation/language_detection.js";
 
 ls.describe("LLM Judge Trajectory", () => {
   // ── TASK_COMPLETION_PROMPT ──────────────────────────────────────────────────

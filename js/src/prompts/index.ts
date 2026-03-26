@@ -19,12 +19,13 @@ export {
   TRAJECTORY_ACCURACY_PROMPT,
   TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
 } from "./trajectory/accuracy.js";
-export { TASK_COMPLETION_PROMPT } from "./trajectory/task_completion.js";
+export { TASK_COMPLETION_PROMPT } from "./conversation/task_completion.js";
 export { TOOL_SELECTION_PROMPT } from "./trajectory/tool_selection.js";
-export { KNOWLEDGE_RETENTION_PROMPT } from "./trajectory/knowledge_retention.js";
-export { USER_SATISFACTION_PROMPT } from "./trajectory/user_satisfaction.js";
-export { AGENT_TONE_PROMPT } from "./trajectory/agent_tone.js";
-export { LANGUAGE_DETECTION_PROMPT } from "./trajectory/language_detection.js";
-export { SUPPORT_INTENT_PROMPT } from "./trajectory/support_intent.js";
+export { PERCEIVED_ERROR_PROMPT } from "./conversation/perceived_error.js";
+export { KNOWLEDGE_RETENTION_PROMPT } from "./conversation/knowledge_retention.js";
+export { USER_SATISFACTION_PROMPT } from "./conversation/user_satisfaction.js";
+export { AGENT_TONE_PROMPT } from "./conversation/agent_tone.js";
+export { LANGUAGE_DETECTION_PROMPT } from "./conversation/language_detection.js";
+export { SUPPORT_INTENT_PROMPT } from "./conversation/support_intent.js";
 export { EXPLICIT_CONTENT_PROMPT } from "./image/explicit_content.js";
 export { SENSITIVE_IMAGERY_PROMPT } from "./image/sensitive_imagery.js";

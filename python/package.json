@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "langsmith": "^0.5.9"
+  }
+}

@@ -2,7 +2,7 @@ import pytest
 from langsmith import testing as t
 from typing_extensions import TypedDict
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.trajectory import (
+from openevals.prompts.conversation import (
     TASK_COMPLETION_PROMPT,
     USER_SATISFACTION_PROMPT,
     AGENT_TONE_PROMPT,

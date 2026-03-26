@@ -19,7 +19,6 @@ from .safety import (
 from .security import (
     PII_LEAKAGE_PROMPT,
     PROMPT_INJECTION_PROMPT,
-    JAILBREAK_PROMPT,
     CODE_INJECTION_PROMPT,
 )
 from .trajectory import (
@@ -34,8 +33,6 @@ from .trajectory import (
     SUPPORT_INTENT_PROMPT,
 )
 from .image import (
-    IMAGE_RELEVANCE_PROMPT,
-    VISUAL_HALLUCINATION_PROMPT,
     EXPLICIT_CONTENT_PROMPT,
     SENSITIVE_IMAGERY_PROMPT,
 )
@@ -58,7 +55,6 @@ __all__ = [
     # security
     "PII_LEAKAGE_PROMPT",
     "PROMPT_INJECTION_PROMPT",
-    "JAILBREAK_PROMPT",
     "CODE_INJECTION_PROMPT",
     # trajectory
     "TRAJECTORY_ACCURACY_PROMPT",
@@ -71,8 +67,6 @@ __all__ = [
     "LANGUAGE_DETECTION_PROMPT",
     "SUPPORT_INTENT_PROMPT",
     # image
-    "IMAGE_RELEVANCE_PROMPT",
-    "VISUAL_HALLUCINATION_PROMPT",
     "EXPLICIT_CONTENT_PROMPT",
     "SENSITIVE_IMAGERY_PROMPT",
 ]

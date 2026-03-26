@@ -1,10 +1,9 @@
 import * as ls from "langsmith/vitest";
-import { expect, beforeAll } from "vitest";
+import { expect } from "vitest";
 import OpenAI from "openai";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { _attachmentToContentBlock } from "../utils.js";
 import { _createLLMAsJudgeScorer, createLLMAsJudge } from "../llm.js";
-import { IMAGE_RELEVANCE_PROMPT } from "../prompts/image/image_relevance.js";
 import { AUDIO_QUALITY_PROMPT } from "../prompts/voice/audio_quality.js";
 import { TRANSCRIPTION_ACCURACY_PROMPT } from "../prompts/voice/transcription_accuracy.js";
 import { VOCAL_AFFECT_PROMPT } from "../prompts/voice/vocal_affect.js";
@@ -16,9 +15,6 @@ const TINY_PNG_DATA_URI =
 const TINY_WAV_DATA_URI =
   "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
 const TINY_PNG_BASE64 = TINY_PNG_DATA_URI.split(",")[1];
-
-const PUBLIC_IMAGE_URL =
-  "https://images.everydayhealth.com/images/2025/fruits-with-protein-help-boost-intake-pomegranate-1440x810.jpg";
 
 // ── _attachmentToContentBlock unit tests ──────────────────────────────────────
 
@@ -212,70 +208,6 @@ ls.describe("raw OpenAI client message construction", () => {
     expect(content[0].type).toBe("text");
     expect(content[1].type).toBe("image_url");
     expect((content[1].image_url as Record<string, unknown>).url).toBe(TINY_PNG_DATA_URI);
-  });
-});
-
-// ── LLM integration (requires API key + vision model) ────────────────────────
-
-ls.describe("LLM Judge Image Relevance", () => {
-  let fruitImageB64: string | undefined;
-
-  beforeAll(async () => {
-    try {
-      const resp = await fetch(PUBLIC_IMAGE_URL, {
-        headers: { "User-Agent": "openevals-test/1.0" },
-      });
-      if (!resp.ok) return;
-      const buffer = await resp.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString("base64");
-      fruitImageB64 = `data:image/jpeg;base64,${base64}`;
-    } catch {
-      // fruitImageB64 stays undefined; tests will skip
-    }
-  });
-
-  ls.test("image relevance — relevant image", {
-    inputs: {
-      inputs: "Show me a picture of fruits",
-      outputs: "Here is an image of various fruits",
-    },
-    referenceOutputs: { score: true },
-  }, async ({ inputs }) => {
-    if (!fruitImageB64) return;
-    const evaluator = createLLMAsJudge({
-      prompt: IMAGE_RELEVANCE_PROMPT,
-      feedbackKey: "image_relevance",
-      model: "openai:gpt-5-mini",
-    });
-    const result = await evaluator({
-      inputs: inputs.inputs,
-      outputs: inputs.outputs,
-      attachments: { mime_type: "image/jpeg", data: fruitImageB64 },
-    });
-    ls.logOutputs({ score: result.score });
-    expect(result.score).toBeTruthy();
-  });
-
-  ls.test("image relevance — irrelevant image", {
-    inputs: {
-      inputs: "Show me a photo of a sports car",
-      outputs: "Here is a red Ferrari",
-    },
-    referenceOutputs: { score: false },
-  }, async ({ inputs }) => {
-    if (!fruitImageB64) return;
-    const evaluator = createLLMAsJudge({
-      prompt: IMAGE_RELEVANCE_PROMPT,
-      feedbackKey: "image_relevance",
-      model: "openai:gpt-5-mini",
-    });
-    const result = await evaluator({
-      inputs: inputs.inputs,
-      outputs: inputs.outputs,
-      attachments: { mime_type: "image/jpeg", data: fruitImageB64 },
-    });
-    ls.logOutputs({ score: result.score });
-    expect(result.score).toBeFalsy();
   });
 });
 

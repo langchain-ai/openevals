@@ -14,7 +14,6 @@ export { TOXICITY_PROMPT } from "./safety/toxicity.js";
 export { FAIRNESS_PROMPT } from "./safety/fairness.js";
 export { PII_LEAKAGE_PROMPT } from "./security/pii_leakage.js";
 export { PROMPT_INJECTION_PROMPT } from "./security/prompt_injection.js";
-export { JAILBREAK_PROMPT } from "./security/jailbreak.js";
 export { CODE_INJECTION_PROMPT } from "./security/code_injection.js";
 export {
   TRAJECTORY_ACCURACY_PROMPT,
@@ -27,7 +26,5 @@ export { USER_SATISFACTION_PROMPT } from "./trajectory/user_satisfaction.js";
 export { AGENT_TONE_PROMPT } from "./trajectory/agent_tone.js";
 export { LANGUAGE_DETECTION_PROMPT } from "./trajectory/language_detection.js";
 export { SUPPORT_INTENT_PROMPT } from "./trajectory/support_intent.js";
-export { IMAGE_RELEVANCE_PROMPT } from "./image/image_relevance.js";
-export { VISUAL_HALLUCINATION_PROMPT } from "./image/visual_hallucination.js";
 export { EXPLICIT_CONTENT_PROMPT } from "./image/explicit_content.js";
 export { SENSITIVE_IMAGERY_PROMPT } from "./image/sensitive_imagery.js";

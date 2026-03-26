@@ -8,7 +8,6 @@ from langsmith import testing as t
 from openai import OpenAI
 from openevals.utils import _attachment_to_content_block
 from openevals.llm import create_llm_as_judge
-from openevals.prompts.image import IMAGE_RELEVANCE_PROMPT
 from openevals.prompts.voice import (
     AUDIO_QUALITY_PROMPT,
     TRANSCRIPTION_ACCURACY_PROMPT,
@@ -249,44 +248,6 @@ def test_raw_openai_client_image_attachment():
     assert content[0]["type"] == "text"
     assert content[1]["type"] == "image_url"
     assert content[1]["image_url"]["url"] == TINY_PNG_DATA_URI
-
-
-# ── LLM integration (requires API key + vision model) ─────────────────────────
-
-@pytest.mark.langsmith
-def test_image_relevance_with_real_image(fruit_image_b64):
-    evaluator = create_llm_as_judge(
-        prompt=IMAGE_RELEVANCE_PROMPT,
-        feedback_key="image_relevance",
-        model="google_genai:gemini-2.0-flash",
-    )
-    t.log_inputs({"inputs": "Show me a picture of fruits", "outputs": "Here is an image of various fruits"})
-    t.log_reference_outputs({"score": True})
-    result = evaluator(
-        inputs="Show me a picture of fruits",
-        outputs="Here is an image of various fruits",
-        attachments={"mime_type": "image/jpeg", "data": fruit_image_b64},
-    )
-    t.log_outputs({"score": result["score"]})
-    assert result["score"]
-
-
-@pytest.mark.langsmith
-def test_image_relevance_irrelevant_image(fruit_image_b64):
-    evaluator = create_llm_as_judge(
-        prompt=IMAGE_RELEVANCE_PROMPT,
-        feedback_key="image_relevance",
-        model="openai:gpt-5-mini",
-    )
-    t.log_inputs({"inputs": "Show me a photo of a sports car", "outputs": "Here is a red Ferrari"})
-    t.log_reference_outputs({"score": False})
-    result = evaluator(
-        inputs="Show me a photo of a sports car",
-        outputs="Here is a red Ferrari",
-        attachments={"mime_type": "image/jpeg", "data": fruit_image_b64},
-    )
-    t.log_outputs({"score": result["score"]})
-    assert not result["score"]
 
 
 # ── LLM integration: voice (requires API key + audio model) ───────────────────

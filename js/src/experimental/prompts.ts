@@ -4,5 +4,5 @@ console.warn(
 
 export { AUDIO_QUALITY_PROMPT } from "../prompts/voice/audio_quality.js";
 export { TRANSCRIPTION_ACCURACY_PROMPT } from "../prompts/voice/transcription_accuracy.js";
-export { DIALOGUE_FLOW_PROMPT } from "../prompts/voice/dialogue_flow.js";
+export { USER_INTERRUPTS_PROMPT } from "../prompts/voice/user_interrupts.js";
 export { VOCAL_AFFECT_PROMPT } from "../prompts/voice/vocal_affect.js";

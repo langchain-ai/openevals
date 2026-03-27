@@ -7,6 +7,7 @@ export {
   CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS,
 } from "./quality/code_correctness.js";
 export { PLAN_ADHERENCE_PROMPT } from "./quality/plan_adherence.js";
+export { LAZINESS_PROMPT } from "./quality/laziness.js";
 export { RAG_GROUNDEDNESS_PROMPT } from "./rag/groundedness.js";
 export { RAG_HELPFULNESS_PROMPT } from "./rag/helpfulness.js";
 export { RAG_RETRIEVAL_RELEVANCE_PROMPT } from "./rag/retrieval_relevance.js";
@@ -19,9 +20,10 @@ export {
   TRAJECTORY_ACCURACY_PROMPT,
   TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
 } from "./trajectory/accuracy.js";
-export { TASK_COMPLETION_PROMPT } from "./conversation/task_completion.js";
 export { TOOL_SELECTION_PROMPT } from "./trajectory/tool_selection.js";
 export { PERCEIVED_ERROR_PROMPT } from "./conversation/perceived_error.js";
+export { WINS_PROMPT } from "./conversation/wins.js";
+export { TASK_COMPLETION_PROMPT } from "./conversation/task_completion.js";
 export { KNOWLEDGE_RETENTION_PROMPT } from "./conversation/knowledge_retention.js";
 export { USER_SATISFACTION_PROMPT } from "./conversation/user_satisfaction.js";
 export { AGENT_TONE_PROMPT } from "./conversation/agent_tone.js";

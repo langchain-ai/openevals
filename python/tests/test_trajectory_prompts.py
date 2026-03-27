@@ -8,6 +8,8 @@ from openevals.prompts.conversation import (
     AGENT_TONE_PROMPT,
     KNOWLEDGE_RETENTION_PROMPT,
     LANGUAGE_DETECTION_PROMPT,
+    LAZINESS_PROMPT,
+    WINS_PROMPT,
 )
 
 

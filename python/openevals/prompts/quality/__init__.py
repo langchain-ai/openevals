@@ -7,6 +7,7 @@ from .code_correctness import (
     CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS,
 )
 from .plan_adherence import PLAN_ADHERENCE_PROMPT
+from .laziness import LAZINESS_PROMPT
 
 __all__ = [
     "CORRECTNESS_PROMPT",
@@ -16,4 +17,5 @@ __all__ = [
     "CODE_CORRECTNESS_PROMPT",
     "CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS",
     "PLAN_ADHERENCE_PROMPT",
+    "LAZINESS_PROMPT",
 ]

@@ -1,4 +1,5 @@
 from .perceived_error import PERCEIVED_ERROR_PROMPT
+from .wins import WINS_PROMPT
 from .task_completion import TASK_COMPLETION_PROMPT
 from .knowledge_retention import KNOWLEDGE_RETENTION_PROMPT
 from .user_satisfaction import USER_SATISFACTION_PROMPT
@@ -8,6 +9,7 @@ from .support_intent import SUPPORT_INTENT_PROMPT
 
 __all__ = [
     "PERCEIVED_ERROR_PROMPT",
+    "WINS_PROMPT",
     "TASK_COMPLETION_PROMPT",
     "KNOWLEDGE_RETENTION_PROMPT",
     "USER_SATISFACTION_PROMPT",

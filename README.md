@@ -919,7 +919,7 @@ Supported attachment types:
 
 Passing a URL string directly as `attachments` is supported for images only. Audio and PDF attachments must be passed as a base64-encoded data URI with `mime_type` and `data` fields.
 
-Here's an example using the prebuilt `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
+Here's an example using the prebuilt `SENSITIVE_IMAGERY_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
 
 <details open>
 <summary>Python</summary>
@@ -927,19 +927,19 @@ Here's an example using the prebuilt `IMAGE_RELEVANCE_PROMPT`. You can pass an i
 ```python
 import base64
 from openevals.llm import create_llm_as_judge
-from openevals.prompts import IMAGE_RELEVANCE_PROMPT
+from openevals.prompts import SENSITIVE_IMAGERY_PROMPT
 
 evaluator = create_llm_as_judge(
-    prompt=IMAGE_RELEVANCE_PROMPT,
-    feedback_key="image_relevance",
+    prompt=SENSITIVE_IMAGERY_PROMPT,
+    feedback_key="sensitive_imagery",
     model="openai:gpt-5.4",
 )
 
 # Option A: pass a URL string directly
 eval_result = evaluator(
-    inputs="Show me a picture of fruits",
-    outputs="Here is an image of various fruits",
-    attachments="https://example.com/fruits.jpg",
+    inputs="Review this image for sensitive content",
+    outputs="The image appears to contain appropriate content",
+    attachments="https://example.com/image.jpg",
 )
 
 # Option B: pass a base64-encoded data URI
@@ -947,8 +947,8 @@ with open("image.jpg", "rb") as f:
     image_data = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
 
 eval_result = evaluator(
-    inputs="Show me a picture of fruits",
-    outputs="Here is an image of various fruits",
+    inputs="Review this image for sensitive content",
+    outputs="The image appears to contain appropriate content",
     attachments={"mime_type": "image/jpeg", "data": image_data},
 )
 
@@ -957,8 +957,8 @@ print(eval_result)
 
 ```
 {
-    'key': 'image_relevance',
-    'score': True,
+    'key': 'sensitive_imagery',
+    'score': False,
     'comment': '...'
 }
 ```
@@ -969,27 +969,27 @@ print(eval_result)
 
 ```ts
 import * as fs from "fs";
-import { createLLMAsJudge, IMAGE_RELEVANCE_PROMPT } from "openevals";
+import { createLLMAsJudge, SENSITIVE_IMAGERY_PROMPT } from "openevals";
 
 const evaluator = createLLMAsJudge({
-  prompt: IMAGE_RELEVANCE_PROMPT,
-  feedbackKey: "image_relevance",
+  prompt: SENSITIVE_IMAGERY_PROMPT,
+  feedbackKey: "sensitive_imagery",
   model: "openai:gpt-5.4",
 });
 
 // Option A: pass a URL string directly
 const evalResult = await evaluator({
-  inputs: "Show me a picture of fruits",
-  outputs: "Here is an image of various fruits",
-  attachments: "https://example.com/fruits.jpg",
+  inputs: "Review this image for sensitive content",
+  outputs: "The image appears to contain appropriate content",
+  attachments: "https://example.com/image.jpg",
 });
 
 // Option B: pass a base64-encoded data URI
 const imageData = "data:image/jpeg;base64," + fs.readFileSync("image.jpg").toString("base64");
 
 const evalResultB64 = await evaluator({
-  inputs: "Show me a picture of fruits",
-  outputs: "Here is an image of various fruits",
+  inputs: "Review this image for sensitive content",
+  outputs: "The image appears to contain appropriate content",
   attachments: { mime_type: "image/jpeg", data: imageData },
 });
 
@@ -998,8 +998,8 @@ console.log(evalResult);
 
 ```
 {
-    key: 'image_relevance',
-    score: true,
+    key: 'sensitive_imagery',
+    score: false,
     comment: '...'
 }
 ```
@@ -1026,6 +1026,7 @@ These prompts evaluate general output quality.
 | `PLAN_ADHERENCE_PROMPT` | `inputs`, `outputs`, `plan` | Whether the output follows a provided plan |
 | `CODE_CORRECTNESS_PROMPT` | `inputs`, `outputs` | Code correctness against the problem specification |
 | `CODE_CORRECTNESS_PROMPT_WITH_REFERENCE_OUTPUTS` | `inputs`, `outputs`, `reference_outputs` | Code correctness compared to a reference solution |
+| `LAZINESS_PROMPT` | `inputs`, `outputs` | Whether the agent returned a blank, empty, or low-effort response |
 
 Here's an example using `CORRECTNESS_PROMPT`:
 
@@ -1175,8 +1176,7 @@ These prompts detect security threats in LLM inputs and outputs.
 | Prompt | Parameters | What it evaluates |
 |--------|-----------|-------------------|
 | `PII_LEAKAGE_PROMPT` | `inputs`, `outputs` | Personally identifiable information exposed in the output |
-| `PROMPT_INJECTION_PROMPT` | `inputs` | Attempts to override or manipulate system instructions |
-| `JAILBREAK_PROMPT` | `inputs` | Social engineering attempts to bypass AI safety guidelines |
+| `PROMPT_INJECTION_PROMPT` | `inputs` | Attempts to manipulate or override AI system instructions, including social engineering and roleplay-based circumvention |
 | `CODE_INJECTION_PROMPT` | `inputs` | Malicious code or exploits embedded in inputs |
 
 Here's an example using `PII_LEAKAGE_PROMPT`:
@@ -1246,96 +1246,8 @@ These prompts evaluate image content and its relation to the associated context.
 
 | Prompt | Parameters | What it evaluates |
 |--------|-----------|-------------------|
-| `IMAGE_RELEVANCE_PROMPT` | `inputs`, `outputs`, `attachments` | Whether the image matches the intent of the associated prompt or query |
-| `VISUAL_HALLUCINATION_PROMPT` | `inputs`, `outputs`, `attachments` | Factually incorrect or impossible visual content in the image |
 | `EXPLICIT_CONTENT_PROMPT` | `inputs`, `outputs`, `attachments` | Sexually explicit or graphic material inappropriate for general audiences |
 | `SENSITIVE_IMAGERY_PROMPT` | `inputs`, `outputs`, `attachments` | Hate symbols, inflammatory political imagery, or depictions of suffering |
-
-Here's an example using `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
-
-<details open>
-<summary>Python</summary>
-
-```python
-import base64
-from openevals.llm import create_llm_as_judge
-from openevals.prompts import IMAGE_RELEVANCE_PROMPT
-
-llm_as_judge = create_llm_as_judge(
-    prompt=IMAGE_RELEVANCE_PROMPT,
-    feedback_key="image_relevance",
-    model="openai:gpt-5.4",
-)
-
-# Option A: pass a URL string directly
-eval_result = llm_as_judge(
-    inputs="Show me a picture of fruits",
-    outputs="Here is an image of various fruits",
-    attachments="https://example.com/fruits.jpg",
-)
-
-# Option B: pass a base64-encoded data URI
-with open("image.jpg", "rb") as f:
-    image_data = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
-
-eval_result = llm_as_judge(
-    inputs="Show me a picture of fruits",
-    outputs="Here is an image of various fruits",
-    attachments={"mime_type": "image/jpeg", "data": image_data},
-)
-
-print(eval_result)
-```
-
-```
-{
-    'key': 'image_relevance',
-    'score': True,
-    'comment': '...'
-}
-```
-</details>
-
-<details>
-<summary>TypeScript</summary>
-
-```ts
-import * as fs from "fs";
-import { createLLMAsJudge, IMAGE_RELEVANCE_PROMPT } from "openevals";
-
-const llmAsJudge = createLLMAsJudge({
-  prompt: IMAGE_RELEVANCE_PROMPT,
-  feedbackKey: "image_relevance",
-  model: "openai:gpt-5.4",
-});
-
-// Option A: pass a URL string directly
-const evalResult = await llmAsJudge({
-  inputs: "Show me a picture of fruits",
-  outputs: "Here is an image of various fruits",
-  attachments: "https://example.com/fruits.jpg",
-});
-
-// Option B: pass a base64-encoded data URI
-const imageData = "data:image/jpeg;base64," + fs.readFileSync("image.jpg").toString("base64");
-
-const evalResultB64 = await llmAsJudge({
-  inputs: "Show me a picture of fruits",
-  outputs: "Here is an image of various fruits",
-  attachments: { mime_type: "image/jpeg", data: imageData },
-});
-
-console.log(evalResult);
-```
-
-```
-{
-    key: 'image_relevance',
-    score: true,
-    comment: '...'
-}
-```
-</details>
 
 ### Voice
 
@@ -1347,7 +1259,7 @@ These prompts evaluate voice and audio content. All voice prompts require an `at
 |--------|-----------|-------------------|
 | `AUDIO_QUALITY_PROMPT` | `inputs`, `outputs`, `attachments` | Clipping, distortion, or glitches that degrade listening experience |
 | `TRANSCRIPTION_ACCURACY_PROMPT` | `inputs`, `outputs`, `attachments` | Accuracy of speech-to-text transcription |
-| `DIALOGUE_FLOW_PROMPT` | `inputs`, `outputs`, `attachments` | Natural conversation flow and absence of disruptive overlapping speech |
+| `USER_INTERRUPTS_PROMPT` | `inputs`, `outputs`, `attachments` | Whether the agent handled user interruptions gracefully |
 | `VOCAL_AFFECT_PROMPT` | `inputs`, `outputs`, `attachments` | Appropriateness and consistency of the agent's vocal tone |
 
 Here's an example using `AUDIO_QUALITY_PROMPT`:
@@ -3287,16 +3199,29 @@ console.log(result);
 
 For LangGraph-specific graph trajectory evaluators, see the [`agentevals`](https://github.com/langchain-ai/agentevals) package.
 
-### Prebuilt trajectory prompts
+### Prebuilt trajectory and conversation prompts
 
-`openevals` includes several prebuilt prompts for evaluating agent conversations. All trajectory prompts take `outputs` as a list of messages representing the conversation history and are used with `create_llm_as_judge`/`createLLMAsJudge`.
+`openevals` includes several prebuilt prompts for evaluating agent trajectories and conversations. All prompts take `outputs` as a list of messages and are used with `create_llm_as_judge`/`createLLMAsJudge`.
+
+#### Trajectory prompts
+
+These prompts evaluate single-run agent tool call sequences.
 
 | Prompt | Parameters | What it evaluates |
 |--------|-----------|-------------------|
 | `TRAJECTORY_ACCURACY_PROMPT` | `outputs` | Whether the agent's overall trajectory accurately handles the task (see [above](#trajectory-llm-as-judge)) |
 | `TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE` | `outputs`, `reference_outputs` | Trajectory accuracy compared to a reference trajectory (see [above](#trajectory-llm-as-judge)) |
-| `TASK_COMPLETION_PROMPT` | `outputs` | Whether all user requests made throughout the conversation were completed |
 | `TOOL_SELECTION_PROMPT` | `outputs` | Correctness of tool choices made during query resolution |
+
+#### Conversation prompts
+
+These prompts evaluate multi-turn conversations between a user and an agent.
+
+| Prompt | Parameters | What it evaluates |
+|--------|-----------|-------------------|
+| `PERCEIVED_ERROR_PROMPT` | `outputs` | Whether the user's responses suggest the agent made a mistake |
+| `WINS_PROMPT` | `outputs` | Whether the user praised, thanked, or complimented the assistant |
+| `TASK_COMPLETION_PROMPT` | `outputs` | Whether all user requests made throughout the conversation were completed |
 | `KNOWLEDGE_RETENTION_PROMPT` | `outputs` | Whether the agent correctly retained and applied information introduced earlier in the conversation |
 | `USER_SATISFACTION_PROMPT` | `outputs` | Overall user satisfaction based on tone shifts and whether the core need was met |
 | `AGENT_TONE_PROMPT` | `outputs` | Consistency and appropriateness of the agent's tone throughout the conversation |

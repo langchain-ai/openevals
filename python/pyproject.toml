@@ -46,3 +46,8 @@ addopts = [
 pythonpath = [
   "."
 ]
+
+[tool.uv]
+constraint-dependencies = [
+    "pygments>=2.20.0",
+]

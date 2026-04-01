@@ -176,12 +176,15 @@
   },
   "resolutions": {
     "axios": ">=1.8.2",
+    "brace-expansion": ">=5.0.5",
     "esbuild": ">=0.25.0",
     "form-data": ">=4.0.4",
     "glob": ">=10.5.0",
     "js-yaml": ">=4.1.1",
     "langsmith": ">=0.4.6",
     "lodash": ">=4.17.23",
+    "minimatch": ">=9.0.7",
+    "picomatch": ">=4.0.4",
     "tar": ">=7.5.8",
     "vite": ">=6.4.1 <7"
   }

@@ -89,7 +89,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Safety](#safety)
     - [Security](#security)
     - [Image](#image)
-    - [Voice](#voice) *(beta)*
+    - [Voice](#voice)
     - <details>
         <summary><a href="#rag">RAG</a></summary>
 
@@ -707,8 +707,6 @@ These prompts evaluate image content and its relation to the associated context.
 
 ### Voice
 
-> **Beta**: Voice prompts are in beta and may change in future releases.
-
 These prompts evaluate voice and audio content. All voice prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing audio data. Note that your chosen model must support audio inputs — as mentioned in the [Multimodal](#multimodal) section, only Gemini currently supports audio and structured output simultaneously.
 
 | Prompt | Parameters | What it evaluates |
@@ -723,7 +721,7 @@ Here's an example using `AUDIO_QUALITY_PROMPT`:
 ```ts
 import * as fs from "fs";
 import { createLLMAsJudge } from "openevals";
-import { AUDIO_QUALITY_PROMPT } from "openevals/experimental/prompts";
+import { AUDIO_QUALITY_PROMPT } from "openevals/prompts";
 
 const audioData = fs.readFileSync("audio.wav").toString("base64");
 

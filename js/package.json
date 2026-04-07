@@ -1,6 +1,6 @@
 {
   "name": "openevals",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "packageManager": "yarn@3.5.1",
   "type": "module",
   "license": "MIT",

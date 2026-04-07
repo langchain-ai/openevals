@@ -15,4 +15,4 @@ export * from "./trajectory/index.js";
 
 export * from "./types.js";
 
-export const __version__ = "0.1.5";
+export const __version__ = "0.2.0";

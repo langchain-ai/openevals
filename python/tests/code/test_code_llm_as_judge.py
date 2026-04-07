@@ -58,7 +58,6 @@ def _run_mypy(
 ```
 """,
             """
-```python
 async def _run_mypy_async(
     *,
     filepath: str,
@@ -74,7 +73,7 @@ async def _run_mypy_async(
     stdout, _ = await process.communicate()
 
     return _parse_mypy_output(stdout)
-```""",
+""",
             True,
         ),
         (

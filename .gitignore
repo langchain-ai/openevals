@@ -13,3 +13,7 @@ wheels/
 node_modules/
 .env
 .eslintcache
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/

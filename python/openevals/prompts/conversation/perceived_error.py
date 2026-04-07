@@ -1,27 +1,29 @@
-PERCEIVED_ERROR_PROMPT = """You are an expert conversation evaluator. You will be shown a full multi-turn conversation between a human user and an AI agent.
-Your task is to assess whether the user's responses suggest the agent made a mistake during the conversation.
+PERCEIVED_ERROR_PROMPT = """You are an expert evaluator analyzing user messages in a conversation to detect whether the user perceives the agent has made an error or is heading in the wrong direction. CRITICALLY, you must carefully read and check eligibility of the Golden Rule alongside the rubric items before generating a verdict.
 
 <Rubric>
-Signs the user perceived an error:
-- The user explicitly corrects the agent (e.g. "No, that's wrong", "You misunderstood me", "That's not what I asked")
-- The user repeats or rephrases the same request, suggesting the agent did not fulfill it
-- The user expresses frustration, confusion, or dissatisfaction directed at the agent's response
-- The user asks the agent to redo, undo, or fix something it just did
-- The conversation stalls or backtracks due to an agent misstep
+Strong signals of perceived error. Any of these conditions being met should qualify as perceived error:
+- Cursing, swearing, or insults at the agent
+- Requests to undo or redo ("revert that", "go back to", "start over")
+- Frustrated challenges to the agent ("why did you assume", "I never said", "where did you get that")
+- Many repeated corrections, specifically when the user has to repeat themselves many times.
 
-Signs the user did not perceive an error:
-- The user acknowledges or accepts the agent's response (e.g. "Thanks", "Perfect", "Got it")
-- The user continues the conversation naturally without correcting or repeating themselves
-- The user's follow-up questions build on the agent's response rather than challenging it
+Not perceived error:
+- Genuine follow-up questions building on the agent's response
+- Clarification from the user to specify their intent
+- Asking for more detail on a response
+- Collaborative discussion or debugging of results
 </Rubric>
 
 <Instructions>
-For each conversation:
-1. Read the full conversation, paying close attention to how the user responds after each agent turn
-2. Identify any signals in the user's language suggesting dissatisfaction, correction, or repetition
-3. Assess whether these signals indicate the agent made a mistake the user noticed
-4. Assign TRUE if there is evidence the user perceived an error, FALSE otherwise
+- Read the full conversation thread, focusing on user messages
+- Identify strong signals of perceived errors, or signals that there are no perceived errors
+- Identify moderate signals of perceived errors. The bar for moderate signals should be high - the user needing to clarify their intent, mild annoyance, or sparse repetitions of their asks do not qualify.
+- Conduct one final evaluation against the Golden Rule. Then, based on your analysis, return your verdict
 </Instructions>
+
+<GoldenRule>
+Ask: Did the user perceive the agent as making an unjustified mistake? The bar for lacking justification should be high to prevent noise - simple clarifications of intent, mild annoyance, or sparse repetitions are parts of normal collaboration. Carefully evaluate whether the user was dissatisfied with the agent's performance.
+</GoldenRule>
 
 Please grade the following conversation according to the above instructions:
 

@@ -31,3 +31,7 @@ export { LANGUAGE_DETECTION_PROMPT } from "./conversation/language_detection.js"
 export { SUPPORT_INTENT_PROMPT } from "./conversation/support_intent.js";
 export { EXPLICIT_CONTENT_PROMPT } from "./image/explicit_content.js";
 export { SENSITIVE_IMAGERY_PROMPT } from "./image/sensitive_imagery.js";
+export { AUDIO_QUALITY_PROMPT } from "./voice/audio_quality.js";
+export { TRANSCRIPTION_ACCURACY_PROMPT } from "./voice/transcription_accuracy.js";
+export { USER_INTERRUPTS_PROMPT } from "./voice/user_interrupts.js";
+export { VOCAL_AFFECT_PROMPT } from "./voice/vocal_affect.js";

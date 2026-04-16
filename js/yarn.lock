@@ -3258,9 +3258,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:>=0.5.18":
-  version: 0.5.18
-  resolution: "langsmith@npm:0.5.18"
+"langsmith@npm:>=0.5.19":
+  version: 0.5.20
+  resolution: "langsmith@npm:0.5.20"
   dependencies:
     p-queue: 6.6.2
     uuid: 10.0.0
@@ -3281,7 +3281,7 @@ __metadata:
       optional: true
     ws:
       optional: true
-  checksum: 07a22f4380076893088d51d0b7fdaecf74e4199b09a33dbb63b2709cc4b33d5fa1c73ee35ce2c954358ae566ae7d43ca0ae0d37a1b64d6739336b94796ad7b7b
+  checksum: aa73d770517f3c84536488828e539efc19a2e7d7c733ee7b727204a5530ea443f4575fc4c54c1e38bd9e7226873f88c6b91508e8b9b5e380ae9c9fc0a01acc4b
   languageName: node
   linkType: hard
 
@@ -3769,7 +3769,7 @@ __metadata:
     eslint-plugin-no-instanceof: ^1.0.1
     eslint-plugin-prettier: ^4.2.1
     langchain: ^1.2.27
-    langsmith: ">=0.5.18"
+    langsmith: ">=0.5.19"
     openai: ^5.19.1
     prettier: ^3.5.1
     typescript: ~5.1.6

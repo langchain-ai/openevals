@@ -25,7 +25,7 @@
     "@langchain/openai": ">=0.4.4",
     "langchain": ">=1.2.27",
     "langsmith": ">=0.5.19",
-    "uuid": "^11.1.0"
+    "uuid": "^14.0.0"
   },
   "peerDependencies": {
     "@langchain/core": ">=0.3.73",

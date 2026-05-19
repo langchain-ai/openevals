@@ -3258,12 +3258,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:>=0.5.19":
-  version: 0.5.20
-  resolution: "langsmith@npm:0.5.20"
+"langsmith@npm:>=0.6.0":
+  version: 0.6.3
+  resolution: "langsmith@npm:0.6.3"
   dependencies:
     p-queue: 6.6.2
-    uuid: 10.0.0
   peerDependencies:
     "@opentelemetry/api": "*"
     "@opentelemetry/exporter-trace-otlp-proto": "*"
@@ -3281,7 +3280,7 @@ __metadata:
       optional: true
     ws:
       optional: true
-  checksum: aa73d770517f3c84536488828e539efc19a2e7d7c733ee7b727204a5530ea443f4575fc4c54c1e38bd9e7226873f88c6b91508e8b9b5e380ae9c9fc0a01acc4b
+  checksum: 4666ba67459d5867fd7595fec2394d464ed5e72f1105e467e78ec04a690c537cde0e5b9e9bc4da84f02290962bab47799b6680fcb1766e334c3beaf55f0d7c53
   languageName: node
   linkType: hard
 
@@ -3769,7 +3768,7 @@ __metadata:
     eslint-plugin-no-instanceof: ^1.0.1
     eslint-plugin-prettier: ^4.2.1
     langchain: ^1.2.27
-    langsmith: ">=0.5.19"
+    langsmith: ">=0.6.0"
     openai: ^5.19.1
     prettier: ^3.5.1
     typescript: ~5.1.6
@@ -4981,7 +4980,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:10.0.0, uuid@npm:^10.0.0":
+"uuid@npm:^10.0.0":
   version: 10.0.0
   resolution: "uuid@npm:10.0.0"
   bin:

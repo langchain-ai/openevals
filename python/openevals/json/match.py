@@ -427,11 +427,10 @@ def create_json_match_evaluator(
         judge (ModelClient or BaseChatModel): The judge to use for the evaluation.
         model (str): The model to use for the evaluation.
         use_reasoning (bool): Whether to use reasoning for the keys in `rubric`. Defaults to True.
-        match_mode (Literal["subset_of_output", "subset_of_reference", "exact"]): The mode to use for the evaluation.
-            Defaults to "exact". If "exact", the evaluation will match every element of the outputs with a corresponding
-            element of the reference outputs and vice versa. If "subset_of_reference", the evaluation will match every element
-            of the outputs with a corresponding element of the reference outputs. If "subset_of_output", the evaluation will match
-            every element of the reference outputs with a corresponding element of the outputs.
+        list_match_mode (Literal["superset", "subset", "same_elements", "ordered"]): The mode to use for matching list elements.
+            Defaults to "same_elements". If "same_elements", matches every element of outputs with reference_outputs and vice versa.
+            If "subset", matches elements of outputs with reference_outputs. If "superset", matches elements of reference_outputs
+            with outputs. If "ordered", matches elements by their index position.
 
     Returns:
         A function that takes in outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults.
@@ -764,11 +763,10 @@ def create_async_json_match_evaluator(
         judge (ModelClient or BaseChatModel): The judge to use for the evaluation.
         model (str): The model to use for the evaluation.
         use_reasoning (bool): Whether to use reasoning for the keys in `rubric`. Defaults to True.
-        match_mode (Literal["subset_of_output", "subset_of_reference", "exact"]): The mode to use for the evaluation.
-            Defaults to "exact". If "exact", the evaluation will match every element of the outputs with a corresponding
-            element of the reference outputs and vice versa. If "subset_of_reference", the evaluation will match every element
-            of the outputs with a corresponding element of the reference outputs. If "subset_of_output", the evaluation will match
-            every element of the reference outputs with a corresponding element of the outputs.
+        list_match_mode (Literal["superset", "subset", "same_elements", "ordered"]): The mode to use for matching list elements.
+            Defaults to "same_elements". If "same_elements", matches every element of outputs with reference_outputs and vice versa.
+            If "subset", matches elements of outputs with reference_outputs. If "superset", matches elements of reference_outputs
+            with outputs. If "ordered", matches elements by their index position.
 
     Returns:
         A function that takes in outputs and reference_outputs and returns an EvaluatorResult or list of EvaluatorResults.

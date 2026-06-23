@@ -159,6 +159,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
 
     - [Evaluating structured output with exact match](#evaluating-structured-output-with-exact-match)
     - [Evaluating structured output with LLM-as-a-Judge](#evaluating-structured-output-with-llm-as-a-judge)
+    - [Nested objects](#nested-objects)
 
   </details>
 
@@ -2014,6 +2015,56 @@ Therefore, the list aggregator will return a final score of 0.
 ```
 
 </details>
+
+### Nested objects
+
+Nested object and array values are supported for exact-match evaluation. They are compared by deep equality as a whole value, so the nested value must match exactly.
+
+<details>
+<summary>Python</summary>
+
+```python
+from openevals.json import create_json_match_evaluator
+
+evaluator = create_json_match_evaluator(aggregator="all")
+
+matching_result = evaluator(
+    outputs={"foo": [{"bar": 1}]},
+    reference_outputs={"foo": [{"bar": 1}]},
+)
+mismatching_result = evaluator(
+    outputs={"foo": [{"bar": 2}]},
+    reference_outputs={"foo": [{"bar": 1}]},
+)
+
+print(matching_result[0]["score"])  # 1
+print(mismatching_result[0]["score"])  # 0
+```
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+```ts
+import { createJsonMatchEvaluator } from "openevals";
+
+const evaluator = createJsonMatchEvaluator({ aggregator: "all" });
+
+const matchingResult = await evaluator({
+  outputs: { foo: [{ bar: 1 }] },
+  referenceOutputs: { foo: [{ bar: 1 }] },
+});
+const mismatchingResult = await evaluator({
+  outputs: { foo: [{ bar: 2 }] },
+  referenceOutputs: { foo: [{ bar: 1 }] },
+});
+
+console.log(matchingResult[0].score); // 1
+console.log(mismatchingResult[0].score); // 0
+```
+</details>
+
+The `rubric` and `exclude_keys`/`excludeKeys` options target top-level keys only. They do not support nested paths such as `foo.bar` or `foo.0.bar`. To grade a nested sub-value with a rubric, either flatten the structure before evaluation or write a rubric entry for the top-level key that describes the expected nested value.
 
 ## Code
 

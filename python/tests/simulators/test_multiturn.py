@@ -29,6 +29,64 @@ import pytest
 
 # ── sync: unique patterns ──────────────────────────────────────────────────────
 
+
+def test_multiturn_app_can_return_multiple_messages():
+    def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        return [
+            {"role": "assistant", "content": "Let me check that.", "id": "assistant-1"},
+            {
+                "role": "assistant",
+                "content": f"Final answer for {inputs['content']}",
+                "id": "assistant-2",
+            },
+        ]
+
+    res = run_multiturn_simulation(
+        app=app,
+        user=["hello"],
+        max_turns=1,
+        thread_id="multiple-app-responses",
+    )
+
+    assert [(msg["role"], msg["content"]) for msg in res["trajectory"]] == [
+        ("user", "hello"),
+        ("assistant", "Let me check that."),
+        ("assistant", "Final answer for hello"),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_multiturn_async_app_can_return_multiple_messages():
+    async def app(inputs: ChatCompletionMessage, *, thread_id: str):
+        return {
+            "messages": [
+                {
+                    "role": "assistant",
+                    "content": "Searching records.",
+                    "id": "assistant-1",
+                },
+                {
+                    "role": "assistant",
+                    "content": f"Async final answer for {inputs['content']}",
+                    "id": "assistant-2",
+                },
+            ]
+        }
+
+    res = await run_multiturn_simulation_async(
+        app=app,
+        user=["hello"],
+        max_turns=1,
+        thread_id="multiple-async-app-responses",
+    )
+
+    assert [(msg["role"], msg["content"]) for msg in res["trajectory"]] == [
+        ("user", "hello"),
+        ("assistant", "Searching records."),
+        ("assistant", "Async final answer for hello"),
+    ]
+
+
 @pytest.mark.langsmith
 def test_multiturn_message_with_openai():
     """Sync raw OpenAI client app; agent refuses refunds so user is unsatisfied."""
@@ -75,8 +133,8 @@ def test_multiturn_message_with_openai():
     assert not res["evaluator_results"][0]["score"]
 
 
-
 # ── async tests ────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 @pytest.mark.langsmith

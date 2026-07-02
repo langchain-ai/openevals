@@ -1,6 +1,6 @@
 import uuid
 import asyncio
-from typing import Any, Awaitable, Callable, Literal, Optional, Union
+from typing import Any, Awaitable, Callable, Literal, Optional, Union, cast
 from openevals.types import (
     SimpleEvaluator,
     SimpleAsyncEvaluator,
@@ -18,6 +18,8 @@ from langsmith import traceable
 
 from langchain_core.messages import BaseMessage, BaseMessageChunk
 
+MessageUpdate = Union[Messages, list[Messages], dict]
+
 
 def _wrap(app: Callable[..., Any], run_name: str, thread_id: str) -> Callable:
     @traceable(name=run_name)
@@ -27,9 +29,7 @@ def _wrap(app: Callable[..., Any], run_name: str, thread_id: str) -> Callable:
     return _wrap_app
 
 
-def _awrap(
-    app: Callable[..., Awaitable[Any]], run_name: str, thread_id: str
-) -> Callable:
+def _awrap(app: Callable[..., Any], run_name: str, thread_id: str) -> Callable:
     @traceable(name=run_name)
     async def _wrap_app(inputs: ChatCompletionMessage, **kwargs):
         if asyncio.iscoroutinefunction(app):
@@ -50,7 +50,7 @@ def _coerce_and_assign_id_to_message(
 
 def _trajectory_reducer(
     current_trajectory: Optional[dict],
-    new_update: ChatCompletionMessage,
+    new_update: MessageUpdate,
     *,
     update_source: Literal["app", "user"],
     turn_counter: Optional[int] = None,
@@ -85,7 +85,7 @@ def _trajectory_reducer(
         current_trajectory = {"trajectory": []}
 
     try:
-        coerced_new_update = _normalize_to_openai_messages_list(new_update)
+        coerced_new_update = _normalize_to_openai_messages_list(cast(Any, new_update))
     except ValueError:
         raise ValueError(
             f"Received unexpected trajectory update from '{update_source}': {str(new_update)}. Expected a message, list of messages, or dictionary with a 'messages' key containing messages."
@@ -130,7 +130,7 @@ def _create_static_simulated_user(
 @traceable(name="multiturn_simulator")
 def run_multiturn_simulation(
     *,
-    app: Callable[[ChatCompletionMessage], ChatCompletionMessage],
+    app: Callable[[ChatCompletionMessage], MessageUpdate],
     user: Union[
         Callable[[ChatCompletionMessage], ChatCompletionMessage],
         list[Union[str, Messages]],
@@ -228,11 +228,10 @@ def run_multiturn_simulation(
             turn_counter=turn_counter,
         )
         raw_outputs = wrapped_app(current_inputs)
-        current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
         turn_counter += 1
         current_reduced_trajectory = _trajectory_reducer(
             current_reduced_trajectory,
-            current_outputs,
+            raw_outputs,
             update_source="app",
             turn_counter=turn_counter,
         )
@@ -263,7 +262,9 @@ def run_multiturn_simulation(
 @traceable(name="multiturn_simulator")
 async def run_multiturn_simulation_async(
     *,
-    app: Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
+    app: Callable[
+        [ChatCompletionMessage], Union[Awaitable[MessageUpdate], MessageUpdate]
+    ],
     user: Union[
         Callable[[ChatCompletionMessage], Awaitable[ChatCompletionMessage]],
         list[Union[str, Messages]],
@@ -361,11 +362,10 @@ async def run_multiturn_simulation_async(
             turn_counter=turn_counter,
         )
         raw_outputs = await wrapped_app(current_inputs)
-        current_outputs = _coerce_and_assign_id_to_message(raw_outputs)
         turn_counter += 1
         current_reduced_trajectory = _trajectory_reducer(
             current_reduced_trajectory,
-            current_outputs,
+            raw_outputs,
             update_source="app",
             turn_counter=turn_counter,
         )

@@ -16,14 +16,13 @@ import {
 
 export { MultiturnSimulationResult };
 
+type MessageUpdate = Messages | Messages[] | { messages: Messages[] };
+
 export type MultiturnSimulationParams = {
   app: (params: {
     inputs: ChatCompletionMessage;
     threadId: string;
-  }) =>
-    | ChatCompletionMessage
-    | BaseMessage
-    | Promise<ChatCompletionMessage | BaseMessage>;
+  }) => MessageUpdate | Promise<MessageUpdate>;
   user:
     | ((params: {
         trajectory: ChatCompletionMessage[];
@@ -49,12 +48,7 @@ type MultiturnSimulatorTrajectory = Record<string, unknown> & {
 };
 
 function _wrap<T extends Record<string, unknown>>(
-  app: (
-    params: T
-  ) =>
-    | ChatCompletionMessage
-    | BaseMessage
-    | Promise<ChatCompletionMessage | BaseMessage>,
+  app: (params: T) => MessageUpdate | Promise<MessageUpdate>,
   runName: string,
   threadId: string
 ) {
@@ -79,7 +73,7 @@ function _coerceAndAssignIdToMessage(
 
 function _trajectoryReducer(
   currentTrajectory: MultiturnSimulatorTrajectory | null,
-  newUpdate: ChatCompletionMessage,
+  newUpdate: MessageUpdate,
   updateSource: "app" | "user",
   turnCounter: number
 ): MultiturnSimulatorTrajectory {
@@ -190,8 +184,8 @@ function _createStaticSimulatedUser(
  *
  * Conversation trajectories are represented as lists of message objects with "role" and "content" keys.
  * The "app" param you provide will receive the next message in sequence as an input, and should
- * return a message. Internally, the simulation will dedupe these messages by id and merge them into
- * a complete trajectory.
+ * return a message, list of messages, or object with a "messages" key. Internally, the simulation
+ * will dedupe these messages by id and merge them into a complete trajectory.
  *
  * Once "maxTurns" is reached or a provided stopping condition is met, the final trajectory
  * will be passed to provided trajectory evaluators, which will receive the final trajectory
@@ -201,7 +195,7 @@ function _createStaticSimulatedUser(
  * which will be passed directly through to the provided evaluators.
  *
  * @param {Object} params - Configuration parameters for the simulator
- * @param {(params: {inputs: ChatCompletionMessage, threadId: string}) => ChatCompletionMessage | Promise<ChatCompletionMessage>} params.app - Your application. Can be either a LangChain Runnable or a
+ * @param {(params: {inputs: ChatCompletionMessage, threadId: string}) => ChatCompletionMessage | ChatCompletionMessage[] | { messages: ChatCompletionMessage[] } | Promise<ChatCompletionMessage | ChatCompletionMessage[] | { messages: ChatCompletionMessage[] }>} params.app - Your application. Can be either a LangChain Runnable or a
  *        callable that takes the current conversation trajectory and returns
  *        a message.
  * @param {(params: {trajectory: ChatCompletionMessage[], turnCounter: number, threadId: string}) => ChatCompletionMessage | Promise<ChatCompletionMessage> | (string | Messages)[]} params.user - The simulated user. Can be:
@@ -285,7 +279,9 @@ export const runMultiturnSimulation = async (
           threadId,
         });
 
-        const currentInputs = _coerceAndAssignIdToMessage(rawInputs);
+        const currentInputs = _coerceAndAssignIdToMessage(
+          rawInputs as ChatCompletionMessage | BaseMessage
+        );
 
         currentReducedTrajectory = _trajectoryReducer(
           currentReducedTrajectory,
@@ -299,13 +295,11 @@ export const runMultiturnSimulation = async (
           threadId,
         });
 
-        const currentOutputs = _coerceAndAssignIdToMessage(rawOutputs);
-
         turnCounter += 1;
 
         currentReducedTrajectory = _trajectoryReducer(
           currentReducedTrajectory,
-          currentOutputs,
+          rawOutputs,
           "app",
           turnCounter
         );

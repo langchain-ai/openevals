@@ -18,7 +18,7 @@ To get started, install `openevals`:
 npm install openevals @langchain/core
 ```
 
-This quickstart will use an evaluator powered by OpenAI's `gpt-5.4` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
+This quickstart will use an evaluator powered by OpenAI's `gpt-4o` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
 
 ```bash
 export OPENAI_API_KEY="your_openai_api_key"
@@ -32,7 +32,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   // CONCISENESS_PROMPT is just an f-string
   prompt: CONCISENESS_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const inputs = "How is the weather in San Francisco?"
@@ -205,7 +205,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 ```
 
@@ -264,7 +264,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 const customPromptEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const inputs = "What color is the sky?"
@@ -312,7 +312,7 @@ const prompt = ChatPromptTemplate.fromMessages([
 
 const evaluator = createLLMAsJudge({
   prompt,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
   feedbackKey: "equality",
 });
 
@@ -372,7 +372,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const openaiEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "gpt-5.4",
+  model: "gpt-4o",
   judge: new OpenAI(),
 });
 ```
@@ -417,7 +417,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 const customEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
   choices: [0.0, 0.5, 1.0],
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const result = await customEvaluator({
@@ -479,7 +479,7 @@ const outputs = "The rain in Spain falls mainly on the plain.";
 
 const llmAsJudge = createLLMAsJudge({
   prompt: "Are the following two values equal? {inputs} {outputs}",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
   outputSchema: equalitySchema,
 });
 
@@ -538,7 +538,7 @@ import { createLLMAsJudge, IMAGE_RELEVANCE_PROMPT } from "openevals";
 const evaluator = createLLMAsJudge({
   prompt: IMAGE_RELEVANCE_PROMPT,
   feedbackKey: "image_relevance",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 // Option A: pass a URL string directly
@@ -599,7 +599,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const inputs = "How much has the price of doodads changed in the past year?";
@@ -640,7 +640,7 @@ import { createLLMAsJudge, FAIRNESS_PROMPT } from "openevals";
 const fairnessEvaluator = createLLMAsJudge({
   prompt: FAIRNESS_PROMPT,
   feedbackKey: "fairness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const evalResult = await fairnessEvaluator({
@@ -677,7 +677,7 @@ import { createLLMAsJudge, PII_LEAKAGE_PROMPT } from "openevals";
 const piiEvaluator = createLLMAsJudge({
   prompt: PII_LEAKAGE_PROMPT,
   feedbackKey: "pii_leakage",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const evalResult = await piiEvaluator({
@@ -698,7 +698,7 @@ console.log(evalResult);
 
 ### Image
 
-These prompts evaluate image content and its relation to the associated context. All image prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing image data. Note that your chosen model must support vision inputs (e.g. `openai:gpt-5.4`).
+These prompts evaluate image content and its relation to the associated context. All image prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing image data. Note that your chosen model must support vision inputs (e.g. `openai:gpt-4o`).
 
 | Prompt | Parameters | What it evaluates |
 |--------|-----------|-------------------|
@@ -787,7 +787,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const inputs = "How much has the price of doodads changed in the past year?";
@@ -833,7 +833,7 @@ const outputs = {
 const helpfulnessEvaluator = createLLMAsJudge({
   prompt: RAG_HELPFULNESS_PROMPT,
   feedbackKey: "helpfulness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const evalResult = await helpfulnessEvaluator({
@@ -864,7 +864,7 @@ import { createLLMAsJudge, RAG_GROUNDEDNESS_PROMPT } from "openevals";
 const groundednessEvaluator = createLLMAsJudge({
   prompt: RAG_GROUNDEDNESS_PROMPT,
   feedbackKey: "groundedness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const context = {
@@ -911,7 +911,7 @@ import { createLLMAsJudge, RAG_RETRIEVAL_RELEVANCE_PROMPT } from "openevals";
 const retrievalRelevanceEvaluator = createLLMAsJudge({
   prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
   feedbackKey: "retrieval_relevance",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const inputs = {
@@ -1023,7 +1023,7 @@ const evaluator = createJsonMatchEvaluator({
     exclude_keys=["a"],
     // The provider and name of the model to use
     judge: client,
-    model: "openai:gpt-5.4",
+    model: "openai:gpt-4o",
 })
 
 // Invoke the evaluator with the outputs and reference outputs
@@ -1082,7 +1082,7 @@ const evaluator = createJsonMatchEvaluator({
     exclude_keys=["c"],
     // The provider and name of the model to use
     judge: client,
-    model: "openai:gpt-5.4",
+    model: "openai:gpt-4o",
     // Whether to use reasoning to reason about the keys in `rubric`. Defaults to True
     useReasoning: true
 })
@@ -1270,7 +1270,7 @@ import { createCodeLLMAsJudge, CODE_CORRECTNESS_PROMPT } from "openevals";
 
 const evaluator = createCodeLLMAsJudge({
   prompt: CODE_CORRECTNESS_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const inputs = `Add proper TypeScript types to the following code:
@@ -1755,7 +1755,7 @@ import {
 
 const evaluator = createTrajectoryLLMAsJudge({
   prompt: TRAJECTORY_ACCURACY_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const outputs = [
@@ -1788,7 +1788,7 @@ import {
 
 const evaluator = createTrajectoryLLMAsJudge({
   prompt: TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const outputs = [
@@ -1868,7 +1868,7 @@ import { createLLMAsJudge, TASK_COMPLETION_PROMPT } from "openevals";
 const evaluator = createLLMAsJudge({
   prompt: TASK_COMPLETION_PROMPT,
   feedbackKey: "task_completion",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const outputs = [
@@ -1900,7 +1900,7 @@ const languageDetectionSchema = z.object({
 const evaluator = createLLMAsJudge({
   prompt: LANGUAGE_DETECTION_PROMPT,
   feedbackKey: "language_detection",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
   outputSchema: languageDetectionSchema,
 });
 
@@ -2092,7 +2092,7 @@ from openevals.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
-    model="openai:gpt-5.4",
+    model="openai:gpt-4o",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -2106,7 +2106,7 @@ from openai import AsyncOpenAI
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
     judge=AsyncOpenAI(),
-    model="gpt-5.4",
+    model="gpt-4o",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -2144,7 +2144,7 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
   }
   history[threadId].push(inputs);
   const res = await client.chat.completions.create({
-    model: "gpt-5.4",
+    model: "gpt-4o",
     messages: [
       {
         role: "system",
@@ -2161,11 +2161,11 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
   prompt: "Based on the below conversation, was the user satisfied?\n{outputs}",
   feedbackKey: "satisfaction",
 });
@@ -2267,7 +2267,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 ```
 
@@ -2278,7 +2278,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an angry and belligerent customer who wants a refund.",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
   fixedResponses: [
     {"role": "user", "content": "I demand a refund for my bike!"},
     {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -2364,7 +2364,7 @@ const giveRefund = tool(
 
 // Create a React-style agent
 const agent = createReactAgent({
-  llm: await initChatModel("openai:gpt-5.4"),
+  llm: await initChatModel("openai:gpt-4o"),
   tools: [giveRefund],
   prompt:
     "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
@@ -2386,11 +2386,11 @@ const app = async ({
 const user = createLLMSimulatedUser({
   system:
     "You are an angry user who is frustrated with the service and keeps making additional demands.",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
   prompt:
     "Based on the below conversation, has the user been satisfied?\n{outputs}",
   feedbackKey: "satisfaction",
@@ -2472,7 +2472,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 ls.describe("Correctness", () => {
@@ -2523,7 +2523,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   prompt: CONCISENESS_PROMPT,
   feedbackKey: "conciseness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-4o",
 });
 
 const wrappedConcisenessEvaluator = async (params: {

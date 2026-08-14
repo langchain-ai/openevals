@@ -13,6 +13,49 @@ import type { ChatCompletionMessage } from "../../index.js";
 
 ls.describe("Multiturn simulator", () => {
   ls.test(
+    "multiturn_app_can_return_multiple_messages",
+    {
+      inputs: {},
+    },
+    async () => {
+      const app = async ({
+        inputs,
+      }: {
+        inputs: ChatCompletionMessage;
+        threadId: string;
+      }) => {
+        return [
+          {
+            role: "assistant" as const,
+            content: "Let me check that.",
+            id: "assistant-1",
+          },
+          {
+            role: "assistant" as const,
+            content: `Final answer for ${inputs.content}`,
+            id: "assistant-2",
+          },
+        ];
+      };
+
+      const result = await runMultiturnSimulation({
+        app,
+        user: ["hello"],
+        maxTurns: 1,
+        threadId: "multiple-app-responses",
+      });
+
+      expect(
+        result.trajectory.map(({ role, content }) => ({ role, content }))
+      ).toEqual([
+        { role: "user", content: "hello" },
+        { role: "assistant", content: "Let me check that." },
+        { role: "assistant", content: "Final answer for hello" },
+      ]);
+    }
+  );
+
+  ls.test(
     "multiturn_failure",
     {
       inputs: {

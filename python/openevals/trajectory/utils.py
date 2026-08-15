@@ -172,21 +172,27 @@ def _get_matcher_for_comparison_mode(
 
 
 def _get_partial_matcher_on_keys(keys: list[str]) -> Callable[[dict, dict], bool]:
+    missing = object()
+
     def get_nested_value(d: dict, key_path: str):
         current = d
         for part in key_path.split("."):
-            if not isinstance(current, dict):
-                return None
-            current = current.get(part)  # type: ignore
-            if current is None:
-                return None
+            if not isinstance(current, dict) or part not in current:
+                return missing
+            current = current[part]  # type: ignore
         return current
 
     def matcher(output_call: dict, reference_call: dict) -> bool:
-        return all(
-            get_nested_value(output_call, key) == get_nested_value(reference_call, key)
-            for key in keys
-        )
+        for key in keys:
+            output_value = get_nested_value(output_call, key)
+            reference_value = get_nested_value(reference_call, key)
+            if (
+                output_value is missing
+                or reference_value is missing
+                or output_value != reference_value
+            ):
+                return False
+        return True
 
     return matcher
 

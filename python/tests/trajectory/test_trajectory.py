@@ -480,3 +480,45 @@ def test_trajectory_match_with_nested_field_overrides():
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["score"] is True
+
+
+@pytest.mark.langsmith
+def test_trajectory_match_with_nested_field_overrides_requires_key():
+    outputs = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "function": {
+                        "name": "lookup_policy",
+                        "arguments": json.dumps(
+                            {"time": {"end": "2025-03-22T20:34:40Z"}}
+                        ),
+                    }
+                }
+            ],
+        },
+    ]
+    reference_outputs = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "function": {
+                        "name": "lookup_policy",
+                        "arguments": json.dumps(
+                            {"time": {"end": "2025-03-22T20:34:40Z"}}
+                        ),
+                    }
+                }
+            ],
+        },
+    ]
+    evaluator = create_trajectory_match_evaluator(
+        trajectory_match_mode="strict",
+        tool_args_match_overrides={"lookup_policy": ["time.start"]},
+    )
+    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    assert result["score"] is False

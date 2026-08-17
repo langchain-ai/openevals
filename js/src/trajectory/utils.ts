@@ -170,16 +170,18 @@ function _getMatcherForComparisonMode(
 }
 
 function _getPartialMatcherOnKeys(keys: string[]): ToolArgsMatcher {
+  const missing = Symbol("missing");
+
   const getNestedValue = (
     d: Record<string, unknown>,
     keyPath: string
-  ): unknown => {
+  ): unknown | typeof missing => {
     let current: unknown = d;
     for (const part of keyPath.split(".")) {
       if (current && typeof current === "object" && part in current) {
         current = current[part as keyof typeof current];
       } else {
-        return undefined;
+        return missing;
       }
     }
     return current;
@@ -192,7 +194,11 @@ function _getPartialMatcherOnKeys(keys: string[]): ToolArgsMatcher {
     return keys.every((key) => {
       const nestedOutputValue = getNestedValue(outputCall, key);
       const nestedReferenceValue = getNestedValue(referenceCall, key);
-      return _deepEqual(nestedOutputValue, nestedReferenceValue);
+      return (
+        nestedOutputValue !== missing &&
+        nestedReferenceValue !== missing &&
+        _deepEqual(nestedOutputValue, nestedReferenceValue)
+      );
     });
   };
 }

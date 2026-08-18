@@ -4437,6 +4437,8 @@ Alternatively, you can [create a dataset in LangSmith](https://docs.langchain.co
 <summary>Python</summary>
 
 ```python
+from typing import Any
+
 from langsmith import Client
 from openevals.llm import create_llm_as_judge
 from openevals.prompts import CONCISENESS_PROMPT
@@ -4450,20 +4452,27 @@ conciseness_evaluator = create_llm_as_judge(
 )
 
 def wrapped_conciseness_evaluator(
-    inputs: dict,
-    outputs: dict,
+    inputs: dict[str, Any],
+    outputs: dict[str, Any],
     # Unused for this evaluator
-    reference_outputs: dict,
-):
+    reference_outputs: dict[str, Any],
+) -> dict[str, Any]:
     eval_result = conciseness_evaluator(
         inputs=inputs,
         outputs=outputs,
     )
-    return eval_result
+    if isinstance(eval_result, list):
+        raise TypeError("Expected a single evaluation result")
+    return dict(eval_result)
+
+
+def target(inputs: dict[str, Any]) -> Any:
+    # This is a dummy target function, replace with your actual LLM-based system
+    return "What color is the sky?"
+
 
 experiment_results = client.evaluate(
-    # This is a dummy target function, replace with your actual LLM-based system
-    lambda inputs: "What color is the sky?",
+    target,
     data="Sample dataset",
     evaluators=[
         wrapped_conciseness_evaluator

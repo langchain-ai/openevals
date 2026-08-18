@@ -28,6 +28,29 @@ ls.describe("json", () => {
   );
 
   ls.test(
+    "test json match nested objects and arrays",
+    {
+      inputs: { foo: [{ bar: 1, baz: [true, null] }] },
+      referenceOutputs: { foo: [{ bar: 1, baz: [true, null] }] },
+    },
+    async ({ inputs, referenceOutputs }) => {
+      const evaluator = createJsonMatchEvaluator({ aggregator: "all" });
+
+      const matchingResult = await evaluator({
+        outputs: inputs,
+        referenceOutputs,
+      });
+      const mismatchingResult = await evaluator({
+        outputs: { foo: [{ bar: 2, baz: [true, null] }] },
+        referenceOutputs,
+      });
+
+      expect(matchingResult[0].score).toBe(1);
+      expect(mismatchingResult[0].score).toBe(0);
+    }
+  );
+
+  ls.test(
     "test json match mix",
     {
       inputs: { a: "Mango, Bananas", b: 2 },
@@ -770,6 +793,33 @@ ls.describe("json", () => {
       expect(result).toBeDefined();
       expect(result[0].key).toBe("json_match:average");
       expect(result[0].score).toBe(2 / 3);
+    }
+  );
+
+  ls.test(
+    "test json match mode unordered with nested values",
+    {
+      inputs: {
+        inputs: [
+          { id: { value: 1 }, result: "a" },
+          { id: { value: 2 }, result: "b" },
+        ],
+      },
+      referenceOutputs: {
+        referenceOutputs: [
+          { id: { value: 2 }, result: "b" },
+          { id: { value: 1 }, result: "a" },
+        ],
+      },
+    },
+    async ({ inputs, referenceOutputs }) => {
+      const evaluator = createJsonMatchEvaluator({ aggregator: "all" });
+      const result = await evaluator({
+        outputs: inputs.inputs,
+        referenceOutputs: referenceOutputs?.referenceOutputs,
+      });
+
+      expect(result[0].score).toBe(1);
     }
   );
 

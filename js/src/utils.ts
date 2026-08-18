@@ -21,6 +21,41 @@ const {
   convertMessagesToCompletionsMessageParams,
 } = openAIImports;
 
+export function _deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (
+    a === null ||
+    b === null ||
+    typeof a !== "object" ||
+    typeof b !== "object"
+  ) {
+    return false;
+  }
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return (
+      Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((value, index) => _deepEqual(value, b[index]))
+    );
+  }
+
+  const aRecord = a as Record<string, unknown>;
+  const bRecord = b as Record<string, unknown>;
+  const aKeys = Object.keys(aRecord);
+  const bKeys = Object.keys(bRecord);
+  return (
+    aKeys.length === bKeys.length &&
+    aKeys.every(
+      (key) =>
+        Object.prototype.hasOwnProperty.call(bRecord, key) &&
+        _deepEqual(aRecord[key], bRecord[key])
+    )
+  );
+}
+
 function _convertMessagesShim(message: BaseMessage) {
   if (typeof _convertMessagesToOpenAIParams === "function") {
     return _convertMessagesToOpenAIParams([

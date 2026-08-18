@@ -4,6 +4,7 @@ import {
   ToolArgsMatchOverrides,
   ToolArgsMatcher,
 } from "../types.js";
+import { _deepEqual } from "../utils.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _normalizeToolCall(toolCall: Record<string, any>): {
@@ -90,34 +91,6 @@ export async function _isTrajectorySuperset(
   }
 
   return true;
-}
-
-// Deep equality check function
-function _deepEqual(a: unknown, b: unknown): boolean {
-  if (a == null && b == null) return true;
-  if (a === b) return true;
-  if (typeof a !== "object" || typeof b !== "object" || !a || !b) return false;
-
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    return a.every((val, index) => _deepEqual(val, b[index]));
-  }
-
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
-
-  if (keysA.length !== keysB.length) return false;
-
-  return (
-    keysA.every((key) => keysB.includes(key)) &&
-    keysB.every((key) => keysA.includes(key)) &&
-    keysA.every((key) =>
-      _deepEqual(
-        (a as Record<string, unknown>)[key],
-        (b as Record<string, unknown>)[key]
-      )
-    )
-  );
 }
 
 function _exactMatch(

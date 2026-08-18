@@ -108,6 +108,7 @@ def _prepare_parameters(
             matched_references = set()
 
             for i, ref_item in enumerate(reference_outputs):
+                best_match_idx = None
                 best_match_score = -1
 
                 # Try each available output item

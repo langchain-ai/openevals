@@ -508,6 +508,18 @@ def test_json_match_mode_subset_outputs():
 
 
 @pytest.mark.langsmith
+def test_json_match_mode_superset_empty_outputs():
+    evaluator = create_json_match_evaluator(
+        list_aggregator="average",
+        aggregator="average",
+        list_match_mode="superset",
+    )
+    result = evaluator(outputs=[], reference_outputs=[{"a": 1}])
+    assert result[0]["key"] == "json_match:average"
+    assert result[0]["score"] == 0
+
+
+@pytest.mark.langsmith
 def test_json_match_mode_subset_reference():
     outputs = [
         {"a": 1},

@@ -184,7 +184,9 @@ async def test_trajectory_match_strict_params(tool_args_match_mode, score):
         HumanMessage("What is the weather in SF?"),
         AIMessage(
             content="",
-            tool_calls=[{"id": "1234", "name": "get_weather", "args": {"city": "San Francisco"}}],
+            tool_calls=[
+                {"id": "1234", "name": "get_weather", "args": {"city": "San Francisco"}}
+            ],
         ),
         ToolMessage(tool_call_id="1234", content="It's 80 degrees and sunny in SF."),
         AIMessage("The weather in SF is 80 degrees and sunny."),
@@ -206,10 +208,15 @@ async def test_trajectory_match_with_nested_field_overrides():
                 {
                     "function": {
                         "name": "lookup_policy",
-                        "arguments": json.dumps({
-                            "query": "flight upgrades",
-                            "time": {"start": "2025-03-22T18:34:40Z", "end": "2025-03-22T20:34:40Z"},
-                        }),
+                        "arguments": json.dumps(
+                            {
+                                "query": "flight upgrades",
+                                "time": {
+                                    "start": "2025-03-22T18:34:40Z",
+                                    "end": "2025-03-22T20:34:40Z",
+                                },
+                            }
+                        ),
                     }
                 }
             ],
@@ -225,10 +232,12 @@ async def test_trajectory_match_with_nested_field_overrides():
                 {
                     "function": {
                         "name": "lookup_policy",
-                        "arguments": json.dumps({
-                            "query": "foo",
-                            "time": {"start": "2025-03-22T18:34:40Z", "end": "baz"},
-                        }),
+                        "arguments": json.dumps(
+                            {
+                                "query": "foo",
+                                "time": {"start": "2025-03-22T18:34:40Z", "end": "baz"},
+                            }
+                        ),
                     }
                 }
             ],

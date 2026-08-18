@@ -71,6 +71,11 @@ jobs:
         shell: bash
         working-directory: python
 
+      - name: Check Python formatting
+        run: uv run ruff format --check .
+        shell: bash
+        working-directory: python
+
       - name: Run integration tests
         if: >
           github.actor != 'dependabot[bot]' && (
@@ -86,6 +91,7 @@ jobs:
           LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: uv run pytest tests
         shell: bash
@@ -113,6 +119,11 @@ jobs:
         shell: bash
         working-directory: js
 
+      - name: Check JS formatting
+        run: yarn format:check
+        shell: bash
+        working-directory: js
+
       - name: Run JS integration tests
         if: >
           github.actor != 'dependabot[bot]' && (
@@ -128,6 +139,7 @@ jobs:
           LANGSMITH_ENDPOINT: ${{ secrets.LANGSMITH_ENDPOINT }}
           LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: yarn test
         shell: bash

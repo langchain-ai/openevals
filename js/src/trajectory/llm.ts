@@ -8,9 +8,7 @@ import {
   FlexibleChatCompletionMessage,
   EvaluatorResult,
 } from "../types.js";
-import {
-  TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-} from "../prompts/trajectory/accuracy.js";
+import { TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE } from "../prompts/trajectory/accuracy.js";
 
 export { TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE } from "../prompts/trajectory/accuracy.js";
 export { TRAJECTORY_ACCURACY_PROMPT } from "../prompts/trajectory/accuracy.js";

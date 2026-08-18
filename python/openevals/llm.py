@@ -205,9 +205,15 @@ def _create_llm_as_judge_scorer(
             if attachments is not None:
                 before_template, _, after_template = prompt.partition("{attachments}")
                 before = before_template.format(**filtered_prompt_params)
-                after = after_template.format(**filtered_prompt_params) if after_template else ""
+                after = (
+                    after_template.format(**filtered_prompt_params)
+                    if after_template
+                    else ""
+                )
                 items = attachments if isinstance(attachments, list) else [attachments]
-                attachment_blocks = [_attachment_to_content_block(item) for item in items]
+                attachment_blocks = [
+                    _attachment_to_content_block(item) for item in items
+                ]
                 content: list = []
                 if before:
                     content.append({"type": "text", "text": before})
@@ -254,15 +260,20 @@ def _create_llm_as_judge_scorer(
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
-            _schema = schema if schema is not None else {
-                "title": "score",
-                "description": description,
-                **default_json_schema,
-            }
+            _schema = (
+                schema
+                if schema is not None
+                else {
+                    "title": "score",
+                    "description": description,
+                    **default_json_schema,
+                }
+            )
             judge_with_structured_output = judge.with_structured_output(_schema)
             normalized_messages = [
                 {**msg, "content": _normalize_content_blocks(msg["content"])}  # type: ignore[arg-type]
-                if isinstance(msg.get("content"), list) else msg
+                if isinstance(msg.get("content"), list)
+                else msg
                 for msg in messages
             ]
             response = judge_with_structured_output.invoke(normalized_messages)  # type: ignore
@@ -391,9 +402,15 @@ def _create_async_llm_as_judge_scorer(
             if attachments is not None:
                 before_template, _, after_template = prompt.partition("{attachments}")
                 before = before_template.format(**filtered_prompt_params)
-                after = after_template.format(**filtered_prompt_params) if after_template else ""
+                after = (
+                    after_template.format(**filtered_prompt_params)
+                    if after_template
+                    else ""
+                )
                 items = attachments if isinstance(attachments, list) else [attachments]
-                attachment_blocks = [_attachment_to_content_block(item) for item in items]
+                attachment_blocks = [
+                    _attachment_to_content_block(item) for item in items
+                ]
                 content: list = []
                 if before:
                     content.append({"type": "text", "text": before})
@@ -440,15 +457,20 @@ def _create_async_llm_as_judge_scorer(
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
-            _schema = schema if schema is not None else {
-                "title": "score",
-                "description": description,
-                **default_json_schema,
-            }
+            _schema = (
+                schema
+                if schema is not None
+                else {
+                    "title": "score",
+                    "description": description,
+                    **default_json_schema,
+                }
+            )
             judge_with_structured_output = judge.with_structured_output(_schema)
             normalized_messages = [
                 {**msg, "content": _normalize_content_blocks(msg["content"])}  # type: ignore[arg-type]
-                if isinstance(msg.get("content"), list) else msg
+                if isinstance(msg.get("content"), list)
+                else msg
                 for msg in messages
             ]
             response = await judge_with_structured_output.ainvoke(normalized_messages)  # type: ignore

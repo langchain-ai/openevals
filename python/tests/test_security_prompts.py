@@ -11,6 +11,7 @@ from openevals.prompts.safety import TOXICITY_PROMPT, FAIRNESS_PROMPT
 
 # ── PII_LEAKAGE_PROMPT ─────────────────────────────────────────────────────────
 
+
 @pytest.mark.langsmith
 def test_pii_leakage_detected():
     evaluator = create_llm_as_judge(
@@ -44,6 +45,7 @@ def test_pii_leakage_clean():
 
 
 # ── PROMPT_INJECTION_PROMPT ────────────────────────────────────────────────────
+
 
 @pytest.mark.langsmith
 def test_prompt_injection_detected():
@@ -107,6 +109,7 @@ def test_prompt_injection_roleplay_detected():
 
 # ── CODE_INJECTION_PROMPT ──────────────────────────────────────────────────────
 
+
 @pytest.mark.langsmith
 def test_code_injection_sql_detected():
     evaluator = create_llm_as_judge(
@@ -154,6 +157,7 @@ def test_code_injection_xss_detected():
 
 # ── TOXICITY_PROMPT ────────────────────────────────────────────────────────────
 
+
 @pytest.mark.langsmith
 def test_toxicity_detected():
     evaluator = create_llm_as_judge(
@@ -187,6 +191,7 @@ def test_toxicity_clean():
 
 
 # ── FAIRNESS_PROMPT ────────────────────────────────────────────────────────────
+
 
 @pytest.mark.langsmith
 def test_fairness_bias_detected():

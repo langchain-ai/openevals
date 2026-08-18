@@ -18,7 +18,7 @@ To get started, install `openevals`:
 npm install openevals @langchain/core
 ```
 
-This quickstart will use an evaluator powered by OpenAI's `gpt-5.4` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
+This quickstart will use an evaluator powered by OpenAI's `gpt-5.6-sol` model to judge your results, so you'll need to set your OpenAI API key as an environment variable:
 
 ```bash
 export OPENAI_API_KEY="your_openai_api_key"
@@ -32,7 +32,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   // CONCISENESS_PROMPT is just an f-string
   prompt: CONCISENESS_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const inputs = "How is the weather in San Francisco?"
@@ -198,14 +198,14 @@ One common way to evaluate an LLM app's outputs is to use another LLM as a judge
 This package contains the `create_llm_as_judge` function, which takes a prompt and a model as input, and returns an evaluator function
 that handles converting parameters into strings and parsing the judge LLM's outputs as a score.
 
-To use the `create_llm_as_judge` function, you need to provide a prompt and a model. OpenEvals includes many prebuilt prompts for common evaluation scenarios — see the [Prebuilt prompts](#prebuilt-prompts) section for a full list. Here's an example:
+To use the `create_llm_as_judge` function, you need to provide a prompt and a model. To get started, OpenEvals has some prebuilt prompts in the `openevals.prompts` module that you can use out of the box. Here's an example:
 
 ```ts
 import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 ```
 
@@ -234,8 +234,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 
 By convention, we generally suggest sticking to `inputs`, `outputs`, and `reference_outputs` as the names of the parameters for LLM-as-judge evaluators, but these will be directly formatted into the prompt so you can use any variable names you want.
 
-
-OpenEvals includes prebuilt prompts for common evaluation scenarios. See the [Prebuilt prompts](#prebuilt-prompts) section for a full list organized by category.
+OpenEvals includes many prebuilt prompts for common evaluation scenarios. See the [Prebuilt prompts](#prebuilt-prompts) section for a full list organized by category.
 
 ### Customizing prompts
 
@@ -264,7 +263,7 @@ Use the following context to help you evaluate for hallucinations in the output:
 
 const customPromptEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const inputs = "What color is the sky?"
@@ -312,7 +311,7 @@ const prompt = ChatPromptTemplate.fromMessages([
 
 const evaluator = createLLMAsJudge({
   prompt,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
   feedbackKey: "equality",
 });
 
@@ -372,7 +371,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 
 const openaiEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
-  model: "gpt-5.4",
+  model: "gpt-5.6-sol",
   judge: new OpenAI(),
 });
 ```
@@ -417,7 +416,7 @@ You are an expert data labeler evaluating model outputs for correctness. Your ta
 const customEvaluator = createLLMAsJudge({
   prompt: MY_CUSTOM_PROMPT,
   choices: [0.0, 0.5, 1.0],
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const result = await customEvaluator({
@@ -479,7 +478,7 @@ const outputs = "The rain in Spain falls mainly on the plain.";
 
 const llmAsJudge = createLLMAsJudge({
   prompt: "Are the following two values equal? {inputs} {outputs}",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
   outputSchema: equalitySchema,
 });
 
@@ -525,35 +524,35 @@ Supported attachment types:
 | PDF | `application/pdf` |
 
 > [!NOTE]
-> Multimodal support depends on your model provider. Audio input and structured output (e.g. returning a score with a comment) are not supported simultaneously by all providers — currently only Gemini supports both at once. The prebuilt [Voice](#voice) prompts use `google-genai:gemini-2.0-flash` for this reason.
+> Multimodal support depends on your model provider. Audio input and structured output (e.g. returning a score with a comment) are not supported simultaneously by all providers — currently only Gemini supports both at once. The prebuilt [Voice](#voice) prompts use `google_genai:gemini-2.0-flash` (Python) / `google-genai:gemini-2.0-flash` (TypeScript) for this reason.
 
 Passing a URL string directly as `attachments` is supported for images only. Audio and PDF attachments must be passed as a base64-encoded data URI with `mime_type` and `data` fields.
 
-Here's an example using the prebuilt `IMAGE_RELEVANCE_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
+Here's an example using the prebuilt `SENSITIVE_IMAGERY_PROMPT`. You can pass an image as a URL or as a base64-encoded data URI — both work the same way:
 
 ```ts
 import * as fs from "fs";
-import { createLLMAsJudge, IMAGE_RELEVANCE_PROMPT } from "openevals";
+import { createLLMAsJudge, SENSITIVE_IMAGERY_PROMPT } from "openevals";
 
 const evaluator = createLLMAsJudge({
-  prompt: IMAGE_RELEVANCE_PROMPT,
-  feedbackKey: "image_relevance",
-  model: "openai:gpt-5.4",
+  prompt: SENSITIVE_IMAGERY_PROMPT,
+  feedbackKey: "sensitive_imagery",
+  model: "openai:gpt-5.6-sol",
 });
 
 // Option A: pass a URL string directly
 const evalResult = await evaluator({
-  inputs: "Show me a picture of fruits",
-  outputs: "Here is an image of various fruits",
-  attachments: "https://example.com/fruits.jpg",
+  inputs: "Review this image for sensitive content",
+  outputs: "The image appears to contain appropriate content",
+  attachments: "https://example.com/image.jpg",
 });
 
 // Option B: pass a base64-encoded data URI
 const imageData = "data:image/jpeg;base64," + fs.readFileSync("image.jpg").toString("base64");
 
 const evalResultB64 = await evaluator({
-  inputs: "Show me a picture of fruits",
-  outputs: "Here is an image of various fruits",
+  inputs: "Review this image for sensitive content",
+  outputs: "The image appears to contain appropriate content",
   attachments: { mime_type: "image/jpeg", data: imageData },
 });
 
@@ -562,8 +561,8 @@ console.log(evalResult);
 
 ```
 {
-    key: 'image_relevance',
-    score: true,
+    key: 'sensitive_imagery',
+    score: false,
     comment: '...'
 }
 ```
@@ -574,7 +573,7 @@ You can also introduce multimodal content into the prompt using a LangChain prom
 
 ## Prebuilt prompts
 
-OpenEvals includes prebuilt prompts for common evaluation scenarios that work out of the box with [`create_llm_as_judge`](#llm-as-judge). All prebuilt prompts are importable from `openevals.prompts`.
+OpenEvals includes prebuilt prompts for common evaluation scenarios that work out of the box with [`create_llm_as_judge`](#llm-as-judge). All prebuilt prompts are importable from `openevals.prompts` (Python) or `openevals` (TypeScript).
 
 ### Quality
 
@@ -599,7 +598,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const inputs = "How much has the price of doodads changed in the past year?";
@@ -640,7 +639,7 @@ import { createLLMAsJudge, FAIRNESS_PROMPT } from "openevals";
 const fairnessEvaluator = createLLMAsJudge({
   prompt: FAIRNESS_PROMPT,
   feedbackKey: "fairness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const evalResult = await fairnessEvaluator({
@@ -666,7 +665,7 @@ These prompts detect security threats in LLM inputs and outputs.
 | Prompt | Parameters | What it evaluates |
 |--------|-----------|-------------------|
 | `PII_LEAKAGE_PROMPT` | `inputs`, `outputs` | Personally identifiable information exposed in the output |
-| `PROMPT_INJECTION_PROMPT` | `inputs` | Attempts to override or manipulate system instructions |
+| `PROMPT_INJECTION_PROMPT` | `inputs` | Attempts to manipulate or override AI system instructions, including social engineering and roleplay-based circumvention |
 | `CODE_INJECTION_PROMPT` | `inputs` | Malicious code or exploits embedded in inputs |
 
 Here's an example using `PII_LEAKAGE_PROMPT`:
@@ -677,7 +676,7 @@ import { createLLMAsJudge, PII_LEAKAGE_PROMPT } from "openevals";
 const piiEvaluator = createLLMAsJudge({
   prompt: PII_LEAKAGE_PROMPT,
   feedbackKey: "pii_leakage",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const evalResult = await piiEvaluator({
@@ -698,7 +697,7 @@ console.log(evalResult);
 
 ### Image
 
-These prompts evaluate image content and its relation to the associated context. All image prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing image data. Note that your chosen model must support vision inputs (e.g. `openai:gpt-5.4`).
+These prompts evaluate image content and its relation to the associated context. All image prompts require an `attachments` parameter — see the [Multimodal](#multimodal) section for details on passing image data. Note that your chosen model must support vision inputs (e.g. `openai:gpt-5.6-sol`).
 
 | Prompt | Parameters | What it evaluates |
 |--------|-----------|-------------------|
@@ -748,7 +747,6 @@ console.log(evalResult);
 }
 ```
 
-
 ### RAG
 
 RAG applications in their most basic form consist of 2 steps. In the retrieval step, context is retrieved (often from something like a vector database that a user has prepared ahead of time, though [web retrieval](https://github.com/assafelovic/gpt-researcher) use-cases are gaining in popularity as well) to provide the LLM with the information it needs to respond to the user. In the generation step, the LLM uses the retrieved context to formulate an answer.
@@ -775,11 +773,11 @@ OpenEvals provides prebuilt prompts and other methods for the following:
 - Goal: Measure "how relevant are my retrieved results for this query"
 - Requires reference: No, because it will compare the question to the retrieved context
 
-#### Correctness {#rag}
+#### Correctness {#correctness-rag}
 
 `correctness` measures how similar/correct a generated answer is to a ground-truth answer. By definition, this requires you to have a reference output to compare against the generated one. It is useful to test your RAG app end-to-end, and does directly take into account context retrieved as an intermediate step.
 
-You can evaluate the correctness of a RAG app's outputs using the LLM-as-judge evaluator alongside the general [CORRECTNESS_PROMPT](#quality) covered above. Here's an example:
+You can evaluate the correctness of a RAG app's outputs using the LLM-as-judge evaluator alongside the general [`CORRECTNESS_PROMPT`](#quality) covered in the [Quality](#quality) section above. Here's an example:
 
 ```ts
 import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
@@ -787,7 +785,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const inputs = "How much has the price of doodads changed in the past year?";
@@ -833,7 +831,7 @@ const outputs = {
 const helpfulnessEvaluator = createLLMAsJudge({
   prompt: RAG_HELPFULNESS_PROMPT,
   feedbackKey: "helpfulness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const evalResult = await helpfulnessEvaluator({
@@ -846,8 +844,8 @@ console.log(evalResult);
 
 ```
 {
-  'key': 'helpfulness', 
-  'score': False, 
+  'key': 'helpfulness',
+  'score': False,
   'comment': "The question asks for the birthplace of the first president of FoobarLand, but the retrieved outputs only identify the first president as Bagatur and provide an unrelated biographical detail (being a fan of PR reviews). Although the first output is somewhat relevant by identifying the president's name, neither document provides any information about his birthplace. Thus, the outputs do not contain useful information to answer the input question. Thus, the score should be: false."
 }
 ```
@@ -864,7 +862,7 @@ import { createLLMAsJudge, RAG_GROUNDEDNESS_PROMPT } from "openevals";
 const groundednessEvaluator = createLLMAsJudge({
   prompt: RAG_GROUNDEDNESS_PROMPT,
   feedbackKey: "groundedness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const context = {
@@ -911,7 +909,7 @@ import { createLLMAsJudge, RAG_RETRIEVAL_RELEVANCE_PROMPT } from "openevals";
 const retrievalRelevanceEvaluator = createLLMAsJudge({
   prompt: RAG_RETRIEVAL_RELEVANCE_PROMPT,
   feedbackKey: "retrieval_relevance",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const inputs = {
@@ -1017,13 +1015,13 @@ const evaluator = createJsonMatchEvaluator({
     // How to aggregate feedback keys in each element of the list: "average", "all", or None
     // "average" returns the average score. "all" returns 1 only if all keys score 1; otherwise, it returns 0. None returns individual feedback chips for each key
     aggregator="all",
-    // Remove if evaluating a single structured output. This aggregates the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". "all" returns 1 if each element of the list is 1; if any score is not 1, it returns 0. "average" returns the average of the scores from each element. 
+    // Remove if evaluating a single structured output. This aggregates the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". "all" returns 1 if each element of the list is 1; if any score is not 1, it returns 0. "average" returns the average of the scores from each element.
     list_aggregator="average",
     // The keys to ignore during evaluation. Any key not passed here or in `rubric` will be evaluated using an exact match comparison to the reference outputs
     exclude_keys=["a"],
     // The provider and name of the model to use
     judge: client,
-    model: "openai:gpt-5.4",
+    model: "openai:gpt-5.6-sol",
 })
 
 // Invoke the evaluator with the outputs and reference outputs
@@ -1051,7 +1049,7 @@ Therefore, the list aggregator will return a final score of 0.5.
 
 ### Evaluating structured output with LLM-as-a-Judge
 
-Use LLM-as-a-judge to evaluate structured output or tools calls when the criteria is more subjective (for example the output is a kind of fruit or mentions all the fruits). 
+Use LLM-as-a-judge to evaluate structured output or tools calls when the criteria is more subjective (for example the output is a kind of fruit or mentions all the fruits).
 
 ```ts
 import { createJsonMatchEvaluator } from "openevals";
@@ -1072,7 +1070,7 @@ const evaluator = createJsonMatchEvaluator({
     // How to aggregate feedback keys in each element of the list: "average", "all", or None
     // "average" returns the average score. "all" returns 1 only if all keys score 1; otherwise, it returns 0. None returns individual feedback chips for each key
     aggregator="average",
-    // Remove if evaluating a single structured output. This aggregates the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". "all" returns 1 if each element of the list is 1; if any score is not 1, it returns 0. "average" returns the average of the scores from each element. 
+    // Remove if evaluating a single structured output. This aggregates the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". "all" returns 1 if each element of the list is 1; if any score is not 1, it returns 0. "average" returns the average of the scores from each element.
     list_aggregator="all",
     // The criteria for the LLM judge to use for each key you want evaluated by the LLM
     rubric={
@@ -1082,7 +1080,7 @@ const evaluator = createJsonMatchEvaluator({
     exclude_keys=["c"],
     // The provider and name of the model to use
     judge: client,
-    model: "openai:gpt-5.4",
+    model: "openai:gpt-5.6-sol",
     // Whether to use reasoning to reason about the keys in `rubric`. Defaults to True
     useReasoning: true
 })
@@ -1095,9 +1093,9 @@ const result = await evaluator({
 
 console.log(result)
 ```
-For the first element, "a" will be 1  since both Mango and Bananas are in the reference output, "b" will be 1 and "d" will be 0. The aggregator will return an average score of 0.6. 
-For the second element, "a" will be 0 since the reference output doesn't mention all the fruits in the output,  "b" will be 1. The aggregator will return a score of 0.5. 
-Therefore, the list aggregator will return a final score of 0. 
+For the first element, "a" will be 1  since both Mango and Bananas are in the reference output, "b" will be 1 and "d" will be 0. The aggregator will return an average score of 0.6.
+For the second element, "a" will be 0 since the reference output doesn't mention all the fruits in the output,  "b" will be 1. The aggregator will return a score of 0.5.
+Therefore, the list aggregator will return a final score of 0.
 
 ```
 {
@@ -1270,7 +1268,7 @@ import { createCodeLLMAsJudge, CODE_CORRECTNESS_PROMPT } from "openevals";
 
 const evaluator = createCodeLLMAsJudge({
   prompt: CODE_CORRECTNESS_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const inputs = `Add proper TypeScript types to the following code:
@@ -1480,7 +1478,7 @@ const StateAnnotation = Annotation.Root({
 const graph = new StateGraph(StateAnnotation)
   .addNode("joke", () => ({}))
   .compile();
-  
+
 await graph.invoke({
   joke: "foo",
   topic: "history",
@@ -1755,7 +1753,7 @@ import {
 
 const evaluator = createTrajectoryLLMAsJudge({
   prompt: TRAJECTORY_ACCURACY_PROMPT,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const outputs = [
@@ -1788,7 +1786,7 @@ import {
 
 const evaluator = createTrajectoryLLMAsJudge({
   prompt: TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const outputs = [
@@ -1830,10 +1828,9 @@ console.log(result);
 
 For LangGraph-specific graph trajectory evaluators, see the [`agentevals`](https://github.com/langchain-ai/agentevals) package.
 
-
 ### Prebuilt trajectory and conversation prompts
 
-`openevals` includes several prebuilt prompts for evaluating agent trajectories and conversations. All prompts take `outputs` as a list of messages and are used with `createLLMAsJudge`.
+`openevals` includes several prebuilt prompts for evaluating agent trajectories and conversations. All prompts take `outputs` as a list of messages and are used with `create_llm_as_judge`/`createLLMAsJudge`.
 
 #### Trajectory prompts
 
@@ -1868,7 +1865,7 @@ import { createLLMAsJudge, TASK_COMPLETION_PROMPT } from "openevals";
 const evaluator = createLLMAsJudge({
   prompt: TASK_COMPLETION_PROMPT,
   feedbackKey: "task_completion",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const outputs = [
@@ -1883,10 +1880,10 @@ console.log(result);
 ```
 
 ```
-{ key: 'task_completion', score: false, comment: 'The user\'s request to book a flight was never fulfilled...' }
+{ key: 'task_completion', score: false, comment: 'The user's request to book a flight was never fulfilled...' }
 ```
 
-Since `LANGUAGE_DETECTION_PROMPT` should return a categorical language name rather than a boolean score, use it with a custom `outputSchema` to capture the result:
+Since `LANGUAGE_DETECTION_PROMPT` should return a categorical language name rather than a boolean score, use it with a custom `output_schema` to capture the result:
 
 ```ts
 import { z } from "zod";
@@ -1900,7 +1897,7 @@ const languageDetectionSchema = z.object({
 const evaluator = createLLMAsJudge({
   prompt: LANGUAGE_DETECTION_PROMPT,
   feedbackKey: "language_detection",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
   outputSchema: languageDetectionSchema,
 });
 
@@ -1986,7 +1983,6 @@ console.log(result);
     score: 0.9147273943905653,
 }
 ```
-
 
 ## Creating your own
 
@@ -2092,7 +2088,7 @@ from openevals.llm import create_async_llm_as_judge
 
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
-    model="openai:gpt-5.4",
+    model="openai:gpt-5.6-sol",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -2106,7 +2102,7 @@ from openai import AsyncOpenAI
 evaluator = create_async_llm_as_judge(
     prompt="What is the weather in {inputs}?",
     judge=AsyncOpenAI(),
-    model="gpt-5.4",
+    model="gpt-5.6-sol",
 )
 
 result = await evaluator(inputs="San Francisco")
@@ -2144,7 +2140,7 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
   }
   history[threadId].push(inputs);
   const res = await client.chat.completions.create({
-    model: "gpt-5.4",
+    model: "gpt-5.6-sol",
     messages: [
       {
         role: "system",
@@ -2161,11 +2157,11 @@ const app = async ({ inputs, threadId }: { inputs: ChatCompletionMessage, thread
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
   prompt: "Based on the below conversation, was the user satisfied?\n{outputs}",
   feedbackKey: "satisfaction",
 });
@@ -2267,7 +2263,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an aggressive and hostile customer who wants a refund for their car.",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 ```
 
@@ -2278,7 +2274,7 @@ import { createLLMSimulatedUser } from "openevals";
 
 const user = createLLMSimulatedUser({
   system: "You are an angry and belligerent customer who wants a refund.",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
   fixedResponses: [
     {"role": "user", "content": "I demand a refund for my bike!"},
     {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
@@ -2364,7 +2360,7 @@ const giveRefund = tool(
 
 // Create a React-style agent
 const agent = createReactAgent({
-  llm: await initChatModel("openai:gpt-5.4"),
+  llm: await initChatModel("openai:gpt-5.6-sol"),
   tools: [giveRefund],
   prompt:
     "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
@@ -2386,11 +2382,11 @@ const app = async ({
 const user = createLLMSimulatedUser({
   system:
     "You are an angry user who is frustrated with the service and keeps making additional demands.",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const trajectoryEvaluator = createLLMAsJudge({
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
   prompt:
     "Based on the below conversation, has the user been satisfied?\n{outputs}",
   feedbackKey: "satisfaction",
@@ -2472,7 +2468,7 @@ import { createLLMAsJudge, CORRECTNESS_PROMPT } from "openevals";
 const correctnessEvaluator = createLLMAsJudge({
   prompt: CORRECTNESS_PROMPT,
   feedbackKey: "correctness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 ls.describe("Correctness", () => {
@@ -2523,7 +2519,7 @@ import { createLLMAsJudge, CONCISENESS_PROMPT } from "openevals";
 const concisenessEvaluator = createLLMAsJudge({
   prompt: CONCISENESS_PROMPT,
   feedbackKey: "conciseness",
-  model: "openai:gpt-5.4",
+  model: "openai:gpt-5.6-sol",
 });
 
 const wrappedConcisenessEvaluator = async (params: {

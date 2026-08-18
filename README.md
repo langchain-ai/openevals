@@ -4437,6 +4437,8 @@ Alternatively, you can [create a dataset in LangSmith](https://docs.langchain.co
 <summary>Python</summary>
 
 ```python
+from typing import Any, cast
+
 from langsmith import Client
 from openevals.llm import create_llm_as_judge
 from openevals.prompts import CONCISENESS_PROMPT
@@ -4449,27 +4451,35 @@ conciseness_evaluator = create_llm_as_judge(
     model="openai:gpt-5.6-sol",
 )
 
+
 def wrapped_conciseness_evaluator(
-    inputs: dict,
-    outputs: dict,
+    inputs: dict[str, Any],
+    outputs: dict[str, Any],
     # Unused for this evaluator
-    reference_outputs: dict,
-):
+    reference_outputs: dict[str, Any],
+) -> dict[str, Any]:
     eval_result = conciseness_evaluator(
         inputs=inputs,
         outputs=outputs,
     )
-    return eval_result
+    return cast(dict[str, Any], eval_result)
+
+
+def target(inputs: dict[str, Any]) -> Any:
+    # This is a dummy target function, replace with your actual LLM-based system
+    return "What color is the sky?"
+
 
 experiment_results = client.evaluate(
-    # This is a dummy target function, replace with your actual LLM-based system
-    lambda inputs: "What color is the sky?",
+    target,
     data="Sample dataset",
     evaluators=[
         wrapped_conciseness_evaluator
     ]
 )
 ```
+
+Pyright is stricter than mypy about LangSmith's `evaluate` overloads; the explicit target return type and evaluator result cast keep this runtime-valid pattern assignable.
 
 </details>
 

@@ -1,9 +1,17 @@
 import * as ls from "langsmith/vitest";
 
 import { expect } from "vitest";
+import { ChatOpenAI } from "@langchain/openai";
 
 import { createCodeLLMAsJudge } from "../llm.js";
 import { CODE_CORRECTNESS_PROMPT } from "../../prompts/quality/code_correctness.js";
+
+function createTerraModel() {
+  return new ChatOpenAI({
+    model: "gpt-5.6-terra",
+    useResponsesApi: true,
+  });
+}
 
 ls.describe("Code LLM As Judge", () => {
   ls.test.each([
@@ -57,7 +65,7 @@ function add(a: number, b: number): boolean {
     async ({ inputs, outputs, expectedScore }) => {
       const evaluator = createCodeLLMAsJudge({
         prompt: CODE_CORRECTNESS_PROMPT,
-        model: "openai:gpt-5.6-luna",
+        judge: createTerraModel(),
       });
 
       const evalResult = await evaluator({ inputs, outputs });

@@ -1,5 +1,6 @@
 import * as ls from "langsmith/vitest";
 import { expect } from "vitest";
+import { ChatOpenAI } from "@langchain/openai";
 
 import { createTrajectoryLLMAsJudge } from "../llm.js";
 import {
@@ -7,11 +8,18 @@ import {
   TRAJECTORY_ACCURACY_PROMPT,
 } from "../../prompts/trajectory/accuracy.js";
 
+function createTerraModel() {
+  return new ChatOpenAI({
+    model: "gpt-5.6-terra",
+    useResponsesApi: true,
+  });
+}
+
 ls.describe("trajectory llm", () => {
   ls.test.each([{ inputs: {} }])("trajectory match", async () => {
     const evaluator = createTrajectoryLLMAsJudge({
       prompt: TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-      model: "openai:gpt-5.6-luna",
+      judge: createTerraModel(),
     });
     const outputs = [
       { role: "user", content: "What is the weather in SF?" },
@@ -58,7 +66,7 @@ ls.describe("trajectory llm", () => {
   ls.test.each([{ inputs: {} }])("trajectory no reference", async () => {
     const evaluator = createTrajectoryLLMAsJudge({
       prompt: TRAJECTORY_ACCURACY_PROMPT,
-      model: "openai:gpt-5.6-luna",
+      judge: createTerraModel(),
     });
     const outputs = [
       { role: "user", content: "What is the weather in SF?" },
@@ -90,7 +98,7 @@ ls.describe("trajectory llm", () => {
     async () => {
       const evaluator = createTrajectoryLLMAsJudge({
         prompt: TRAJECTORY_ACCURACY_PROMPT,
-        model: "openai:gpt-5.6-luna",
+        judge: createTerraModel(),
       });
       const outputs = [
         { role: "user", content: "What are some good restaurants in SF?" },

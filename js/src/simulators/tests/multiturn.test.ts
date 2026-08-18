@@ -3,6 +3,7 @@ import * as ls from "langsmith/vitest";
 import { createAgent } from "langchain";
 import { MemorySaver } from "@langchain/langgraph";
 import { tool } from "@langchain/core/tools";
+import { ChatOpenAI } from "@langchain/openai";
 import { OpenAI } from "openai";
 import { z } from "zod";
 
@@ -10,6 +11,13 @@ import { runMultiturnSimulation } from "../multiturn.js";
 import { createLLMSimulatedUser, _isInternalMessage } from "../prebuilts.js";
 import { createLLMAsJudge } from "../../llm.js";
 import type { ChatCompletionMessage } from "../../index.js";
+
+function createToolCallingModel() {
+  return new ChatOpenAI({
+    model: "gpt-5.6-luna",
+    useResponsesApi: true,
+  });
+}
 
 ls.describe("Multiturn simulator", () => {
   ls.test(
@@ -34,7 +42,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        model: "openai:gpt-5.6-luna",
+        model: createToolCallingModel(),
         tools: [giveRefund],
         prompt:
           "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
@@ -112,7 +120,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        model: "openai:gpt-5.6-luna",
+        model: createToolCallingModel(),
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });
@@ -186,7 +194,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        model: "openai:gpt-5.6-luna",
+        model: createToolCallingModel(),
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });
@@ -323,7 +331,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        model: "openai:gpt-5.6-luna",
+        model: createToolCallingModel(),
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });

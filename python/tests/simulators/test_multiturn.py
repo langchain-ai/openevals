@@ -2,7 +2,7 @@ import json
 import os
 import uuid
 
-from langchain.chat_models import init_chat_model
+from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 from langgraph_sdk import get_client
 from langsmith import testing as t
@@ -25,6 +25,10 @@ from openevals.llm import create_llm_as_judge, create_async_llm_as_judge
 
 from openai import OpenAI, AsyncOpenAI
 import pytest
+
+
+def _create_tool_calling_model() -> ChatOpenAI:
+    return ChatOpenAI(model="gpt-5.6-luna", use_responses_api=True)
 
 
 # ── sync: unique patterns ──────────────────────────────────────────────────────
@@ -87,7 +91,7 @@ async def test_multiturn_failure_async():
         return "Refunds are not permitted."
 
     agent = create_agent(
-        init_chat_model("openai:gpt-5.6-luna"),
+        _create_tool_calling_model(),
         tools=[give_refund],
         system_prompt="You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
         checkpointer=MemorySaver(),
@@ -135,7 +139,7 @@ async def test_multiturn_success_async():
         return "Refunds granted."
 
     agent = create_agent(
-        init_chat_model("openai:gpt-5.6-luna"),
+        _create_tool_calling_model(),
         tools=[give_refund],
         checkpointer=MemorySaver(),
     )
@@ -181,7 +185,7 @@ async def test_multiturn_preset_responses_async():
         return "Refunds granted."
 
     agent = create_agent(
-        init_chat_model("openai:gpt-5.6-luna"),
+        _create_tool_calling_model(),
         tools=[give_refund],
         checkpointer=MemorySaver(),
     )
@@ -290,7 +294,7 @@ async def test_multiturn_stopping_condition_async():
         return "Refunds granted."
 
     agent = create_agent(
-        init_chat_model("openai:gpt-5.6-luna"),
+        _create_tool_calling_model(),
         tools=[give_refund],
         checkpointer=MemorySaver(),
     )

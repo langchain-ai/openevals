@@ -1313,7 +1313,7 @@ wheels = [
 
 [[package]]
 name = "llama-index"
-version = "0.14.21"
+version = "0.14.23"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "llama-index-core" },
@@ -1321,14 +1321,14 @@ dependencies = [
     { name = "llama-index-llms-openai" },
     { name = "nltk" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8d/8a/472a6ae2c8b4cea977913509e034837ae9f030dcab7027c33ddd4418d746/llama_index-0.14.21.tar.gz", hash = "sha256:99244cbdc7f486aa329c7007faa168085b19eff786ee0c4d246db1cba0f4922b", size = 8565, upload-time = "2026-04-21T00:18:46.87Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/5c/1f9334c3c0edd880367d0734939256f8536ca94165c6a5fdb455a7bcf180/llama_index-0.14.23.tar.gz", hash = "sha256:eac2049816a7410ff4568490cce4bdff99cda3ab99d59f52f6227dad22cda44b", size = 8566, upload-time = "2026-06-24T19:36:38.241Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7a/e4/caa044a84834198363c7342df1480bade423d862509c620846ef3ed2116e/llama_index-0.14.21-py3-none-any.whl", hash = "sha256:d3a13b7d4dde35688d2295a0381d65d1c8f3b69b51bed07c7158e027c00e9480", size = 7114, upload-time = "2026-04-21T00:18:48.06Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/92/da2a737bf712fe31c1aaec00f51745797d4570ecdf7e4f5d2b4b93b3d337/llama_index-0.14.23-py3-none-any.whl", hash = "sha256:c205de2442a7186b8e05096f0771f96fa6bdc9603fcad2e07eab1bc96dcf086a", size = 7114, upload-time = "2026-06-24T19:36:37.21Z" },
 ]
 
 [[package]]
 name = "llama-index-core"
-version = "0.14.21"
+version = "0.14.23"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1361,9 +1361,9 @@ dependencies = [
     { name = "typing-inspect" },
     { name = "wrapt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/43/d6d2a368865e68c25d3400c017fb772daab71427f08c4e36c591f729dbc3/llama_index_core-0.14.21.tar.gz", hash = "sha256:29706defbe2f429d28330a4eea010f9d92d42db92539382f8c800e19590cae45", size = 11581087, upload-time = "2026-04-21T00:18:10.181Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/ac/f885ae14317af43a026c909ea4d2083fcee2f0d014f90426b5b9aa1f9912/llama_index_core-0.14.23.tar.gz", hash = "sha256:c4baf2f2ab4f84e95090fe7941e0c87d6c514304f7bd2a749b8fa22164c1822b", size = 11588373, upload-time = "2026-06-24T19:35:55.43Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/88/23/55ec5f35a5c7f35b60d3928bcd2e867076440036a280cf4d07481719c249/llama_index_core-0.14.21-py3-none-any.whl", hash = "sha256:4a807d31e54d066068e076eb4d066efbf95e2d2a00dcbe0eba3d9340a04cad42", size = 11916624, upload-time = "2026-04-21T00:18:12.966Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/d5/05d61f34c01c6578fb758d0a3ddef58d36c6ffa9a9f84a5c9a16262ad94d/llama_index_core-0.14.23-py3-none-any.whl", hash = "sha256:6a54d267826732a8507f81df40785b107f7592af20f451a39a59005147caf84c", size = 11924908, upload-time = "2026-06-24T19:35:52.833Z" },
 ]
 
 [[package]]
@@ -1850,7 +1850,7 @@ dev = [
     { name = "langchain-google-genai", specifier = ">=4.3.4" },
     { name = "langgraph", specifier = ">=1.2.11" },
     { name = "langgraph-sdk", specifier = ">=0.4.2" },
-    { name = "llama-index", specifier = ">=0.12.34" },
+    { name = "llama-index", specifier = ">=0.14.23" },
     { name = "mypy", specifier = ">=1.15.0" },
     { name = "openai", specifier = ">=1.61.1" },
     { name = "pydantic", specifier = ">=2.10.6" },

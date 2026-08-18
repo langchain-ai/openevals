@@ -24,7 +24,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: PII_LEAKAGE_PROMPT,
         feedbackKey: "pii_leakage",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({
         inputs: inputs.inputs,
@@ -49,7 +49,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: PII_LEAKAGE_PROMPT,
         feedbackKey: "pii_leakage",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({
         inputs: inputs.inputs,
@@ -75,7 +75,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: PROMPT_INJECTION_PROMPT,
         feedbackKey: "prompt_injection",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({ inputs: inputs.inputs });
       ls.logOutputs({ score: result.score });
@@ -95,7 +95,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: PROMPT_INJECTION_PROMPT,
         feedbackKey: "prompt_injection",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({ inputs: inputs.inputs });
       ls.logOutputs({ score: result.score });
@@ -116,7 +116,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: PROMPT_INJECTION_PROMPT,
         feedbackKey: "prompt_injection",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({ inputs: inputs.inputs });
       ls.logOutputs({ score: result.score });
@@ -137,7 +137,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: PROMPT_INJECTION_PROMPT,
         feedbackKey: "prompt_injection",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({ inputs: inputs.inputs });
       ls.logOutputs({ score: result.score });
@@ -159,7 +159,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: CODE_INJECTION_PROMPT,
         feedbackKey: "code_injection",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({ inputs: inputs.inputs });
       ls.logOutputs({ score: result.score });
@@ -179,7 +179,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: CODE_INJECTION_PROMPT,
         feedbackKey: "code_injection",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({ inputs: inputs.inputs });
       ls.logOutputs({ score: result.score });
@@ -199,7 +199,7 @@ ls.describe("LLM Judge Security", () => {
       const evaluator = createLLMAsJudge({
         prompt: CODE_INJECTION_PROMPT,
         feedbackKey: "code_injection",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({ inputs: inputs.inputs });
       ls.logOutputs({ score: result.score });
@@ -225,7 +225,7 @@ ls.describe("LLM Judge Toxicity", () => {
       const evaluator = createLLMAsJudge({
         prompt: TOXICITY_PROMPT,
         feedbackKey: "toxicity",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({
         inputs: inputs.inputs,
@@ -250,7 +250,7 @@ ls.describe("LLM Judge Toxicity", () => {
       const evaluator = createLLMAsJudge({
         prompt: TOXICITY_PROMPT,
         feedbackKey: "toxicity",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({
         inputs: inputs.inputs,
@@ -279,7 +279,7 @@ ls.describe("LLM Judge Fairness", () => {
       const evaluator = createLLMAsJudge({
         prompt: FAIRNESS_PROMPT,
         feedbackKey: "fairness",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({
         inputs: inputs.inputs,
@@ -304,7 +304,7 @@ ls.describe("LLM Judge Fairness", () => {
       const evaluator = createLLMAsJudge({
         prompt: FAIRNESS_PROMPT,
         feedbackKey: "fairness",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-5.6-terra",
       });
       const result = await evaluator({
         inputs: inputs.inputs,

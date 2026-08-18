@@ -9,10 +9,6 @@ from langsmith import testing as t
 from langsmith.wrappers import wrap_openai
 from langgraph.checkpoint.memory import MemorySaver
 
-from llama_index.llms.openai import OpenAI as LlamaIndexOpenAI
-from llama_index.core.agent.workflow import FunctionAgent
-from llama_index.core.workflow import Context
-
 from openevals.types import ChatCompletionMessage
 from openevals.simulators import (
     run_multiturn_simulation,

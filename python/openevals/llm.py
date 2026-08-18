@@ -256,7 +256,9 @@ def _create_llm_as_judge_scorer(
 
         if judge is None:
             if model is None:
-                raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
+                raise ValueError(
+                    "a `model` string is required (e.g. 'openai:gpt-5.6-sol')"
+                )
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
@@ -285,7 +287,9 @@ def _create_llm_as_judge_scorer(
                 return response
         elif isinstance(judge, ModelClient):
             if model is None:
-                raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
+                raise ValueError(
+                    "a `model` string is required (e.g. 'openai:gpt-5.6-sol')"
+                )
             if model.startswith("openai:"):
                 model = model[len("openai:") :]
 
@@ -453,7 +457,9 @@ def _create_async_llm_as_judge_scorer(
 
         if judge is None:
             if model is None:
-                raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
+                raise ValueError(
+                    "a `model` string is required (e.g. 'openai:gpt-5.6-sol')"
+                )
             judge = init_chat_model(model=model)
 
         if isinstance(judge, BaseChatModel):
@@ -482,7 +488,9 @@ def _create_async_llm_as_judge_scorer(
                 return response
         elif isinstance(judge, ModelClient):
             if model is None:
-                raise ValueError("a `model` string is required (e.g. 'openai:o3-mini')")
+                raise ValueError(
+                    "a `model` string is required (e.g. 'openai:gpt-5.6-sol')"
+                )
             if model.startswith("openai:"):
                 model = model[len("openai:") :]
 

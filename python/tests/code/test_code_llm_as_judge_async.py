@@ -1,6 +1,11 @@
 import pytest
 
+from langchain_openai import ChatOpenAI
 from openevals.code.llm import create_async_code_llm_as_judge, CODE_CORRECTNESS_PROMPT
+
+
+def _create_terra_model() -> ChatOpenAI:
+    return ChatOpenAI(model="gpt-5.6-terra", use_responses_api=True)
 
 
 @pytest.mark.asyncio
@@ -50,7 +55,7 @@ async def test_code_llm_as_judge_extraction_strategy_default(
 ):
     llm_as_judge = create_async_code_llm_as_judge(
         prompt=CODE_CORRECTNESS_PROMPT,
-        model="openai:gpt-5-mini",
+        judge=_create_terra_model(),
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"] == expected_result
@@ -98,7 +103,7 @@ async def test_code_llm_as_judge_extraction_strategy_llm(
 ):
     llm_as_judge = create_async_code_llm_as_judge(
         prompt=CODE_CORRECTNESS_PROMPT,
-        model="openai:gpt-5-mini",
+        judge=_create_terra_model(),
         code_extraction_strategy="llm",
     )
     eval_result = await llm_as_judge(inputs=inputs, outputs=outputs)

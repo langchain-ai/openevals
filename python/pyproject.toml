@@ -20,7 +20,6 @@ dev = [
     "langchain-google-genai>=4.3.4",
     "langgraph>=1.2.11",
     "langgraph-sdk>=0.4.2",
-    "llama-index>=0.12.34",
     "mypy>=1.15.0",
     "openai>=1.61.1",
     "pydantic>=2.10.6",

@@ -24,7 +24,7 @@ def test_json_match_mix():
     t.log_inputs(outputs)
     reference_outputs = {"a": "Bananas, Mango", "b": 3}
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         aggregator="average",
     )
@@ -78,7 +78,7 @@ def test_json_match_rubric():
     }
     t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -101,7 +101,7 @@ def test_json_match_rubric_wrong():
     }
     t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -120,7 +120,7 @@ def test_json_match_rubric_with_reasoning():
     }
     t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
@@ -139,7 +139,7 @@ def test_json_match_rubric_without_reasoning():
     }
     t.log_inputs(outputs)
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         aggregator="all",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
@@ -163,7 +163,7 @@ def test_json_match_rubric_with_reasoning_individual_key():
         "description": "Harrison chase is the CEO of LangChain. He used to work at Kensho and Robust Intelligence.",
     }
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
@@ -417,7 +417,7 @@ def test_json_match_list_rubric():
     reference_outputs = [{"a": "Bananas, Strawberries, Melons"}]
     t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
         list_aggregator="average",
     )
@@ -576,7 +576,7 @@ def test_json_match_mode_order_wrong_language():
     reference_outputs = [{"a": 1, "c": "El Perro"}, {"b": 1}]
     t.log_inputs({"outputs": outputs})
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         list_aggregator="average",
         aggregator="average",
         list_match_mode="ordered",
@@ -615,7 +615,7 @@ def test_json_match_mode_order():
 def test_works_with_evaluate():
     client = Client()
     evaluator = create_json_match_evaluator(
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         rubric={
             "description": "Is the correct job title and company mentioned, as well as previous companies?"
         },
@@ -628,7 +628,7 @@ def test_works_with_evaluate():
 @pytest.mark.langsmith
 def test_error_no_rubric():
     with pytest.raises(ValueError):
-        create_json_match_evaluator(model="openai:gpt-5-mini")
+        create_json_match_evaluator(model="openai:gpt-5.6-luna")
 
 
 @pytest.mark.langsmith

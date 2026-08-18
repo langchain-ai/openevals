@@ -1,7 +1,13 @@
 import pytest
 
+from langchain_openai import ChatOpenAI
 from openevals.code.pyright import create_pyright_evaluator
 from openevals.code.mypy import create_mypy_evaluator
+
+
+def _create_terra_model() -> ChatOpenAI:
+    return ChatOpenAI(model="gpt-5.6-terra", use_responses_api=True)
+
 
 CODE_EXAMPLES = [
     (
@@ -121,7 +127,7 @@ def test_mypy_extraction(outputs, expected_result, strategy):
 @pytest.mark.langsmith
 def test_pyright_extraction_llm():
     pyright_evaluator = create_pyright_evaluator(
-        code_extraction_strategy="llm", model="openai:gpt-5-mini"
+        code_extraction_strategy="llm", client=_create_terra_model()
     )
     eval_result = pyright_evaluator(
         outputs="Sure! Here's a function that returns the sum of two numbers: def sum_of_two_numbers(a, b): return a + b"
@@ -133,7 +139,7 @@ def test_pyright_extraction_llm():
 def test_pyright_extraction_llm_no_code():
     pyright_evaluator = create_pyright_evaluator(
         code_extraction_strategy="llm",
-        model="openai:gpt-5-mini",
+        client=_create_terra_model(),
     )
     eval_result = pyright_evaluator(outputs="I'm doing well, how about you?")
     assert not eval_result["score"]

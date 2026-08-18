@@ -1,8 +1,16 @@
 import * as ls from "langsmith/vitest";
 
 import { expect } from "vitest";
+import { ChatOpenAI } from "@langchain/openai";
 
 import { createTypeScriptEvaluator } from "../typescript.js";
+
+function createTerraModel() {
+  return new ChatOpenAI({
+    model: "gpt-5.6-terra",
+    useResponsesApi: true,
+  });
+}
 
 ls.describe("TypeScript Evaluator", () => {
   ls.test.each([
@@ -74,7 +82,7 @@ console.log(res);
 `,
       },
       codeExtractionStrategy: "llm",
-      model: "openai:o3-mini",
+      client: createTerraModel(),
     },
   ])(
     "should pass basic type check",
@@ -83,11 +91,11 @@ console.log(res);
       outputs,
       expectedScore,
       codeExtractionStrategy,
-      model,
+      client,
     }) => {
       const evaluator = createTypeScriptEvaluator({
         codeExtractionStrategy,
-        model,
+        client,
       });
 
       const evalResult = await evaluator({ inputs, outputs });
@@ -105,7 +113,7 @@ console.log(res);
     async ({ inputs }) => {
       const evaluator = createTypeScriptEvaluator({
         codeExtractionStrategy: "llm",
-        model: "openai:o3-mini",
+        client: createTerraModel(),
       });
 
       const evalResult = await evaluator({ outputs: inputs.code });
@@ -124,7 +132,7 @@ console.log(res);
     async ({ inputs }) => {
       const evaluator = createTypeScriptEvaluator({
         codeExtractionStrategy: "llm",
-        model: "openai:o3-mini",
+        client: createTerraModel(),
       });
 
       const evalResult = await evaluator({ outputs: inputs.code });

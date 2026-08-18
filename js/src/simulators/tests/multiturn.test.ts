@@ -3,6 +3,7 @@ import * as ls from "langsmith/vitest";
 import { createAgent } from "langchain";
 import { MemorySaver } from "@langchain/langgraph";
 import { tool } from "@langchain/core/tools";
+import { ChatOpenAI } from "@langchain/openai";
 import { OpenAI } from "openai";
 import { z } from "zod";
 
@@ -10,6 +11,13 @@ import { runMultiturnSimulation } from "../multiturn.js";
 import { createLLMSimulatedUser, _isInternalMessage } from "../prebuilts.js";
 import { createLLMAsJudge } from "../../llm.js";
 import type { ChatCompletionMessage } from "../../index.js";
+
+function createToolCallingModel() {
+  return new ChatOpenAI({
+    model: "gpt-5.6-luna",
+    useResponsesApi: true,
+  });
+}
 
 ls.describe("Multiturn simulator", () => {
   ls.test(
@@ -34,7 +42,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        model: "openai:gpt-5-nano",
+        model: createToolCallingModel(),
         tools: [giveRefund],
         prompt:
           "You are an overworked customer service agent. If the user is rude, be polite only once, then be rude back and tell them to stop wasting your time.",
@@ -64,7 +72,7 @@ ls.describe("Multiturn simulator", () => {
       const user = createLLMSimulatedUser({
         system:
           "You are an angry user who wants a refund and keeps making additional demands.",
-        model: "openai:gpt-5-nano",
+        model: "openai:gpt-5.6-luna",
         fixedResponses: [
           "I want a refund right now!",
           "This is completely unacceptable!",
@@ -73,7 +81,7 @@ ls.describe("Multiturn simulator", () => {
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5.6-luna",
         prompt:
           "Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -112,7 +120,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        model: "openai:gpt-5-nano",
+        model: createToolCallingModel(),
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });
@@ -139,7 +147,7 @@ ls.describe("Multiturn simulator", () => {
 
       const user = createLLMSimulatedUser({
         system: "You are a happy and reasonable person who wants a refund.",
-        model: "openai:gpt-5-nano",
+        model: "openai:gpt-5.6-luna",
         fixedResponses: [
           "Hi, I'd like a refund please.",
           "Thank you so much, that's great!",
@@ -147,7 +155,7 @@ ls.describe("Multiturn simulator", () => {
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5.6-luna",
         prompt:
           "Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -186,7 +194,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        model: "openai:gpt-5-nano",
+        model: createToolCallingModel(),
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });
@@ -212,7 +220,7 @@ ls.describe("Multiturn simulator", () => {
       };
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5.6-luna",
         prompt:
           "Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -263,7 +271,7 @@ ls.describe("Multiturn simulator", () => {
       // Create a custom app function
       const app = async ({ inputs }: { inputs: ChatCompletionMessage }) => {
         const res = await client.chat.completions.create({
-          model: "gpt-5-nano",
+          model: "gpt-5.6-luna",
           messages: [
             {
               role: "system",
@@ -279,12 +287,12 @@ ls.describe("Multiturn simulator", () => {
       const user = createLLMSimulatedUser({
         system:
           "You are an aggressive and hostile customer who wants a refund for their car.",
-        model: "openai:gpt-5-nano",
+        model: "openai:gpt-5.6-luna",
         fixedResponses: inputs.messages,
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5.6-luna",
         prompt:
           "Based on the below conversation, was the user satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -323,7 +331,7 @@ ls.describe("Multiturn simulator", () => {
 
       // Create a React-style agent
       const agent = createAgent({
-        model: "openai:gpt-5-nano",
+        model: createToolCallingModel(),
         tools: [giveRefund],
         checkpointer: new MemorySaver(),
       });
@@ -350,12 +358,12 @@ ls.describe("Multiturn simulator", () => {
 
       const user = createLLMSimulatedUser({
         system: "You are a happy and reasonable person who wants a refund.",
-        model: "openai:gpt-5-nano",
+        model: "openai:gpt-5.6-luna",
         fixedResponses: inputs.messages,
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-4o-mini",
+        model: "openai:gpt-5.6-luna",
         prompt:
           "Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -370,7 +378,7 @@ ls.describe("Multiturn simulator", () => {
         threadId: string;
       }): Promise<boolean> => {
         const res = await client.chat.completions.create({
-          model: "gpt-5-nano",
+          model: "gpt-5.6-luna",
           messages: [
             {
               role: "system",

@@ -93,6 +93,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          LANGSMITH_GATEWAY: ${{ secrets.LANGSMITH_GATEWAY }}
         run: uv run pytest tests
         shell: bash
         working-directory: python
@@ -141,6 +142,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          LANGSMITH_GATEWAY: ${{ secrets.LANGSMITH_GATEWAY }}
         run: yarn test
         shell: bash
         working-directory: js

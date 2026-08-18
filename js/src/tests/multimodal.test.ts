@@ -1,5 +1,5 @@
 import * as ls from "langsmith/vitest";
-import { expect } from "vitest";
+import { describe, expect } from "vitest";
 import OpenAI from "openai";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { _attachmentToContentBlock } from "../utils.js";
@@ -293,7 +293,7 @@ ls.describe("raw OpenAI client message construction", () => {
 
 // ── LLM integration: voice (requires API key + audio model) ──────────────────
 
-ls.describe("LLM Judge Voice", () => {
+describe.skip("LLM Judge Voice", () => {
   ls.test(
     "audio quality — issues detected",
     {

@@ -296,6 +296,7 @@ def test_raw_openai_client_image_attachment():
 # ── LLM integration: voice (requires API key + audio model) ───────────────────
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_audio_quality_issues_detected():
     evaluator = create_llm_as_judge(
@@ -316,6 +317,7 @@ def test_audio_quality_issues_detected():
     assert result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_audio_quality_clean():
     evaluator = create_llm_as_judge(
@@ -336,6 +338,7 @@ def test_audio_quality_clean():
     assert not result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_transcription_accurate():
     evaluator = create_llm_as_judge(
@@ -356,6 +359,7 @@ def test_transcription_accurate():
     assert result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_transcription_inaccurate():
     evaluator = create_llm_as_judge(
@@ -376,6 +380,7 @@ def test_transcription_inaccurate():
     assert not result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_vocal_affect_appropriate():
     evaluator = create_llm_as_judge(
@@ -396,6 +401,7 @@ def test_vocal_affect_appropriate():
     assert result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_vocal_affect_inappropriate():
     evaluator = create_llm_as_judge(

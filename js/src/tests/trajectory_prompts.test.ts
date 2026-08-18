@@ -31,7 +31,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: TASK_COMPLETION_PROMPT,
         feedbackKey: "task_completion",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const result = await evaluator({ outputs: inputs.conversation });
       ls.logOutputs({ score: result.score });
@@ -64,7 +64,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: TASK_COMPLETION_PROMPT,
         feedbackKey: "task_completion",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const result = await evaluator({ outputs: inputs.conversation });
       ls.logOutputs({ score: result.score });
@@ -93,7 +93,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: USER_SATISFACTION_PROMPT,
         feedbackKey: "user_satisfaction",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const result = await evaluator({ outputs: inputs.conversation });
       ls.logOutputs({ score: result.score });
@@ -124,7 +124,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: USER_SATISFACTION_PROMPT,
         feedbackKey: "user_satisfaction",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const result = await evaluator({ outputs: inputs.conversation });
       ls.logOutputs({ score: result.score });
@@ -158,7 +158,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: AGENT_TONE_PROMPT,
         feedbackKey: "agent_tone",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const result = await evaluator({ outputs: inputs.conversation });
       ls.logOutputs({ score: result.score });
@@ -191,7 +191,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: AGENT_TONE_PROMPT,
         feedbackKey: "agent_tone",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const result = await evaluator({ outputs: inputs.conversation });
       ls.logOutputs({ score: result.score });
@@ -230,7 +230,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: KNOWLEDGE_RETENTION_PROMPT,
         feedbackKey: "knowledge_retention",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const result = await evaluator({ outputs: inputs.conversation });
       ls.logOutputs({ score: result.score });
@@ -262,7 +262,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: KNOWLEDGE_RETENTION_PROMPT,
         feedbackKey: "knowledge_retention",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const result = await evaluator({ outputs: inputs.conversation });
       ls.logOutputs({ score: result.score });
@@ -295,7 +295,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: LANGUAGE_DETECTION_PROMPT,
         feedbackKey: "language_detection",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
         outputSchema: languageDetectionSchema,
       });
       const result = await evaluator({ outputs: inputs.conversation });
@@ -326,7 +326,7 @@ ls.describe("LLM Judge Trajectory", () => {
       const evaluator = createLLMAsJudge({
         prompt: LANGUAGE_DETECTION_PROMPT,
         feedbackKey: "language_detection",
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
         outputSchema: languageDetectionSchema,
       });
       const result = await evaluator({ outputs: inputs.conversation });

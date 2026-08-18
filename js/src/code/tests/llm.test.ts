@@ -57,7 +57,7 @@ function add(a: number, b: number): boolean {
     async ({ inputs, outputs, expectedScore }) => {
       const evaluator = createCodeLLMAsJudge({
         prompt: CODE_CORRECTNESS_PROMPT,
-        model: "openai:o3-mini",
+        model: "openai:gpt-5.6-luna",
       });
 
       const evalResult = await evaluator({ inputs, outputs });

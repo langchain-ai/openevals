@@ -124,7 +124,7 @@ def test_code_llm_as_judge_extraction_strategy_default(
 ):
     llm_as_judge = create_code_llm_as_judge(
         prompt=CODE_CORRECTNESS_PROMPT,
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     print(eval_result)
@@ -168,7 +168,7 @@ def read_root():
 def test_code_llm_as_judge_extraction_strategy_llm(inputs, outputs, expected_result):
     llm_as_judge = create_code_llm_as_judge(
         prompt=CODE_CORRECTNESS_PROMPT,
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         code_extraction_strategy="llm",
     )
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)

@@ -11,7 +11,7 @@ ls.describe("trajectory llm", () => {
   ls.test.each([{ inputs: {} }])("trajectory match", async () => {
     const evaluator = createTrajectoryLLMAsJudge({
       prompt: TRAJECTORY_ACCURACY_PROMPT_WITH_REFERENCE,
-      model: "openai:o3-mini",
+      model: "openai:gpt-5.6-luna",
     });
     const outputs = [
       { role: "user", content: "What is the weather in SF?" },
@@ -58,7 +58,7 @@ ls.describe("trajectory llm", () => {
   ls.test.each([{ inputs: {} }])("trajectory no reference", async () => {
     const evaluator = createTrajectoryLLMAsJudge({
       prompt: TRAJECTORY_ACCURACY_PROMPT,
-      model: "openai:o3-mini",
+      model: "openai:gpt-5.6-luna",
     });
     const outputs = [
       { role: "user", content: "What is the weather in SF?" },
@@ -90,7 +90,7 @@ ls.describe("trajectory llm", () => {
     async () => {
       const evaluator = createTrajectoryLLMAsJudge({
         prompt: TRAJECTORY_ACCURACY_PROMPT,
-        model: "openai:o3-mini",
+        model: "openai:gpt-5.6-luna",
       });
       const outputs = [
         { role: "user", content: "What are some good restaurants in SF?" },

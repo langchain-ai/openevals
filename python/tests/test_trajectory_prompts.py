@@ -19,7 +19,7 @@ def test_task_completion_all_requests_fulfilled():
     evaluator = create_llm_as_judge(
         prompt=TASK_COMPLETION_PROMPT,
         feedback_key="task_completion",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     conversation = [
         {"role": "user", "content": "Can you summarize this article for me?"},
@@ -41,7 +41,7 @@ def test_task_completion_request_not_fulfilled():
     evaluator = create_llm_as_judge(
         prompt=TASK_COMPLETION_PROMPT,
         feedback_key="task_completion",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     conversation = [
         {"role": "user", "content": "Can you book a flight from NYC to Paris?"},
@@ -73,7 +73,7 @@ def test_user_satisfaction_happy_user():
     evaluator = create_llm_as_judge(
         prompt=USER_SATISFACTION_PROMPT,
         feedback_key="user_satisfaction",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     conversation = [
         {"role": "user", "content": "How do I reset my password?"},
@@ -95,7 +95,7 @@ def test_user_satisfaction_frustrated_user():
     evaluator = create_llm_as_judge(
         prompt=USER_SATISFACTION_PROMPT,
         feedback_key="user_satisfaction",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     conversation = [
         {"role": "user", "content": "I need a refund for my order."},
@@ -120,7 +120,7 @@ def test_agent_tone_appropriate():
     evaluator = create_llm_as_judge(
         prompt=AGENT_TONE_PROMPT,
         feedback_key="agent_tone",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     conversation = [
         {"role": "user", "content": "I'm really confused about how this works."},
@@ -146,7 +146,7 @@ def test_agent_tone_condescending():
     evaluator = create_llm_as_judge(
         prompt=AGENT_TONE_PROMPT,
         feedback_key="agent_tone",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     conversation = [
         {"role": "user", "content": "I don't understand this feature."},
@@ -175,7 +175,7 @@ def test_knowledge_retention_good():
     evaluator = create_llm_as_judge(
         prompt=KNOWLEDGE_RETENTION_PROMPT,
         feedback_key="knowledge_retention",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     conversation = [
         {
@@ -204,7 +204,7 @@ def test_knowledge_retention_forgot_context():
     evaluator = create_llm_as_judge(
         prompt=KNOWLEDGE_RETENTION_PROMPT,
         feedback_key="knowledge_retention",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
     )
     conversation = [
         {"role": "user", "content": "My name is Sarah and I'm vegetarian."},
@@ -235,7 +235,7 @@ def test_language_detection_spanish():
     evaluator = create_llm_as_judge(
         prompt=LANGUAGE_DETECTION_PROMPT,
         feedback_key="language_detection",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         output_schema=LanguageDetectionResult,
     )
     conversation = [
@@ -258,7 +258,7 @@ def test_language_detection_french():
     evaluator = create_llm_as_judge(
         prompt=LANGUAGE_DETECTION_PROMPT,
         feedback_key="language_detection",
-        model="openai:gpt-5-mini",
+        model="openai:gpt-5.6-luna",
         output_schema=LanguageDetectionResult,
     )
     conversation = [

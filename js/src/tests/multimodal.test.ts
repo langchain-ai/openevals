@@ -268,7 +268,7 @@ ls.describe("raw OpenAI client message construction", () => {
       const scorer = _createLLMAsJudgeScorer({
         prompt: "Evaluate this image: {outputs}\n{attachments}",
         judge: client,
-        model: "openai:gpt-5-mini",
+        model: "openai:gpt-5.6-luna",
       });
 
       await scorer({

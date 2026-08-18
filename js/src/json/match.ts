@@ -7,7 +7,7 @@ import {
   EvaluatorResult,
 } from "../types.js";
 import { _createLLMAsJudgeScorer } from "../llm.js";
-import { _runEvaluator } from "../utils.js";
+import { _deepEqual, _runEvaluator } from "../utils.js";
 
 type AggregatorType = "average" | "all" | undefined;
 type ListMatchMode = "superset" | "subset" | "same_elements" | "ordered";
@@ -131,7 +131,7 @@ function _prepareParameters({
               !excludeKeys.includes(key) &&
               !(key in rubric)
             ) {
-              matchScore += Number(refItem[key] === outputItem[key]);
+              matchScore += Number(_deepEqual(refItem[key], outputItem[key]));
             }
           });
 
@@ -178,7 +178,7 @@ function _prepareParameters({
               !excludeKeys.includes(key) &&
               !(key in rubric)
             ) {
-              matchScore += Number(outputItem[key] === refItem[key]);
+              matchScore += Number(_deepEqual(outputItem[key], refItem[key]));
             }
           });
 
@@ -243,7 +243,10 @@ function _prepareParameters({
       return;
     }
 
-    if (!(key in rubric) && processedReferenceOutputs[rawKey] === value) {
+    if (
+      !(key in rubric) &&
+      _deepEqual(processedReferenceOutputs[rawKey], value)
+    ) {
       scores[rawKey] = 1;
     } else if (!(key in rubric)) {
       scores[rawKey] = 0;

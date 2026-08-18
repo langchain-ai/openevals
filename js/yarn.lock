@@ -345,17 +345,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/langgraph-checkpoint@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@langchain/langgraph-checkpoint@npm:1.0.0"
-  dependencies:
-    uuid: ^10.0.0
-  peerDependencies:
-    "@langchain/core": ^1.0.1
-  checksum: 0e85633bd7975230b61ba709e30da7b74e542efe4b37f105b17ef0e1dde658d24851fa37d0850442e8aa934c6bf0cb3e85cfa98d9064e406ff9f3888ebfc3505
-  languageName: node
-  linkType: hard
-
 "@langchain/langgraph-checkpoint@npm:^1.1.3":
   version: 1.1.3
   resolution: "@langchain/langgraph-checkpoint@npm:1.1.3"
@@ -392,49 +381,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/langgraph-sdk@npm:~2.0.0":
-  version: 2.0.0
-  resolution: "@langchain/langgraph-sdk@npm:2.0.0"
-  dependencies:
-    "@types/json-schema": ^7.0.15
-    p-queue: ^9.0.1
-    p-retry: ^7.1.1
-    uuid: ^13.0.0
-  peerDependencies:
-    "@langchain/core": ^1.1.16
-    react: ^18 || ^19
-    react-dom: ^18 || ^19
-  peerDependenciesMeta:
-    "@langchain/core":
-      optional: true
-    react:
-      optional: true
-    react-dom:
-      optional: true
-  checksum: 17b73bdb256967d8fbd0854f83e209bc85774488fcd8e1d3df1978b517495ff2414f24b1b4b3e629bd0e93fa5447da95ea5b67bb6386d4f2464c880ef07bbada
-  languageName: node
-  linkType: hard
-
-"@langchain/langgraph@npm:^1.1.2":
-  version: 1.1.5
-  resolution: "@langchain/langgraph@npm:1.1.5"
-  dependencies:
-    "@langchain/langgraph-checkpoint": ^1.0.0
-    "@langchain/langgraph-sdk": ~2.0.0
-    "@standard-schema/spec": 1.1.0
-    uuid: ^10.0.0
-  peerDependencies:
-    "@langchain/core": ^1.1.16
-    zod: ^3.25.32 || ^4.2.0
-    zod-to-json-schema: ^3.x
-  peerDependenciesMeta:
-    zod-to-json-schema:
-      optional: true
-  checksum: b1b9c848d78b7c1314ea5894f15a462f566cc8d9530477cd23ecc256fef4540a8008948635f994b3dfac96d34efdf63db44d48d8e73c4f29a87e9ce92822a37f
-  languageName: node
-  linkType: hard
-
-"@langchain/langgraph@npm:^1.4.10":
+"@langchain/langgraph@npm:^1.4.10, @langchain/langgraph@npm:^1.4.8":
   version: 1.4.10
   resolution: "@langchain/langgraph@npm:1.4.10"
   dependencies:
@@ -3246,18 +3193,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langchain@npm:^1.2.27":
-  version: 1.2.27
-  resolution: "langchain@npm:1.2.27"
+"langchain@npm:^1.5.9":
+  version: 1.5.9
+  resolution: "langchain@npm:1.5.9"
   dependencies:
-    "@langchain/langgraph": ^1.1.2
-    "@langchain/langgraph-checkpoint": ^1.0.0
+    "@langchain/langgraph": ^1.4.8
+    "@langchain/langgraph-checkpoint": ^1.1.3
     langsmith: ">=0.5.0 <1.0.0"
-    uuid: ^10.0.0
     zod: ^3.25.76 || ^4
   peerDependencies:
-    "@langchain/core": ^1.1.28
-  checksum: 1773bef865ec7375e3d745443b01fb4f16a65b430a92f84f5f272b4593c1dd2880b3c84582ca6b0fbfd7e8c61a212d542854fb9605444c552d3aac682229477c
+    "@langchain/core": ^1.2.8
+  checksum: 501d77eabb322c4e92c29eb3ff88a78a49b5b5e7a687df40e5be82d210d65613815f37e1c105ddbcb2742b16ecc65befe0c0a456a41e483bd293d9c2de6350f2
   languageName: node
   linkType: hard
 
@@ -3777,7 +3723,7 @@ __metadata:
     eslint-plugin-jest: ^27.6.0
     eslint-plugin-no-instanceof: ^1.0.1
     eslint-plugin-prettier: ^4.2.1
-    langchain: ^1.2.27
+    langchain: ^1.5.9
     langsmith: ">=0.6.0"
     openai: ^5.19.1
     prettier: ^3.5.1
@@ -4959,24 +4905,6 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "uuid@npm:10.0.0"
-  bin:
-    uuid: dist/bin/uuid
-  checksum: 4b81611ade2885d2313ddd8dc865d93d8dccc13ddf901745edca8f86d99bc46d7a330d678e7532e7ebf93ce616679fb19b2e3568873ac0c14c999032acb25869
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^13.0.0":
-  version: 13.0.0
-  resolution: "uuid@npm:13.0.0"
-  bin:
-    uuid: dist-node/bin/uuid
-  checksum: 7510ee1ab371be5339ef26ff8cabc2f4a2c60640ff880652968f758072f53bd4f4af1c8b0e671a8c9bb29ef926a24dec3ef0e3861d78183b39291a85743a9f96
   languageName: node
   linkType: hard
 

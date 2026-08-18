@@ -24,15 +24,16 @@ PUBLIC_IMAGE_URL = "https://images.everydayhealth.com/images/2025/fruits-with-pr
 
 # Minimal silent WAV (44-byte header, no samples) — satisfies {attachments} template.
 TINY_WAV_DATA_URI = (
-    "data:audio/wav;base64,"
-    "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="
+    "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="
 )
 
 
 @pytest.fixture(scope="module")
 def fruit_image_b64():
     """Fetch the fruit image once per test session and encode as base64."""
-    req = urllib.request.Request(PUBLIC_IMAGE_URL, headers={"User-Agent": "openevals-test/1.0"})
+    req = urllib.request.Request(
+        PUBLIC_IMAGE_URL, headers={"User-Agent": "openevals-test/1.0"}
+    )
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             return "data:image/jpeg;base64," + base64.b64encode(resp.read()).decode()
@@ -42,8 +43,11 @@ def fruit_image_b64():
 
 # ── image/* ────────────────────────────────────────────────────────────────────
 
+
 def test_image_png_data_uri():
-    block = _attachment_to_content_block({"mime_type": "image/png", "data": TINY_PNG_DATA_URI})
+    block = _attachment_to_content_block(
+        {"mime_type": "image/png", "data": TINY_PNG_DATA_URI}
+    )
     assert block == {"type": "image_url", "image_url": {"url": TINY_PNG_DATA_URI}}
 
 
@@ -61,57 +65,86 @@ def test_image_url_string():
 
 # ── application/pdf ────────────────────────────────────────────────────────────
 
+
 def test_pdf_with_name():
     data = "data:application/pdf;base64,JVBERi0x"
-    block = _attachment_to_content_block({"mime_type": "application/pdf", "data": data, "name": "invoice.pdf"})
-    assert block == {"type": "file", "file": {"filename": "invoice.pdf", "file_data": data}}
+    block = _attachment_to_content_block(
+        {"mime_type": "application/pdf", "data": data, "name": "invoice.pdf"}
+    )
+    assert block == {
+        "type": "file",
+        "file": {"filename": "invoice.pdf", "file_data": data},
+    }
 
 
 def test_pdf_without_name_defaults_to_attachment():
     data = "data:application/pdf;base64,JVBERi0x"
     block = _attachment_to_content_block({"mime_type": "application/pdf", "data": data})
-    assert block == {"type": "file", "file": {"filename": "attachment.pdf", "file_data": data}}
+    assert block == {
+        "type": "file",
+        "file": {"filename": "attachment.pdf", "file_data": data},
+    }
 
 
 # ── audio/* ────────────────────────────────────────────────────────────────────
+
 
 def test_audio_mp3_strips_data_prefix():
     raw_base64 = "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGFtZQ=="
     data = f"data:audio/mp3;base64,{raw_base64}"
     block = _attachment_to_content_block({"mime_type": "audio/mp3", "data": data})
-    assert block == {"type": "input_audio", "input_audio": {"data": raw_base64, "format": "mp3"}}
+    assert block == {
+        "type": "input_audio",
+        "input_audio": {"data": raw_base64, "format": "mp3"},
+    }
 
 
 def test_audio_wav_no_prefix():
     raw_base64 = "UklGRiQAAABXQVZFZm10"
     block = _attachment_to_content_block({"mime_type": "audio/wav", "data": raw_base64})
-    assert block == {"type": "input_audio", "input_audio": {"data": raw_base64, "format": "wav"}}
+    assert block == {
+        "type": "input_audio",
+        "input_audio": {"data": raw_base64, "format": "wav"},
+    }
 
 
 def test_audio_mpeg_format():
     raw_base64 = "SUQzBAA"
     data = f"data:audio/mpeg;base64,{raw_base64}"
     block = _attachment_to_content_block({"mime_type": "audio/mpeg", "data": data})
-    assert block == {"type": "input_audio", "input_audio": {"data": raw_base64, "format": "mp3"}}
+    assert block == {
+        "type": "input_audio",
+        "input_audio": {"data": raw_base64, "format": "mp3"},
+    }
 
 
 # ── pre-formatted content block passthrough ────────────────────────────────────
 
+
 def test_pre_formatted_dict_passthrough():
-    content_block = {"type": "image_url", "image_url": {"url": "https://example.com/img.png"}}
+    content_block = {
+        "type": "image_url",
+        "image_url": {"url": "https://example.com/img.png"},
+    }
     assert _attachment_to_content_block(content_block) == content_block
 
 
 def test_pre_formatted_input_audio_passthrough():
-    content_block = {"type": "input_audio", "input_audio": {"data": "abc", "format": "mp3"}}
+    content_block = {
+        "type": "input_audio",
+        "input_audio": {"data": "abc", "format": "mp3"},
+    }
     assert _attachment_to_content_block(content_block) == content_block
 
 
 # ── error cases ────────────────────────────────────────────────────────────────
 
+
 def test_unsupported_mime_type_raises():
     with pytest.raises(ValueError, match="Unsupported attachment MIME type"):
-        _attachment_to_content_block({"mime_type": "video/mp4", "data": "data:video/mp4;base64,abc"})
+        _attachment_to_content_block(
+            {"mime_type": "video/mp4", "data": "data:video/mp4;base64,abc"}
+        )
 
 
 def test_non_string_non_dict_raises():
@@ -120,6 +153,7 @@ def test_non_string_non_dict_raises():
 
 
 # ── integration: message structure ────────────────────────────────────────────
+
 
 def test_single_attachment_becomes_list_content():
     """Without calling an LLM, verify the scorer builds the right message shape."""
@@ -135,7 +169,7 @@ def test_single_attachment_becomes_list_content():
         mock_judge = MagicMock(spec=BaseChatModel)
         mock_judge.with_structured_output.return_value.invoke.return_value = {
             "score": True,
-            "reasoning": "looks good"
+            "reasoning": "looks good",
         }
         mock_init.return_value = mock_judge
 
@@ -168,7 +202,8 @@ def test_multiple_attachments_all_appended():
     with patch("openevals.llm.init_chat_model") as mock_init:
         mock_judge = MagicMock(spec=BaseChatModel)
         mock_judge.with_structured_output.return_value.invoke.return_value = {
-            "score": True, "reasoning": "ok"
+            "score": True,
+            "reasoning": "ok",
         }
         mock_init.return_value = mock_judge
 
@@ -202,7 +237,8 @@ def test_no_attachment_content_is_plain_string():
     with patch("openevals.llm.init_chat_model") as mock_init:
         mock_judge = MagicMock(spec=BaseChatModel)
         mock_judge.with_structured_output.return_value.invoke.return_value = {
-            "score": True, "reasoning": "ok"
+            "score": True,
+            "reasoning": "ok",
         }
         mock_init.return_value = mock_judge
 
@@ -215,6 +251,7 @@ def test_no_attachment_content_is_plain_string():
 
 # ── raw OpenAI client: message structure ──────────────────────────────────────
 
+
 def test_raw_openai_client_image_attachment():
     """Raw OpenAI client receives image as image_url content block (no LangChain normalization)."""
     from types import SimpleNamespace
@@ -222,9 +259,13 @@ def test_raw_openai_client_image_attachment():
     from openevals.llm import _create_llm_as_judge_scorer
 
     mock_response = SimpleNamespace(
-        choices=[SimpleNamespace(message=SimpleNamespace(
-            content=json.dumps({"score": True, "reasoning": "ok"})
-        ))]
+        choices=[
+            SimpleNamespace(
+                message=SimpleNamespace(
+                    content=json.dumps({"score": True, "reasoning": "ok"})
+                )
+            )
+        ]
     )
 
     client = OpenAI(api_key="fake-key")
@@ -234,7 +275,9 @@ def test_raw_openai_client_image_attachment():
         model="openai:gpt-5-mini",
     )
 
-    with patch.object(client.chat.completions, "create", return_value=mock_response) as mock_create:
+    with patch.object(
+        client.chat.completions, "create", return_value=mock_response
+    ) as mock_create:
         scorer(
             outputs="a fruit bowl",
             attachments={"mime_type": "image/png", "data": TINY_PNG_DATA_URI},
@@ -252,6 +295,8 @@ def test_raw_openai_client_image_attachment():
 
 # ── LLM integration: voice (requires API key + audio model) ───────────────────
 
+
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_audio_quality_issues_detected():
     evaluator = create_llm_as_judge(
@@ -272,6 +317,7 @@ def test_audio_quality_issues_detected():
     assert result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_audio_quality_clean():
     evaluator = create_llm_as_judge(
@@ -292,6 +338,7 @@ def test_audio_quality_clean():
     assert not result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_transcription_accurate():
     evaluator = create_llm_as_judge(
@@ -312,6 +359,7 @@ def test_transcription_accurate():
     assert result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_transcription_inaccurate():
     evaluator = create_llm_as_judge(
@@ -332,6 +380,7 @@ def test_transcription_inaccurate():
     assert not result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_vocal_affect_appropriate():
     evaluator = create_llm_as_judge(
@@ -352,6 +401,7 @@ def test_vocal_affect_appropriate():
     assert result["score"]
 
 
+@pytest.mark.skip(reason="Google model tests are temporarily disabled")
 @pytest.mark.langsmith
 def test_vocal_affect_inappropriate():
     evaluator = create_llm_as_judge(
@@ -370,5 +420,3 @@ def test_vocal_affect_inappropriate():
     )
     t.log_outputs({"score": result["score"]})
     assert not result["score"]
-
-

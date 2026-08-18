@@ -290,7 +290,11 @@ ls.describe("trajectory", () => {
         new AIMessage({
           content: "",
           tool_calls: [
-            { id: "1234", name: "get_weather", args: { city: "San Francisco" } },
+            {
+              id: "1234",
+              name: "get_weather",
+              args: { city: "San Francisco" },
+            },
           ],
         }),
         new ToolMessage({
@@ -304,7 +308,11 @@ ls.describe("trajectory", () => {
         new AIMessage({
           content: "Let me check that for you!",
           tool_calls: [
-            { id: "4321", name: "get_weather", args: { city: "San Francisco" } },
+            {
+              id: "4321",
+              name: "get_weather",
+              args: { city: "San Francisco" },
+            },
           ],
         }),
         new ToolMessage({
@@ -330,7 +338,10 @@ ls.describe("trajectory", () => {
         content: "",
         tool_calls: [{ id: "1234", name: "get_weather", args: { city: "SF" } }],
       }),
-      new ToolMessage({ content: "It's 80 degrees and sunny.", tool_call_id: "1234" }),
+      new ToolMessage({
+        content: "It's 80 degrees and sunny.",
+        tool_call_id: "1234",
+      }),
       new AIMessage("The weather in SF is 80 degrees and sunny."),
     ];
     const referenceOutputs = [
@@ -341,7 +352,10 @@ ls.describe("trajectory", () => {
           { id: "1234", name: "get_weather", args: { city: "San Francisco" } },
         ],
       }),
-      new ToolMessage({ content: "It's 80 degrees and sunny.", tool_call_id: "1234" }),
+      new ToolMessage({
+        content: "It's 80 degrees and sunny.",
+        tool_call_id: "1234",
+      }),
       new AIMessage("The weather in SF is 80 degrees and sunny."),
     ];
     const evaluator = createTrajectoryMatchEvaluator({
@@ -349,7 +363,11 @@ ls.describe("trajectory", () => {
       toolArgsMatchMode: toolArgsMatchMode as any,
     });
     const result = await evaluator({ outputs, referenceOutputs });
-    expect(result).toEqual({ key: "trajectory_strict_match", score, comment: undefined });
+    expect(result).toEqual({
+      key: "trajectory_strict_match",
+      score,
+      comment: undefined,
+    });
   });
 
   ls.test.each([
@@ -401,9 +419,7 @@ ls.describe("trajectory", () => {
     expect(result.score).toBe(score);
   });
 
-  ls.test.each([
-    { inputs: {} },
-  ])(
+  ls.test.each([{ inputs: {} }])(
     "trajectory match with nested field overrides",
     async () => {
       const outputs = [
@@ -419,7 +435,10 @@ ls.describe("trajectory", () => {
                 name: "lookup_policy",
                 arguments: JSON.stringify({
                   query: "flight upgrades",
-                  time: { start: "2025-03-22T18:34:40Z", end: "2025-03-22T20:34:40Z" },
+                  time: {
+                    start: "2025-03-22T18:34:40Z",
+                    end: "2025-03-22T20:34:40Z",
+                  },
                 }),
               },
             },
@@ -452,7 +471,10 @@ ls.describe("trajectory", () => {
       const evaluatorNoOverrides = createTrajectoryMatchEvaluator({
         trajectoryMatchMode: "strict",
       });
-      const resultNoOverrides = await evaluatorNoOverrides({ outputs, referenceOutputs });
+      const resultNoOverrides = await evaluatorNoOverrides({
+        outputs,
+        referenceOutputs,
+      });
       expect(resultNoOverrides.score).toBe(false);
 
       const evaluator = createTrajectoryMatchEvaluator({
@@ -461,6 +483,55 @@ ls.describe("trajectory", () => {
       });
       const result = await evaluator({ outputs, referenceOutputs });
       expect(result.score).toBe(true);
+    }
+  );
+
+  ls.test.each([{ inputs: {} }])(
+    "trajectory match with nested field overrides requires key",
+    async () => {
+      const outputs = [
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            {
+              type: "function",
+              id: "4a286aff",
+              function: {
+                name: "lookup_policy",
+                arguments: JSON.stringify({
+                  time: { end: "2025-03-22T20:34:40Z" },
+                }),
+              },
+            },
+          ],
+        },
+      ] satisfies FlexibleChatCompletionMessage[];
+      const referenceOutputs = [
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            {
+              type: "function",
+              id: "cb2f81d3",
+              function: {
+                name: "lookup_policy",
+                arguments: JSON.stringify({
+                  time: { end: "2025-03-22T20:34:40Z" },
+                }),
+              },
+            },
+          ],
+        },
+      ] satisfies FlexibleChatCompletionMessage[];
+
+      const evaluator = createTrajectoryMatchEvaluator({
+        trajectoryMatchMode: "strict",
+        toolArgsMatchOverrides: { lookup_policy: ["time.start"] },
+      });
+      const result = await evaluator({ outputs, referenceOutputs });
+      expect(result.score).toBe(false);
     }
   );
 });

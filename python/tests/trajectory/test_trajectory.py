@@ -321,7 +321,9 @@ def test_trajectory_match_langchain_messages(feedback_key, match_mode):
         HumanMessage("What is the weather in SF?"),
         AIMessage(
             content="",
-            tool_calls=[{"id": "1234", "name": "get_weather", "args": {"city": "San Francisco"}}],
+            tool_calls=[
+                {"id": "1234", "name": "get_weather", "args": {"city": "San Francisco"}}
+            ],
         ),
         ToolMessage(tool_call_id="1234", content="It's 80 degrees and sunny in SF."),
         AIMessage("The weather in SF is 80 degrees and sunny."),
@@ -330,9 +332,13 @@ def test_trajectory_match_langchain_messages(feedback_key, match_mode):
         HumanMessage("What is the weather in SF?"),
         AIMessage(
             content="Let me check that for you!",
-            tool_calls=[{"id": "4321", "name": "get_weather", "args": {"city": "San Francisco"}}],
+            tool_calls=[
+                {"id": "4321", "name": "get_weather", "args": {"city": "San Francisco"}}
+            ],
         ),
-        ToolMessage(tool_call_id="4321", content="It's 80 degrees and sunny in San Francisco."),
+        ToolMessage(
+            tool_call_id="4321", content="It's 80 degrees and sunny in San Francisco."
+        ),
         AIMessage("The weather in SF is 80˚ and sunny."),
     ]
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -366,7 +372,9 @@ def test_trajectory_match_strict_params(tool_args_match_mode, score):
         HumanMessage("What is the weather in SF?"),
         AIMessage(
             content="",
-            tool_calls=[{"id": "1234", "name": "get_weather", "args": {"city": "San Francisco"}}],
+            tool_calls=[
+                {"id": "1234", "name": "get_weather", "args": {"city": "San Francisco"}}
+            ],
         ),
         ToolMessage(tool_call_id="1234", content="It's 80 degrees and sunny in SF."),
         AIMessage("The weather in SF is 80 degrees and sunny."),
@@ -399,7 +407,9 @@ def test_tool_args_match_mode_superset(tool_args_match_mode, score):
                 {
                     "function": {
                         "name": "get_flight_info",
-                        "arguments": json.dumps({"is_cool": True, "flight_no": "LX0112"}),
+                        "arguments": json.dumps(
+                            {"is_cool": True, "flight_no": "LX0112"}
+                        ),
                     }
                 }
             ],
@@ -437,10 +447,15 @@ def test_trajectory_match_with_nested_field_overrides():
                 {
                     "function": {
                         "name": "lookup_policy",
-                        "arguments": json.dumps({
-                            "query": "flight upgrades",
-                            "time": {"start": "2025-03-22T18:34:40Z", "end": "2025-03-22T20:34:40Z"},
-                        }),
+                        "arguments": json.dumps(
+                            {
+                                "query": "flight upgrades",
+                                "time": {
+                                    "start": "2025-03-22T18:34:40Z",
+                                    "end": "2025-03-22T20:34:40Z",
+                                },
+                            }
+                        ),
                     }
                 }
             ],
@@ -456,10 +471,12 @@ def test_trajectory_match_with_nested_field_overrides():
                 {
                     "function": {
                         "name": "lookup_policy",
-                        "arguments": json.dumps({
-                            "query": "foo",
-                            "time": {"start": "2025-03-22T18:34:40Z", "end": "baz"},
-                        }),
+                        "arguments": json.dumps(
+                            {
+                                "query": "foo",
+                                "time": {"start": "2025-03-22T18:34:40Z", "end": "baz"},
+                            }
+                        ),
                     }
                 }
             ],
@@ -480,3 +497,45 @@ def test_trajectory_match_with_nested_field_overrides():
     )
     result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["score"] is True
+
+
+@pytest.mark.langsmith
+def test_trajectory_match_with_nested_field_overrides_requires_key():
+    outputs = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "function": {
+                        "name": "lookup_policy",
+                        "arguments": json.dumps(
+                            {"time": {"end": "2025-03-22T20:34:40Z"}}
+                        ),
+                    }
+                }
+            ],
+        },
+    ]
+    reference_outputs = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "function": {
+                        "name": "lookup_policy",
+                        "arguments": json.dumps(
+                            {"time": {"end": "2025-03-22T20:34:40Z"}}
+                        ),
+                    }
+                }
+            ],
+        },
+    ]
+    evaluator = create_trajectory_match_evaluator(
+        trajectory_match_mode="strict",
+        tool_args_match_overrides={"lookup_policy": ["time.start"]},
+    )
+    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    assert result["score"] is False

@@ -1,4 +1,8 @@
-import { BaseMessage, HumanMessage, isBaseMessage } from "@langchain/core/messages";
+import {
+  BaseMessage,
+  HumanMessage,
+  isBaseMessage,
+} from "@langchain/core/messages";
 import * as openAIImports from "@langchain/openai";
 import { wrapEvaluator, isInTestContext } from "langsmith/utils/jestlike";
 import { traceable } from "langsmith/traceable";
@@ -45,15 +49,31 @@ export const _convertToOpenAIMessage = (
 export const _normalizeToOpenAIMessagesList: (
   messages:
     | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[]
-    | { messages: (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[] }
+    | {
+        messages: (
+          | BaseMessage
+          | ChatCompletionMessage
+          | FlexibleChatCompletionMessage
+        )[];
+      }
     | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)
 ) => ChatCompletionMessage[] = (
   messages:
     | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[]
-    | { messages: (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[] }
+    | {
+        messages: (
+          | BaseMessage
+          | ChatCompletionMessage
+          | FlexibleChatCompletionMessage
+        )[];
+      }
     | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)
 ): ChatCompletionMessage[] => {
-  let messagesList: (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[];
+  let messagesList: (
+    | BaseMessage
+    | ChatCompletionMessage
+    | FlexibleChatCompletionMessage
+  )[];
   if (!Array.isArray(messages)) {
     if ("messages" in messages && Array.isArray(messages.messages)) {
       messagesList = messages.messages;
@@ -73,7 +93,8 @@ export const _normalizeToOpenAIMessagesList: (
 function _normalizeAttachmentMimeType(mimeType: string): string {
   const normalized = mimeType.toLowerCase().trim();
   if (normalized === "audio/mpeg") return "audio/mp3";
-  if (normalized === "audio/wave" || normalized === "audio/x-wav") return "audio/wav";
+  if (normalized === "audio/wave" || normalized === "audio/x-wav")
+    return "audio/wav";
   return normalized;
 }
 
@@ -88,7 +109,9 @@ export function _normalizeContentBlocks(
     const msg = new HumanMessage({ content: blocks as any });
     const normalized = msg.contentBlocks;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (normalized as any[]).filter((b) => typeof b === "object" && b !== null);
+    return (normalized as any[]).filter(
+      (b) => typeof b === "object" && b !== null
+    );
   } catch {
     return blocks;
   }
@@ -120,7 +143,10 @@ export function _attachmentToContentBlock(
     );
   }
 
-  const { mime_type: rawMimeType, data } = item as { mime_type?: string; data?: string };
+  const { mime_type: rawMimeType, data } = item as {
+    mime_type?: string;
+    data?: string;
+  };
 
   if (rawMimeType === undefined || data === undefined) {
     if (!("type" in item)) {
@@ -144,7 +170,10 @@ export function _attachmentToContentBlock(
   if (mimeType.startsWith("audio/")) {
     const base64Data = data.startsWith("data:") ? data.split(",")[1] : data;
     const fmt = mimeType.split("/")[1];
-    return { type: "input_audio", input_audio: { data: base64Data, format: fmt } };
+    return {
+      type: "input_audio",
+      input_audio: { data: base64Data, format: fmt },
+    };
   }
   const msg = `Unsupported attachment MIME type: ${mimeType}. Supported types: image/*, application/pdf, audio/*`;
   throw new Error(msg);

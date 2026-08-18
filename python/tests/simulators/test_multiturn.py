@@ -29,6 +29,7 @@ import pytest
 
 # ── sync: unique patterns ──────────────────────────────────────────────────────
 
+
 @pytest.mark.langsmith
 def test_multiturn_message_with_openai():
     """Sync raw OpenAI client app; agent refuses refunds so user is unsatisfied."""
@@ -75,8 +76,8 @@ def test_multiturn_message_with_openai():
     assert not res["evaluator_results"][0]["score"]
 
 
-
 # ── async tests ────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 @pytest.mark.langsmith
@@ -348,7 +349,8 @@ async def test_multiturn_llama_index():
         """Gives a refund."""
         return "Refunds granted."
 
-    llm = LlamaIndexOpenAI(model="gpt-5-mini")
+    # LlamaIndex does not read OPENAI_BASE_URL, so pass it explicitly.
+    llm = LlamaIndexOpenAI(model="gpt-5-mini", api_base=os.getenv("OPENAI_BASE_URL"))
 
     workflow = FunctionAgent(
         tools=[give_refund],

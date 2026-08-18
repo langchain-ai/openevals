@@ -11,7 +11,11 @@ import { _scorer as trajectoryUnorderedScorer } from "./unordered.js";
 import { _scorer as trajectorySubsetScorer } from "./subset.js";
 import { _scorer as trajectorySuperset } from "./superset.js";
 
-export type TrajectoryMatchMode = "strict" | "unordered" | "subset" | "superset";
+export type TrajectoryMatchMode =
+  | "strict"
+  | "unordered"
+  | "subset"
+  | "superset";
 
 type TrajectoryInput =
   | ChatCompletionMessage[]

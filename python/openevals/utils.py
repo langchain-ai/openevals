@@ -121,7 +121,10 @@ def _attachment_to_content_block(item: Any) -> dict[str, Any]:
     if mime_type.startswith("audio/"):
         base64_data = data.split(",")[1] if data.startswith("data:") else data
         fmt = mime_type.split("/")[1]
-        return {"type": "input_audio", "input_audio": {"data": base64_data, "format": fmt}}
+        return {
+            "type": "input_audio",
+            "input_audio": {"data": base64_data, "format": fmt},
+        }
     msg = (
         f"Unsupported attachment MIME type: {mime_type}. "
         "Supported types: image/*, application/pdf, audio/*"

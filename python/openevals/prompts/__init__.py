@@ -47,6 +47,7 @@ from .voice import (
     USER_INTERRUPTS_PROMPT,
     VOCAL_AFFECT_PROMPT,
 )
+
 __all__ = [
     # quality
     "CORRECTNESS_PROMPT",

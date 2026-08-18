@@ -7,8 +7,6 @@ import { RAG_HELPFULNESS_PROMPT } from "../prompts/rag/helpfulness.js";
 import { RAG_GROUNDEDNESS_PROMPT } from "../prompts/rag/groundedness.js";
 import { RAG_RETRIEVAL_RELEVANCE_PROMPT } from "../prompts/rag/retrieval_relevance.js";
 
-
-
 ls.describe("LLM as Judge RAG", () => {
   ls.test(
     "should test LLM judge RAG helpfulness",
@@ -19,7 +17,8 @@ ls.describe("LLM as Judge RAG", () => {
     },
     async ({ inputs }) => {
       const outputs = {
-        answer: "Water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard atmospheric pressure.",
+        answer:
+          "Water boils at 100 degrees Celsius (212 degrees Fahrenheit) at standard atmospheric pressure.",
       };
 
       const llmAsJudge = createLLMAsJudge({

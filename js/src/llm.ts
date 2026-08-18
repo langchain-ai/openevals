@@ -286,12 +286,18 @@ export const _createLLMAsJudgeScorer: (
       const splitIdx = prompt.indexOf(attachmentPlaceholder);
       if (attachments !== undefined && splitIdx !== -1) {
         const beforeTemplate = prompt.slice(0, splitIdx);
-        const afterTemplate = prompt.slice(splitIdx + attachmentPlaceholder.length);
+        const afterTemplate = prompt.slice(
+          splitIdx + attachmentPlaceholder.length
+        );
         const renderHalf = async (tmpl: string) => {
           if (!tmpl) return "";
           const t = ChatPromptTemplate.fromTemplate(tmpl);
           const r = await t.invoke(filteredPromptParams);
-          return (r.messages[r.messages.length - 1] as unknown as ChatCompletionMessage).content as string;
+          return (
+            r.messages[
+              r.messages.length - 1
+            ] as unknown as ChatCompletionMessage
+          ).content as string;
         };
         const before = await renderHalf(beforeTemplate);
         const after = await renderHalf(afterTemplate);
@@ -316,7 +322,9 @@ export const _createLLMAsJudgeScorer: (
           const items = Array.isArray(attachments)
             ? (attachments as (string | Record<string, unknown>)[])
             : [attachments as string | Record<string, unknown>];
-          const lastMsg = messages[messages.length - 1] as ChatCompletionMessage;
+          const lastMsg = messages[
+            messages.length - 1
+          ] as ChatCompletionMessage;
           lastMsg.content = [
             { type: "text", text: lastMsg.content as string },
             ...items.map(_attachmentToContentBlock),
@@ -378,9 +386,21 @@ export const _createLLMAsJudgeScorer: (
           ...msg,
           content: msg.content.map((block) => {
             const b = block as Record<string, unknown>;
-            if (b.type === "input_audio" && typeof b.input_audio === "object" && b.input_audio !== null) {
-              const { data, format } = b.input_audio as { data: string; format: string };
-              return { type: "audio", source_type: "base64", data, mime_type: `audio/${format}` };
+            if (
+              b.type === "input_audio" &&
+              typeof b.input_audio === "object" &&
+              b.input_audio !== null
+            ) {
+              const { data, format } = b.input_audio as {
+                data: string;
+                format: string;
+              };
+              return {
+                type: "audio",
+                source_type: "base64",
+                data,
+                mime_type: `audio/${format}`,
+              };
             }
             return block;
           }),

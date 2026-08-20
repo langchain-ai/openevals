@@ -99,9 +99,7 @@ export async function trajectoryStrictMatch(params: {
     | BaseMessage[]
     | {
         messages: (
-          | BaseMessage
-          | ChatCompletionMessage
-          | FlexibleChatCompletionMessage
+          BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
         )[];
       };
   referenceOutputs:
@@ -110,9 +108,7 @@ export async function trajectoryStrictMatch(params: {
     | BaseMessage[]
     | {
         messages: (
-          | BaseMessage
-          | ChatCompletionMessage
-          | FlexibleChatCompletionMessage
+          BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
         )[];
       };
   toolCallArgsExactMatch: boolean;

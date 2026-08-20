@@ -8,7 +8,7 @@ import type { ChatCompletionMessage } from "../types.js";
 export function _isInternalMessage(message: ChatCompletionMessage): boolean {
   return Boolean(
     message.role !== "user" &&
-      (message.role !== "assistant" || (message.tool_calls ?? []).length > 0)
+    (message.role !== "assistant" || (message.tool_calls ?? []).length > 0)
   );
 }
 

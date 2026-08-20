@@ -40,9 +40,7 @@ export async function trajectoryUnorderedMatch(params: {
     | BaseMessage[]
     | {
         messages: (
-          | BaseMessage
-          | ChatCompletionMessage
-          | FlexibleChatCompletionMessage
+          BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
         )[];
       };
   referenceOutputs:
@@ -50,9 +48,7 @@ export async function trajectoryUnorderedMatch(params: {
     | BaseMessage[]
     | {
         messages: (
-          | BaseMessage
-          | ChatCompletionMessage
-          | FlexibleChatCompletionMessage
+          BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
         )[];
       };
 }): Promise<EvaluatorResult> {

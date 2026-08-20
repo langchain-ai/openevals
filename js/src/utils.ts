@@ -86,9 +86,7 @@ export const _normalizeToOpenAIMessagesList: (
     | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[]
     | {
         messages: (
-          | BaseMessage
-          | ChatCompletionMessage
-          | FlexibleChatCompletionMessage
+          BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
         )[];
       }
     | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)
@@ -97,17 +95,13 @@ export const _normalizeToOpenAIMessagesList: (
     | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)[]
     | {
         messages: (
-          | BaseMessage
-          | ChatCompletionMessage
-          | FlexibleChatCompletionMessage
+          BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
         )[];
       }
     | (BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage)
 ): ChatCompletionMessage[] => {
   let messagesList: (
-    | BaseMessage
-    | ChatCompletionMessage
-    | FlexibleChatCompletionMessage
+    BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
   )[];
   if (!Array.isArray(messages)) {
     if ("messages" in messages && Array.isArray(messages.messages)) {
@@ -250,8 +244,7 @@ export const processScore = (
 };
 
 export type EvaluationResultType<O> = O extends
-  | MultiResultScorerReturnType
-  | Promise<MultiResultScorerReturnType>
+  MultiResultScorerReturnType | Promise<MultiResultScorerReturnType>
   ? EvaluatorResult[]
   : EvaluatorResult;
 

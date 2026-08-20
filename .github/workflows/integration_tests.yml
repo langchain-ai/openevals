@@ -20,7 +20,7 @@ jobs:
       python_changed: ${{ steps.check-changes.outputs.python_changed }}
       js_changed: ${{ steps.check-changes.outputs.js_changed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Required for diff with main branch
 
@@ -50,15 +50,15 @@ jobs:
       run:
         working-directory: python
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           version: "0.6.2"
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -106,10 +106,10 @@ jobs:
       run:
         working-directory: js
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: 22.x
           cache: "yarn"

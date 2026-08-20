@@ -38,7 +38,9 @@ conciseness_evaluator = create_llm_as_judge(
 
 inputs = "How is the weather in San Francisco?"
 # These are fake outputs, in reality you would run your LLM-based system to get real outputs
-outputs = "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
+outputs = (
+    "Thanks for asking! The current weather in San Francisco is sunny and 90 degrees."
+)
 # When calling an LLM-as-judge evaluator, parameters are formatted directly into the prompt
 eval_result = conciseness_evaluator(
     inputs=inputs,
@@ -304,10 +306,13 @@ from langchain_core.prompts.chat import ChatPromptTemplate
 inputs = {"a": 1, "b": 2}
 outputs = {"a": 1, "b": 2}
 
-prompt = ChatPromptTemplate([
-    ("system", "You are an expert at determining if two objects are equal."),
-    ("human", "Are these two equal? {{inputs}} {{outputs}}"),
-], template_format="mustache")
+prompt = ChatPromptTemplate(
+    [
+        ("system", "You are an expert at determining if two objects are equal."),
+        ("human", "Are these two equal? {{inputs}} {{outputs}}"),
+    ],
+    template_format="mustache",
+)
 
 llm_as_judge = create_llm_as_judge(
     prompt=prompt,
@@ -474,9 +479,11 @@ from typing_extensions import TypedDict
 
 from openevals.llm import create_llm_as_judge
 
+
 class EqualityResult(TypedDict):
     equality_justification: str
     are_equal: bool
+
 
 inputs = "The rain in Spain falls mainly on the plain."
 
@@ -614,9 +621,7 @@ outputs = "Doodads have increased in price by 10% in the past year."
 reference_outputs = "The price of doodads has decreased by 50% in the past year."
 
 eval_result = correctness_evaluator(
-  inputs=inputs,
-  outputs=outputs,
-  reference_outputs=reference_outputs
+    inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
 )
 
 print(eval_result)
@@ -805,9 +810,7 @@ outputs = "Doodads have increased in price by 10% in the past year."
 reference_outputs = "The price of doodads has decreased by 50% in the past year."
 
 eval_result = correctness_evaluator(
-  inputs=inputs,
-  outputs=outputs,
-  reference_outputs=reference_outputs
+    inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
 )
 
 print(eval_result)
@@ -848,8 +851,8 @@ outputs = {
 }
 
 eval_result = helpfulness_evaluator(
-  inputs=inputs,
-  outputs=outputs,
+    inputs=inputs,
+    outputs=outputs,
 )
 
 print(eval_result)
@@ -884,7 +887,7 @@ context = {
         "FoobarLand is a new country located on the dark side of the moon",
         "Space dolphins are native to FoobarLand",
         "FoobarLand is a constitutional democracy whose first president was Bagatur Askaryan",
-        "The current weather in FoobarLand is 80 degrees and clear."
+        "The current weather in FoobarLand is 80 degrees and clear.",
     ],
 }
 
@@ -970,12 +973,14 @@ evaluator = create_embedding_similarity_evaluator()
 
 inputs = "Where was the first president of FoobarLand born?"
 
-context = "\n".join([
-    "BazQuxLand is a new country located on the dark side of the moon",
-    "Space dolphins are native to BazQuxLand",
-    "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
-    "The current weather in BazQuxLand is 80 degrees and clear.",
-])
+context = "\n".join(
+    [
+        "BazQuxLand is a new country located on the dark side of the moon",
+        "Space dolphins are native to BazQuxLand",
+        "BazQuxLand is a constitutional democracy whose first president was Bagatur Askaryan",
+        "The current weather in BazQuxLand is 80 degrees and clear.",
+    ]
+)
 
 result = evaluator(
     outputs=context,
@@ -1015,11 +1020,11 @@ from openevals.json import create_json_match_evaluator
 
 outputs = [
     {"a": "Mango, Bananas", "b": 2},
-    {"a": "Apples", "b": 2, "c": [1,2,3]},
+    {"a": "Apples", "b": 2, "c": [1, 2, 3]},
 ]
 reference_outputs = [
     {"a": "Mango, Bananas", "b": 2},
-    {"a": "Apples", "b": 2, "c": [1,2,4]},
+    {"a": "Apples", "b": 2, "c": [1, 2, 4]},
 ]
 evaluator = create_json_match_evaluator(
     # How to aggregate feedback keys in each element of the list: "average", "all", or None
@@ -1058,7 +1063,7 @@ from openevals.json import create_json_match_evaluator
 
 outputs = [
     {"a": "Mango, Bananas", "b": 2},
-    {"a": "Apples", "b": 2, "c": [1,2,3]},
+    {"a": "Apples", "b": 2, "c": [1, 2, 3]},
 ]
 reference_outputs = [
     {"a": "Bananas, Mango", "b": 2, "d": "Not in outputs"},
@@ -1070,14 +1075,12 @@ evaluator = create_json_match_evaluator(
     aggregator="average",
     # Remove if evaluating a single structured output. This aggregates the feedback keys across elements of the list. Can be "average" or "all". Defaults to "all". "all" returns 1 if each element of the list is 1; if any score is not 1, it returns 0. "average" returns the average of the scores from each element.
     list_aggregator="all",
-    rubric={
-        "a": "Does the answer mention all the fruits in the reference answer?"
-    },
+    rubric={"a": "Does the answer mention all the fruits in the reference answer?"},
     # The provider and name of the model to use
     model="openai:gpt-5.6-sol",
     # Whether to force the model to reason about the keys in `rubric`. Defaults to True
     # Note that this is not currently supported if there is an aggregator specified
-    use_reasoning=True
+    use_reasoning=True,
 )
 result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
 
@@ -1184,9 +1187,7 @@ print(result)
 You can also pass `pyright_cli_args` to the evaluator to customize the arguments passed to the `pyright` CLI:
 
 ```python
-evaluator = create_pyright_evaluator(
-    pyright_cli_args=["--flag"]
-)
+evaluator = create_pyright_evaluator(pyright_cli_args=["--flag"])
 ```
 
 For a full list of supported arguments, see the [pyright CLI documentation](https://microsoft.github.io/pyright/#/command-line).
@@ -1234,9 +1235,7 @@ mypy --no-incremental --disallow-untyped-calls --disallow-incomplete-defs --igno
 But you can pass `mypy_cli_args` to the evaluator to customize the arguments passed to the `mypy` CLI. This will override the default arguments:
 
 ```python
-evaluator = create_mypy_evaluator(
-    mypy_cli_args=["--flag"]
-)
+evaluator = create_mypy_evaluator(mypy_cli_args=["--flag"])
 ```
 
 ### TypeScript type-checking (TypeScript-only)
@@ -1331,10 +1330,7 @@ async def _run_mypy_async(
 \`\`\`
 """
 
-eval_result = llm_as_judge(
-    inputs=INPUTS,
-    outputs=OUTPUTS
-)
+eval_result = llm_as_judge(inputs=INPUTS, outputs=OUTPUTS)
 
 print(eval_result)
 ```
@@ -1591,7 +1587,7 @@ outputs = [
                     "name": "accuweather_forecast",
                     "arguments": json.dumps({"city": "San Francisco"}),
                 }
-            }
+            },
         ],
     },
     {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
@@ -1637,34 +1633,76 @@ import json
 from openevals import create_trajectory_match_evaluator
 
 outputs = [
-    {"role": "user", "content": "What is the weather in SF and is there anything fun happening?"},
     {
-        "role": "assistant",
-        "content": "",
-        "tool_calls": [{"function": {"name": "get_weather", "arguments": json.dumps({"city": "San Francisco"})}}],
+        "role": "user",
+        "content": "What is the weather in SF and is there anything fun happening?",
     },
-    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
-    {
-        "role": "assistant",
-        "content": "",
-        "tool_calls": [{"function": {"name": "get_fun_activities", "arguments": json.dumps({"city": "San Francisco"})}}],
-    },
-    {"role": "tool", "content": "Nothing fun is happening, you should stay indoors and read!"},
-    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny, but there is nothing fun happening."},
-]
-reference_outputs = [
-    {"role": "user", "content": "What is the weather in SF and is there anything fun happening?"},
     {
         "role": "assistant",
         "content": "",
         "tool_calls": [
-            {"function": {"name": "get_fun_activities", "arguments": json.dumps({"city": "San Francisco"})}},
-            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "San Francisco"})}},
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            }
         ],
     },
-    {"role": "tool", "content": "Nothing fun is happening, you should stay indoors and read!"},
     {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
-    {"role": "assistant", "content": "In SF, it's 80˚ and sunny, but there is nothing fun happening."},
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {
+                "function": {
+                    "name": "get_fun_activities",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            }
+        ],
+    },
+    {
+        "role": "tool",
+        "content": "Nothing fun is happening, you should stay indoors and read!",
+    },
+    {
+        "role": "assistant",
+        "content": "The weather in SF is 80 degrees and sunny, but there is nothing fun happening.",
+    },
+]
+reference_outputs = [
+    {
+        "role": "user",
+        "content": "What is the weather in SF and is there anything fun happening?",
+    },
+    {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {
+                "function": {
+                    "name": "get_fun_activities",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            },
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            },
+        ],
+    },
+    {
+        "role": "tool",
+        "content": "Nothing fun is happening, you should stay indoors and read!",
+    },
+    {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
+    {
+        "role": "assistant",
+        "content": "In SF, it's 80˚ and sunny, but there is nothing fun happening.",
+    },
 ]
 
 evaluator = create_trajectory_match_evaluator(trajectory_match_mode="unordered")
@@ -1694,13 +1732,29 @@ outputs = [
         "role": "assistant",
         "content": "",
         "tool_calls": [
-            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "SF and London"})}},
-            {"function": {"name": "accuweather_forecast", "arguments": json.dumps({"city": "SF and London"})}}
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "SF and London"}),
+                }
+            },
+            {
+                "function": {
+                    "name": "accuweather_forecast",
+                    "arguments": json.dumps({"city": "SF and London"}),
+                }
+            },
         ],
     },
-    {"role": "tool", "content": "It's 80 degrees and sunny in SF, and 90 degrees and rainy in London."},
+    {
+        "role": "tool",
+        "content": "It's 80 degrees and sunny in SF, and 90 degrees and rainy in London.",
+    },
     {"role": "tool", "content": "Unknown."},
-    {"role": "assistant", "content": "The weather in SF is 80 degrees and sunny. In London, it's 90 degrees and rainy."},
+    {
+        "role": "assistant",
+        "content": "The weather in SF is 80 degrees and sunny. In London, it's 90 degrees and rainy.",
+    },
 ]
 reference_outputs = [
     {"role": "user", "content": "What is the weather in SF and London?"},
@@ -1708,14 +1762,27 @@ reference_outputs = [
         "role": "assistant",
         "content": "",
         "tool_calls": [
-            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "SF and London"})}}
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "SF and London"}),
+                }
+            }
         ],
     },
-    {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco, and 90 degrees and rainy in London."},
-    {"role": "assistant", "content": "The weather in SF is 80˚ and sunny. In London, it's 90˚ and rainy."},
+    {
+        "role": "tool",
+        "content": "It's 80 degrees and sunny in San Francisco, and 90 degrees and rainy in London.",
+    },
+    {
+        "role": "assistant",
+        "content": "The weather in SF is 80˚ and sunny. In London, it's 90˚ and rainy.",
+    },
 ]
 
-evaluator = create_trajectory_match_evaluator(trajectory_match_mode="superset")  # or "subset"
+evaluator = create_trajectory_match_evaluator(
+    trajectory_match_mode="superset"
+)  # or "subset"
 result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
 print(result)
 ```
@@ -1748,7 +1815,12 @@ outputs = [
         "role": "assistant",
         "content": "",
         "tool_calls": [
-            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "san francisco"})}}
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "san francisco"}),
+                }
+            }
         ],
     },
     {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
@@ -1760,7 +1832,12 @@ reference_outputs = [
         "role": "assistant",
         "content": "",
         "tool_calls": [
-            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "San Francisco"})}}
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            }
         ],
     },
     {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
@@ -1772,7 +1849,7 @@ evaluator = create_trajectory_match_evaluator(
     tool_args_match_mode="exact",
     tool_args_match_overrides={
         "get_weather": lambda x, y: x["city"].lower() == y["city"].lower()
-    }
+    },
 )
 
 result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
@@ -1805,7 +1882,12 @@ outputs = [
         "role": "assistant",
         "content": "",
         "tool_calls": [
-            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "SF"})}}
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "SF"}),
+                }
+            }
         ],
     },
     {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
@@ -1838,7 +1920,12 @@ outputs = [
         "role": "assistant",
         "content": "",
         "tool_calls": [
-            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "SF"})}}
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "SF"}),
+                }
+            }
         ],
     },
     {"role": "tool", "content": "It's 80 degrees and sunny in SF."},
@@ -1850,7 +1937,12 @@ reference_outputs = [
         "role": "assistant",
         "content": "",
         "tool_calls": [
-            {"function": {"name": "get_weather", "arguments": json.dumps({"city": "San Francisco"})}}
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": json.dumps({"city": "San Francisco"}),
+                }
+            }
         ],
     },
     {"role": "tool", "content": "It's 80 degrees and sunny in San Francisco."},
@@ -1917,9 +2009,18 @@ evaluator = create_llm_as_judge(
 
 outputs = [
     {"role": "user", "content": "Can you book a flight from NYC to Paris?"},
-    {"role": "assistant", "content": "I can provide information about flights, but I cannot actually book them for you."},
-    {"role": "user", "content": "I asked you to book it, not just give me info. Can you please just do it?"},
-    {"role": "assistant", "content": "I understand your frustration but I'm unable to make bookings."},
+    {
+        "role": "assistant",
+        "content": "I can provide information about flights, but I cannot actually book them for you.",
+    },
+    {
+        "role": "user",
+        "content": "I asked you to book it, not just give me info. Can you please just do it?",
+    },
+    {
+        "role": "assistant",
+        "content": "I understand your frustration but I'm unable to make bookings.",
+    },
 ]
 
 result = evaluator(outputs=outputs)
@@ -1937,9 +2038,11 @@ from typing_extensions import TypedDict
 from openevals.llm import create_llm_as_judge
 from openevals.prompts import LANGUAGE_DETECTION_PROMPT
 
+
 class LanguageDetectionResult(TypedDict):
     reasoning: str
     detected_language: str
+
 
 evaluator = create_llm_as_judge(
     prompt=LANGUAGE_DETECTION_PROMPT,
@@ -1950,7 +2053,10 @@ evaluator = create_llm_as_judge(
 
 outputs = [
     {"role": "user", "content": "Hola, ¿cómo estás?"},
-    {"role": "assistant", "content": "¡Hola! Estoy bien, gracias. ¿En qué puedo ayudarte?"},
+    {
+        "role": "assistant",
+        "content": "¡Hola! Estoy bien, gracias. ¿En qué puedo ayudarte?",
+    },
     {"role": "user", "content": "Necesito ayuda con mi cuenta."},
 ]
 
@@ -1993,7 +2099,8 @@ from openevals.string.levenshtein import levenshtein_distance
 outputs = "The correct answer"
 reference_outputs = "The correct answer"
 result = levenshtein_distance(
-    outputs=outputs, reference_outputs=reference_outputs,
+    outputs=outputs,
+    reference_outputs=reference_outputs,
 )
 
 print(result)
@@ -2083,9 +2190,8 @@ from openevals.types import (
 )
 from openevals.utils import _run_evaluator
 
-def create_regex_evaluator(
-    *, regex: str
-) -> SimpleEvaluator:
+
+def create_regex_evaluator(*, regex: str) -> SimpleEvaluator:
     """
     Matches a regex pattern against the output.
 
@@ -2099,9 +2205,7 @@ def create_regex_evaluator(
     regex = re.compile(regex)
 
     # Tolerate `inputs` and `reference_outputs` as kwargs, though they're unused
-    def wrapped_evaluator(
-        *, outputs: Any, **kwargs: Any
-    ) -> EvaluatorResult:
+    def wrapped_evaluator(*, outputs: Any, **kwargs: Any) -> EvaluatorResult:
 
         # Tolerate `outputs` being a dict, but convert to string for regex matching
         if not isinstance(outputs, str):
@@ -2186,6 +2290,7 @@ client = OpenAI()
 
 history = {}
 
+
 # Your application logic
 def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
     if thread_id not in history:
@@ -2200,13 +2305,15 @@ def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
                 "role": "system",
                 "content": "You are a patient and understanding customer service agent",
             },
-        ] + history[thread_id],
+        ]
+        + history[thread_id],
     )
 
     response_message = res.choices[0].message
     history[thread_id].append(response_message)
 
     return response_message
+
 
 user = create_llm_simulated_user(
     system="You are an aggressive and hostile customer who wants a refund for their car.",
@@ -2317,7 +2424,10 @@ user = create_llm_simulated_user(
     model="openai:gpt-5.6-sol",
     fixed_responses=[
         {"role": "user", "content": "I demand a refund for my bike!"},
-        {"role": "user", "content": "I closed my tab, repeat what you just said and make sure it's what I expect!"},
+        {
+            "role": "user",
+            "content": "I closed my tab, repeat what you just said and make sure it's what I expect!",
+        },
     ],
 )
 ```
@@ -2342,13 +2452,18 @@ If you need other functionality beyond the prebuilt simulated user, you can crea
 from openevals.simulators import run_multiturn_simulation
 from openevals.types import ChatCompletionMessage
 
+
 def my_app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
     output = "3.11 is greater than 3.9."
     return {"role": "assistant", "content": output, "id": "1234"}
 
-def my_simulated_user(trajectory: list[ChatCompletionMessage], *, thread_id: str, **kwargs):
+
+def my_simulated_user(
+    trajectory: list[ChatCompletionMessage], *, thread_id: str, **kwargs
+):
     output = "Wow that's amazing!"
     return {"role": "user", "content": output, "id": "5678"}
+
 
 # Run the simulation directly with the customized user function
 simulator_result = run_multiturn_simulation(
@@ -2372,9 +2487,11 @@ from langchain.chat_models import init_chat_model
 from langgraph.checkpoint.memory import MemorySaver
 from langchain.agents import create_agent
 
+
 def give_refund():
     """Gives a refund."""
     return "Refunds are not permitted."
+
 
 model = init_chat_model("openai:gpt-5.6-sol")
 
@@ -2385,12 +2502,13 @@ agent = create_agent(
     checkpointer=MemorySaver(),
 )
 
+
 def app(inputs: ChatCompletionMessage, *, thread_id: str, **kwargs):
     res = agent.invoke(
-        {"messages": [inputs]},
-        config={"configurable": {"thread_id": thread_id}}
+        {"messages": [inputs]}, config={"configurable": {"thread_id": thread_id}}
     )
     return res["messages"][-1]
+
 
 user = create_llm_simulated_user(
     system="You are an angry user who is frustrated with the service and keeps making additional demands.",
@@ -2485,6 +2603,7 @@ correctness_evaluator = create_llm_as_judge(
     model="openai:gpt-5.6-sol",
 )
 
+
 @pytest.mark.langsmith
 def test_correctness():
     inputs = "How much has the price of doodads changed in the past year?"
@@ -2495,9 +2614,7 @@ def test_correctness():
     t.log_reference_outputs({"answer": reference_outputs})
 
     correctness_evaluator(
-        inputs=inputs,
-        outputs=outputs,
-        reference_outputs=reference_outputs
+        inputs=inputs, outputs=outputs, reference_outputs=reference_outputs
     )
 ```
 
@@ -2536,6 +2653,7 @@ conciseness_evaluator = create_llm_as_judge(
     model="openai:gpt-5.6-sol",
 )
 
+
 def wrapped_conciseness_evaluator(
     inputs: dict[str, Any],
     outputs: dict[str, Any],
@@ -2550,16 +2668,14 @@ def wrapped_conciseness_evaluator(
         raise TypeError("Expected a single evaluation result")
     return dict(eval_result)
 
+
 def target(inputs: dict[str, Any]) -> Any:
     # This is a dummy target function, replace with your actual LLM-based system
     return "What color is the sky?"
 
+
 experiment_results = client.evaluate(
-    target,
-    data="Sample dataset",
-    evaluators=[
-        wrapped_conciseness_evaluator
-    ]
+    target, data="Sample dataset", evaluators=[wrapped_conciseness_evaluator]
 )
 ```
 

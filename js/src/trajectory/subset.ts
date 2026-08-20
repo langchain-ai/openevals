@@ -34,9 +34,7 @@ export async function trajectorySubset(params: {
     | BaseMessage[]
     | {
         messages: (
-          | BaseMessage
-          | ChatCompletionMessage
-          | FlexibleChatCompletionMessage
+          BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
         )[];
       };
   referenceOutputs:
@@ -44,9 +42,7 @@ export async function trajectorySubset(params: {
     | BaseMessage[]
     | {
         messages: (
-          | BaseMessage
-          | ChatCompletionMessage
-          | FlexibleChatCompletionMessage
+          BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
         )[];
       };
 }): Promise<EvaluatorResult> {

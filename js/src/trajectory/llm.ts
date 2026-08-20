@@ -28,9 +28,7 @@ type TrajectoryInput =
   | BaseMessage[]
   | {
       messages: (
-        | BaseMessage
-        | ChatCompletionMessage
-        | FlexibleChatCompletionMessage
+        BaseMessage | ChatCompletionMessage | FlexibleChatCompletionMessage
       )[];
     };
 

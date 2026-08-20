@@ -48,6 +48,7 @@ pythonpath = [
 
 [tool.uv]
 constraint-dependencies = [
+    "cryptography>=50.0.0",
     "pyasn1>=0.6.4",
     "pygments>=2.20.0",
     "setuptools>=83.0.0",

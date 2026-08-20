@@ -1,0 +1,63 @@
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns: ["*"]
+        update-types:
+          - "major"
+
+  - package-ecosystem: "uv"
+    directory: "/python"
+    schedule:
+      interval: "monthly"
+    versioning-strategy: "increase"
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns: ["*"]
+        update-types:
+          - "major"
+
+  - package-ecosystem: "npm"
+    directory: "/js"
+    schedule:
+      interval: "monthly"
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns: ["*"]
+        update-types:
+          - "major"
+
+  - package-ecosystem: "npm"
+    directory: "/sandbox/e2b"
+    schedule:
+      interval: "monthly"
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns: ["*"]
+        update-types:
+          - "major"

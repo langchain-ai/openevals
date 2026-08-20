@@ -55,7 +55,7 @@
     "langchain": "^1.5.9",
     "openai": "^7.4.0",
     "prettier": "^3.5.1",
-    "typescript": "~7.0.2",
+    "typescript": "~5.1.6",
     "vitest": "^4.1.0",
     "zod": "^4.1.5"
   },

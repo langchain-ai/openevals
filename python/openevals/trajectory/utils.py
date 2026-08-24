@@ -52,7 +52,11 @@ def _normalize_to_openai_messages_list(
     ],
 ) -> list[ChatCompletionMessage]:
     if messages is None:
-        return []
+        raise ValueError(
+            "Received `None` where a message, list of messages, or dict with a "
+            "'messages' key was expected. A missing trajectory cannot be "
+            "evaluated and must not be scored as an empty one."
+        )
     if isinstance(messages, dict):
         if "role" in messages:
             messages = [messages]  # type: ignore

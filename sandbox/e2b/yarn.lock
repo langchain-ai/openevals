@@ -5,10 +5,10 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@bufbuild/protobuf@npm:^2.12.1":
-  version: 2.14.0
-  resolution: "@bufbuild/protobuf@npm:2.14.0"
-  checksum: 904533ce3054c76aa43520c35e12d3cafa5594f9a652ccd8d34c547156fc73c5a62bb8d77fb6f416adf8e357bd8e26f311e478a5df3ccb19e6310c827c518c9a
+"@bufbuild/protobuf@npm:^2.14.0":
+  version: 2.14.1
+  resolution: "@bufbuild/protobuf@npm:2.14.1"
+  checksum: 607dfab401fe87b050565a7cc8c1009d5566993d9b25bdae381367648f43c0ff280f1ce48fd27eaa14660a50a8bef9fdf58987670732cd410c0d478c0bd7afff
   languageName: node
   linkType: hard
 
@@ -31,28 +31,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@e2b/cli@npm:^2.16.1":
-  version: 2.16.1
-  resolution: "@e2b/cli@npm:2.16.1"
+"@e2b/cli@npm:^2.18.0":
+  version: 2.18.0
+  resolution: "@e2b/cli@npm:2.18.0"
   dependencies:
     "@iarna/toml": ^2.2.5
     "@inquirer/prompts": ^7.9.0
     "@npmcli/package-json": ^7.0.5
-    async-listen: ^3.0.1
+    async-listen: ^3.1.0
     boxen: ^7.1.1
     chalk: ^5.3.0
     cli-highlight: ^2.1.11
     commander: ^11.1.0
-    console-table-printer: ^2.11.2
-    e2b: ^2.37.0
+    e2b: ^2.46.0
     handlebars: ^4.7.9
     inquirer: ^12.10.0
     simple-update-notifier: ^2.0.0
-    statuses: ^2.0.1
-    yup: ^1.3.2
+    simple-wcswidth: ^1.1.2
+    statuses: ^2.0.2
+    yup: ^1.7.1
   bin:
     e2b: dist/index.js
-  checksum: fbbf89f5d790cce82f16208f7b3d37eb6925dd1194735d8e1e2ec5a0022def05d09aa4448176b5a5f1f1eb9d387f901c3aa46f94561b60eaa25a61102802af79
+  checksum: 93ba695f8a44de1ea7fc07cd3823197d29a3b8f250c28160f742b8761a435003eba73e6390f5faa8ad4387b6d43b6b38fa9247546c0e181bae03cde57bda9049
   languageName: node
   linkType: hard
 
@@ -412,7 +412,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async-listen@npm:^3.0.1":
+"async-listen@npm:^3.1.0":
   version: 3.1.0
   resolution: "async-listen@npm:3.1.0"
   checksum: c88731a07936ec382397d82b1700248d5407771befbf58bcb355b10922bf84bae87ee70794bdf9ed2e32573762e3f684c6700ed9a4db4fb11383155383ec466e
@@ -560,15 +560,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"console-table-printer@npm:^2.11.2":
-  version: 2.12.1
-  resolution: "console-table-printer@npm:2.12.1"
-  dependencies:
-    simple-wcswidth: ^1.0.1
-  checksum: 4d58fd4f18d3a69f421c9b0ffd44e5b0542677423491199e92c3e5ca0c023a06304a94bcc60f0d2b480a06cdf0720d2f228807f2af127abc8c905e73fcf64363
-  languageName: node
-  linkType: hard
-
 "dockerfile-ast@npm:^0.7.1":
   version: 0.7.1
   resolution: "dockerfile-ast@npm:0.7.1"
@@ -579,11 +570,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"e2b@npm:^2.37.0":
-  version: 2.42.0
-  resolution: "e2b@npm:2.42.0"
+"e2b@npm:^2.46.0":
+  version: 2.46.1
+  resolution: "e2b@npm:2.46.1"
   dependencies:
-    "@bufbuild/protobuf": ^2.12.1
+    "@bufbuild/protobuf": ^2.14.0
     "@connectrpc/connect": ^2.1.2
     "@connectrpc/connect-web": ^2.1.2
     chalk: ^5.3.0
@@ -592,13 +583,13 @@ __metadata:
     glob: ^13.0.6
     openapi-fetch: ^0.14.1
     platform: ^1.3.6
-    tar: ^7.5.19
+    tar: ^7.5.22
     undici: ^7.29.0
     undici8: "npm:undici@8.10.0"
   dependenciesMeta:
     undici8:
       optional: true
-  checksum: 8d088a3bb48de38e4244fee600e1a879bd11d0d4388cf1a0c63b5de7f6168b23bd300fd04a598a1649131e0195d6cca7040a1e31456ec6df9779aad9253bbd7a
+  checksum: 808f281e0b6c383d1a99f08210fcced5521a25a1d8519545c428500f6a3291537e2b3a32551018fed78668917256564e31037dc69f2e38b19ee4d7015bb38542
   languageName: node
   linkType: hard
 
@@ -877,7 +868,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "openevals-e2b-sandbox-templates@workspace:."
   dependencies:
-    "@e2b/cli": ^2.16.1
+    "@e2b/cli": ^2.18.0
   languageName: unknown
   linkType: soft
 
@@ -999,10 +990,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"simple-wcswidth@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "simple-wcswidth@npm:1.0.1"
-  checksum: dc5bf4cb131d9c386825d1355add2b1ecc408b37dc2c2334edd7a1a4c9f527e6b594dedcdbf6d949bce2740c3a332e39af1183072a2d068e40d9e9146067a37f
+"simple-wcswidth@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "simple-wcswidth@npm:1.1.2"
+  checksum: 210eea36d28fb8dbadb1dcf5a19e747c1435548ec56bfd86f1c79fb9ddf676b252d84632d3ab9a787251281c499520e63bca1d9f5997cbd66c25996c10e056b1
   languageName: node
   linkType: hard
 
@@ -1037,7 +1028,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"statuses@npm:^2.0.1":
+"statuses@npm:^2.0.2":
   version: 2.0.2
   resolution: "statuses@npm:2.0.2"
   checksum: 6927feb50c2a75b2a4caab2c565491f7a93ad3d8dbad7b1398d52359e9243a20e2ebe35e33726dee945125ef7a515e9097d8a1b910ba2bbd818265a2f6c39879
@@ -1093,7 +1084,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^7.5.19":
+"tar@npm:^7.5.22":
   version: 7.5.22
   resolution: "tar@npm:7.5.22"
   dependencies:
@@ -1299,14 +1290,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yup@npm:^1.3.2":
-  version: 1.6.1
-  resolution: "yup@npm:1.6.1"
+"yup@npm:^1.7.1":
+  version: 1.7.1
+  resolution: "yup@npm:1.7.1"
   dependencies:
     property-expr: ^2.0.5
     tiny-case: ^1.0.3
     toposort: ^2.0.2
     type-fest: ^2.19.0
-  checksum: 4ef0b15eb01d89a4f15c78c112b588468d553420be6f2f519d0e58a270c96a5bbbf1bff7bc8909851ba8b3df5e1fdb8b34d4a3bd4e9269006c592b3e8580568f
+  checksum: 80d0d6838da457d489a97ee0b9c26fa9f59355a553f86842ea114b049811a918a0e7221f9c22bb88314699ddfb3e24ded49f7ab10a0e74dd273d03430110d5af
   languageName: node
   linkType: hard

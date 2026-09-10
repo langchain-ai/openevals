@@ -1,0 +1,21 @@
+inputs.amount,inputs.currency,inputs.transaction_text,outputs.category,outputs.merchant,error,reference.category,reference.merchant,feedback.category_exact_match,feedback.correctness,execution_time,example_id,id
+-89.95,EUR,DECATHLON FILIALE 452,Shopping,DECATHLON,,Shopping,Decathlon,1.0,True,1.035928,0368e92b-706a-4850-b76e-0afd9a4ba5f3,01a08a6c-4904-71a3-a73e-37549e812c05
+-12.0,EUR,KARTENZAHLUNG REF 88213X UNBEKANNT,Other,Unknown,,Other,Unknown,1.0,True,1.030934,0a80a2f9-2940-4ca3-af17-1b004149c062,01a08a6c-4905-7823-8b26-d953dd99bc78
+-18.2,EUR,UBER TRIP HELP.UBER.COM,Transport,Uber,,Transport,Uber,1.0,True,0.792497,0fb7e16e-7be5-4dc7-b56b-b059fa2bd694,01a08a6c-4906-7bf1-9455-3e0a369e8ec6
+-245.0,EUR,LUFTHANSA AG FRANKFURT TICKET,Travel,LUFTHANSA AG,,Travel,Lufthansa,1.0,True,1.046484,32a4837b-f363-4368-b1a1-508ec3f385d3,01a08a6c-4d11-7680-ac0c-42d109b97d2f
+-89.0,EUR,DB VERTRIEB GMBH FRANKFURT,Transport,DB Vertrieb GmbH,,Transport,Deutsche Bahn,1.0,False,1.069516,30a3558e-559e-46e3-bd14-5aa6c37465ea,01a08a6c-4d0d-7b50-ab34-e30d0d6d2c52
+3200.0,EUR,GEHALT SEPTEMBER FIRMA MUSTER GMBH,Income & Salary,FIRMA MUSTER GMBH,,Income & Salary,Firma Muster GmbH,1.0,True,1.073191,16d78e31-67f1-4d73-979c-32a6fdec1c12,01a08a6c-4c1e-7f20-9b58-fb66beab058d
+-400.0,EUR,UEBERWEISUNG AN MAX MUSTER REF RENT SHARE,Transfers,Max Muster,,Transfers,Max Muster,1.0,True,0.783621,5576b275-ebfe-40bc-835d-999c810bc58b,01a08a6c-513c-7a31-802f-6030f735845b
+-22.15,EUR,APOTHEKE AM MARKT BERLIN,Healthcare,APOTHEKE AM MARKT,,Healthcare,Apotheke am Markt,1.0,True,0.74563,34ec793e-146b-495b-ab70-c626be82a2d6,01a08a6c-5050-74f2-a488-c690583eaeac
+-65.99,EUR,PAYPAL *ZARA ONLINE 4029357733,Shopping,ZARA ONLINE,,Shopping,Zara,1.0,True,1.105852,420dc13b-7b6c-425b-b5c1-2588dcebcc45,01a08a6c-5127-7222-a7f0-b3a39a49c2e9
+-39.0,EUR,FITNESS FIRST MONATSBEITRAG,Subscriptions,Fitness First,,Subscriptions,Fitness First,1.0,True,0.900605,64c24415-ea1a-403b-a965-23e4517ef82d,01a08a6c-533a-7522-96e8-81d61376a9a3
+-6.4,EUR,STARBUCKS COFFEE BERLIN HBF,Dining & Restaurants,STARBUCKS COFFEE,,Dining & Restaurants,Starbucks,1.0,True,0.776042,6693f6c7-81ba-4fcb-b99d-efed176ef169,01a08a6c-544b-7450-a14c-f3fbd1f0741a
+-54.32,EUR,REWE SAGT DANKE 8020 KARTE1 76-3//BERLIN/DE,Groceries,REWE,,Groceries,REWE,1.0,True,1.038957,a52fe201-acbc-45fb-96ba-0d900c10cab7,01a08a6c-5754-70f0-8b7a-a48476f940a1
+-76.3,EUR,RYANAIR DAC DUBLIN IE,Travel,RYANAIR DAC,,Travel,Ryanair,1.0,True,0.858385,6a801bdd-7f65-422f-b0cf-f4a8357b61a7,01a08a6c-5579-7540-9751-fa1e48984d2e
+-45.6,EUR,ALLIANZ VERSICHERUNGS AG BEITRAG,Insurance,ALLIANZ VERSICHERUNGS AG,,Insurance,Allianz,1.0,True,0.80645,80e29807-e3b9-4116-8acf-a5853b2f1602,01a08a6c-56bf-71a0-81fd-7b2c5d4a8262
+-980.0,EUR,MIETE OKTOBER WOHNUNG HAUPTSTR 12,Rent & Housing,MIETE OKTOBER WOHNUNG HAUPTSTR,,Rent & Housing,Hausverwaltung Hauptstr 12,1.0,False,0.825748,b40ae669-7779-43c1-805a-9cbe81c3f94b,01a08a6c-58d4-70b3-9426-e5589268b12c
+-34.5,EUR,AMAZON.DE MARKETPLACE PAYMENTS,Shopping,AMAZON.DE MARKETPLACE,,Shopping,Amazon,1.0,False,0.743511,ceb90be9-a071-4eae-8f09-3bf8098475a7,01a08a6c-5b63-7b71-aae4-6c96d73d010a
+-13.99,EUR,NETFLIX.COM 1 8887 8877 CA,Subscriptions,NETFLIX.COM,,Entertainment,Netflix,0.0,False,0.787494,bef46ac4-3473-44da-b01c-85bf5d64119d,01a08a6c-59e6-7c80-8823-038b0885a4f9
+-112.4,EUR,STADTWERKE MUENCHEN STROM/GAS,Utilities,Stadtwerke Muenchen,,Utilities,Stadtwerke Muenchen,1.0,True,1.00568,cf8616cf-1e66-4230-96be-2e15b95f2e46,01a08a6c-5c0f-7a32-9d93-41f4b4ee887f
+-9.99,EUR,SPOTIFY AB STOCKHOLM SWE,Subscriptions,Spotify,,Subscriptions,Spotify,1.0,True,0.773151,ebe3f99d-67ca-43a1-9ae8-ce8ffd9f41cc,01a08a6c-5cfb-70f2-b8ce-b99d30752cef
+-6.9,EUR,KONTOFUEHRUNGSGEBUEHR SEPTEMBER,Fees & Charges,Unknown,,Fees & Charges,Bank Fee,1.0,False,0.834079,fca79c44-7b92-48fb-889c-321db748ab34,01a08a6c-5e4c-7261-84ad-74da265ab044

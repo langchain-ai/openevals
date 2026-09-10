@@ -1,0 +1,81 @@
+{
+  "n_examples": 20,
+  "category_exact_match_rate": 0.95,
+  "correctness_rate": 0.75,
+  "by_difficulty": {
+    "easy": {
+      "n": 11,
+      "category_exact_match_rate": 0.909,
+      "correctness_rate": 0.727
+    },
+    "hard": {
+      "n": 2,
+      "category_exact_match_rate": 1.0,
+      "correctness_rate": 1.0
+    },
+    "medium": {
+      "n": 7,
+      "category_exact_match_rate": 1.0,
+      "correctness_rate": 0.714
+    }
+  },
+  "worst_examples": [
+    {
+      "transaction_text": "DB VERTRIEB GMBH FRANKFURT",
+      "predicted_category": "Transport",
+      "expected_category": "Transport",
+      "predicted_merchant": "DB Vertrieb GmbH",
+      "expected_merchant": "Deutsche Bahn",
+      "category_exact_match": true
+    },
+    {
+      "transaction_text": "MIETE OKTOBER WOHNUNG HAUPTSTR 12",
+      "predicted_category": "Rent & Housing",
+      "expected_category": "Rent & Housing",
+      "predicted_merchant": "MIETE OKTOBER WOHNUNG HAUPTSTR",
+      "expected_merchant": "Hausverwaltung Hauptstr 12",
+      "category_exact_match": true
+    },
+    {
+      "transaction_text": "AMAZON.DE MARKETPLACE PAYMENTS",
+      "predicted_category": "Shopping",
+      "expected_category": "Shopping",
+      "predicted_merchant": "AMAZON.DE MARKETPLACE",
+      "expected_merchant": "Amazon",
+      "category_exact_match": true
+    },
+    {
+      "transaction_text": "NETFLIX.COM 1 8887 8877 CA",
+      "predicted_category": "Subscriptions",
+      "expected_category": "Entertainment",
+      "predicted_merchant": "NETFLIX.COM",
+      "expected_merchant": "Netflix",
+      "category_exact_match": false
+    },
+    {
+      "transaction_text": "KONTOFUEHRUNGSGEBUEHR SEPTEMBER",
+      "predicted_category": "Fees & Charges",
+      "expected_category": "Fees & Charges",
+      "predicted_merchant": "Unknown",
+      "expected_merchant": "Bank Fee",
+      "category_exact_match": true
+    }
+  ],
+  "best_examples_sample": [
+    {
+      "transaction_text": "DECATHLON FILIALE 452",
+      "predicted_category": "Shopping",
+      "predicted_merchant": "DECATHLON"
+    },
+    {
+      "transaction_text": "KARTENZAHLUNG REF 88213X UNBEKANNT",
+      "predicted_category": "Other",
+      "predicted_merchant": "Unknown"
+    },
+    {
+      "transaction_text": "UBER TRIP HELP.UBER.COM",
+      "predicted_category": "Transport",
+      "predicted_merchant": "Uber"
+    }
+  ]
+}

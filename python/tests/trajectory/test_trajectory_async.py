@@ -293,3 +293,62 @@ async def test_trajectory_match_with_nested_field_overrides_requires_key():
     )
     result = await evaluator(outputs=outputs, reference_outputs=reference_outputs)
     assert result["score"] is False
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+@pytest.mark.parametrize("match_mode", ["unordered", "superset", "subset", "strict"])
+async def test_trajectory_match_rejects_missing_outputs(match_mode):
+    """A missing trajectory is unevaluable and must raise, not score.
+
+    Previously `None` was normalized to `[]` before reaching the scorer's own
+    `outputs is None` guard, so the guard could never fire. In `subset` mode the
+    empty list was then vacuously a subset and the evaluator returned True -- a
+    pass for a trajectory that was never observed.
+    """
+    evaluator = create_async_trajectory_match_evaluator(
+        trajectory_match_mode=match_mode
+    )
+    reference_outputs = [
+        ChatCompletionMessage(
+            role="assistant",
+            tool_calls=[
+                {
+                    "function": {
+                        "name": "get_weather",
+                        "arguments": json.dumps({"city": "San Francisco"}),
+                    }
+                }
+            ],
+        ),
+    ]
+    with pytest.raises(ValueError):
+        await evaluator(outputs=None, reference_outputs=reference_outputs)
+    with pytest.raises(ValueError):
+        await evaluator(outputs=reference_outputs, reference_outputs=None)
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_trajectory_match_still_accepts_empty_outputs():
+    """An empty list is supplied-and-empty, not missing, and is still scored.
+
+    This pins the scope of the `None` change above: only a missing trajectory is
+    unevaluable. `[]` remains vacuously a subset, as before.
+    """
+    evaluator = create_async_trajectory_match_evaluator(trajectory_match_mode="subset")
+    reference_outputs = [
+        ChatCompletionMessage(
+            role="assistant",
+            tool_calls=[
+                {
+                    "function": {
+                        "name": "get_weather",
+                        "arguments": json.dumps({"city": "San Francisco"}),
+                    }
+                }
+            ],
+        ),
+    ]
+    result = await evaluator(outputs=[], reference_outputs=reference_outputs)
+    assert result["score"] is True

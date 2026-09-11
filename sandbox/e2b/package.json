@@ -4,7 +4,7 @@
   "packageManager": "yarn@3.5.1",
   "type": "module",
   "dependencies": {
-    "@e2b/cli": "^2.16.1"
+    "@e2b/cli": "^2.18.0"
   },
   "resolutions": {
     "tmp": ">=0.2.4"

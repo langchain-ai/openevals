@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "timestamp": "2026-08-22T19:48:53.773010",
+    "model": "gpt-4o-mini",
+    "dataset": "ux-design-knowledge-qa",
+    "experiment_prefix": "ux-eval-gpt4o-mini",
+    "total_examples": 15,
+    "total_time_seconds": 26.76
+  },
+  "aggregate_metrics": {
+    "average_score": 1.0,
+    "pass_rate_percent": 100.0,
+    "passed": 15,
+    "failed": 0,
+    "total_evaluated": 15
+  },
+  "per_example_results": [
+    {
+      "question": "What is the System Usability Scale (SUS)?",
+      "score": 1,
+      "reasoning": "The student's answer accurately describes the System Usability Scale (SUS), including its structure, scoring method, interpretation of scores, and pra"
+    },
+    {
+      "question": "What are the key principles of Apple's Human Interface Guidelines (HIG) for iOS?",
+      "score": 1,
+      "reasoning": "The student's answer accurately captures the key principles of Apple's Human Interface Guidelines, including clarity, consistency, direct manipulation"
+    },
+    {
+      "question": "What is the purpose of a design token?",
+      "score": 1,
+      "reasoning": "The student's answer accurately captures the purpose of design tokens, including key concepts such as consistency, scalability, collaboration, efficie"
+    },
+    {
+      "question": "What is cognitive load in UX, and how can designers reduce it?",
+      "score": 1,
+      "reasoning": "The student's answer accurately defines cognitive load, categorizes it into intrinsic, extraneous, and germane load, and provides a comprehensive list"
+    },
+    {
+      "question": "What is a heuristic evaluation and how is it conducted?",
+      "score": 1,
+      "reasoning": "The student's answer accurately describes a heuristic evaluation, includes all key steps and concepts from the reference answer, and does not contain "
+    },
+    {
+      "question": "What is the difference between low-fidelity and high-fidelity prototypes?",
+      "score": 1,
+      "reasoning": "The student's answer accurately describes the differences between low-fidelity and high-fidelity prototypes, covering all key facts and concepts from "
+    },
+    {
+      "question": "What is information architecture (IA) in UX design?",
+      "score": 1,
+      "reasoning": "The student's answer accurately describes information architecture (IA) in UX design, covering key components such as organization systems, labeling s"
+    },
+    {
+      "question": "What is the difference between formative and summative usability testing?",
+      "score": 1,
+      "reasoning": "The student's answer accurately describes the differences between formative and summative usability testing, covering all key facts and concepts from "
+    },
+    {
+      "question": "What is the minimum contrast ratio for normal text under WCAG 2.1 AA?",
+      "score": 1,
+      "reasoning": "The student's answer accurately states the minimum contrast ratio for normal text as 4.5:1 and correctly identifies the ratio for large text as 3:1, c"
+    },
+    {
+      "question": "What is a user persona and what should it include?",
+      "score": 1,
+      "reasoning": "The student's answer accurately defines a user persona and includes all key elements from the reference answer, such as name, demographics, goals, cha"
+    },
+    {
+      "question": "Explain Fitts's Law and how it applies to UI design.",
+      "score": 1,
+      "reasoning": "The student's answer accurately explains Fitts's Law, including the formula and its components. It also covers key applications in UI design, such as "
+    },
+    {
+      "question": "What does WCAG stand for and what are its conformance levels?",
+      "score": 1,
+      "reasoning": "The student's answer correctly defines WCAG and accurately describes the three conformance levels, including their significance and the general target"
+    },
+    {
+      "question": "What is a design system and why is it important?",
+      "score": 1,
+      "reasoning": "The student's answer accurately defines a design system and includes all key components such as UI components, design tokens, guidelines, patterns, an"
+    },
+    {
+      "question": "What is the difference between UX and UI design?",
+      "score": 1,
+      "reasoning": "The student's answer accurately captures the key differences between UX and UI design, including their focus, processes, deliverables, and goals. It i"
+    },
+    {
+      "question": "What are Nielsen's 10 usability heuristics? List them briefly.",
+      "score": 1,
+      "reasoning": "The student's answer accurately lists and explains all 10 of Nielsen's usability heuristics without any factual errors or omissions. Each heuristic is"
+    }
+  ]
+}

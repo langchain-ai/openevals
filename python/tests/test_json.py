@@ -448,6 +448,45 @@ def test_json_match_list_mismatch_output_missing():
 
 
 @pytest.mark.langsmith
+def test_json_match_same_elements_extra_empty_output():
+    # An extra empty-dict item in outputs has no fields of its own, so it must
+    # still be penalized as an unmatched record instead of silently vanishing.
+    outputs = [{"total": 6}, {}]
+    reference_outputs = [{"total": 6}]
+    t.log_inputs({"outputs": outputs})
+    evaluator = create_json_match_evaluator(aggregator="all")
+    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    assert result[0]["key"] == "json_match:all"
+    assert result[0]["score"] == 0
+
+
+@pytest.mark.langsmith
+def test_json_match_same_elements_extra_empty_reference():
+    # Same as above, mirrored: an extra empty-dict reference item must also
+    # be penalized rather than ignored.
+    outputs = [{"total": 6}]
+    reference_outputs = [{"total": 6}, {}]
+    t.log_inputs({"outputs": outputs})
+    evaluator = create_json_match_evaluator(aggregator="all")
+    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    assert result[0]["key"] == "json_match:all"
+    assert result[0]["score"] == 0
+
+
+@pytest.mark.langsmith
+def test_json_match_same_elements_matched_empty_records():
+    # When both sides have the same number of empty-dict records, they should
+    # match each other and the evaluator should still score a full match.
+    outputs = [{"total": 6}, {}]
+    reference_outputs = [{"total": 6}, {}]
+    t.log_inputs({"outputs": outputs})
+    evaluator = create_json_match_evaluator(aggregator="all")
+    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    assert result[0]["key"] == "json_match:all"
+    assert result[0]["score"] == 1
+
+
+@pytest.mark.langsmith
 def test_json_match_mode_exact_extra_reference():
     outputs = [{"a": 1}, {"a": 1}]
     reference_outputs = [{"a": 1}, {"a": 1}, {"a": 1}]

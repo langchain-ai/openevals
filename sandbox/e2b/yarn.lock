@@ -5,35 +5,35 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@bufbuild/protobuf@npm:^2.14.0":
-  version: 2.14.1
-  resolution: "@bufbuild/protobuf@npm:2.14.1"
-  checksum: 607dfab401fe87b050565a7cc8c1009d5566993d9b25bdae381367648f43c0ff280f1ce48fd27eaa14660a50a8bef9fdf58987670732cd410c0d478c0bd7afff
+"@bufbuild/protobuf@npm:^2.15.0":
+  version: 2.16.0
+  resolution: "@bufbuild/protobuf@npm:2.16.0"
+  checksum: 946f965d5622f88e787f21ee2a63689aea310629ea17079a854a2581096625800d62662e5e936a92c651c3a7ea67e1d53e849d06a6093073c6d9dd3c70a54cd5
   languageName: node
   linkType: hard
 
-"@connectrpc/connect-web@npm:^2.1.2":
-  version: 2.1.2
-  resolution: "@connectrpc/connect-web@npm:2.1.2"
+"@connectrpc/connect-web@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@connectrpc/connect-web@npm:2.2.0"
   peerDependencies:
     "@bufbuild/protobuf": ^2.7.0
-    "@connectrpc/connect": 2.1.2
-  checksum: 5d906342e66038aba9d1546ab2ca2dcf377ed7e7809e1d28da5c9e164f2da64c94e568944d00a693c27ed9f842a168a1664928f3ca7b630af697651706147e6b
+    "@connectrpc/connect": 2.2.0
+  checksum: a96f564d6447a7d2f1f82f94b84d8d72a5f09d0bc23cbaa91cb82d5568177ab67bf258315a1c2c80fe5f03abc52f7879233684e3d164f3b43d1db90c1dbcc831
   languageName: node
   linkType: hard
 
-"@connectrpc/connect@npm:^2.1.2":
-  version: 2.1.2
-  resolution: "@connectrpc/connect@npm:2.1.2"
+"@connectrpc/connect@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@connectrpc/connect@npm:2.2.0"
   peerDependencies:
     "@bufbuild/protobuf": ^2.7.0
-  checksum: 11d886eca1772bfb54640e26da3e3bacb1771033ce03ea31500bcd3848089805426275eca9b5580c14469e005931f502948bcce467e25921a9a13e0ed607ad82
+  checksum: d36193d260415e1d116c586738f19318363d08f0ee96993381323c5d5ee5d2d573b8a8c47c8a7637ba10272c29e7ef7f14fe47237211addef8e81f0fd143c852
   languageName: node
   linkType: hard
 
-"@e2b/cli@npm:^2.18.0":
-  version: 2.18.0
-  resolution: "@e2b/cli@npm:2.18.0"
+"@e2b/cli@npm:^2.20.0":
+  version: 2.20.0
+  resolution: "@e2b/cli@npm:2.20.0"
   dependencies:
     "@iarna/toml": ^2.2.5
     "@inquirer/prompts": ^7.9.0
@@ -43,7 +43,7 @@ __metadata:
     chalk: ^5.3.0
     cli-highlight: ^2.1.11
     commander: ^11.1.0
-    e2b: ^2.46.0
+    e2b: ^2.50.0
     handlebars: ^4.7.9
     inquirer: ^12.10.0
     simple-update-notifier: ^2.0.0
@@ -52,7 +52,7 @@ __metadata:
     yup: ^1.7.1
   bin:
     e2b: dist/index.js
-  checksum: 93ba695f8a44de1ea7fc07cd3823197d29a3b8f250c28160f742b8761a435003eba73e6390f5faa8ad4387b6d43b6b38fa9247546c0e181bae03cde57bda9049
+  checksum: c4db0fa7e29a2d80894bd39154332a0e4e5e2584fc723ec644e68332cb010cb378958fcf45ce440c2e1455c2bb67d2c66af0a13eda990c9c9cf344d0e576adcf
   languageName: node
   linkType: hard
 
@@ -468,10 +468,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^5.2.0, chalk@npm:^5.3.0":
+"chalk@npm:^5.2.0":
   version: 5.4.1
   resolution: "chalk@npm:5.4.1"
   checksum: 0c656f30b782fed4d99198825c0860158901f449a6b12b818b0aabad27ec970389e7e8767d0e00762175b23620c812e70c4fd92c0210e55fc2d993638b74e86e
+  languageName: node
+  linkType: hard
+
+"chalk@npm:^5.3.0, chalk@npm:^5.6.2":
+  version: 5.6.2
+  resolution: "chalk@npm:5.6.2"
+  checksum: 4ee2d47a626d79ca27cb5299ecdcce840ef5755e287412536522344db0fc51ca0f6d6433202332c29e2288c6a90a2b31f3bd626bc8c14743b6b6ee28abd3b796
   languageName: node
   linkType: hard
 
@@ -570,26 +577,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"e2b@npm:^2.46.0":
-  version: 2.46.1
-  resolution: "e2b@npm:2.46.1"
+"e2b@npm:^2.50.0":
+  version: 2.52.0
+  resolution: "e2b@npm:2.52.0"
   dependencies:
-    "@bufbuild/protobuf": ^2.14.0
-    "@connectrpc/connect": ^2.1.2
-    "@connectrpc/connect-web": ^2.1.2
-    chalk: ^5.3.0
+    "@bufbuild/protobuf": ^2.15.0
+    "@connectrpc/connect": ^2.2.0
+    "@connectrpc/connect-web": ^2.2.0
+    chalk: ^5.6.2
     compare-versions: ^6.1.0
     dockerfile-ast: ^0.7.1
     glob: ^13.0.6
-    openapi-fetch: ^0.14.1
+    openapi-fetch: ^0.17.0
     platform: ^1.3.6
     tar: ^7.5.22
-    undici: ^7.29.0
-    undici8: "npm:undici@8.10.0"
+    undici: ^7.29.1
+    undici8: "npm:undici@8.10.2"
   dependenciesMeta:
     undici8:
       optional: true
-  checksum: 808f281e0b6c383d1a99f08210fcced5521a25a1d8519545c428500f6a3291537e2b3a32551018fed78668917256564e31037dc69f2e38b19ee4d7015bb38542
+  checksum: 66ea7bb03e72d5cb26296fa45f56816ddbf61ecefa63cf7ee87c2acfaac33fb2927c987f2d2d8410015e805bf5450ddb979418e6384d977cde0a9d52ec19c4a3
   languageName: node
   linkType: hard
 
@@ -848,19 +855,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openapi-fetch@npm:^0.14.1":
-  version: 0.14.1
-  resolution: "openapi-fetch@npm:0.14.1"
+"openapi-fetch@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "openapi-fetch@npm:0.17.0"
   dependencies:
-    openapi-typescript-helpers: ^0.0.15
-  checksum: 0e1b62911b01b131fdfee14ebafb24a6a737e98b619ad623fa7c07e66c447889095d141c233a6c9df361234968f3c28b8882d05213a98144f9ddb386bd4c5b7e
+    openapi-typescript-helpers: ^0.1.0
+  checksum: 003c9401643381f1f97bbe26993714b5f298dd8e0e7381c6560a347d3b1611e847a579821831288ee7440a6dfa3a5f4847e37816f248ce00a4431b1211835d02
   languageName: node
   linkType: hard
 
-"openapi-typescript-helpers@npm:^0.0.15":
-  version: 0.0.15
-  resolution: "openapi-typescript-helpers@npm:0.0.15"
-  checksum: feec0f25d708aaacc086dafd3e21001329b47984f30e24877b34d053fbccd52f3b3a19b1715fda2ed5afaca7056872576eed7de8f64855d2472507dc6df626ca
+"openapi-typescript-helpers@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "openapi-typescript-helpers@npm:0.1.0"
+  checksum: ead9399b574dcfac5b4809ef22071b669ad7506e71340554abd3d8ee8ae37e40f93f4798b132c0204f141ddb0874e4ca4d153697976d1e334297284f779f9388
   languageName: node
   linkType: hard
 
@@ -868,7 +875,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "openevals-e2b-sandbox-templates@workspace:."
   dependencies:
-    "@e2b/cli": ^2.18.0
+    "@e2b/cli": ^2.20.0
   languageName: unknown
   linkType: soft
 
@@ -1152,14 +1159,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici8@npm:undici@8.10.0":
-  version: 8.10.0
-  resolution: "undici@npm:8.10.0"
-  checksum: 6b7c5442ec67fb4048a07aba719890904be54fbcff83c58b7133011fead67877c970f8b974f5e05aa0c7f5603c726888d8b3648e891af1493e7e362d848d7e9c
+"undici8@npm:undici@8.10.2":
+  version: 8.10.2
+  resolution: "undici@npm:8.10.2"
+  checksum: bbf522bf0999a94b66eb2171ec96d9ac2bf681dd298a28976b72dd7cd4449e96839b3a8b88eaea34b88903ddcf32f3c7a026b6e18a698ad7acfb73c3e19a372a
   languageName: node
   linkType: hard
 
-"undici@npm:^7.29.0":
+"undici@npm:^7.29.1":
   version: 7.30.0
   resolution: "undici@npm:7.30.0"
   checksum: 9138ee032f1d9133ee0cae068147a1c7eb9e514f07f012450a30d48896ee922c6cc2ad5c292cc35805712b80d7be3d5365af1af7df9f6aed1fd7a49175fc6105

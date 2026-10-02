@@ -491,6 +491,33 @@ def test_json_match_mode_exact_unordered():
     assert result[0]["score"] == 1
 
 
+@pytest.mark.parametrize(
+    ("outputs", "reference_outputs"),
+    [
+        (
+            [{"total": 1}, {"total": 1, "count": 2}],
+            [{"total": 1, "count": 2}, {"total": 1}],
+        ),
+        (
+            [{"total": 1, "count": 2}, {"total": 1}],
+            [{"total": 1}, {"total": 1, "count": 2}],
+        ),
+    ],
+)
+@pytest.mark.langsmith
+def test_json_match_mode_same_elements_reordered_records(
+    outputs: list[dict], reference_outputs: list[dict]
+) -> None:
+    evaluator = create_json_match_evaluator(
+        list_match_mode="same_elements",
+        aggregator="all",
+        list_aggregator="all",
+    )
+    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    assert result[0]["key"] == "json_match:all"
+    assert result[0]["score"] == 1
+
+
 @pytest.mark.langsmith
 def test_json_match_mode_subset_outputs():
     outputs = [{"a": 1}, {"b": 1}, {"c": 1}]

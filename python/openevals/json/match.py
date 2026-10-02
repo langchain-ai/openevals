@@ -151,28 +151,61 @@ def _prepare_parameters(
             available_references = list(range(len(reference_outputs)))
             matched_outputs = set()
 
+            exact_matches: Dict[int, int] = {}
+            if list_match_mode == "same_elements":
+                # Detect a full multiset match before applying the score-based
+                # greedy matching below. This keeps reordered records from
+                # consuming a partial match that leaves another exact pair
+                # impossible to form without changing partial-match scoring.
+                candidate_matches: Dict[int, int] = {}
+                candidate_references = list(available_references)
+                for i, output_item in enumerate(outputs):
+                    output_item_for_match = {
+                        key: value
+                        for key, value in output_item.items()
+                        if key not in exclude_keys and key not in rubric
+                    }
+                    for ref_idx in candidate_references:
+                        reference_item_for_match = {
+                            key: value
+                            for key, value in reference_outputs[ref_idx].items()
+                            if key not in exclude_keys and key not in rubric
+                        }
+                        if output_item_for_match == reference_item_for_match:
+                            candidate_matches[i] = ref_idx
+                            candidate_references.remove(ref_idx)
+                            break
+                if len(candidate_matches) == len(outputs) and len(outputs) == len(
+                    reference_outputs
+                ):
+                    exact_matches = candidate_matches
+                    available_references = candidate_references
+
             for i, output_item in enumerate(outputs):
-                best_match_idx = None
-                best_match_score = -1
+                if i in exact_matches:
+                    best_match_idx = exact_matches[i]
+                else:
+                    best_match_idx = None
+                    best_match_score = -1
 
-                # Try each available reference item
-                for ref_idx in available_references:
-                    ref_item = reference_outputs[ref_idx]
+                    # Try each available reference item
+                    for ref_idx in available_references:
+                        ref_item = reference_outputs[ref_idx]
 
-                    # Calculate match score based on exact matches of keys
-                    match_score = 0
-                    for key in output_item:
-                        if (
-                            key in ref_item
-                            and key not in exclude_keys
-                            and key not in rubric
-                        ):
-                            match_score += int(output_item[key] == ref_item[key])
+                        # Calculate match score based on exact matches of keys
+                        match_score = 0
+                        for key in output_item:
+                            if (
+                                key in ref_item
+                                and key not in exclude_keys
+                                and key not in rubric
+                            ):
+                                match_score += int(output_item[key] == ref_item[key])
 
-                    # If this is the best match so far, update
-                    if match_score > best_match_score:
-                        best_match_score = match_score
-                        best_match_idx = ref_idx
+                        # If this is the best match so far, update
+                        if match_score > best_match_score:
+                            best_match_score = match_score
+                            best_match_idx = ref_idx
 
                 # If we found a match, use it
                 if best_match_idx is not None:
@@ -182,8 +215,9 @@ def _prepare_parameters(
                     for key, value in reference_outputs[best_match_idx].items():
                         reference_outputs_to_use[f"{key}_{i}"] = value
 
-                    # Remove the used reference from available options
-                    available_references.remove(best_match_idx)
+                    if i not in exact_matches:
+                        # Remove the used reference from available options
+                        available_references.remove(best_match_idx)
                     matched_outputs.add(i)
                 else:
                     # There were extra output items

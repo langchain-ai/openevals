@@ -43,7 +43,7 @@
     "@types/node": "^26",
     "@typescript-eslint/eslint-plugin": "^8.71.0",
     "@typescript-eslint/parser": "^8.71.0",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.4",
     "dpdm": "^4.3.0",
     "eslint": "^10.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -55,8 +55,8 @@
     "langchain": "^1.5.14",
     "openai": "^7.23.0",
     "prettier": "^3.9.9",
-    "typescript": "~5.1.6",
-    "vitest": "^4.1.11",
+    "typescript": "~7.0.2",
+    "vitest": "^5.0.2",
     "zod": "^4.6.5"
   },
   "peerDependenciesMeta": {

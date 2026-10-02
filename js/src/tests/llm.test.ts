@@ -335,10 +335,12 @@ ls.describe("llm as judge", () => {
       const evaluator = createLLMAsJudge({
         prompt: "Are these two equal? {inputs} {outputs}",
         outputSchema: z.toJSONSchema(
-          z.object({
-            equality: z.boolean(),
-            justification: z.string(),
-          })
+          z
+            .object({
+              equality: z.boolean(),
+              justification: z.string(),
+            })
+            .strict()
         ),
         model: "openai:gpt-5.6-luna",
       });
@@ -359,10 +361,12 @@ ls.describe("llm as judge", () => {
       const evaluator = createLLMAsJudge({
         prompt: "Are these two equal? {inputs} {outputs}",
         outputSchema: z.toJSONSchema(
-          z.object({
-            equality: z.boolean(),
-            justification: z.string(),
-          })
+          z
+            .object({
+              equality: z.boolean(),
+              justification: z.string(),
+            })
+            .strict()
         ),
         judge: new OpenAI(),
         model: "gpt-5.6-luna",

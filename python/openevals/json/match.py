@@ -13,6 +13,13 @@ from openevals.llm import (
 from langchain_core.language_models.chat_models import BaseChatModel
 from langsmith import get_current_run_tree
 
+# Sentinel field name used to represent a list item that has no keys of its
+# own (an empty dict, e.g. `{}`). Matching and unmatched-item tracking below
+# is keyed on field presence, so a record with zero fields would otherwise be
+# invisible to scoring whether or not it was actually matched. This marker
+# guarantees such a record still contributes a scored key.
+_EMPTY_RECORD_KEY = "__openevals_empty_record"
+
 
 SYSTEM_PROMPT = """You are an LLM that evaluates the accuracy of structured outputs.
 Make sure to evaluate each key the users ask you to evaluate separately. Assign the score
@@ -187,16 +194,27 @@ def _prepare_parameters(
                     matched_outputs.add(i)
                 else:
                     # There were extra output items
-                    for key, value in output_item.items():
-                        outputs_to_use[f"{key}_{i}"] = value
+                    if output_item:
+                        for key, value in output_item.items():
+                            outputs_to_use[f"{key}_{i}"] = value
+                    else:
+                        # An extra item with no fields would otherwise leave
+                        # no trace in outputs_to_use and be silently dropped.
+                        outputs_to_use[f"{_EMPTY_RECORD_KEY}_{i}"] = output_item
 
             # For "same_elements" mode: penalize unmatched references
             if list_match_mode == "same_elements":
                 for ref_idx in available_references:
                     ref_item = reference_outputs[ref_idx]
                     dummy_idx = len(outputs) + available_references.index(ref_idx)
-                    for key, value in ref_item.items():
-                        reference_outputs_to_use[f"{key}_{dummy_idx}"] = value
+                    if ref_item:
+                        for key, value in ref_item.items():
+                            reference_outputs_to_use[f"{key}_{dummy_idx}"] = value
+                    else:
+                        # Same as above, mirrored for an unmatched reference item.
+                        reference_outputs_to_use[
+                            f"{_EMPTY_RECORD_KEY}_{dummy_idx}"
+                        ] = ref_item
 
         outputs = outputs_to_use
         reference_outputs = reference_outputs_to_use

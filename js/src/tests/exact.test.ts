@@ -47,4 +47,21 @@ ls.describe("exact match", () => {
       });
     }
   );
+
+  ls.test(
+    "throws when required values are missing",
+    {
+      inputs: {},
+    },
+    async () => {
+      await expect(
+        exactMatch({ outputs: undefined, referenceOutputs: { a: 1 } })
+      ).rejects.toThrow(
+        "Exact match requires both outputs and referenceOutputs"
+      );
+      await expect(exactMatch({ outputs: { a: 1 } })).rejects.toThrow(
+        "Exact match requires both outputs and referenceOutputs"
+      );
+    }
+  );
 });

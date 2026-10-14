@@ -96,27 +96,31 @@ function appendFewShotExamples({
 
   const actualIdx = messages.length - 1 - lastUserMessageIdx;
 
+  const examplesText = fewShotExamples
+    .map((example) => {
+      let exampleStr = `<example>\n<input>${JSON.stringify(
+        example.inputs
+      )}</input>\n<output>${JSON.stringify(example.outputs)}</output>`;
+
+      if (example.reasoning) {
+        exampleStr += `\n<reasoning>${example.reasoning}</reasoning>`;
+      }
+
+      if (example.score !== undefined) {
+        exampleStr += `\n<score>${example.score}</score>`;
+      }
+
+      exampleStr += "\n</example>";
+      return exampleStr;
+    })
+    .join("\n");
+
+  const { content } = messages[actualIdx];
+  // Attachments and multimodal prompts produce an array of content blocks.
   // eslint-disable-next-line no-param-reassign
-  messages[actualIdx].content +=
-    "\n\n" +
-    fewShotExamples
-      .map((example) => {
-        let exampleStr = `<example>\n<input>${JSON.stringify(
-          example.inputs
-        )}</input>\n<output>${JSON.stringify(example.outputs)}</output>`;
-
-        if (example.reasoning) {
-          exampleStr += `\n<reasoning>${example.reasoning}</reasoning>`;
-        }
-
-        if (example.score !== undefined) {
-          exampleStr += `\n<score>${example.score}</score>`;
-        }
-
-        exampleStr += "\n</example>";
-        return exampleStr;
-      })
-      .join("\n");
+  messages[actualIdx].content = Array.isArray(content)
+    ? [...content, { type: "text", text: examplesText }]
+    : `${content}\n\n${examplesText}`;
 
   return messages;
 }

@@ -1,0 +1,33 @@
+# Source documents for the "Financial Transaction Categorization" dataset.
+#
+# Each line simulates one raw bank-statement export line (the kind of messy,
+# abbreviated text real bank APIs like Enable Banking return), followed by
+# the ground-truth label an analyst assigned to it.
+#
+# Format (pipe-delimited):
+#   raw_transaction_text | amount | currency | category | merchant | difficulty
+#
+# difficulty is a rough human judgment of how hard the line is to classify
+# correctly from text alone (easy / medium / hard) and is kept as metadata
+# for later breakdown analysis, not shown to the model being evaluated.
+
+REWE SAGT DANKE 8020 KARTE1 76-3//BERLIN/DE|-54.32|EUR|Groceries|REWE|easy
+SPOTIFY AB STOCKHOLM SWE|-9.99|EUR|Subscriptions|Spotify|easy
+DB VERTRIEB GMBH FRANKFURT|-89.00|EUR|Transport|Deutsche Bahn|easy
+GEHALT SEPTEMBER FIRMA MUSTER GMBH|3200.00|EUR|Income & Salary|Firma Muster GmbH|medium
+AMAZON.DE MARKETPLACE PAYMENTS|-34.50|EUR|Shopping|Amazon|easy
+STADTWERKE MUENCHEN STROM/GAS|-112.40|EUR|Utilities|Stadtwerke Muenchen|medium
+APOTHEKE AM MARKT BERLIN|-22.15|EUR|Healthcare|Apotheke am Markt|easy
+NETFLIX.COM 1 8887 8877 CA|-13.99|EUR|Entertainment|Netflix|easy
+MIETE OKTOBER WOHNUNG HAUPTSTR 12|-980.00|EUR|Rent & Housing|Hausverwaltung Hauptstr 12|medium
+UBER TRIP HELP.UBER.COM|-18.20|EUR|Transport|Uber|easy
+LUFTHANSA AG FRANKFURT TICKET|-245.00|EUR|Travel|Lufthansa|easy
+RYANAIR DAC DUBLIN IE|-76.30|EUR|Travel|Ryanair|medium
+PAYPAL *ZARA ONLINE 4029357733|-65.99|EUR|Shopping|Zara|medium
+UEBERWEISUNG AN MAX MUSTER REF RENT SHARE|-400.00|EUR|Transfers|Max Muster|hard
+ALLIANZ VERSICHERUNGS AG BEITRAG|-45.60|EUR|Insurance|Allianz|easy
+STARBUCKS COFFEE BERLIN HBF|-6.40|EUR|Dining & Restaurants|Starbucks|easy
+KONTOFUEHRUNGSGEBUEHR SEPTEMBER|-6.90|EUR|Fees & Charges|Bank Fee|medium
+DECATHLON FILIALE 452|-89.95|EUR|Shopping|Decathlon|easy
+FITNESS FIRST MONATSBEITRAG|-39.00|EUR|Subscriptions|Fitness First|medium
+KARTENZAHLUNG REF 88213X UNBEKANNT|-12.00|EUR|Other|Unknown|hard

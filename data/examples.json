@@ -1,0 +1,322 @@
+[
+  {
+    "inputs": {
+      "transaction_text": "REWE SAGT DANKE 8020 KARTE1 76-3//BERLIN/DE",
+      "amount": -54.32,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Groceries",
+      "merchant": "REWE"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-01"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "SPOTIFY AB STOCKHOLM SWE",
+      "amount": -9.99,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Subscriptions",
+      "merchant": "Spotify"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-02"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "DB VERTRIEB GMBH FRANKFURT",
+      "amount": -89.0,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Transport",
+      "merchant": "Deutsche Bahn"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-03"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "GEHALT SEPTEMBER FIRMA MUSTER GMBH",
+      "amount": 3200.0,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Income & Salary",
+      "merchant": "Firma Muster GmbH"
+    },
+    "metadata": {
+      "difficulty": "medium",
+      "source": "synthetic_bank_export",
+      "id": "txn-04"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "AMAZON.DE MARKETPLACE PAYMENTS",
+      "amount": -34.5,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Shopping",
+      "merchant": "Amazon"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-05"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "STADTWERKE MUENCHEN STROM/GAS",
+      "amount": -112.4,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Utilities",
+      "merchant": "Stadtwerke Muenchen"
+    },
+    "metadata": {
+      "difficulty": "medium",
+      "source": "synthetic_bank_export",
+      "id": "txn-06"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "APOTHEKE AM MARKT BERLIN",
+      "amount": -22.15,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Healthcare",
+      "merchant": "Apotheke am Markt"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-07"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "NETFLIX.COM 1 8887 8877 CA",
+      "amount": -13.99,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Entertainment",
+      "merchant": "Netflix"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-08"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "MIETE OKTOBER WOHNUNG HAUPTSTR 12",
+      "amount": -980.0,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Rent & Housing",
+      "merchant": "Hausverwaltung Hauptstr 12"
+    },
+    "metadata": {
+      "difficulty": "medium",
+      "source": "synthetic_bank_export",
+      "id": "txn-09"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "UBER TRIP HELP.UBER.COM",
+      "amount": -18.2,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Transport",
+      "merchant": "Uber"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-10"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "LUFTHANSA AG FRANKFURT TICKET",
+      "amount": -245.0,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Travel",
+      "merchant": "Lufthansa"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-11"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "RYANAIR DAC DUBLIN IE",
+      "amount": -76.3,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Travel",
+      "merchant": "Ryanair"
+    },
+    "metadata": {
+      "difficulty": "medium",
+      "source": "synthetic_bank_export",
+      "id": "txn-12"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "PAYPAL *ZARA ONLINE 4029357733",
+      "amount": -65.99,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Shopping",
+      "merchant": "Zara"
+    },
+    "metadata": {
+      "difficulty": "medium",
+      "source": "synthetic_bank_export",
+      "id": "txn-13"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "UEBERWEISUNG AN MAX MUSTER REF RENT SHARE",
+      "amount": -400.0,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Transfers",
+      "merchant": "Max Muster"
+    },
+    "metadata": {
+      "difficulty": "hard",
+      "source": "synthetic_bank_export",
+      "id": "txn-14"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "ALLIANZ VERSICHERUNGS AG BEITRAG",
+      "amount": -45.6,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Insurance",
+      "merchant": "Allianz"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-15"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "STARBUCKS COFFEE BERLIN HBF",
+      "amount": -6.4,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Dining & Restaurants",
+      "merchant": "Starbucks"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-16"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "KONTOFUEHRUNGSGEBUEHR SEPTEMBER",
+      "amount": -6.9,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Fees & Charges",
+      "merchant": "Bank Fee"
+    },
+    "metadata": {
+      "difficulty": "medium",
+      "source": "synthetic_bank_export",
+      "id": "txn-17"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "DECATHLON FILIALE 452",
+      "amount": -89.95,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Shopping",
+      "merchant": "Decathlon"
+    },
+    "metadata": {
+      "difficulty": "easy",
+      "source": "synthetic_bank_export",
+      "id": "txn-18"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "FITNESS FIRST MONATSBEITRAG",
+      "amount": -39.0,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Subscriptions",
+      "merchant": "Fitness First"
+    },
+    "metadata": {
+      "difficulty": "medium",
+      "source": "synthetic_bank_export",
+      "id": "txn-19"
+    }
+  },
+  {
+    "inputs": {
+      "transaction_text": "KARTENZAHLUNG REF 88213X UNBEKANNT",
+      "amount": -12.0,
+      "currency": "EUR"
+    },
+    "outputs": {
+      "category": "Other",
+      "merchant": "Unknown"
+    },
+    "metadata": {
+      "difficulty": "hard",
+      "source": "synthetic_bank_export",
+      "id": "txn-20"
+    }
+  }
+]

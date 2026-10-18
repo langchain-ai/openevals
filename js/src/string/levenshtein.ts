@@ -1,20 +1,16 @@
 import { EvaluatorResult } from "../types.js";
-import { _runEvaluator } from "../utils.js";
+import { _runEvaluator, _stringifyForComparison } from "../utils.js";
 
 function scorer(outputs: unknown, referenceOutputs: unknown): number {
-  if (outputs === null || referenceOutputs === null) {
+  if (outputs == null || referenceOutputs == null) {
     throw new Error(
       "Levenshtein distance requires both outputs and reference_outputs"
     );
   }
 
   // Convert to strings if needed
-  const outputStr =
-    typeof outputs === "string" ? outputs : JSON.stringify(outputs);
-  const referenceStr =
-    typeof referenceOutputs === "string"
-      ? referenceOutputs
-      : JSON.stringify(referenceOutputs);
+  const outputStr = _stringifyForComparison(outputs);
+  const referenceStr = _stringifyForComparison(referenceOutputs);
 
   // Create a matrix of size (m+1)x(n+1) where m and n are the string lengths
   const m = outputStr.length;

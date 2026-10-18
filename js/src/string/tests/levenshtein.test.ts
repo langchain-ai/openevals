@@ -21,4 +21,21 @@ ls.describe("Levenshtein Distance Tests", () => {
     expect(res.key).toBe("levenshtein_distance");
     expect(res.score).toBeLessThan(1.0);
   });
+
+  ls.test("levenshtein ignores object key order", { inputs: {} }, async () => {
+    const outputs = {
+      city: "Paris",
+      unit: "C",
+      details: { lat: 48.85, lon: 2.35 },
+    };
+    const referenceOutputs = {
+      unit: "C",
+      details: { lon: 2.35, lat: 48.85 },
+      city: "Paris",
+    };
+    const res = await levenshteinDistance({ outputs, referenceOutputs });
+
+    expect(res.key).toBe("levenshtein_distance");
+    expect(res.score).toBe(1.0);
+  });
 });

@@ -23,8 +23,7 @@ def _convert_to_openai_message(
     message: Union[ChatCompletionMessage, BaseMessage, dict],
 ) -> ChatCompletionMessage:
     if not isinstance(message, BaseMessage):
-        if not isinstance(message, dict):
-            message = dict(message)
+        message = dict(message)
         if message.get("role") in ["ai", "assistant"] and message.get("tool_calls"):
             message["tool_calls"] = [
                 {**tool_call, "id": tool_call.get("id", "")}

@@ -1,13 +1,15 @@
 import json
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 from openevals.llm import create_async_llm_as_judge
 
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts.structured import StructuredPrompt
+from langchain_core.runnables import RunnableLambda
 from openai import AsyncOpenAI
 from langchain_openai import ChatOpenAI
 from langsmith import Client
@@ -377,3 +379,37 @@ async def test_async_llm_as_judge_custom_output_schema_pydantic():
     assert isinstance(eval_result, EqualityResult)
     assert eval_result.are_equal
     assert eval_result.justification is not None
+
+
+class StructuredOutputRecordingChatModel(BaseChatModel):
+    structured_output_kwargs: list[dict] = Field(default_factory=list)
+
+    @property
+    def _llm_type(self) -> str:
+        return "structured-output-recording"
+
+    def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+        raise NotImplementedError
+
+    def with_structured_output(self, schema, **kwargs):
+        self.structured_output_kwargs.append(kwargs)
+        return RunnableLambda(lambda _: {"score": True, "reasoning": "equal"})
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "structured_output_kwargs, expected",
+    [(None, {}), ({"method": "json_schema"}, {"method": "json_schema"})],
+)
+async def test_async_llm_as_judge_structured_output_kwargs(
+    structured_output_kwargs, expected
+):
+    judge = StructuredOutputRecordingChatModel()
+    llm_as_judge = create_async_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        judge=judge,
+        structured_output_kwargs=structured_output_kwargs,
+    )
+    eval_result = await llm_as_judge(inputs={"a": 1}, outputs={"a": 1})
+    assert eval_result["score"] is True
+    assert judge.structured_output_kwargs == [expected]

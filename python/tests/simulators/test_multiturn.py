@@ -24,7 +24,7 @@ import pytest
 
 
 def _create_tool_calling_model() -> ChatOpenAI:
-    return ChatOpenAI(model="gpt-5.6-terra", use_responses_api=True)
+    return ChatOpenAI(model="gpt-6-luna", use_responses_api=True)
 
 
 # ── sync: unique patterns ──────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ def test_multiturn_message_with_openai():
             history[thread_id] = []
         history[thread_id] = history[thread_id] + [inputs]
         res = client.chat.completions.create(
-            model="gpt-5.6-terra",
+            model="gpt-6-luna",
             messages=[
                 {
                     "role": "system",
@@ -56,11 +56,11 @@ def test_multiturn_message_with_openai():
 
     user = create_llm_simulated_user(
         system="You are an aggressive and hostile customer who wants a refund for their car.",
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         fixed_responses=[{"role": "user", "content": "I want a refund!"}],
     )
     trajectory_evaluator = create_llm_as_judge(
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         prompt="Based on the below conversation, was the user satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -103,7 +103,7 @@ async def test_multiturn_failure_async():
 
     user = create_async_llm_simulated_user(
         system="You are an angry user who wants a refund and keeps making additional demands.",
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         fixed_responses=[
             "I want a refund right now!",
             "This is completely unacceptable!",
@@ -111,7 +111,7 @@ async def test_multiturn_failure_async():
         ],
     )
     trajectory_evaluator = create_async_llm_as_judge(
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -150,14 +150,14 @@ async def test_multiturn_success_async():
 
     user = create_async_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         fixed_responses=[
             "Hi, I'd like a refund please.",
             "Thank you so much, that's great!",
         ],
     )
     trajectory_evaluator = create_async_llm_as_judge(
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -195,7 +195,7 @@ async def test_multiturn_preset_responses_async():
         return res["messages"][-1]
 
     trajectory_evaluator = create_async_llm_as_judge(
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         prompt="Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -247,7 +247,7 @@ async def test_multiturn_message_with_openai_async():
             history[thread_id] = []
         history[thread_id] = history[thread_id] + [inputs]
         res = await client.chat.completions.create(
-            model="gpt-5.6-terra",
+            model="gpt-6-luna",
             messages=[
                 {
                     "role": "system",
@@ -262,11 +262,11 @@ async def test_multiturn_message_with_openai_async():
 
     user = create_async_llm_simulated_user(
         system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         fixed_responses=[{"role": "user", "content": "Give me a cracker!"}],
     )
     trajectory_evaluator = create_async_llm_as_judge(
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         prompt="Based on the below conversation, are the parrots angry?\n{outputs}",
         feedback_key="anger",
     )
@@ -305,11 +305,11 @@ async def test_multiturn_stopping_condition_async():
 
     user = create_async_llm_simulated_user(
         system="You are a happy and reasonable person who wants a refund.",
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         fixed_responses=[{"role": "user", "content": "Give me a refund!"}],
     )
     trajectory_evaluator = create_async_llm_as_judge(
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         prompt="Based on the below conversation, was a refund granted?\n{outputs}",
         feedback_key="satisfaction",
     )
@@ -317,7 +317,7 @@ async def test_multiturn_stopping_condition_async():
 
     async def stopping_condition(current_trajectory, **kwargs):
         res = await client.chat.completions.create(
-            model="gpt-5.6-terra",
+            model="gpt-6-luna",
             messages=[
                 {
                     "role": "system",
@@ -364,7 +364,7 @@ async def test_multiturn_message_with_chat_langchain():
 
     user = create_async_llm_simulated_user(
         system="Be belligerent and hostile. Keep asking followup questions, pretending your question hasn't been answered.",
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         fixed_responses=[
             {
                 "role": "user",
@@ -373,7 +373,7 @@ async def test_multiturn_message_with_chat_langchain():
         ],
     )
     trajectory_evaluator = create_async_llm_as_judge(
-        model="openai:gpt-5.6-terra",
+        model="openai:gpt-6-luna",
         prompt="Based on the below conversation, has the assistant been calm and helpful?\n{outputs}",
         feedback_key="calmness",
     )

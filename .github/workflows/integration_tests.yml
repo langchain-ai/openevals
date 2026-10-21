@@ -43,6 +43,11 @@ jobs:
     name: Python Integration Test (${{ matrix.python-version }})
     needs: changed_files
     runs-on: ubuntu-latest
+    # The job normally takes about 6 minutes. Without a limit, a hung network call
+    # keeps it running until GitHub's 6-hour default. pytest-timeout (see
+    # python/pyproject.toml) catches hangs inside a test; this also covers hangs
+    # outside tests, such as LangSmith uploading results at interpreter exit.
+    timeout-minutes: 20
     strategy:
       matrix:
         python-version: ["3.13"]
@@ -104,7 +109,10 @@ jobs:
           # LANGSMITH_API_KEY (which is not valid for the gateway). OPENAI_API_KEY is
           # the key CI already uses against the gateway via OPENAI_BASE_URL.
           LANGSMITH_GATEWAY_API_KEY: ${{ secrets.LANGSMITH_GATEWAY_API_KEY || secrets.OPENAI_API_KEY }}
-        run: uv run pytest tests
+        # -v prints each test ID as it starts. If a test times out, its name is
+        # on the line with the timeout banner. For async tests the stack dump only
+        # shows the idle event loop, so the test ID is the only clue.
+        run: uv run pytest tests -v
         shell: bash
         working-directory: python
 
@@ -112,6 +120,10 @@ jobs:
     name: JS Integration Test
     needs: changed_files
     runs-on: ubuntu-latest
+    # The job normally takes about 2 minutes, and vitest already limits each test
+    # to 2 minutes (js/vitest.config.ts). This stops hangs outside tests from
+    # running until GitHub's 6-hour default.
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: js

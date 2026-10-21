@@ -487,6 +487,33 @@ def test_json_match_same_elements_matched_empty_records():
 
 
 @pytest.mark.langsmith
+@pytest.mark.parametrize(
+    "list_match_mode, outputs, reference_outputs, expected",
+    [
+        ("superset", [{"total": 6}], [{"total": 6}, {}], 0),
+        ("superset", [{"total": 6}, {}], [{"total": 6}], 1),
+        ("subset", [{"total": 6}, {}], [{"total": 6}], 0),
+        ("subset", [{"total": 6}], [{"total": 6}, {}], 1),
+        ("ordered", [{"total": 6}, {}], [{"total": 6}], 0),
+        ("ordered", [{"total": 6}], [{"total": 6}, {}], 0),
+        ("ordered", [{"total": 6}, {}], [{"total": 6}, {}], 1),
+    ],
+)
+def test_json_match_unmatched_empty_records_other_modes(
+    list_match_mode, outputs, reference_outputs, expected
+):
+    # Unmatched empty-dict items are scored in every list mode, not just
+    # same_elements.
+    t.log_inputs({"outputs": outputs})
+    evaluator = create_json_match_evaluator(
+        aggregator="all", list_match_mode=list_match_mode
+    )
+    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    assert result[0]["key"] == "json_match:all"
+    assert result[0]["score"] == expected
+
+
+@pytest.mark.langsmith
 def test_json_match_mode_exact_extra_reference():
     outputs = [{"a": 1}, {"a": 1}]
     reference_outputs = [{"a": 1}, {"a": 1}, {"a": 1}]

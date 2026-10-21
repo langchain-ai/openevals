@@ -105,9 +105,17 @@ def _prepare_parameters(
             for i in range(len(outputs)):
                 for key, value in outputs[i].items():
                     outputs_to_use[f"{key}_{i}"] = value
+                if not outputs[i] and i >= len(reference_outputs):
+                    # An extra empty item has no fields to score.
+                    outputs_to_use[f"{_EMPTY_RECORD_KEY}_{i}"] = outputs[i]
             for i in range(len(reference_outputs)):
                 for key, value in reference_outputs[i].items():
                     reference_outputs_to_use[f"{key}_{i}"] = value
+                if not reference_outputs[i] and i >= len(outputs):
+                    # An extra empty reference item has no fields to score.
+                    reference_outputs_to_use[f"{_EMPTY_RECORD_KEY}_{i}"] = (
+                        reference_outputs[i]
+                    )
 
         elif list_match_mode == "superset":
             # Match each reference output to the best matching output
@@ -150,8 +158,13 @@ def _prepare_parameters(
                     matched_references.add(i)
                 else:
                     # There were extra reference items
-                    for key, value in ref_item.items():
-                        reference_outputs_to_use[f"{key}_{i}"] = value
+                    if ref_item:
+                        for key, value in ref_item.items():
+                            reference_outputs_to_use[f"{key}_{i}"] = value
+                    else:
+                        # An extra item with no fields would otherwise leave
+                        # no trace in reference_outputs_to_use and be dropped.
+                        reference_outputs_to_use[f"{_EMPTY_RECORD_KEY}_{i}"] = ref_item
 
         else:  # "same_items" or "subset"
             # Match each output to the best matching reference
@@ -212,9 +225,9 @@ def _prepare_parameters(
                             reference_outputs_to_use[f"{key}_{dummy_idx}"] = value
                     else:
                         # Same as above, mirrored for an unmatched reference item.
-                        reference_outputs_to_use[
-                            f"{_EMPTY_RECORD_KEY}_{dummy_idx}"
-                        ] = ref_item
+                        reference_outputs_to_use[f"{_EMPTY_RECORD_KEY}_{dummy_idx}"] = (
+                            ref_item
+                        )
 
         outputs = outputs_to_use
         reference_outputs = reference_outputs_to_use

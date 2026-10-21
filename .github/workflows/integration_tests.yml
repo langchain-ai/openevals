@@ -46,6 +46,11 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.13"]
+    env:
+      # python/.python-version pins 3.11 for local dev, and uv prefers it over the
+      # interpreter installed by setup-python. Make every uv command use the matrix
+      # version instead.
+      UV_PYTHON: ${{ matrix.python-version }}
     defaults:
       run:
         working-directory: python

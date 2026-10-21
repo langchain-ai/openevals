@@ -68,6 +68,7 @@ function _formatInputs(params: {
  * @param options.choices - Optional list of specific float values the score must be chosen from.
  * @param options.useReasoning - If true, includes explanation for the score. Defaults to true.
  * @param options.fewShotExamples - Optional list of example evaluations.
+ * @param options.system - Optional system message to prepend to the prompt.
  * @returns A function that evaluates agent trajectories using the configured LLM judge.
  */
 export const createTrajectoryLLMAsJudge = ({

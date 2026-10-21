@@ -26,7 +26,8 @@ export const _scorer = async (params: {
       params.referenceOutputs,
       params.outputs,
       params.toolArgsMatchMode,
-      params.toolArgsMatchOverrides
+      params.toolArgsMatchOverrides,
+      true
     ));
   return isUnorderedMatch;
 };

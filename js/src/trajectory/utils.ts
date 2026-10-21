@@ -41,8 +41,12 @@ export async function _isTrajectorySuperset(
   outputs: ChatCompletionMessage[],
   referenceOutputs: ChatCompletionMessage[],
   toolArgsMatchMode: ToolArgsMatchMode,
-  toolArgsMatchOverrides?: ToolArgsMatchOverrides
+  toolArgsMatchOverrides?: ToolArgsMatchOverrides,
+  swapped = false
 ): Promise<boolean> {
+  // Set `swapped` when the caller passes the reference trajectory as `outputs`
+  // and the model trajectory as `referenceOutputs`, so tool args matchers
+  // still receive the model's args first and the reference's args second.
   const outputToolCalls = _extractToolCalls(outputs);
   const referenceToolCalls = _extractToolCalls(referenceOutputs);
 
@@ -77,7 +81,10 @@ export async function _isTrajectorySuperset(
       );
 
       const outArgs = outCall.args;
-      if (await matcher(outArgs, refArgs)) {
+      const isMatch = swapped
+        ? await matcher(refArgs, outArgs)
+        : await matcher(outArgs, refArgs);
+      if (isMatch) {
         matchedReferenceCalls.add(outIdx);
         foundMatch = true;
         break;

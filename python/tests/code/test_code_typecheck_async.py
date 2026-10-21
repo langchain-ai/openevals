@@ -6,7 +6,7 @@ from openevals.code.mypy import create_async_mypy_evaluator
 
 
 def _create_terra_model() -> ChatOpenAI:
-    return ChatOpenAI(model="gpt-5.6-terra", use_responses_api=True)
+    return ChatOpenAI(model="gpt-6-luna", use_responses_api=True)
 
 
 CODE_EXAMPLES = [

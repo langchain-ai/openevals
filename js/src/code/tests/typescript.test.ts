@@ -7,7 +7,7 @@ import { createTypeScriptEvaluator } from "../typescript.js";
 
 function createTerraModel() {
   return new ChatOpenAI({
-    model: "gpt-5.6-terra",
+    model: "gpt-6-luna",
     useResponsesApi: true,
   });
 }

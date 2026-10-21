@@ -226,6 +226,41 @@ ls.describe("_createLLMAsJudgeScorer message construction", () => {
     expect(content[2].type).toBe("image_url");
   });
 
+  ls.test(
+    "few-shot examples keep attachment blocks",
+    { inputs: {} },
+    async () => {
+      const { judge, getMessages } = makeMockJudge();
+      const scorer = _createLLMAsJudgeScorer({
+        prompt: "Evaluate this image: {outputs}\n{attachments}",
+        judge,
+        fewShotExamples: [{ inputs: "a", outputs: "b", score: true }],
+      });
+
+      await scorer({
+        outputs: "a fruit bowl",
+        attachments: { mime_type: "image/png", data: TINY_PNG_DATA_URI },
+      });
+
+      const messages = getMessages() as Array<{
+        role: string;
+        content: unknown;
+      }>;
+      const content = messages[0].content as Array<Record<string, unknown>>;
+      expect(Array.isArray(content)).toBe(true);
+      expect(content.map((block) => block.type)).toEqual([
+        "text",
+        "image_url",
+        "text",
+      ]);
+      expect(content[0].text).toBe("Evaluate this image: a fruit bowl\n");
+      expect(content[1].image_url).toEqual({ url: TINY_PNG_DATA_URI });
+      expect(content[2].text).toBe(
+        '<example>\n<input>"a"</input>\n<output>"b"</output>\n<score>true</score>\n</example>'
+      );
+    }
+  );
+
   ls.test("no attachment content is plain string", { inputs: {} }, async () => {
     const { judge, getMessages } = makeMockJudge();
     const scorer = _createLLMAsJudgeScorer({

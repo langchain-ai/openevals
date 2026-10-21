@@ -51,7 +51,7 @@ def _append_few_shot_examples(
             "Appending few-shot examples requires a user message in the provided prompt"
         )
 
-    messages[last_user_message_idx]["content"] += "\n\n" + "\n".join(  # type: ignore
+    examples_text = "\n".join(
         [
             f"<example>\n<input>{example['inputs']}</input>\n<output>{example['outputs']}</output>"
             + (
@@ -64,6 +64,17 @@ def _append_few_shot_examples(
             for example in few_shot_examples
         ]
     )
+    content = messages[last_user_message_idx]["content"]
+    if isinstance(content, list):
+        # Attachments and multimodal prompts produce a list of content blocks.
+        messages[last_user_message_idx]["content"] = [  # type: ignore
+            *content,
+            {"type": "text", "text": examples_text},
+        ]
+    else:
+        messages[last_user_message_idx]["content"] = (  # type: ignore
+            content + "\n\n" + examples_text
+        )
     return messages
 
 

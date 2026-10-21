@@ -51,7 +51,7 @@ def _append_few_shot_examples(
             "Appending few-shot examples requires a user message in the provided prompt"
         )
 
-    messages[last_user_message_idx]["content"] += "\n\n" + "\n".join(  # type: ignore
+    examples_text = "\n".join(
         [
             f"<example>\n<input>{example['inputs']}</input>\n<output>{example['outputs']}</output>"
             + (
@@ -64,6 +64,17 @@ def _append_few_shot_examples(
             for example in few_shot_examples
         ]
     )
+    content = messages[last_user_message_idx]["content"]
+    if isinstance(content, list):
+        # Attachments and multimodal prompts produce a list of content blocks.
+        messages[last_user_message_idx]["content"] = [  # type: ignore
+            *content,
+            {"type": "text", "text": examples_text},
+        ]
+    else:
+        messages[last_user_message_idx]["content"] = (  # type: ignore
+            content + "\n\n" + examples_text
+        )
     return messages
 
 
@@ -158,6 +169,7 @@ def _create_llm_as_judge_scorer(
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
+    structured_output_kwargs: Optional[dict] = None,
 ) -> Callable[..., ScoreType]:
     def get_score(
         *,
@@ -271,7 +283,9 @@ def _create_llm_as_judge_scorer(
                     **default_json_schema,
                 }
             )
-            judge_with_structured_output = judge.with_structured_output(_schema)
+            judge_with_structured_output = judge.with_structured_output(
+                _schema, **(structured_output_kwargs or {})
+            )
             normalized_messages = [
                 {**msg, "content": _normalize_content_blocks(msg["content"])}  # type: ignore[arg-type]
                 if isinstance(msg.get("content"), list)
@@ -359,6 +373,7 @@ def _create_async_llm_as_judge_scorer(
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
+    structured_output_kwargs: Optional[dict] = None,
 ) -> Callable[..., Union[Awaitable[ScoreType], ScoreType]]:
     async def aget_score(
         *,
@@ -472,7 +487,9 @@ def _create_async_llm_as_judge_scorer(
                     **default_json_schema,
                 }
             )
-            judge_with_structured_output = judge.with_structured_output(_schema)
+            judge_with_structured_output = judge.with_structured_output(
+                _schema, **(structured_output_kwargs or {})
+            )
             normalized_messages = [
                 {**msg, "content": _normalize_content_blocks(msg["content"])}  # type: ignore[arg-type]
                 if isinstance(msg.get("content"), list)
@@ -556,6 +573,7 @@ def create_llm_as_judge(
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
     output_schema: Optional[Union[dict, type]] = None,
+    structured_output_kwargs: Optional[dict] = None,
 ) -> Union[SimpleEvaluator, Callable[..., Any]]:
     """Create an evaluator that uses an LLM to assess output quality based on specified criteria.
     Handles prompt formatting, LLM invocation, and structured output parsing.
@@ -579,6 +597,9 @@ def create_llm_as_judge(
         few_shot_examples: Optional list of example evaluations to append to the prompt.
         output_schema: Optional JSON schema, Pydantic model, or TypedDict for the output of the evaluator.
             If you are using an OpenAI client directly, this field must be OpenAI structured output format or JSON schema if provided.
+        structured_output_kwargs: Optional keyword arguments passed to `with_structured_output` when the judge is a
+            LangChain chat model, for example `{"method": "json_schema"}` to use provider-native structured output
+            instead of the model's default method. Ignored when using an OpenAI client directly.
     Returns:
         A function that takes inputs, outputs, reference_outputs, and other kwargs, formats them into
         a prompt, invokes the judge, and returns an evaluation result.
@@ -613,6 +634,7 @@ def create_llm_as_judge(
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
         schema=output_schema,
+        structured_output_kwargs=structured_output_kwargs,
     )
 
     def _wrapped_evaluator(
@@ -659,6 +681,7 @@ def create_async_llm_as_judge(
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
     output_schema: Optional[Union[dict, type]] = None,
+    structured_output_kwargs: Optional[dict] = None,
 ) -> Union[SimpleAsyncEvaluator, Callable[..., Awaitable[Any]]]:
     """Create an evaluator that uses an LLM to assess output quality based on specified criteria.
     Handles prompt formatting, LLM invocation, and structured output parsing.
@@ -682,6 +705,9 @@ def create_async_llm_as_judge(
         few_shot_examples: Optional list of example evaluations to append to the prompt.
         output_schema: Optional JSON schema for the output of the evaluator.
             If you are using an OpenAI client directly, this field must be OpenAI structured output format or JSON schema if provided.
+        structured_output_kwargs: Optional keyword arguments passed to `with_structured_output` when the judge is a
+            LangChain chat model, for example `{"method": "json_schema"}` to use provider-native structured output
+            instead of the model's default method. Ignored when using an OpenAI client directly.
     Returns:
         A function that takes inputs, outputs, reference_outputs, and other kwargs, formats them into
         a prompt, invokes the judge, and returns an evaluation result.
@@ -716,6 +742,7 @@ def create_async_llm_as_judge(
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
         schema=output_schema,
+        structured_output_kwargs=structured_output_kwargs,
     )
 
     async def _wrapped_evaluator(

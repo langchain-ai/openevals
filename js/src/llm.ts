@@ -1,5 +1,6 @@
 import { RunnableInterface, Runnable } from "@langchain/core/runnables";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import type { StructuredOutputMethodOptions } from "@langchain/core/language_models/base";
 import { ChatPromptTemplate, StructuredPrompt } from "@langchain/core/prompts";
 import { BaseMessage, isBaseMessage } from "@langchain/core/messages";
 import { toJsonSchema } from "@langchain/core/utils/json_schema";
@@ -24,6 +25,15 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ZodObjectAny = z.ZodObject<any>;
 
+/**
+ * Options forwarded to `withStructuredOutput` when the judge is a LangChain chat model.
+ * `includeRaw` is omitted since the evaluator expects the parsed output.
+ */
+export type LLMAsJudgeStructuredOutputOptions = Omit<
+  StructuredOutputMethodOptions<false>,
+  "includeRaw"
+>;
+
 type LLMAsJudgeScorerParams = {
   prompt:
     | string
@@ -39,6 +49,7 @@ type LLMAsJudgeScorerParams = {
   choices?: number[];
   useReasoning?: boolean;
   fewShotExamples?: FewShotExample[];
+  structuredOutputOptions?: LLMAsJudgeStructuredOutputOptions;
 };
 
 export type LLMAsJudgeScorer = (params: {
@@ -96,27 +107,31 @@ function appendFewShotExamples({
 
   const actualIdx = messages.length - 1 - lastUserMessageIdx;
 
+  const examplesText = fewShotExamples
+    .map((example) => {
+      let exampleStr = `<example>\n<input>${JSON.stringify(
+        example.inputs
+      )}</input>\n<output>${JSON.stringify(example.outputs)}</output>`;
+
+      if (example.reasoning) {
+        exampleStr += `\n<reasoning>${example.reasoning}</reasoning>`;
+      }
+
+      if (example.score !== undefined) {
+        exampleStr += `\n<score>${example.score}</score>`;
+      }
+
+      exampleStr += "\n</example>";
+      return exampleStr;
+    })
+    .join("\n");
+
+  const { content } = messages[actualIdx];
+  // Attachments and multimodal prompts produce an array of content blocks.
   // eslint-disable-next-line no-param-reassign
-  messages[actualIdx].content +=
-    "\n\n" +
-    fewShotExamples
-      .map((example) => {
-        let exampleStr = `<example>\n<input>${JSON.stringify(
-          example.inputs
-        )}</input>\n<output>${JSON.stringify(example.outputs)}</output>`;
-
-        if (example.reasoning) {
-          exampleStr += `\n<reasoning>${example.reasoning}</reasoning>`;
-        }
-
-        if (example.score !== undefined) {
-          exampleStr += `\n<score>${example.score}</score>`;
-        }
-
-        exampleStr += "\n</example>";
-        return exampleStr;
-      })
-      .join("\n");
+  messages[actualIdx].content = Array.isArray(content)
+    ? [...content, { type: "text", text: examplesText }]
+    : `${content}\n\n${examplesText}`;
 
   return messages;
 }
@@ -215,8 +230,15 @@ function _stringifyPromptParam(param: unknown): string {
 export const _createLLMAsJudgeScorer: (
   params: LLMAsJudgeScorerParams
 ) => LLMAsJudgeScorer = (params) => {
-  const { prompt, system, model, continuous, choices, fewShotExamples } =
-    params;
+  const {
+    prompt,
+    system,
+    model,
+    continuous,
+    choices,
+    fewShotExamples,
+    structuredOutputOptions,
+  } = params;
 
   let schema: Record<string, unknown> | undefined;
   if (isZodSchema(params.schema)) {
@@ -375,7 +397,8 @@ export const _createLLMAsJudgeScorer: (
           title: "score",
           description,
           ...defaultJsonSchema,
-        }
+        },
+        structuredOutputOptions
       );
       // Convert input_audio to LangChain canonical format { type: "audio", source_type: "base64", ... }
       // so both @langchain/openai and @langchain/google-genai dispatch via fromStandardAudioBlock.
@@ -503,6 +526,9 @@ export const _createLLMAsJudgeScorer: (
  * @param params.outputSchema Optional JSON schema or Zod schema for the output of the evaluator.
  *                            If provided, the created evaluator will return an object conforming to the provided schema.
  *                            If you are using an OpenAI client directly, this field must be OpenAI structured output format or JSON schema if provided.
+ * @param params.structuredOutputOptions Optional options passed to `withStructuredOutput` when the judge is a LangChain chat model,
+ *                            for example `{ method: "jsonSchema" }` to use provider-native structured output instead of the
+ *                            model's default method. Ignored when using an OpenAI client directly.
  * @returns A function that takes inputs, outputs, reference_outputs, and other kwargs,
  *          formats them into a prompt, invokes the judge, and returns an evaluation result
  *
@@ -536,6 +562,7 @@ export function createLLMAsJudge(params: {
   useReasoning?: boolean;
   fewShotExamples?: FewShotExample[];
   outputSchema?: undefined;
+  structuredOutputOptions?: LLMAsJudgeStructuredOutputOptions;
 }): (
   params: Record<string, unknown>
 ) => Promise<EvaluatorResult & Record<string, unknown>>;
@@ -556,6 +583,7 @@ export function createLLMAsJudge(params: {
   useReasoning?: boolean;
   fewShotExamples?: FewShotExample[];
   outputSchema: Record<string, unknown> | ZodObjectAny;
+  structuredOutputOptions?: LLMAsJudgeStructuredOutputOptions;
 }): (params: Record<string, unknown>) => Promise<Record<string, unknown>>;
 
 export function createLLMAsJudge({
@@ -569,6 +597,7 @@ export function createLLMAsJudge({
   useReasoning = true,
   fewShotExamples,
   outputSchema,
+  structuredOutputOptions,
 }: {
   prompt:
     | string
@@ -585,6 +614,7 @@ export function createLLMAsJudge({
   useReasoning?: boolean;
   fewShotExamples?: FewShotExample[];
   outputSchema?: Record<string, unknown> | ZodObjectAny;
+  structuredOutputOptions?: LLMAsJudgeStructuredOutputOptions;
 }):
   | ((
       params: Record<string, unknown>
@@ -605,6 +635,7 @@ export function createLLMAsJudge({
     useReasoning,
     fewShotExamples,
     schema: outputSchema,
+    structuredOutputOptions,
   });
 
   const _wrappedEvaluator = async (inputs: {

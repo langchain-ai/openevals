@@ -2,7 +2,12 @@ import { _runEvaluator } from "./utils.js";
 
 const _scorer = (params: { outputs: unknown; referenceOutputs?: unknown }) => {
   const { outputs, referenceOutputs } = params;
-  if (outputs === null || referenceOutputs === null) {
+  if (
+    outputs === null ||
+    outputs === undefined ||
+    referenceOutputs === null ||
+    referenceOutputs === undefined
+  ) {
     throw new Error("Exact match requires both outputs and referenceOutputs");
   }
 

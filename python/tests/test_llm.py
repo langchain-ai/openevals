@@ -1,6 +1,6 @@
 import json
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 from openevals.llm import create_llm_as_judge
@@ -8,9 +8,11 @@ from openevals.llm import create_llm_as_judge
 from openai import OpenAI
 from langchain_openai import ChatOpenAI
 from langsmith import Client
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts.chat import ChatPromptTemplate
 from langchain_core.prompts.structured import StructuredPrompt
+from langchain_core.runnables import RunnableLambda
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -376,3 +378,34 @@ def test_llm_as_judge_mustache_prompt():
     llm_as_judge = create_llm_as_judge(prompt=prompt, model="openai:gpt-5.6-luna")
     eval_result = llm_as_judge(inputs=inputs, outputs=outputs)
     assert eval_result["score"]
+
+
+class StructuredOutputRecordingChatModel(BaseChatModel):
+    structured_output_kwargs: list[dict] = Field(default_factory=list)
+
+    @property
+    def _llm_type(self) -> str:
+        return "structured-output-recording"
+
+    def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+        raise NotImplementedError
+
+    def with_structured_output(self, schema, **kwargs):
+        self.structured_output_kwargs.append(kwargs)
+        return RunnableLambda(lambda _: {"score": True, "reasoning": "equal"})
+
+
+@pytest.mark.parametrize(
+    "structured_output_kwargs, expected",
+    [(None, {}), ({"method": "json_schema"}, {"method": "json_schema"})],
+)
+def test_llm_as_judge_structured_output_kwargs(structured_output_kwargs, expected):
+    judge = StructuredOutputRecordingChatModel()
+    llm_as_judge = create_llm_as_judge(
+        prompt="Are these two equal? {inputs} {outputs}",
+        judge=judge,
+        structured_output_kwargs=structured_output_kwargs,
+    )
+    eval_result = llm_as_judge(inputs={"a": 1}, outputs={"a": 1})
+    assert eval_result["score"] is True
+    assert judge.structured_output_kwargs == [expected]

@@ -32,7 +32,11 @@ def _scorer(
         )
     # subset: reference_outputs contains all tool calls from outputs
     return _is_trajectory_superset(
-        reference_outputs, outputs, tool_args_match_mode, tool_args_match_overrides
+        reference_outputs,
+        outputs,
+        tool_args_match_mode,
+        tool_args_match_overrides,
+        swapped=True,
     )
 
 

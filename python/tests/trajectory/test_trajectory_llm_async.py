@@ -10,6 +10,26 @@ import pytest
 import json
 
 
+def test_system_passed_to_scorer(monkeypatch):
+    captured = {}
+
+    def fake_create_async_llm_as_judge_scorer(**kwargs):
+        captured.update(kwargs)
+        return lambda **kwargs: {"score": True}
+
+    monkeypatch.setattr(
+        "openevals.trajectory.llm._create_async_llm_as_judge_scorer",
+        fake_create_async_llm_as_judge_scorer,
+    )
+
+    create_async_trajectory_llm_as_judge(
+        model="openai:o3-mini",
+        system="Use the trajectory rubric.",
+    )
+
+    assert captured["system"] == "Use the trajectory rubric."
+
+
 @pytest.mark.langsmith
 @pytest.mark.asyncio
 async def test_trajectory_match():

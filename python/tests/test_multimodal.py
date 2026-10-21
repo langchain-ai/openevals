@@ -224,6 +224,41 @@ def test_multiple_attachments_all_appended():
     assert content[2]["type"] == "image"
 
 
+def test_few_shot_examples_keep_attachment_blocks():
+    """Few-shot examples are appended as a text block after the attachments."""
+    from unittest.mock import MagicMock, patch
+
+    from openevals.llm import _create_llm_as_judge_scorer
+
+    scorer = _create_llm_as_judge_scorer(
+        prompt="Evaluate this image: {outputs}\n{attachments}",
+        model="openai:gpt-5.6-luna",
+        few_shot_examples=[{"inputs": "a", "outputs": "b", "score": True}],
+    )
+
+    with patch("openevals.llm.init_chat_model") as mock_init:
+        mock_judge = MagicMock(spec=BaseChatModel)
+        mock_judge.with_structured_output.return_value.invoke.return_value = {
+            "score": True,
+            "reasoning": "ok",
+        }
+        mock_init.return_value = mock_judge
+
+        scorer(
+            outputs="a fruit bowl",
+            attachments={"mime_type": "image/png", "data": TINY_PNG_DATA_URI},
+        )
+
+    call_args = mock_judge.with_structured_output.return_value.invoke.call_args
+    content = call_args[0][0][0]["content"]
+    assert [block["type"] for block in content] == ["text", "image", "text"]
+    assert content[0]["text"] == "Evaluate this image: a fruit bowl\n"
+    assert content[1]["base64"] == TINY_PNG_DATA_URI.split(",")[1]
+    assert content[2]["text"] == (
+        "<example>\n<input>a</input>\n<output>b</output>\n<score>True</score>\n</example>"
+    )
+
+
 def test_no_attachment_content_is_plain_string():
     """When no attachments, content stays a plain string (no performance regression)."""
     from openevals.llm import _create_llm_as_judge_scorer

@@ -46,6 +46,11 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.13"]
+    env:
+      # python/.python-version pins 3.11 for local dev, and uv prefers it over the
+      # interpreter installed by setup-python. Make every uv command use the matrix
+      # version instead.
+      UV_PYTHON: ${{ matrix.python-version }}
     defaults:
       run:
         working-directory: python
@@ -94,6 +99,11 @@ jobs:
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           LANGSMITH_GATEWAY: ${{ secrets.LANGSMITH_GATEWAY }}
+          # When LANGSMITH_GATEWAY is set, langchain integrations route through the
+          # gateway and authenticate with LANGSMITH_GATEWAY_API_KEY, falling back to
+          # LANGSMITH_API_KEY (which is not valid for the gateway). OPENAI_API_KEY is
+          # the key CI already uses against the gateway via OPENAI_BASE_URL.
+          LANGSMITH_GATEWAY_API_KEY: ${{ secrets.LANGSMITH_GATEWAY_API_KEY || secrets.OPENAI_API_KEY }}
         run: uv run pytest tests
         shell: bash
         working-directory: python
@@ -143,6 +153,8 @@ jobs:
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           LANGSMITH_GATEWAY: ${{ secrets.LANGSMITH_GATEWAY }}
+          # See the Python job above.
+          LANGSMITH_GATEWAY_API_KEY: ${{ secrets.LANGSMITH_GATEWAY_API_KEY || secrets.OPENAI_API_KEY }}
         run: yarn test
         shell: bash
         working-directory: js

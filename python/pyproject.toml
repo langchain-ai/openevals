@@ -27,6 +27,7 @@ dev = [
     "pytest>=8.3.4",
     "pytest-asyncio>=0.25.3",
     "pytest-dotenv>=0.5.2",
+    "pytest-timeout>=2.3.1",
     "ruff>=0.9.5",
 ]
 
@@ -50,6 +51,14 @@ pythonpath = [
 # created in one test is later used or closed on an already-closed loop.
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
+# Fail any single test that runs longer than 5 minutes (the slowest normally
+# take well under a minute). This is lower than the OpenAI SDK's 10-minute
+# request timeout, so a hung model call trips it first. The "thread" method
+# works even when the main thread is stuck inside a blocking call: it dumps the
+# stack of every thread, so the log shows exactly where the hang is, and then
+# ends the run.
+timeout = 300
+timeout_method = "thread"
 
 [tool.uv]
 constraint-dependencies = [

@@ -33,7 +33,11 @@ def _scorer(
     unordered_match = _is_trajectory_superset(
         outputs, reference_outputs, tool_args_match_mode, tool_args_match_overrides
     ) and _is_trajectory_superset(
-        reference_outputs, outputs, tool_args_match_mode, tool_args_match_overrides
+        reference_outputs,
+        outputs,
+        tool_args_match_mode,
+        tool_args_match_overrides,
+        swapped=True,
     )
     return unordered_match
 

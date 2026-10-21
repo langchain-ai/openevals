@@ -78,6 +78,7 @@ def create_trajectory_llm_as_judge(
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
+    system: Optional[str] = None,
 ) -> SimpleEvaluator:
     """Creates an evaluator that uses an LLM to judge agent trajectories.
 
@@ -91,6 +92,7 @@ def create_trajectory_llm_as_judge(
         choices: Optional list of specific float values the score must be chosen from.
         use_reasoning: If True, includes explanation for the score in the output. Defaults to True.
         few_shot_examples: Optional list of example evaluations to append to the prompt.
+        system: Optional system message to prepend to the prompt.
 
     Returns:
         SimpleEvaluator: A function that evaluates agent trajectories using the configured LLM judge.
@@ -103,6 +105,7 @@ def create_trajectory_llm_as_judge(
         choices=choices,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
+        system=system,
     )
 
     def _wrapped_evaluator(
@@ -148,6 +151,7 @@ def create_async_trajectory_llm_as_judge(
     choices: Optional[list[float]] = None,
     use_reasoning: bool = True,
     few_shot_examples: Optional[list[FewShotExample]] = None,
+    system: Optional[str] = None,
 ) -> SimpleAsyncEvaluator:
     """Creates an async evaluator that uses an LLM to judge agent trajectories.
 
@@ -161,6 +165,7 @@ def create_async_trajectory_llm_as_judge(
         choices: Optional list of specific float values the score must be chosen from.
         use_reasoning: If True, includes explanation for the score in the output. Defaults to True.
         few_shot_examples: Optional list of example evaluations to append to the prompt.
+        system: Optional system message to prepend to the prompt.
 
     Returns:
         SimpleAsyncEvaluator: An async function that evaluates agent trajectories using the configured LLM judge.
@@ -173,6 +178,7 @@ def create_async_trajectory_llm_as_judge(
         choices=choices,
         use_reasoning=use_reasoning,
         few_shot_examples=few_shot_examples,
+        system=system,
     )
 
     async def _wrapped_evaluator(

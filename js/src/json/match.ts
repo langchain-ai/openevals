@@ -187,34 +187,74 @@ function _prepareParameters({
         }
       });
     } else {
-      const availableReferences = Array.from(
+      let availableReferences = Array.from(
         Array(referenceOutputs.length).keys()
       );
       const matchedOutputs = new Set<number>();
 
-      outputs.forEach((outputItem, i) => {
-        let bestMatchIdx: number | undefined;
-        let bestMatchScore = -1;
-
-        availableReferences.forEach((refIdx) => {
-          const refItem = referenceOutputs[refIdx];
-          let matchScore = 0;
-
-          Object.keys(outputItem).forEach((key) => {
-            if (
-              key in refItem &&
-              !excludeKeys.includes(key) &&
-              !(key in rubric)
-            ) {
-              matchScore += Number(_deepEqual(outputItem[key], refItem[key]));
-            }
-          });
-
-          if (matchScore > bestMatchScore) {
-            bestMatchScore = matchScore;
-            bestMatchIdx = refIdx;
+      let exactMatches = new Map<number, number>();
+      if (listMatchMode === "same_elements") {
+        // Detect a full multiset match before applying the score-based
+        // greedy matching below. This keeps reordered records from
+        // consuming a partial match that leaves another exact pair
+        // impossible to form without changing partial-match scoring.
+        const filterForMatch = (item: RecordStringAny) =>
+          Object.fromEntries(
+            Object.entries(item).filter(
+              ([key]) => !excludeKeys.includes(key) && !(key in rubric)
+            )
+          );
+        const candidateMatches = new Map<number, number>();
+        const candidateReferences = [...availableReferences];
+        outputs.forEach((outputItem, i) => {
+          const outputItemForMatch = filterForMatch(outputItem);
+          const matchPos = candidateReferences.findIndex((refIdx) =>
+            _deepEqual(
+              outputItemForMatch,
+              filterForMatch(referenceOutputs[refIdx])
+            )
+          );
+          if (matchPos !== -1) {
+            candidateMatches.set(i, candidateReferences[matchPos]);
+            candidateReferences.splice(matchPos, 1);
           }
         });
+        if (
+          candidateMatches.size === outputs.length &&
+          outputs.length === referenceOutputs.length
+        ) {
+          exactMatches = candidateMatches;
+          availableReferences = candidateReferences;
+        }
+      }
+
+      outputs.forEach((outputItem, i) => {
+        let bestMatchIdx: number | undefined = exactMatches.get(i);
+
+        if (bestMatchIdx === undefined) {
+          let bestMatchScore = -1;
+
+          // Try each available reference item
+          availableReferences.forEach((refIdx) => {
+            const refItem = referenceOutputs[refIdx];
+            let matchScore = 0;
+
+            Object.keys(outputItem).forEach((key) => {
+              if (
+                key in refItem &&
+                !excludeKeys.includes(key) &&
+                !(key in rubric)
+              ) {
+                matchScore += Number(_deepEqual(outputItem[key], refItem[key]));
+              }
+            });
+
+            if (matchScore > bestMatchScore) {
+              bestMatchScore = matchScore;
+              bestMatchIdx = refIdx;
+            }
+          });
+        }
 
         if (bestMatchIdx !== undefined) {
           Object.entries(outputItem).forEach(([key, value]) => {
@@ -227,10 +267,13 @@ function _prepareParameters({
             }
           );
 
-          availableReferences.splice(
-            availableReferences.indexOf(bestMatchIdx),
-            1
-          );
+          if (!exactMatches.has(i)) {
+            // Remove the used reference from available options
+            availableReferences.splice(
+              availableReferences.indexOf(bestMatchIdx),
+              1
+            );
+          }
           matchedOutputs.add(i);
         } else {
           // There were extra output items

@@ -14,6 +14,27 @@ type ListMatchMode = "superset" | "subset" | "same_elements" | "ordered";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RecordStringAny = Record<string, any>;
 
+// Sentinel field name used to represent a list item that has no keys of its
+// own (an empty object, e.g. `{}`). Unmatched-item tracking below is keyed on
+// field presence, so an unmatched record with zero fields would otherwise be
+// invisible to scoring. This marker guarantees such a record is still scored.
+const EMPTY_RECORD_KEY = "__openevals_empty_record";
+
+function _addUnmatchedItem(
+  target: RecordStringAny,
+  item: RecordStringAny,
+  idx: number
+) {
+  const entries = Object.entries(item);
+  if (entries.length === 0) {
+    target[`${EMPTY_RECORD_KEY}_${idx}`] = item;
+    return;
+  }
+  entries.forEach(([key, value]) => {
+    target[`${key}_${idx}`] = value;
+  });
+}
+
 export type JsonMatchEvaluatorOptions = {
   aggregator?: AggregatorType;
   listAggregator?: "average" | "all";
@@ -104,11 +125,19 @@ function _prepareParameters({
 
     if (listMatchMode === "ordered") {
       outputs.forEach((output, i) => {
+        if (i >= referenceOutputs.length) {
+          _addUnmatchedItem(outputsToUse, output, i);
+          return;
+        }
         Object.entries(output).forEach(([key, value]) => {
           outputsToUse[`${key}_${i}`] = value;
         });
       });
       referenceOutputs.forEach((refOutput, i) => {
+        if (i >= outputs.length) {
+          _addUnmatchedItem(referenceOutputsToUse, refOutput, i);
+          return;
+        }
         Object.entries(refOutput).forEach(([key, value]) => {
           referenceOutputsToUse[`${key}_${i}`] = value;
         });
@@ -153,9 +182,8 @@ function _prepareParameters({
           availableOutputs.splice(availableOutputs.indexOf(bestMatchIdx), 1);
           matchedReferences.add(i);
         } else {
-          Object.entries(refItem).forEach(([key, value]) => {
-            referenceOutputsToUse[`${key}_${i}`] = value;
-          });
+          // There were extra reference items
+          _addUnmatchedItem(referenceOutputsToUse, refItem, i);
         }
       });
     } else {
@@ -205,9 +233,8 @@ function _prepareParameters({
           );
           matchedOutputs.add(i);
         } else {
-          Object.entries(outputItem).forEach(([key, value]) => {
-            outputsToUse[`${key}_${i}`] = value;
-          });
+          // There were extra output items
+          _addUnmatchedItem(outputsToUse, outputItem, i);
         }
       });
 
@@ -215,9 +242,7 @@ function _prepareParameters({
         availableReferences.forEach((refIdx, index) => {
           const refItem = referenceOutputs[refIdx];
           const dummyIdx = outputs.length + index;
-          Object.entries(refItem).forEach(([key, value]) => {
-            referenceOutputsToUse[`${key}_${dummyIdx}`] = value;
-          });
+          _addUnmatchedItem(referenceOutputsToUse, refItem, dummyIdx);
         });
       }
     }

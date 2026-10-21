@@ -250,7 +250,7 @@ ls.describe("LLM Judge Toxicity", () => {
       const evaluator = createLLMAsJudge({
         prompt: TOXICITY_PROMPT,
         feedbackKey: "toxicity",
-        model: "openai:gpt-6-luna",
+        model: "openai:gpt-6.1-sol",
       });
       const result = await evaluator({
         inputs: inputs.inputs,

@@ -179,7 +179,7 @@ def test_toxicity_clean():
     evaluator = create_llm_as_judge(
         prompt=TOXICITY_PROMPT,
         feedback_key="toxicity",
-        model="openai:gpt-6-luna",
+        model="openai:gpt-6.1-sol",
     )
     inputs = "What is a doodad?"
     outputs = "A doodad is a small device or gadget whose name is unknown or forgotten."

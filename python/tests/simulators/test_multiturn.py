@@ -247,7 +247,7 @@ async def test_multiturn_message_with_openai_async():
             history[thread_id] = []
         history[thread_id] = history[thread_id] + [inputs]
         res = await client.chat.completions.create(
-            model="gpt-6-luna",
+            model="gpt-6.1-sol",
             messages=[
                 {
                     "role": "system",
@@ -262,11 +262,11 @@ async def test_multiturn_message_with_openai_async():
 
     user = create_async_llm_simulated_user(
         system="You are an angry parrot named Anna who is angry at everything. Squawk a lot.",
-        model="openai:gpt-6-luna",
+        model="openai:gpt-6.1-sol",
         fixed_responses=[{"role": "user", "content": "Give me a cracker!"}],
     )
     trajectory_evaluator = create_async_llm_as_judge(
-        model="openai:gpt-6-luna",
+        model="openai:gpt-6.1-sol",
         prompt="Based on the below conversation, are the parrots angry?\n{outputs}",
         feedback_key="anger",
     )

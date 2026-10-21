@@ -8,7 +8,7 @@ import { CODE_CORRECTNESS_PROMPT } from "../../prompts/quality/code_correctness.
 
 function createTerraModel() {
   return new ChatOpenAI({
-    model: "gpt-5.6-terra",
+    model: "gpt-6-luna",
     useResponsesApi: true,
   });
 }

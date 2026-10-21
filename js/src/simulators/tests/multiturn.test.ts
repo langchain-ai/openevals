@@ -14,7 +14,7 @@ import type { ChatCompletionMessage } from "../../index.js";
 
 function createToolCallingModel() {
   return new ChatOpenAI({
-    model: "gpt-5.6-luna",
+    model: "gpt-6-luna",
     useResponsesApi: true,
   });
 }
@@ -72,7 +72,7 @@ ls.describe("Multiturn simulator", () => {
       const user = createLLMSimulatedUser({
         system:
           "You are an angry user who wants a refund and keeps making additional demands.",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         fixedResponses: [
           "I want a refund right now!",
           "This is completely unacceptable!",
@@ -81,7 +81,7 @@ ls.describe("Multiturn simulator", () => {
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         prompt:
           "Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -147,7 +147,7 @@ ls.describe("Multiturn simulator", () => {
 
       const user = createLLMSimulatedUser({
         system: "You are a happy and reasonable person who wants a refund.",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         fixedResponses: [
           "Hi, I'd like a refund please.",
           "Thank you so much, that's great!",
@@ -155,7 +155,7 @@ ls.describe("Multiturn simulator", () => {
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         prompt:
           "Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -220,7 +220,7 @@ ls.describe("Multiturn simulator", () => {
       };
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         prompt:
           "Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -271,7 +271,7 @@ ls.describe("Multiturn simulator", () => {
       // Create a custom app function
       const app = async ({ inputs }: { inputs: ChatCompletionMessage }) => {
         const res = await client.chat.completions.create({
-          model: "gpt-5.6-luna",
+          model: "gpt-6-luna",
           messages: [
             {
               role: "system",
@@ -287,12 +287,12 @@ ls.describe("Multiturn simulator", () => {
       const user = createLLMSimulatedUser({
         system:
           "You are an aggressive and hostile customer who wants a refund for their car.",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         fixedResponses: inputs.messages,
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         prompt:
           "Based on the below conversation, was the user satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -358,12 +358,12 @@ ls.describe("Multiturn simulator", () => {
 
       const user = createLLMSimulatedUser({
         system: "You are a happy and reasonable person who wants a refund.",
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         fixedResponses: inputs.messages,
       });
 
       const trajectoryEvaluator = createLLMAsJudge({
-        model: "openai:gpt-5.6-luna",
+        model: "openai:gpt-6-luna",
         prompt:
           "Based on the below conversation, has the user been satisfied?\n{outputs}",
         feedbackKey: "satisfaction",
@@ -378,7 +378,7 @@ ls.describe("Multiturn simulator", () => {
         threadId: string;
       }): Promise<boolean> => {
         const res = await client.chat.completions.create({
-          model: "gpt-5.6-luna",
+          model: "gpt-6-luna",
           messages: [
             {
               role: "system",

@@ -61,7 +61,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         aggregator: "average",
         rubric: {
           a: "Does the answer mention all the fruits in the reference answer?",
@@ -148,7 +148,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         aggregator: "all",
         rubric: {
           description:
@@ -180,7 +180,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         aggregator: "all",
         rubric: {
           description:
@@ -210,7 +210,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         rubric: {
           description:
             "Is the correct job title and company mentioned, as well as previous companies?",
@@ -240,7 +240,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         rubric: {
           description:
             "Is the correct job title and company mentioned, as well as previous companies?",
@@ -273,7 +273,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         rubric: {
           description:
             "Is the correct job title and company mentioned, as well as previous companies?",
@@ -698,7 +698,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         rubric: {
           a: "Does the answer mention all the fruits in the reference answer?",
         },
@@ -986,7 +986,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         listAggregator: "average",
         aggregator: "average",
         rubric: {
@@ -1017,7 +1017,7 @@ ls.describe("json", () => {
       const client = new OpenAI();
       const evaluator = createJsonMatchEvaluator({
         judge: client,
-        model: "openai:gpt-5.6-terra",
+        model: "openai:gpt-6-luna",
         listAggregator: "average",
         aggregator: "average",
         rubric: {
@@ -1048,7 +1048,7 @@ ls.describe("json", () => {
       expect(() => {
         createJsonMatchEvaluator({
           judge: client,
-          model: "openai:gpt-5.6-terra",
+          model: "openai:gpt-6-luna",
           aggregator: "all",
         });
       }).toThrow();
@@ -1081,7 +1081,7 @@ test.skip("test json match works with evaluate", async () => {
       description:
         "Is the correct job title and company mentioned, as well as previous companies?",
     },
-    model: "openai:gpt-5.6-terra",
+    model: "openai:gpt-6-luna",
   });
 
   const result = await evaluate(async (x: unknown) => x, {

@@ -162,7 +162,7 @@ def test_single_attachment_becomes_list_content():
 
     scorer = _create_llm_as_judge_scorer(
         prompt="Evaluate this image: {outputs}\n{attachments}",
-        model="openai:gpt-5.6-luna",
+        model="openai:gpt-6-luna",
     )
 
     with patch("openevals.llm.init_chat_model") as mock_init:
@@ -232,7 +232,7 @@ def test_few_shot_examples_keep_attachment_blocks():
 
     scorer = _create_llm_as_judge_scorer(
         prompt="Evaluate this image: {outputs}\n{attachments}",
-        model="openai:gpt-5.6-luna",
+        model="openai:gpt-6-luna",
         few_shot_examples=[{"inputs": "a", "outputs": "b", "score": True}],
     )
 
@@ -307,7 +307,7 @@ def test_raw_openai_client_image_attachment():
     scorer = _create_llm_as_judge_scorer(
         prompt="Evaluate this image: {outputs}\n{attachments}",
         judge=client,
-        model="openai:gpt-5.6-luna",
+        model="openai:gpt-6-luna",
     )
 
     with patch.object(

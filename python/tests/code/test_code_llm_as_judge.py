@@ -5,7 +5,7 @@ from openevals.code.llm import create_code_llm_as_judge, CODE_CORRECTNESS_PROMPT
 
 
 def _create_terra_model() -> ChatOpenAI:
-    return ChatOpenAI(model="gpt-5.6-terra", use_responses_api=True)
+    return ChatOpenAI(model="gpt-6-luna", use_responses_api=True)
 
 
 @pytest.mark.langsmith(output_keys=["outputs"])

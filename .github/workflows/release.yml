@@ -1,6 +1,11 @@
 name: release-python
-run-name: Release Python Package from ${{ inputs.working-directory }} by @${{ github.actor }}
+run-name: Release Python Package from ${{ inputs.working-directory || 'python' }} by @${{ github.actor }}
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "python/pyproject.toml"
   workflow_call:
     inputs:
       working-directory:
@@ -44,6 +49,7 @@ jobs:
     outputs:
       pkg-name: ${{ steps.check-version.outputs.pkg-name }}
       version: ${{ steps.check-version.outputs.version }}
+      should-publish: ${{ steps.check-version.outputs.should-publish }}
 
     steps:
       - uses: actions/checkout@v7
@@ -66,32 +72,52 @@ jobs:
       # https://github.com/pypa/gh-action-pypi-publish#non-goals
       - name: Build Python package
         run: uv build
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-directory || 'python' }}
       
       - name: Upload build
         uses: actions/upload-artifact@v7
         with:
           name: dist
-          path: ${{ inputs.working-directory }}/dist/
+          path: ${{ inputs.working-directory || 'python' }}/dist/
 
       - name: Check Version
         id: check-version
         shell: python
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-directory || 'python' }}
         run: |
           import os
           import tomllib
+          import urllib.error
+          import urllib.request
           with open("pyproject.toml", "rb") as f:
               data = tomllib.load(f)
           pkg_name = data["project"]["name"]
           version = data["project"]["version"]
+
+          # Skip publishing if this version is already on PyPI, so edits to
+          # pyproject.toml that don't bump the version (e.g. dependency
+          # updates) are a no-op. Any error other than a 404 fails the job
+          # rather than guessing.
+          url = f"https://pypi.org/pypi/{pkg_name}/{version}/json"
+          try:
+              urllib.request.urlopen(url, timeout=30)
+              should_publish = False
+              print(f"{pkg_name}=={version} is already on PyPI, skipping publish.")
+          except urllib.error.HTTPError as e:
+              if e.code != 404:
+                  raise
+              should_publish = True
+              print(f"{pkg_name}=={version} is not on PyPI yet, will publish.")
+
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"pkg-name={pkg_name}\n")
               f.write(f"version={version}\n")
+              f.write(f"should-publish={str(should_publish).lower()}\n")
 
   publish:
     needs:
       - build
+    if: needs.build.outputs.should-publish == 'true'
     runs-on: ubuntu-latest
     permissions:
       # This permission is used for trusted publishing:
@@ -103,7 +129,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-directory || 'python' }}
 
     steps:
       - uses: actions/checkout@v7
@@ -116,12 +142,12 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: dist
-          path: ${{ inputs.working-directory }}/dist/
+          path: ${{ inputs.working-directory || 'python' }}/dist/
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: ${{ inputs.working-directory }}/dist/
+          packages-dir: ${{ inputs.working-directory || 'python' }}/dist/
           verbose: true
           print-hash: true
           # Temp workaround since attestations are on by default as of gh-action-pypi-publish v1.11.0
@@ -139,7 +165,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-directory || 'python' }}
 
     steps:
       - uses: actions/checkout@v7
@@ -152,12 +178,12 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: dist
-          path: ${{ inputs.working-directory }}/dist/
+          path: ${{ inputs.working-directory || 'python' }}/dist/
 
       - name: Create Tag
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "${{ inputs.working-directory }}/dist/*"
+          artifacts: "${{ inputs.working-directory || 'python' }}/dist/*"
           token: ${{ secrets.GITHUB_TOKEN }}
           generateReleaseNotes: true
           tag: ${{needs.build.outputs.pkg-name}}==${{ needs.build.outputs.version }}

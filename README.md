@@ -202,6 +202,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Exact match](#exact-match)
     - [Levenshtein distance](#levenshtein-distance)
     - [Embedding similarity](#embedding-similarity)
+    - [Binary classifier](#binary-classifier)
 
   </details>
 
@@ -3555,6 +3556,45 @@ console.log(result);
     score: 0.9147273943905653,
 }
 ```
+</details>
+
+### Binary classifier
+
+<details>
+<summary>Python</summary>
+
+Unlike the LLM-as-judge evaluators above, this evaluator does not call a model itself. Instead, it wraps a classifier function you already have — a deterministic rule, a call to your own model, or anything else that returns a label — and normalizes that label into a standard OpenEvals boolean score. This is useful when you already have a way to produce a good/bad (or custom bucket) label and just want it reported in OpenEvals' result format.
+
+Labels are matched case-insensitively against `positive_labels`/`negative_labels`, which default to `good`/`pass`/`true`/`1` (positive) and `bad`/`fail`/`false`/`0` (negative). You can pass your own lists to support custom buckets.
+
+```python
+from openevals import create_binary_classifier_evaluator
+
+def my_classifier(*, inputs, outputs, reference_outputs, **kwargs):
+    # Any rule, heuristic, or model call you like
+    return "good" if outputs == reference_outputs else "bad"
+
+evaluator = create_binary_classifier_evaluator(classifier=my_classifier)
+
+result = evaluator(
+    inputs="What is the capital of France?",
+    outputs="Paris",
+    reference_outputs="Paris",
+)
+
+print(result)
+```
+
+```
+{
+    'key': 'binary_classification',
+    'score': True,
+    'comment': 'Classified as good.',
+}
+```
+
+An async version is also available as `create_async_binary_classifier_evaluator`, which accepts either a sync or async `classifier` function.
+
 </details>
 
 ## Creating your own

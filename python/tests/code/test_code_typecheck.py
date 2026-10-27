@@ -144,3 +144,46 @@ def test_pyright_extraction_llm_no_code():
     eval_result = pyright_evaluator(outputs="I'm doing well, how about you?")
     assert not eval_result["score"]
     assert eval_result["metadata"]["code_extraction_failed"]
+
+
+TYPE_ERRORS = (
+    'def add(a: int, b: int) -> int:\n    return a + b\n\nx: int = add("1", "2")\n'
+)
+
+DIRECTIVE_EXAMPLES = [
+    "# type: ignore\n" + TYPE_ERRORS,
+    TYPE_ERRORS.replace('add("1", "2")', 'add("1", "2")  # type: ignore[arg-type]'),
+    TYPE_ERRORS.replace('add("1", "2")', 'add("1", "2")  # pyright: ignore'),
+    "# mypy: ignore-errors\n" + TYPE_ERRORS,
+    "# type: ignore\ndef add(a, b)\n    return a +\n",
+    "# type: ignore\nI'm sorry, I can't write that code.",
+]
+
+
+@pytest.mark.parametrize("outputs", DIRECTIVE_EXAMPLES)
+@pytest.mark.parametrize(
+    "create_evaluator", [create_pyright_evaluator, create_mypy_evaluator]
+)
+def test_type_checker_directives_fail(create_evaluator, outputs):
+    evaluator = create_evaluator()
+    eval_result = evaluator(outputs=outputs)
+    assert not eval_result["score"]
+    assert "type checker directive" in eval_result["comment"]
+
+
+@pytest.mark.parametrize(
+    "outputs, strategy",
+    [
+        ("", "none"),
+        ("  \n", "none"),
+        ("I'm sorry, I can't write that code.\n```python\n```", "markdown_code_blocks"),
+    ],
+)
+@pytest.mark.parametrize(
+    "create_evaluator", [create_pyright_evaluator, create_mypy_evaluator]
+)
+def test_empty_code_fails(create_evaluator, outputs, strategy):
+    evaluator = create_evaluator(code_extraction_strategy=strategy)
+    eval_result = evaluator(outputs=outputs)
+    assert not eval_result["score"]
+    assert eval_result["metadata"]["code_extraction_failed"]

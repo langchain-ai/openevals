@@ -1343,6 +1343,58 @@ print(eval_result)
 }
 ```
 
+#### Character-sensitive grading (Python)
+
+When correctness depends on whitespace or format characters, you can add an
+optional character-facts view to the judge prompt. For example, U+00A0 NO-BREAK
+SPACE can look like U+0020 SPACE while changing a Python validator's behavior.
+
+`format_character_facts` describes non-ASCII whitespace and Unicode format
+characters (category `Cf`), including zero-width spaces and bidirectional controls.
+It returns an empty string when there are no matches. It does not normalize the
+answer or decide whether a character is correct. Ordinary non-ASCII letters are
+not listed; this is not a general homoglyph or invisible-character detector.
+
+Keep the facts outside the candidate answer so that metadata is not graded as
+part of the submitted code:
+
+```python
+from openevals.character_facts import format_character_facts
+from openevals.code.llm import create_code_llm_as_judge
+from openevals.prompts import CODE_CORRECTNESS_PROMPT
+
+
+def character_aware_prompt(*, inputs, outputs, **kwargs):
+    content = CODE_CORRECTNESS_PROMPT.format(inputs=inputs, outputs=outputs)
+    facts = format_character_facts(outputs, label="outputs")
+    if facts:
+        content += "\n\n" + facts
+    return [{"role": "user", "content": content}]
+
+
+evaluator = create_code_llm_as_judge(
+    prompt=character_aware_prompt,
+    model="openai:gpt-5.6-sol",
+    code_extraction_strategy="none",
+)
+```
+
+The same prompt callable works with `create_async_code_llm_as_judge`. The helper
+can also describe input or reference text by passing that text and a suitable
+`label`.
+
+By default, the sidecar lists at most 20 occurrences, with up to 20 code points
+of JSON-escaped context on each side. Use `max_occurrences` and `context_radius`
+to adjust these limits; omitted matches are counted. Positions are one-based
+Unicode code-point columns, with lines separated by LF. If code extraction is
+enabled, positions refer to the extracted code. Characters removed by prior
+normalization or extraction cannot be recovered by this helper.
+
+These are descriptive facts: legitimate Unicode must not automatically fail an
+evaluation. A judge may still misinterpret the evidence. Prefer executable
+checks for exact code behavior, and validate any prompt change on your own
+evaluation cases.
+
 ## Sandboxed code
 
 LLMs can generate arbitrary code, and if you are running a code evaluator locally, you may not wish to install generated dependencies or run this arbitrary code locally. To solve this, OpenEvals integrates with [E2B](https://e2b.dev) to run some code evaluators in isolated sandboxes.

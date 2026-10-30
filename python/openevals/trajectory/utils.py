@@ -17,6 +17,29 @@ from langchain_core.messages import BaseMessage
 from langchain_core.messages.utils import convert_to_openai_messages
 from typing import Callable, Optional, Union
 
+# Stands in for tool call arguments that are not a JSON object. The call stays
+# in the trajectory and fails any match that compares its args, instead of
+# raising while the message is parsed.
+_INVALID_ARGS_KEY = "__openevals_invalid_args"
+
+
+def _parse_tool_call_args(arguments: str) -> dict:
+    if not arguments.strip():
+        return {}
+    try:
+        args = json.loads(arguments)
+    except json.JSONDecodeError:
+        args = None
+    return args if isinstance(args, dict) else {_INVALID_ARGS_KEY: arguments}
+
+
+def _with_parsable_args(tool_call: dict) -> dict:
+    function = tool_call.get("function")
+    if not isinstance(function, dict) or not isinstance(function.get("arguments"), str):
+        return tool_call
+    args = _parse_tool_call_args(function["arguments"])
+    return {**tool_call, "function": {**function, "arguments": json.dumps(args)}}
+
 
 # More flexible version of converting to OpenAI messages for trajectories
 def _convert_to_openai_message(
@@ -26,7 +49,7 @@ def _convert_to_openai_message(
         message = dict(message)
         if message.get("role") in ["ai", "assistant"] and message.get("tool_calls"):
             message["tool_calls"] = [
-                {**tool_call, "id": tool_call.get("id", "")}
+                {**_with_parsable_args(tool_call), "id": tool_call.get("id", "")}
                 for tool_call in message["tool_calls"]
             ]
         if message.get("role") == "tool" and message.get("tool_call_id") is None:

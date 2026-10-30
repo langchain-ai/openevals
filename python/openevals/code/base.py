@@ -25,8 +25,11 @@ __all__ = [
 ]
 
 # Comments that switch off or relax type checking, such as `# type: ignore`,
-# `# pyright: basic` and `# mypy: ignore-errors`.
-_TYPE_CHECKER_DIRECTIVE_PATTERN = re.compile(r"#\s*(?:type:\s*ignore|pyright:|mypy:)")
+# `# pyright: basic` and `# mypy: ignore-errors`. A bare `# pyright: strict`
+# only makes checking stricter, so it is allowed.
+_TYPE_CHECKER_DIRECTIVE_PATTERN = re.compile(
+    r"#\s*(?:type:\s*ignore|pyright:(?!\s*strict\s*$)|mypy:)", re.MULTILINE
+)
 
 
 def _type_checker_directive_error(code: str) -> Optional[str]:

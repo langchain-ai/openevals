@@ -155,6 +155,7 @@ DIRECTIVE_EXAMPLES = [
     TYPE_ERRORS.replace('add("1", "2")', 'add("1", "2")  # type: ignore[arg-type]'),
     TYPE_ERRORS.replace('add("1", "2")', 'add("1", "2")  # pyright: ignore'),
     "# mypy: ignore-errors\n" + TYPE_ERRORS,
+    "# pyright: strict, reportPrivateUsage=false\n" + TYPE_ERRORS,
     "# type: ignore\ndef add(a, b)\n    return a +\n",
     "# type: ignore\nI'm sorry, I can't write that code.",
 ]
@@ -187,3 +188,11 @@ def test_empty_code_fails(create_evaluator, outputs, strategy):
     eval_result = evaluator(outputs=outputs)
     assert not eval_result["score"]
     assert eval_result["metadata"]["code_extraction_failed"]
+
+
+def test_pyright_strict_directive_allowed():
+    evaluator = create_pyright_evaluator()
+    eval_result = evaluator(
+        outputs="# pyright: strict\ndef add(a: int, b: int) -> int:\n    return a + b\n"
+    )
+    assert eval_result["score"]

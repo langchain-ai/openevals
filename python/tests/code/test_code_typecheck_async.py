@@ -150,3 +150,30 @@ async def test_pyright_extraction_llm_no_code():
     eval_result = await pyright_evaluator(outputs="I'm doing well, how about you?")
     assert not eval_result["score"]
     assert eval_result["metadata"]["code_extraction_failed"]
+
+
+TYPE_ERRORS = (
+    'def add(a: int, b: int) -> int:\n    return a + b\n\nx: int = add("1", "2")\n'
+)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "create_evaluator", [create_async_pyright_evaluator, create_async_mypy_evaluator]
+)
+async def test_type_checker_directives_fail(create_evaluator):
+    evaluator = create_evaluator()
+    eval_result = await evaluator(outputs="# type: ignore\n" + TYPE_ERRORS)
+    assert not eval_result["score"]
+    assert "type checker directive" in eval_result["comment"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "create_evaluator", [create_async_pyright_evaluator, create_async_mypy_evaluator]
+)
+async def test_empty_code_fails(create_evaluator):
+    evaluator = create_evaluator()
+    eval_result = await evaluator(outputs="")
+    assert not eval_result["score"]
+    assert eval_result["metadata"]["code_extraction_failed"]

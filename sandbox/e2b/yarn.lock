@@ -5,7 +5,7 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@bufbuild/protobuf@npm:^2.15.0":
+"@bufbuild/protobuf@npm:^2.16.0":
   version: 2.16.0
   resolution: "@bufbuild/protobuf@npm:2.16.0"
   checksum: 946f965d5622f88e787f21ee2a63689aea310629ea17079a854a2581096625800d62662e5e936a92c651c3a7ea67e1d53e849d06a6093073c6d9dd3c70a54cd5
@@ -31,28 +31,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@e2b/cli@npm:^2.20.0":
-  version: 2.20.0
-  resolution: "@e2b/cli@npm:2.20.0"
+"@e2b/cli@npm:^2.23.0":
+  version: 2.23.0
+  resolution: "@e2b/cli@npm:2.23.0"
   dependencies:
     "@iarna/toml": ^2.2.5
-    "@inquirer/prompts": ^7.9.0
+    "@inquirer/prompts": ^7.10.1
     "@npmcli/package-json": ^7.0.5
     async-listen: ^3.1.0
     boxen: ^7.1.1
-    chalk: ^5.3.0
+    chalk: ^5.6.2
     cli-highlight: ^2.1.11
     commander: ^11.1.0
-    e2b: ^2.50.0
-    handlebars: ^4.7.9
-    inquirer: ^12.10.0
+    e2b: ^2.61.0
+    handlebars: ^4.7.10
+    inquirer: ^12.11.1
     simple-update-notifier: ^2.0.0
     simple-wcswidth: ^1.1.2
     statuses: ^2.0.2
     yup: ^1.7.1
   bin:
     e2b: dist/index.js
-  checksum: c4db0fa7e29a2d80894bd39154332a0e4e5e2584fc723ec644e68332cb010cb378958fcf45ce440c2e1455c2bb67d2c66af0a13eda990c9c9cf344d0e576adcf
+  checksum: 0c0b2161c8cdb51b661438c498d193cc9c33b8fe7bb784cb7f249bb7d83667a3f121ec04654d43deeba7fcf67f29a38729ae40e564aea8f89de3a9169f8c4d66
+  languageName: node
+  linkType: hard
+
+"@e2b/dockerfile-utils@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@e2b/dockerfile-utils@npm:0.1.1"
+  checksum: 362e99c7c2c3e993bdbdfc4bf881806652b2473d758487d2207e8d23b3cf8956954bfc53783dae575f2454b1578090cbc21da753cef9c3db6f5c3b6bba84b657
   languageName: node
   linkType: hard
 
@@ -231,7 +238,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/prompts@npm:^7.10.1, @inquirer/prompts@npm:^7.9.0":
+"@inquirer/prompts@npm:^7.10.1":
   version: 7.10.1
   resolution: "@inquirer/prompts@npm:7.10.1"
   dependencies:
@@ -475,7 +482,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^5.3.0, chalk@npm:^5.6.2":
+"chalk@npm:^5.6.2":
   version: 5.6.2
   resolution: "chalk@npm:5.6.2"
   checksum: 4ee2d47a626d79ca27cb5299ecdcce840ef5755e287412536522344db0fc51ca0f6d6433202332c29e2288c6a90a2b31f3bd626bc8c14743b6b6ee28abd3b796
@@ -560,43 +567,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"compare-versions@npm:^6.1.0":
+"compare-versions@npm:^6.1.1":
   version: 6.1.1
   resolution: "compare-versions@npm:6.1.1"
   checksum: 73fe6c4f52d22efe28f0a3be10df2afd704e10b3593360cd963e86b33a7a263c263b41a1361b69c30a0fe68bfa70fef90860c1cf2ef41502629d4402890fcd57
   languageName: node
   linkType: hard
 
-"dockerfile-ast@npm:^0.7.1":
-  version: 0.7.1
-  resolution: "dockerfile-ast@npm:0.7.1"
+"e2b@npm:^2.61.0":
+  version: 2.62.0
+  resolution: "e2b@npm:2.62.0"
   dependencies:
-    vscode-languageserver-textdocument: ^1.0.8
-    vscode-languageserver-types: ^3.17.3
-  checksum: ab6d1f8dd9962f71c6b56594d9cc8924fc5f65b148bc9e582b5b3107aa42173e2556a15ea221f1a892b437d903334abbe9605eeeccc5d4fad828717c7d1f1884
-  languageName: node
-  linkType: hard
-
-"e2b@npm:^2.50.0":
-  version: 2.52.0
-  resolution: "e2b@npm:2.52.0"
-  dependencies:
-    "@bufbuild/protobuf": ^2.15.0
+    "@bufbuild/protobuf": ^2.16.0
     "@connectrpc/connect": ^2.2.0
     "@connectrpc/connect-web": ^2.2.0
+    "@e2b/dockerfile-utils": ^0.1.1
     chalk: ^5.6.2
-    compare-versions: ^6.1.0
-    dockerfile-ast: ^0.7.1
+    compare-versions: ^6.1.1
     glob: ^13.0.6
     openapi-fetch: ^0.17.0
     platform: ^1.3.6
     tar: ^7.5.22
-    undici: ^7.29.1
-    undici8: "npm:undici@8.10.2"
-  dependenciesMeta:
-    undici8:
-      optional: true
-  checksum: 66ea7bb03e72d5cb26296fa45f56816ddbf61ecefa63cf7ee87c2acfaac33fb2927c987f2d2d8410015e805bf5450ddb979418e6384d977cde0a9d52ec19c4a3
+    undici: ^8.12.2
+  checksum: 031e76a79762aa0c9dba508dd042a1893952a11368a4a5400743ba47ab6e81881d2a15993ab6f2c36407d80b331b01377e39a67199d7a807bb1bc2c330162607
   languageName: node
   linkType: hard
 
@@ -646,7 +639,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"handlebars@npm:^4.7.9":
+"handlebars@npm:^4.7.10":
   version: 4.7.10
   resolution: "handlebars@npm:4.7.10"
   dependencies:
@@ -703,7 +696,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inquirer@npm:^12.10.0":
+"inquirer@npm:^12.11.1":
   version: 12.11.1
   resolution: "inquirer@npm:12.11.1"
   dependencies:
@@ -875,7 +868,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "openevals-e2b-sandbox-templates@workspace:."
   dependencies:
-    "@e2b/cli": ^2.20.0
+    "@e2b/cli": ^2.23.0
   languageName: unknown
   linkType: soft
 
@@ -1159,17 +1152,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici8@npm:undici@8.10.2":
-  version: 8.10.2
-  resolution: "undici@npm:8.10.2"
-  checksum: bbf522bf0999a94b66eb2171ec96d9ac2bf681dd298a28976b72dd7cd4449e96839b3a8b88eaea34b88903ddcf32f3c7a026b6e18a698ad7acfb73c3e19a372a
-  languageName: node
-  linkType: hard
-
-"undici@npm:^7.29.1":
-  version: 7.30.1
-  resolution: "undici@npm:7.30.1"
-  checksum: 690eac72898071c9a2d100c7653dc4fa90b70666877a7a3a0c264a96e3ebe6c2110ce3e89bcd4ecdd635db6871355e64992d088adcc473ee59bd2b92119ce28b
+"undici@npm:^8.12.2":
+  version: 8.12.3
+  resolution: "undici@npm:8.12.3"
+  checksum: e82687e13fa22dac7765b05fba613e0a7917a02e1a13764dbccd816811dca4f7a7d58baf4970dc5ca38b1a9e3d47defd7936ab4301672fb111006257ce7e53fc
   languageName: node
   linkType: hard
 
@@ -1177,20 +1163,6 @@ __metadata:
   version: 7.0.2
   resolution: "validate-npm-package-name@npm:7.0.2"
   checksum: 2a9bdc6fd5e4284c8e02279446bfd3c38c0c01222555fd3b00b4765d9d47b217d4a200910be71b80b958f6baf40d2d32e812a8632633a2ce376a9b3b74811072
-  languageName: node
-  linkType: hard
-
-"vscode-languageserver-textdocument@npm:^1.0.8":
-  version: 1.0.13
-  resolution: "vscode-languageserver-textdocument@npm:1.0.13"
-  checksum: 5baf506eb63f75b0e4c92bbb849c06dc6282549d1390dedd8106a1ebfa7695bcec452379ed97a68bfd7d740ce31afbd7a7fee744bb3d35799d72064920279474
-  languageName: node
-  linkType: hard
-
-"vscode-languageserver-types@npm:^3.17.3":
-  version: 3.18.0
-  resolution: "vscode-languageserver-types@npm:3.18.0"
-  checksum: 6887e7725ee948bb20b466ce0decc905e2e31828ec2c1e26f18b136e9102d11440c30ea2cd08652f57221b0b1277f1fc4ab51d7bc14d526c975c8c00d05d927b
   languageName: node
   linkType: hard
 

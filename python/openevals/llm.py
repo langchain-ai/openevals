@@ -101,6 +101,8 @@ def _construct_default_output_json_schema(
         score_schema = {
             "type": "number",
             "description": description,
+            "minimum": 0,
+            "maximum": 1,
         }
     else:
         description = "A score that is true if criteria in the prompt are met, and false otherwise."
@@ -126,6 +128,18 @@ def _construct_default_output_json_schema(
         json_schema["required"] = ["score"]
 
     return (json_schema, description)
+
+
+def _validate_continuous_score(score: Any) -> None:
+    """Reject values outside the default continuous scoring contract."""
+    if (
+        isinstance(score, bool)
+        or not isinstance(score, (int, float))
+        or not 0 <= score <= 1
+    ):
+        raise ValueError(
+            f"Continuous judge score must be a finite number between 0 and 1, got {score!r}"
+        )
 
 
 def _stringify_prompt_param(param: Any) -> Any:
@@ -294,6 +308,8 @@ def _create_llm_as_judge_scorer(
             ]
             response = judge_with_structured_output.invoke(normalized_messages)  # type: ignore
             if schema is None:
+                if continuous and not choices:
+                    _validate_continuous_score(response["score"])
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore
                 return response["score"]  # type: ignore
@@ -346,6 +362,8 @@ def _create_llm_as_judge_scorer(
             response = invoke_llm(**params)  # type: ignore
             parsed = json.loads(response.choices[0].message.content)  # type: ignore
             if schema is None:
+                if continuous and not choices:
+                    _validate_continuous_score(parsed["score"])
                 if use_reasoning:
                     return (parsed["score"], parsed["reasoning"])  # type: ignore
                 return parsed["score"]  # type: ignore
@@ -498,6 +516,8 @@ def _create_async_llm_as_judge_scorer(
             ]
             response = await judge_with_structured_output.ainvoke(normalized_messages)  # type: ignore
             if schema is None:
+                if continuous and not choices:
+                    _validate_continuous_score(response["score"])
                 if use_reasoning:
                     return (response["score"], response["reasoning"])  # type: ignore
                 return response["score"]  # type: ignore
@@ -550,6 +570,8 @@ def _create_async_llm_as_judge_scorer(
             response = await ainvoke_llm(**params)  # type: ignore
             parsed = json.loads(response.choices[0].message.content)  # type: ignore
             if schema is None:
+                if continuous and not choices:
+                    _validate_continuous_score(parsed["score"])
                 if use_reasoning:
                     return (parsed["score"], parsed["reasoning"])  # type: ignore
                 return parsed["score"]  # type: ignore
@@ -591,7 +613,8 @@ def create_llm_as_judge(
             LangChain model identifier. See `init_chat_model` docs for more details:
             https://python.langchain.com/docs/how_to/chat_models_universal_init/.
         system: Optional system message to prepend to the prompt.
-        continuous: If True, score will be a float between 0 and 1. If False, score will be boolean. Defaults to False.
+        continuous: If True, score will be a finite number between 0 and 1.
+            If False, score will be boolean. Defaults to False.
         choices: Optional list of specific float values the score must be chosen from.
         use_reasoning: If True, includes explanation for the score in the output. Defaults to True.
         few_shot_examples: Optional list of example evaluations to append to the prompt.
@@ -604,6 +627,10 @@ def create_llm_as_judge(
         A function that takes inputs, outputs, reference_outputs, and other kwargs, formats them into
         a prompt, invokes the judge, and returns an evaluation result.
         If `output_schema` is provided, the evaluator will be a callable function returning a dict conforming to the provided schema.
+
+    Raises:
+        ValueError: If a judge score is not a finite number between 0 and 1 when
+            using the default continuous schema without choices.
 
     Example:
         ```python
@@ -699,7 +726,8 @@ def create_async_llm_as_judge(
             LangChain model identifier. See `init_chat_model` docs for more details:
             https://python.langchain.com/docs/how_to/chat_models_universal_init/.
         system: Optional system message to prepend to the prompt.
-        continuous: If True, score will be a float between 0 and 1. If False, score will be boolean. Defaults to False.
+        continuous: If True, score will be a finite number between 0 and 1.
+            If False, score will be boolean. Defaults to False.
         choices: Optional list of specific float values the score must be chosen from.
         use_reasoning: If True, includes explanation for the score in the output. Defaults to True.
         few_shot_examples: Optional list of example evaluations to append to the prompt.
@@ -712,6 +740,10 @@ def create_async_llm_as_judge(
         A function that takes inputs, outputs, reference_outputs, and other kwargs, formats them into
         a prompt, invokes the judge, and returns an evaluation result.
         If `output_schema` is provided, the evaluator will be a callable function returning a dict conforming to the provided schema.
+
+    Raises:
+        ValueError: If a judge score is not a finite number between 0 and 1 when
+            using the default continuous schema without choices.
 
     Example:
         ```python

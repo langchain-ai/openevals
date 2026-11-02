@@ -202,6 +202,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Exact match](#exact-match)
     - [Levenshtein distance](#levenshtein-distance)
     - [Embedding similarity](#embedding-similarity)
+    - [Consistency](#consistency)
 
   </details>
 
@@ -3555,6 +3556,62 @@ console.log(result);
     score: 0.9147273943905653,
 }
 ```
+</details>
+
+### Consistency
+
+These evaluators measure how much **repeated runs of the same input agree with each other**. They need no reference outputs, so they work on data nobody has labelled, and they are useful for run-to-run reliability and for checking that nothing changed after upgrading a model, a prompt or a retriever. Pass `outputs` as a list of at least two runs. Consistency is not correctness: a system that is consistently wrong scores 1.0.
+
+Pairs of runs are sampled instead of comparing all of them (a random cycle of N pairs for N runs, so every run is compared at least twice); set `max_comparisons` to change this. They use the [`repeatability-evals`](https://github.com/krishna-gogineni-765/repeatability-evals) package: install with `pip install "openevals[consistency]"`. Identical runs are scored without a judge call. Python only.
+
+<details>
+<summary>Python</summary>
+
+Retrieval consistency compares the chunks returned by each run, with no LLM. Use `mode="id"` to compare chunk IDs (Jaccard similarity) or `mode="ngram"` to compare the word n-grams of the chunk text, which survives re-chunking.
+
+```python
+from openevals.consistency import create_retrieval_consistency_evaluator
+
+evaluator = create_retrieval_consistency_evaluator(mode="id")
+
+result = evaluator(
+    outputs=[
+        ["doc-12", "doc-7", "doc-3"],
+        ["doc-7", "doc-12", "doc-3"],
+        ["doc-12", "doc-7", "doc-41"],
+    ],
+)
+
+print(result)
+```
+
+```
+{
+    'key': 'retrieval_consistency',
+    'score': 0.6666666666666666,
+    'comment': 'Compared 3 pairs of 3 runs; most different pair is runs 1 and 3 (0.50).',
+    'metadata': {'n_runs': 3, 'n_comparisons': 3, 'min_pair_score': 0.5},
+}
+```
+
+Answer consistency uses an LLM judge. For each sampled pair it scores five dimensions of agreement from 1 to 5: `core_facts`, `specifics` (names, numbers, dates), `supporting_detail`, `stance` (answer vs hedge vs refuse) and `format`. It returns the weighted mean as `answer_consistency` plus one result per dimension (`answer_consistency.format`, ...), so you can see *what* varies between runs.
+
+```python
+from openevals.consistency import create_answer_consistency_evaluator
+
+evaluator = create_answer_consistency_evaluator(model="openai:gpt-4o-mini")
+
+results = evaluator(
+    inputs="How long are gold backups retained?",
+    outputs=[
+        "Gold backups are retained for 30 days.",
+        "Retention for gold policies is 30 days.",
+        "Gold policy backups are kept for 90 days.",
+    ],
+)
+```
+
+Async versions are available as `create_async_retrieval_consistency_evaluator` and `create_async_answer_consistency_evaluator`.
 </details>
 
 ## Creating your own

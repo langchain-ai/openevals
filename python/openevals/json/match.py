@@ -370,7 +370,7 @@ def _aggregate_results(
                 score = (
                     sum(index_scores.values()) / len(index_scores)
                     if index_scores
-                    else 0
+                    else 1
                 )
                 return {f"{score_key}:{aggregator}": score}
             else:
@@ -431,7 +431,7 @@ def _aggregate_results(
             )
             / len(scores)
             if scores
-            else 0
+            else 1
         )
         return {f"{score_key}:{aggregator}": score}
     elif aggregator == "all":

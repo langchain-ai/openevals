@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.15' and platform_python_implementation != 'PyPy'",
@@ -174,7 +174,7 @@ resolution-markers = [
     "python_full_version == '3.13.*' and platform_python_implementation == 'PyPy'",
 ]
 dependencies = [
-    { name = "pycparser" },
+    { name = "pycparser", marker = "python_full_version >= '3.13' and platform_python_implementation == 'PyPy'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fc/97/c783634659c2920c3fc70419e3af40972dbaf758daa229a7d6ea6135c90d/cffi-1.17.1.tar.gz", hash = "sha256:1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824", size = 516621, upload-time = "2024-09-04T20:45:21.852Z" }
 wheels = [
@@ -240,7 +240,7 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "pycparser", marker = "implementation_name != 'PyPy'" },
+    { name = "pycparser", marker = "(python_full_version < '3.13' and implementation_name != 'PyPy') or (implementation_name != 'PyPy' and platform_python_implementation != 'PyPy')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/eb/56/b1ba7935a17738ae8453301356628e8147c79dbb825bcbc73dc7401f9846/cffi-2.0.0.tar.gz", hash = "sha256:44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529", size = 523588, upload-time = "2025-09-08T23:24:04.541Z" }
 wheels = [
@@ -395,8 +395,8 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "protobuf-py", version = "0.1.1", source = { registry = "https://pypi.org/simple" } },
-    { name = "pyqwest", version = "0.10.0", source = { registry = "https://pypi.org/simple" } },
+    { name = "protobuf-py", version = "0.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pyqwest", version = "0.10.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/8b/b5/63e14ab9d4d4cc58818562db4120a35fa7454e3035633da41bdc6b712abd/connectrpc-0.11.1.tar.gz", hash = "sha256:18277f7838847b4271ca38d40c7d2387b5a2ea6a29f240689c19e1ec84aaff66", size = 46222, upload-time = "2026-07-15T06:33:31.601Z" }
 wheels = [
@@ -419,8 +419,8 @@ resolution-markers = [
     "python_full_version == '3.11.*'",
 ]
 dependencies = [
-    { name = "protobuf-py", version = "0.6.0", source = { registry = "https://pypi.org/simple" } },
-    { name = "pyqwest", version = "0.12.0", source = { registry = "https://pypi.org/simple" } },
+    { name = "protobuf-py", version = "0.6.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pyqwest", version = "0.12.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b8/43/025430769a6cc82a1e1c76cd9760639f6bf9b05577f90e38a0bb57b41b39/connectrpc-0.12.1.tar.gz", hash = "sha256:da7ca41c6cd8d9ce640ad86ae325a71cd83dfdd1e43748976315cb4b0546fb69", size = 50556, upload-time = "2026-09-04T15:23:31.327Z" }
 wheels = [
@@ -510,18 +510,18 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "attrs" },
-    { name = "connectrpc", version = "0.11.1", source = { registry = "https://pypi.org/simple" } },
-    { name = "e2b-dockerfile-utils", version = "0.1.0", source = { registry = "https://pypi.org/simple" } },
-    { name = "h2" },
-    { name = "httpx" },
-    { name = "packaging" },
-    { name = "protobuf-py", version = "0.1.1", source = { registry = "https://pypi.org/simple" } },
-    { name = "pyqwest", version = "0.10.0", source = { registry = "https://pypi.org/simple" } },
-    { name = "python-dateutil" },
-    { name = "rich" },
-    { name = "typing-extensions" },
-    { name = "wcmatch" },
+    { name = "attrs", marker = "python_full_version < '3.11'" },
+    { name = "connectrpc", version = "0.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "e2b-dockerfile-utils", version = "0.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "h2", marker = "python_full_version < '3.11'" },
+    { name = "httpx", marker = "python_full_version < '3.11'" },
+    { name = "packaging", marker = "python_full_version < '3.11'" },
+    { name = "protobuf-py", version = "0.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pyqwest", version = "0.10.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "python-dateutil", marker = "python_full_version < '3.11'" },
+    { name = "rich", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "wcmatch", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/40/ad/144bf647f526e65829c78d9b9f681d0d4af13cacaa80c326e1f05ba4cc42/e2b-2.55.1.tar.gz", hash = "sha256:5255f9a01dc484c343f750d13d3a9c857ef3511222a240572ddce2563dd301d9", size = 241589, upload-time = "2026-10-09T14:54:52.76Z" }
 wheels = [
@@ -544,18 +544,18 @@ resolution-markers = [
     "python_full_version == '3.11.*'",
 ]
 dependencies = [
-    { name = "attrs" },
-    { name = "connectrpc", version = "0.12.1", source = { registry = "https://pypi.org/simple" } },
-    { name = "e2b-dockerfile-utils", version = "0.1.1", source = { registry = "https://pypi.org/simple" } },
-    { name = "h2" },
-    { name = "httpx" },
-    { name = "packaging" },
-    { name = "protobuf-py", version = "0.6.0", source = { registry = "https://pypi.org/simple" } },
-    { name = "pyqwest", version = "0.12.0", source = { registry = "https://pypi.org/simple" } },
-    { name = "python-dateutil" },
-    { name = "rich" },
-    { name = "typing-extensions" },
-    { name = "wcmatch" },
+    { name = "attrs", marker = "python_full_version >= '3.11'" },
+    { name = "connectrpc", version = "0.12.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "e2b-dockerfile-utils", version = "0.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "h2", marker = "python_full_version >= '3.11'" },
+    { name = "httpx", marker = "python_full_version >= '3.11'" },
+    { name = "packaging", marker = "python_full_version >= '3.11'" },
+    { name = "protobuf-py", version = "0.6.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pyqwest", version = "0.12.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "python-dateutil", marker = "python_full_version >= '3.11'" },
+    { name = "rich", marker = "python_full_version >= '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version >= '3.11'" },
+    { name = "wcmatch", marker = "python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/05/2b/c8a6dccf865a092cc817a8d0de87cd91b5a218d72d59a06b8d7dca8e4641/e2b-2.62.0.tar.gz", hash = "sha256:480c447f26c8a3bd6340eef9f3cdbcf78764fddff574aa3270db84e3891ee6a9", size = 270189, upload-time = "2026-10-28T20:24:00.246Z" }
 wheels = [
@@ -1352,6 +1352,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+consistency = [
+    { name = "repeatability-evals" },
+]
 e2b-code-interpreter = [
     { name = "e2b-code-interpreter" },
 ]
@@ -1372,6 +1375,7 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "pytest-dotenv" },
     { name = "pytest-timeout" },
+    { name = "repeatability-evals" },
     { name = "ruff" },
 ]
 
@@ -1381,9 +1385,10 @@ requires-dist = [
     { name = "langchain", specifier = ">=0.3.18" },
     { name = "langchain-openai", specifier = ">=0.3.6" },
     { name = "langsmith", specifier = ">=0.3.32" },
+    { name = "repeatability-evals", marker = "extra == 'consistency'", specifier = ">=0.3.0" },
     { name = "rich", specifier = ">=13.9.4" },
 ]
-provides-extras = ["e2b-code-interpreter"]
+provides-extras = ["e2b-code-interpreter", "consistency"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -1401,6 +1406,7 @@ dev = [
     { name = "pytest-asyncio", specifier = ">=0.25.3" },
     { name = "pytest-dotenv", specifier = ">=0.5.2" },
     { name = "pytest-timeout", specifier = ">=2.3.1" },
+    { name = "repeatability-evals", specifier = ">=0.3.0" },
     { name = "ruff", specifier = ">=0.9.5" },
 ]
 
@@ -1588,7 +1594,7 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "protobuf-py-ext", version = "0.1.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'arm64' and platform_python_implementation == 'CPython' and sys_platform == 'darwin') or (platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (platform_machine == 'x86_64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (platform_machine == 'AMD64' and platform_python_implementation == 'CPython' and sys_platform == 'win32') or (platform_machine == 'ARM64' and platform_python_implementation == 'CPython' and sys_platform == 'win32')" },
+    { name = "protobuf-py-ext", version = "0.1.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and platform_machine == 'arm64' and platform_python_implementation == 'CPython' and sys_platform == 'darwin') or (python_full_version < '3.11' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version < '3.11' and platform_machine == 'x86_64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version < '3.11' and platform_machine == 'AMD64' and platform_python_implementation == 'CPython' and sys_platform == 'win32') or (python_full_version < '3.11' and platform_machine == 'ARM64' and platform_python_implementation == 'CPython' and sys_platform == 'win32')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/72/ed/02fd902d9c51b7ff53dfc9a745eb11490722edfd30073af889e171f07b8e/protobuf_py-0.1.1.tar.gz", hash = "sha256:6bd08ac4d8f1661965bbe2685429d79043704cdd1ee720a7a89617331742240b", size = 133525, upload-time = "2026-06-24T19:02:15.271Z" }
 wheels = [
@@ -1611,8 +1617,8 @@ resolution-markers = [
     "python_full_version == '3.11.*'",
 ]
 dependencies = [
-    { name = "protobuf-py-ext", version = "0.6.0", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'arm64' and platform_python_implementation == 'CPython' and sys_platform == 'darwin') or (platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (platform_machine == 'x86_64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (platform_machine == 'AMD64' and platform_python_implementation == 'CPython' and sys_platform == 'win32') or (platform_machine == 'ARM64' and platform_python_implementation == 'CPython' and sys_platform == 'win32')" },
-    { name = "typing-extensions" },
+    { name = "protobuf-py-ext", version = "0.6.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and platform_machine == 'arm64' and platform_python_implementation == 'CPython' and sys_platform == 'darwin') or (python_full_version >= '3.11' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version >= '3.11' and platform_machine == 'x86_64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version >= '3.11' and platform_machine == 'AMD64' and platform_python_implementation == 'CPython' and sys_platform == 'win32') or (python_full_version >= '3.11' and platform_machine == 'ARM64' and platform_python_implementation == 'CPython' and sys_platform == 'win32')" },
+    { name = "typing-extensions", marker = "python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/71/2a/6a08d3a3ddbfd745f987c5ff22129a979ea74319fbfe5b9d59c7a6730d25/protobuf_py-0.6.0.tar.gz", hash = "sha256:be6b8d84ba54380ca5e5e50f20e4dd42df81c845cf9dc8c021f147d8c516b341", size = 161533, upload-time = "2026-09-30T06:45:41.388Z" }
 wheels = [
@@ -1918,7 +1924,7 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "opentelemetry-api" },
+    { name = "opentelemetry-api", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/07/ee/0ff9facfa9e7a4f6df2a770d4eaf1ad0f74165da7e8c28e888461f07604c/pyqwest-0.10.0.tar.gz", hash = "sha256:6c1a693be17d57d2c2eca4085e32c2809c53090c16719a907c90ebcf1f40dc01", size = 482248, upload-time = "2026-08-21T06:09:20.656Z" }
 wheels = [
@@ -1982,7 +1988,7 @@ resolution-markers = [
     "python_full_version == '3.11.*'",
 ]
 dependencies = [
-    { name = "opentelemetry-api" },
+    { name = "opentelemetry-api", marker = "python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/24/2a/f8634142207082b1c559a499451db794c96130e586f1edb22dc1da4b05b2/pyqwest-0.12.0.tar.gz", hash = "sha256:83ff498bd53bee92a2d2bf14476679307a99c78421c02cae08ec113bed2fbd7d", size = 516105, upload-time = "2026-10-09T06:22:44.949Z" }
 wheels = [
@@ -2242,6 +2248,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ed/e3/c446a64984ea9f69982ba1a69d4658d5014bc7a0ea468a07e1a1265db6e2/regex-2024.11.6-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:4f51f88c126370dcec4908576c5a627220da6c09d0bff31cfa89f2523843316d", size = 787733, upload-time = "2024-11-06T20:11:11.256Z" },
     { url = "https://files.pythonhosted.org/packages/2b/f1/e40c8373e3480e4f29f2692bd21b3e05f296d3afebc7e5dcf21b9756ca1c/regex-2024.11.6-cp313-cp313-win32.whl", hash = "sha256:63b13cfd72e9601125027202cad74995ab26921d8cd935c25f09c630436348ff", size = 262122, upload-time = "2024-11-06T20:11:13.161Z" },
     { url = "https://files.pythonhosted.org/packages/45/94/bc295babb3062a731f52621cdc992d123111282e291abaf23faa413443ea/regex-2024.11.6-cp313-cp313-win_amd64.whl", hash = "sha256:2b3361af3198667e99927da8b84c1b010752fa4b1115ee30beaa332cabc3ef1a", size = 273545, upload-time = "2024-11-06T20:11:15Z" },
+]
+
+[[package]]
+name = "repeatability-evals"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/0f/492fec5f4797958fbbba99989b71f4ff746df08b9e60ca3dd5329d4683f8/repeatability_evals-0.3.0.tar.gz", hash = "sha256:65dcbbe6626bd58cb5a744b5232387c0c2219bcbe7a33d565116822bc83f349a", size = 47408, upload-time = "2026-11-02T05:57:23.709Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/60/30/6fd14b11b122398ae4dca9b1c825b97db330f1d08249d0f0fa4fe6e98f2a/repeatability_evals-0.3.0-py3-none-any.whl", hash = "sha256:26d2b11134ecba948637f21d3133613c9452b82128f2ea8994b0fb1f3d5a25b7", size = 42118, upload-time = "2026-11-02T05:57:22.402Z" },
 ]
 
 [[package]]

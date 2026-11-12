@@ -174,7 +174,7 @@ function constructDefaultOutputJsonSchema({
     };
   } else {
     description =
-      "A score that is true if criteria in the prompt are met, and false otherwise.";
+      "A score that is true if criteria in the prompt are met, and false otherwise. If the prompt asks a yes/no question, true means yes and false means no. If the prompt says what true means, follow the prompt.";
     scoreSchema = {
       type: "boolean",
       description,

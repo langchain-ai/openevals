@@ -253,8 +253,8 @@ class Graph:
         """A LangSmith evaluator that runs the graph and reports `node`'s outputs.
 
         The feedback is `node`'s `score` (and `comment`, if any), or its only
-        output. `key` names the feedback; it defaults to that output's name, or
-        to the node's name for `score`.
+        output. Without `key`, LangSmith names the feedback: after the
+        evaluator in LangSmith, after `node` in local `evaluate()`.
         """
         if node not in self.order:
             raise ValueError("as_evaluator needs a node in this graph")
@@ -262,17 +262,20 @@ class Graph:
         def evaluator(run: Any, example: Any = None) -> dict[str, Any]:
             outputs = self.run(run=run, example=example)[node]
             if "score" in outputs:
-                name, score = node._name, outputs["score"]
+                score = outputs["score"]
             elif len(outputs) == 1:
-                [(name, score)] = outputs.items()
+                [score] = outputs.values()
             else:
                 raise ValueError(
                     f"{node._name!r} returns {sorted(outputs)}; "
                     "return a 'score' to use it as the evaluator's result"
                 )
-            result = {"key": key or name, "score": score}
+            result = {"score": score}
             if "comment" in outputs:
                 result["comment"] = outputs["comment"]
+            if key is not None:
+                result["key"] = key
             return result
 
+        evaluator.__name__ = node._name
         return evaluator

@@ -28,6 +28,7 @@ export const config = {
     prompts: "prompts/index",
     types: "types",
     utils: "utils",
+    graph: "graph/index",
   },
   requiresOptionalDependency: [
     "code/typescript",

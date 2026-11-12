@@ -94,7 +94,11 @@
     "utils.cjs",
     "utils.js",
     "utils.d.ts",
-    "utils.d.cts"
+    "utils.d.cts",
+    "graph.cjs",
+    "graph.js",
+    "graph.d.ts",
+    "graph.d.cts"
   ],
   "exports": {
     ".": {
@@ -159,6 +163,15 @@
       },
       "import": "./utils.js",
       "require": "./utils.cjs"
+    },
+    "./graph": {
+      "types": {
+        "import": "./graph.d.ts",
+        "require": "./graph.d.cts",
+        "default": "./graph.d.ts"
+      },
+      "import": "./graph.js",
+      "require": "./graph.cjs"
     },
     "./package.json": "./package.json"
   },

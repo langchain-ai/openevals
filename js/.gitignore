@@ -26,6 +26,10 @@ utils.cjs
 utils.js
 utils.d.ts
 utils.d.cts
+graph.cjs
+graph.js
+graph.d.ts
+graph.d.cts
 node_modules
 dist
 .yarn

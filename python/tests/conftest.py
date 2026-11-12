@@ -1,3 +1,5 @@
+import anthropic
+import openai
 from langsmith.evaluation._arunner import AsyncExperimentResults
 
 # Workaround for a lost-wakeup bug in langsmith's AsyncExperimentResults.
@@ -28,3 +30,41 @@ async def _process_data_always_notify(self, manager):
 
 
 AsyncExperimentResults._process_data = _process_data_always_notify
+
+
+# ── Request timeouts for provider clients ─────────────────────────────────────
+#
+# langchain builds OpenAI and Anthropic clients with `timeout=None`, which the
+# SDKs treat as "no timeout at all" (not their 10-minute default). A stalled
+# request, such as an embeddings call in test_embedding_similarity_aevaluate,
+# then waits forever. Fill in a timeout for clients created without one so a
+# stuck call raises APITimeoutError naming the request instead of hanging.
+#
+# 90s read covers the slowest judge calls (the slowest test is ~40s over several
+# calls). With the SDKs' default 2 retries the worst case is ~3 x 90s, which
+# stays under the 300s pytest-timeout limit. Clients created with an explicit
+# timeout keep it.
+
+_REQUEST_TIMEOUT_S = 90.0
+_CONNECT_TIMEOUT_S = 10.0
+
+
+def _default_timeout(cls, timeout) -> None:
+    original_init = cls.__init__
+
+    def __init__(self, *args, **kwargs):
+        if kwargs.get("timeout") is None:
+            kwargs["timeout"] = timeout
+        original_init(self, *args, **kwargs)
+
+    cls.__init__ = __init__
+
+
+for _cls in (openai.OpenAI, openai.AsyncOpenAI):
+    _default_timeout(
+        _cls, openai.Timeout(_REQUEST_TIMEOUT_S, connect=_CONNECT_TIMEOUT_S)
+    )
+for _cls in (anthropic.Anthropic, anthropic.AsyncAnthropic):
+    _default_timeout(
+        _cls, anthropic.Timeout(_REQUEST_TIMEOUT_S, connect=_CONNECT_TIMEOUT_S)
+    )

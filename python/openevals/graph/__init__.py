@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import re
+from types import SimpleNamespace
 from typing import Any, Callable, Optional, Union
 
 from langchain_core.decisions import BaseDecisionModel, Choice, Noul, Question, Score
@@ -50,7 +51,11 @@ _CONTEXT_NAMES = {"run", "thread", "trajectory", "example", "ctx"}
 
 
 def _context(ctx: Any, name: str) -> Any:
-    return ctx if name == "ctx" else getattr(ctx, name)
+    if name == "ctx":
+        return ctx
+    value = getattr(ctx, name)
+    # LangSmith passes `Run` and `Example` objects to local evaluators, dicts to uploaded ones.
+    return value.model_dump() if hasattr(value, "model_dump") else value
 
 
 class _Node:
@@ -229,9 +234,45 @@ class Graph:
         for step in nodes:
             place(step)
 
-    def run(self, ctx: Any) -> dict[_Node, Any]:
-        """Runs each node after the nodes it reads; returns each node's outputs."""
+    def run(self, ctx: Any = None, /, **context: Any) -> dict[_Node, Any]:
+        """Runs each node after the nodes it reads; returns each node's outputs.
+
+        Pass the context as keywords, like `graph.run(run=run, example=example)`,
+        or as one object with those attributes.
+        """
+        if ctx is None:
+            ctx = SimpleNamespace(**context)
         results: dict[_Node, Any] = {}
         for step in self.order:
             results[step] = step._traced_run(ctx, results)
         return results
+
+    def as_evaluator(
+        self, node: _Node, *, key: Optional[str] = None
+    ) -> Callable[..., dict[str, Any]]:
+        """A LangSmith evaluator that runs the graph and reports `node`'s outputs.
+
+        The feedback is `node`'s `score` (and `comment`, if any), or its only
+        output. `key` names the feedback; it defaults to that output's name, or
+        to the node's name for `score`.
+        """
+        if node not in self.order:
+            raise ValueError("as_evaluator needs a node in this graph")
+
+        def evaluator(run: Any, example: Any = None) -> dict[str, Any]:
+            outputs = self.run(run=run, example=example)[node]
+            if "score" in outputs:
+                name, score = node._name, outputs["score"]
+            elif len(outputs) == 1:
+                [(name, score)] = outputs.items()
+            else:
+                raise ValueError(
+                    f"{node._name!r} returns {sorted(outputs)}; "
+                    "return a 'score' to use it as the evaluator's result"
+                )
+            result = {"key": key or name, "score": score}
+            if "comment" in outputs:
+                result["comment"] = outputs["comment"]
+            return result
+
+        return evaluator

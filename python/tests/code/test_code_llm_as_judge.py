@@ -63,7 +63,7 @@ def _run_mypy(
 ```
 """,
             """
-async def _run_mypy_async(
+async def _run_mypy(
     *,
     filepath: str,
     mypy_cli_args: list[str],

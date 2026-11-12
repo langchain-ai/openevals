@@ -58,10 +58,9 @@ asyncio_default_test_loop_scope = "session"
 # Fail any single test that runs longer than 5 minutes (the slowest normally
 # take well under a minute). Provider clients get a 90s request timeout in
 # tests/conftest.py, so a stalled model call usually fails with a timeout error
-# before this fires. The "signal" method fails only the hung test and keeps the
-# run going. tests/conftest.py prints pending asyncio tasks on timeout and adds
-# a thread backstop that dumps every stack and ends the run if the signal can't
-# stop the test.
+# before this fires. The "signal" method fails only the hung test, prints every
+# thread's stack, and keeps the run going. (A call that ignores the signal still
+# runs until the job's 20-minute limit in the workflow.)
 timeout = 300
 timeout_method = "signal"
 

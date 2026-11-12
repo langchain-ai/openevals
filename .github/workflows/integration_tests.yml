@@ -110,8 +110,7 @@ jobs:
           # the key CI already uses against the gateway via OPENAI_BASE_URL.
           LANGSMITH_GATEWAY_API_KEY: ${{ secrets.LANGSMITH_GATEWAY_API_KEY || secrets.OPENAI_API_KEY }}
         # -v prints each test ID as it starts. If a test times out, its name is
-        # on the timeout banner, followed by the pending asyncio tasks and the
-        # call each one is waiting on (see python/tests/conftest.py).
+        # on the line with the timeout banner.
         # --durations=20 lists the slowest tests, to spot ones creeping toward
         # the timeouts.
         run: uv run pytest tests -v --durations=20

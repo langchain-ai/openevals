@@ -144,8 +144,12 @@ function _getMatcherForComparisonMode(
     return _subsetMatch;
   } else if (mode === "superset") {
     return _supersetMatch;
-  } else {
+  } else if (mode === "ignore") {
     return _ignoreMatch;
+  } else {
+    throw new Error(
+      `Invalid tool args match mode: \`${mode}\`. Must be either \`exact\`, \`ignore\`, \`subset\`, or \`superset\`.`
+    );
   }
 }
 

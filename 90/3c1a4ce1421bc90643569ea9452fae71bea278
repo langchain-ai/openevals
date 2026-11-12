@@ -1,0 +1,23 @@
+python/openevals/graph/__init__.py
+  s_4b52712e81ba07::t_f04986436f1250 9,163-166,173,175,182-193,195-198
+python/pyproject.toml
+  s_4b52712e81ba07::t_46e1213a197e6c 10
+python/uv.lock
+  s_4b52712e81ba07::t_4f6820cdc23f09 919-920,935-936,948-950,969-1001,1009-1010,1024-1025,1051-1052,1069-1070,1083-1084,1098-1099,1393,1427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "903c1a4ce1421bc90643569ea9452fae71bea278",
+  "prompts": {},
+  "sessions": {
+    "s_4b52712e81ba07": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_4b52712e81ba07",
+        "model": "unknown"
+      },
+      "human_author": "Brendan Whiting <brendan.whiting@langchain.dev>"
+    }
+  }
+}

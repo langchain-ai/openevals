@@ -15,6 +15,7 @@ export const HALLUCINATION_PROMPT = `You are an expert data labeler evaluating m
   - Cross-reference each claim with the input context
   - Note any unsupported or contradictory information
   - Consider the severity and quantity of hallucinations
+  - A true (or higher) score means the output is free of hallucinations; false (or lower) means it contains hallucinations
 </Instructions>
 
 <Reminder>

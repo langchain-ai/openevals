@@ -1,0 +1,27 @@
+python/openevals/graph/__init__.py
+  s_7df881e4cb5879::t_f621aeb6626faf 1-122
+js/src/graph/index.ts
+  s_7df881e4cb5879::t_b7a62c9dd8ea28 1-80
+js/.gitignore
+  s_7df881e4cb5879::t_6a68fc503f886d 29-32
+js/langchain.config.js
+  s_7df881e4cb5879::t_c610888c1d93db 31
+js/package.json
+  s_7df881e4cb5879::t_43ac82f5850541 97-101,167-175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3936d7c1e50af6ac93f6f349bf63178bd8df85e",
+  "prompts": {},
+  "sessions": {
+    "s_7df881e4cb5879": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04cf870b-69c3-486d-8ebd-4a3918095eb8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Brendan Whiting <brendan.whiting@langchain.dev>"
+    }
+  }
+}

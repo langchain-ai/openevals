@@ -64,10 +64,49 @@ function _wrap<T extends Record<string, unknown>>(
   return traceable(wrapper, { name: runName });
 }
 
+// Content block types accepted by the Chat Completions API.
+const CHAT_COMPLETIONS_BLOCK_TYPES = new Set([
+  "text",
+  "image_url",
+  "input_audio",
+  "refusal",
+  "audio",
+  "file",
+]);
+
+// Responses API models can return content blocks such as "reasoning" and
+// "function_call" that Chat Completions rejects. Tool calls are kept in
+// "tool_calls", so drop these blocks to keep the trajectory valid model input.
+function _stripUnsupportedBlocks(
+  message: ChatCompletionMessage
+): ChatCompletionMessage {
+  const content = (message as { content?: unknown }).content;
+  if (!Array.isArray(content)) {
+    return message;
+  }
+  const filtered = content.filter(
+    (block) =>
+      typeof block !== "object" ||
+      block === null ||
+      CHAT_COMPLETIONS_BLOCK_TYPES.has(
+        String((block as { type?: unknown }).type)
+      )
+  );
+  if (filtered.length === content.length) {
+    return message;
+  }
+  return {
+    ...message,
+    content: filtered.length > 0 ? filtered : "",
+  } as ChatCompletionMessage;
+}
+
 function _coerceAndAssignIdToMessage(
   message: ChatCompletionMessage | BaseMessage
 ): ChatCompletionMessage {
-  const convertedMessage = _convertToOpenAIMessage(message);
+  const convertedMessage = _stripUnsupportedBlocks(
+    _convertToOpenAIMessage(message)
+  );
   if (convertedMessage.id === undefined) {
     return {
       ...convertedMessage,

@@ -50,12 +50,30 @@ Example = _Ref("example")
 _CONTEXT_NAMES = {"run", "thread", "trajectory", "example", "ctx"}
 
 
+class _Mapping(dict):
+    """A dict whose keys also read as attributes, like `run.outputs.answer`."""
+
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+
+def _readable(value: Any) -> Any:
+    if isinstance(value, dict):
+        return _Mapping({key: _readable(item) for key, item in value.items()})
+    if isinstance(value, list):
+        return [_readable(item) for item in value]
+    return value
+
+
 def _context(ctx: Any, name: str) -> Any:
     if name == "ctx":
         return ctx
     value = getattr(ctx, name)
     # LangSmith passes `Run` and `Example` objects to local evaluators, dicts to uploaded ones.
-    return value.model_dump() if hasattr(value, "model_dump") else value
+    return _readable(value.model_dump() if hasattr(value, "model_dump") else value)
 
 
 class _Node:

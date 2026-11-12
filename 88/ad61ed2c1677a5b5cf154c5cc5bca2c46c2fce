@@ -1,0 +1,19 @@
+js/package.json
+  s_7df881e4cb5879::t_839c3d3235d253 97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "88ad61ed2c1677a5b5cf154c5cc5bca2c46c2fce",
+  "prompts": {},
+  "sessions": {
+    "s_7df881e4cb5879": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04cf870b-69c3-486d-8ebd-4a3918095eb8",
+        "model": "unknown"
+      },
+      "human_author": "Brendan Whiting <brendan.whiting@langchain.dev>"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+python/pyproject.toml
+  s_248a1f7d79cfa3::t_75bb9347a39421 3
+python/uv.lock
+  s_248a1f7d79cfa3::t_075158f712daac 1402
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "68cb462dc9f846fbf484c334943d815172d1e915",
+  "prompts": {},
+  "sessions": {
+    "s_248a1f7d79cfa3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6c7c0c-d245-44a6-83d4-301058197e67",
+        "model": "unknown"
+      },
+      "human_author": "Brendan Whiting <brendan.whiting@langchain.dev>"
+    }
+  }
+}

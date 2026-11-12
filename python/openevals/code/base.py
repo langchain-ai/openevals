@@ -1,3 +1,5 @@
+import re
+
 from openevals.types import (
     ScoreType,
     SimpleEvaluator,
@@ -19,7 +21,27 @@ from langchain.chat_models import init_chat_model
 __all__ = [
     "_create_base_code_evaluator",
     "_create_async_base_code_evaluator",
+    "_type_checker_directive_error",
 ]
+
+# Comments that switch off or relax type checking, such as `# type: ignore`,
+# `# pyright: basic` and `# mypy: ignore-errors`. A bare `# pyright: strict`
+# only makes checking stricter, so it is allowed.
+_TYPE_CHECKER_DIRECTIVE_PATTERN = re.compile(
+    r"#\s*(?:type:\s*ignore|pyright:(?!\s*strict\s*$)|mypy:)", re.MULTILINE
+)
+
+
+def _type_checker_directive_error(code: str) -> Optional[str]:
+    """Return an error message if `code` contains a type checker directive."""
+    match = _TYPE_CHECKER_DIRECTIVE_PATTERN.search(code)
+    if match is None:
+        return None
+    return (
+        f"Code contains the type checker directive `{match.group(0)}`, "
+        "which is not allowed because it can hide errors."
+    )
+
 
 LLM_EXTRACTION_SYSTEM_PROMPT = """
 You are an expert software auditor.
@@ -165,6 +187,8 @@ def _create_base_code_evaluator(
                     pass
             else:
                 normalized_outputs = code_extractor(outputs)
+            if isinstance(normalized_outputs, str) and not normalized_outputs.strip():
+                return (False, None, {"code_extraction_failed": True})
             return scorer(
                 outputs=normalized_outputs,
                 **kwargs,
@@ -245,6 +269,8 @@ def _create_async_base_code_evaluator(
                 normalized_outputs = code_extractor(outputs)  # type: ignore
                 if hasattr(normalized_outputs, "__await__"):
                     normalized_outputs = await normalized_outputs
+            if isinstance(normalized_outputs, str) and not normalized_outputs.strip():
+                return (False, None, {"code_extraction_failed": True})
             score_result = scorer(
                 outputs=normalized_outputs,
                 **kwargs,

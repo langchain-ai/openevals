@@ -56,13 +56,14 @@ pythonpath = [
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
 # Fail any single test that runs longer than 5 minutes (the slowest normally
-# take well under a minute). This is lower than the OpenAI SDK's 10-minute
-# request timeout, so a hung model call trips it first. The "thread" method
-# works even when the main thread is stuck inside a blocking call: it dumps the
-# stack of every thread, so the log shows exactly where the hang is, and then
-# ends the run.
+# take well under a minute). Provider clients get a 90s request timeout in
+# tests/conftest.py, so a stalled model call usually fails with a timeout error
+# before this fires. The "signal" method fails only the hung test and keeps the
+# run going. tests/conftest.py prints pending asyncio tasks on timeout and adds
+# a thread backstop that dumps every stack and ends the run if the signal can't
+# stop the test.
 timeout = 300
-timeout_method = "thread"
+timeout_method = "signal"
 
 [tool.uv]
 constraint-dependencies = [

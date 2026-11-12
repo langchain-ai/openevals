@@ -36,6 +36,9 @@ dev = [
 e2b-code-interpreter = [
     "e2b-code-interpreter>=1.1.1"
 ]
+typesafe = [
+    "langchain-typesafe>=0.1.0; python_version >= '3.11'"
+]
 
 [tool.setuptools.packages.find]
 include = ["openevals*"]

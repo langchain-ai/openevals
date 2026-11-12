@@ -162,7 +162,8 @@ class LLM(_Node):
 class DecisionModel(_Node):
     """Asks a decision model typed questions about its inputs.
 
-    `model` is a `BaseDecisionModel`, or a `typesafe:` model name.
+    `model` is a `BaseDecisionModel`, or a `typesafe:` model name like
+    `typesafe:jev-latest`.
     """
 
     _run_type = "llm"
@@ -170,9 +171,9 @@ class DecisionModel(_Node):
     def __init__(
         self,
         *,
+        model: Union[str, BaseDecisionModel],
         questions: dict[str, Question],
         inputs: Optional[dict[str, _Ref]] = None,
-        model: Union[str, BaseDecisionModel] = "typesafe:jev-latest",
         name: str = "DecisionModel",
         **_: Any,
     ) -> None:
@@ -187,8 +188,13 @@ class DecisionModel(_Node):
             raise ValueError(
                 f"Unknown decision model {self._model!r}; pass a BaseDecisionModel"
             )
-        from langchain_typesafe import TypeSafeClassifier
-
+        try:
+            from langchain_typesafe import TypeSafeClassifier
+        except ImportError as e:
+            raise ImportError(
+                "typesafe: models need langchain-typesafe; "
+                'install it with `pip install "openevals[typesafe]"`'
+            ) from e
         return TypeSafeClassifier(model=name)
 
     def _run(self, ctx: Any, results: dict) -> dict:

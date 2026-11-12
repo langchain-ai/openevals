@@ -1044,6 +1044,19 @@ wheels = [
 ]
 
 [[package]]
+name = "langchain-typesafe"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx2" },
+    { name = "langchain-core", version = "1.8.0", source = { registry = "https://pypi.org/simple" } },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3b/ec/cd0b5d5f961131251cb3a79b330a5a21750067a1f6bf0aa0a184d798f85c/langchain_typesafe-0.1.0.tar.gz", hash = "sha256:3abe72190913903a7ea07491a65577ac0057b752fcc3f386179a07cedb120b9a", size = 172635, upload-time = "2026-11-11T16:14:11.468Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/87/bd/f56733b4b3c9f7e59d6f2c8bc8403483ae907b31b090568285cb7deed758/langchain_typesafe-0.1.0-py3-none-any.whl", hash = "sha256:fa9fcf166cac3c04e0ab0583f2bcb421fc2b31e497411222b4d9add900a213a6", size = 20847, upload-time = "2026-11-11T16:14:10.58Z" },
+]
+
+[[package]]
 name = "langgraph"
 version = "1.2.18"
 source = { registry = "https://pypi.org/simple" }
@@ -1400,6 +1413,9 @@ dependencies = [
 e2b-code-interpreter = [
     { name = "e2b-code-interpreter" },
 ]
+typesafe = [
+    { name = "langchain-typesafe", marker = "python_full_version >= '3.11'" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -1426,10 +1442,11 @@ requires-dist = [
     { name = "langchain", specifier = ">=0.3.18" },
     { name = "langchain-core", marker = "python_full_version >= '3.11'", specifier = ">=1.8.0" },
     { name = "langchain-openai", specifier = ">=0.3.6" },
+    { name = "langchain-typesafe", marker = "python_full_version >= '3.11' and extra == 'typesafe'", specifier = ">=0.1.0" },
     { name = "langsmith", specifier = ">=0.3.32" },
     { name = "rich", specifier = ">=13.9.4" },
 ]
-provides-extras = ["e2b-code-interpreter"]
+provides-extras = ["e2b-code-interpreter", "typesafe"]
 
 [package.metadata.requires-dev]
 dev = [

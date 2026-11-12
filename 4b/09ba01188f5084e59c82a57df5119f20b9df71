@@ -1,0 +1,29 @@
+js/src/simulators/multiturn.ts
+  s_248a1f7d79cfa3::t_ca57d5bae30cde 67-103,107-109
+python/openevals/simulators/multiturn.py
+  s_248a1f7d79cfa3::t_36ccfcc4f0f165 57-62,65-70
+  s_248a1f7d79cfa3::t_415effe554742e 42-56,63-64,74
+js/src/simulators/tests/reasoning_blocks.test.ts
+  s_248a1f7d79cfa3::t_1d51420f5466c7 43-64
+  s_248a1f7d79cfa3::t_34aceada8d438a 1-42,65-74
+python/tests/simulators/test_reasoning_blocks.py
+  s_248a1f7d79cfa3::t_a449912fab299e 1-30,35-50
+  s_248a1f7d79cfa3::t_1d51420f5466c7 51-68
+  s_248a1f7d79cfa3::t_effd890d22eafc 31-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4b09ba01188f5084e59c82a57df5119f20b9df71",
+  "prompts": {},
+  "sessions": {
+    "s_248a1f7d79cfa3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f6c7c0c-d245-44a6-83d4-301058197e67",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Brendan Whiting <brendan.whiting@langchain.dev>"
+    }
+  }
+}

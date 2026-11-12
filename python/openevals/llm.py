@@ -103,7 +103,7 @@ def _construct_default_output_json_schema(
             "description": description,
         }
     else:
-        description = "A score that is true if criteria in the prompt are met, and false otherwise."
+        description = "A score that is true if criteria in the prompt are met, and false otherwise. If the prompt asks a yes/no question, true means yes and false means no. If the prompt says what true means, follow the prompt."
         score_schema = {
             "type": "boolean",
             "description": description,

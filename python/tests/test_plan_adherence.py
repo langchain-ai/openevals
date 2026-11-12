@@ -14,9 +14,22 @@ def test_llm_as_judge_plan_adherence():
     }
     outputs = {
         "steps": [
-            "I've done my research on Google and have concluded that a doodad is a thingy."
+            {
+                "step": "Research the definition of a doodad",
+                "action": "search",
+                "query": "doodad definition",
+                "results": [
+                    "doodad (noun): a small article whose common name is unknown or forgotten; a gadget.",
+                    "doodad: an object whose name you have forgotten or do not know, especially a small device.",
+                ],
+            },
+            {
+                "step": "Provide a concise answer",
+                "action": "respond",
+                "response": "A doodad is a small gadget or thingy whose name is unknown or forgotten.",
+            },
         ],
-        "answer": "A doodad is a thingy.",
+        "answer": "A doodad is a small gadget or thingy whose name is unknown or forgotten.",
     }
     llm_as_judge = create_llm_as_judge(
         prompt=PLAN_ADHERENCE_PROMPT,

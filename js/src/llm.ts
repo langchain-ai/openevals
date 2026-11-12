@@ -174,7 +174,7 @@ function constructDefaultOutputJsonSchema({
     };
   } else {
     description =
-      "A score that is true if criteria in the prompt are met, and false otherwise.";
+      "A score that is true if criteria in the prompt are met, and false otherwise. If the prompt asks a yes/no question, true means yes and false means no. If the prompt says what true means, follow the prompt.";
     scoreSchema = {
       type: "boolean",
       description,
@@ -392,13 +392,20 @@ export const _createLLMAsJudgeScorer: (
 
     let response;
     if (_isBaseChatModel(judge)) {
+      // A schema that declares `strict: true` (e.g. one pulled from a structured
+      // hub prompt) is only enforced if `strict` is also passed as an option.
+      // Without it, the model can return the schema itself instead of an answer.
+      // Explicit caller options take precedence.
+      const effectiveStructuredOutputOptions =
+        structuredOutputOptions ??
+        (schema?.strict === true ? { strict: true } : undefined);
       const judgeWithStructuredOutput = judge.withStructuredOutput(
         schema ?? {
           title: "score",
           description,
           ...defaultJsonSchema,
         },
-        structuredOutputOptions
+        effectiveStructuredOutputOptions
       );
       // Convert input_audio to LangChain canonical format { type: "audio", source_type: "base64", ... }
       // so both @langchain/openai and @langchain/google-genai dispatch via fromStandardAudioBlock.

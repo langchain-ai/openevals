@@ -17,7 +17,7 @@ Not perceived error:
 <Instructions>
 - Read the full conversation thread, focusing on user messages
 - Identify strong signals of perceived errors, or signals that there are no perceived errors
-- Conduct one final evaluation against the Golden Rule. Then, based on your analysis, return your verdict
+- Conduct one final evaluation against the Golden Rule. Then, based on your analysis, return your verdict: true if the user perceived an error, false otherwise
 </Instructions>
 
 <GoldenRule>

@@ -6,6 +6,7 @@ import inspect
 import re
 from typing import Any, Callable, Optional, Union
 
+from langchain_core.decisions import BaseDecisionModel, Choice, Noul, Question, Score
 from langsmith import traceable
 
 __all__ = [
@@ -158,97 +159,43 @@ class LLM(_Node):
         return result.model_dump() if hasattr(result, "model_dump") else result
 
 
-def Noul(instructions: str) -> dict[str, Any]:
-    """A yes/no question; the answer is the probability of yes."""
-    return {"type": "noul", "instructions": instructions}
-
-
-def Score(instructions: str, levels: list[Any]) -> dict[str, Any]:
-    """A scale; the answer is a fractional index into `levels`, lowest first."""
-    if not 2 <= len(levels) <= 10:
-        raise ValueError("Score needs 2 to 10 levels")
-    return {
-        "type": "score",
-        "instructions": instructions,
-        "levels": [str(level) for level in levels],
-    }
-
-
-def Choice(
-    instructions: str, options: Union[list[str], dict[str, Optional[str]]]
-) -> dict[str, Any]:
-    """One of `options`; the answer is the chosen option."""
-    if len(options) < 2:
-        raise ValueError("Choice needs at least 2 options")
-    options = options if isinstance(options, dict) else dict.fromkeys(options)
-    return {"type": "choice", "instructions": instructions, "options": options}
-
-
-def _ask_typesafe(model: str, state: dict, questions: dict) -> dict:
-    from langchain_typesafe import Choice, Noul, Score, TypeSafeClassifier
-
-    native = {
-        "noul": lambda q: Noul(instructions=q["instructions"]),
-        "score": lambda q: Score(instructions=q["instructions"], criteria=q["levels"]),
-        "choice": lambda q: Choice(
-            instructions=q["instructions"], criteria=q["options"]
-        ),
-    }
-    response = TypeSafeClassifier(model=model).invoke(
-        {
-            "state": state,
-            "questions": {k: native[q["type"]](q) for k, q in questions.items()},
-        }
-    )
-    answers = {k: a.noul for k, a in response.nouls.items()}
-    answers.update({k: a.score for k, a in response.scores.items()})
-    answers.update({k: a.choice for k, a in response.choices.items()})
-    return answers
-
-
-def _ask_openai(model: str, state: dict, questions: dict) -> dict:
-    from langchain_openai.decisions import Choice, OpenAIDecisions, Predicate, Score
-
-    native = {
-        "noul": lambda q: Predicate(instructions=q["instructions"]),
-        "score": lambda q: Score(instructions=q["instructions"], levels=q["levels"]),
-        "choice": lambda q: Choice(
-            instructions=q["instructions"], choices=q["options"]
-        ),
-    }
-    response = OpenAIDecisions(model=model).invoke(
-        {
-            "input": state,
-            "questions": {k: native[q["type"]](q) for k, q in questions.items()},
-        }
-    )
-    answers = {k: a.probability for k, a in response.predicates.items()}
-    answers.update({k: a.score for k, a in response.scores.items()})
-    answers.update({k: a.choice for k, a in response.choices.items()})
-    return answers
-
-
 class DecisionModel(_Node):
-    """TypeSafe's Jev by default, or OpenAI Decisions with an `openai:` model."""
+    """Asks a decision model typed questions about its inputs.
+
+    `model` is a `BaseDecisionModel`, or a `typesafe:` model name.
+    """
 
     _run_type = "llm"
 
     def __init__(
         self,
         *,
-        questions: dict[str, dict[str, Any]],
+        questions: dict[str, Question],
         inputs: Optional[dict[str, _Ref]] = None,
-        model: str = "typesafe:jev-latest",
+        model: Union[str, BaseDecisionModel] = "typesafe:jev-latest",
         name: str = "DecisionModel",
         **_: Any,
     ) -> None:
         self._model, self._questions, self._inputs = model, questions, inputs or {}
         self._outputs, self._name = set(questions), name
 
+    def _decision_model(self) -> BaseDecisionModel:
+        if isinstance(self._model, BaseDecisionModel):
+            return self._model
+        provider, _, name = self._model.partition(":")
+        if provider != "typesafe":
+            raise ValueError(
+                f"Unknown decision model {self._model!r}; pass a BaseDecisionModel"
+            )
+        from langchain_typesafe import TypeSafeClassifier
+
+        return TypeSafeClassifier(model=name)
+
     def _run(self, ctx: Any, results: dict) -> dict:
-        provider, _, name = self._model.rpartition(":")
-        ask = _ask_openai if provider == "openai" else _ask_typesafe
-        return ask(name, self._values(ctx, results), self._questions)
+        response = self._decision_model().invoke(
+            {"state": self._values(ctx, results), "questions": self._questions}
+        )
+        return {key: getattr(a, a.type) for key, a in response.answers.items()}
 
 
 class Graph:

@@ -39,10 +39,39 @@ def _awrap(
     return _wrap_app
 
 
+# Content block types accepted by the Chat Completions API.
+_CHAT_COMPLETIONS_BLOCK_TYPES = {
+    "text",
+    "image_url",
+    "input_audio",
+    "refusal",
+    "audio",
+    "file",
+}
+
+
+def _strip_unsupported_blocks(message: ChatCompletionMessage) -> ChatCompletionMessage:
+    # Responses API models can return content blocks such as "reasoning" and
+    # "function_call" that Chat Completions rejects. Tool calls are kept in
+    # "tool_calls", so drop these blocks to keep the trajectory valid model input.
+    content = message.get("content")
+    if not isinstance(content, list):
+        return message
+    filtered = [
+        block
+        for block in content
+        if not isinstance(block, dict)
+        or block.get("type") in _CHAT_COMPLETIONS_BLOCK_TYPES
+    ]
+    if len(filtered) == len(content):
+        return message
+    return {**message, "content": filtered or ""}  # type: ignore[typeddict-item]
+
+
 def _coerce_and_assign_id_to_message(
     message: Union[dict, BaseMessage, BaseMessageChunk, ChatCompletionMessage],
 ) -> ChatCompletionMessage:
-    converted_message = _convert_to_openai_message(message)
+    converted_message = _strip_unsupported_blocks(_convert_to_openai_message(message))
     if converted_message.get("id") is None:
         return {**converted_message, "id": str(uuid.uuid4())}
     return converted_message

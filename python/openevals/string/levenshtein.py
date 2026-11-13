@@ -13,30 +13,30 @@ def _scorer(outputs: Any, reference_outputs: Any) -> float:
         outputs = json.dumps(outputs)
     if not isinstance(reference_outputs, str):
         reference_outputs = json.dumps(reference_outputs)
-    # Create a matrix of size (m+1)x(n+1) where m and n are the string lengths
+    # Use the shorter string for the row width to use O(min(m, n)) memory.
     m, n = len(outputs), len(reference_outputs)
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    if n > m:
+        outputs, reference_outputs = reference_outputs, outputs
+        m, n = n, m
+    previous = list(range(n + 1))
+    current = [0] * (n + 1)
 
-    # Initialize first row and column
-    for i in range(m + 1):
-        dp[i][0] = i
-    for j in range(n + 1):
-        dp[0][j] = j
-
-    # Fill the matrix
+    # Each cell only needs the current row and the previous row.
     for i in range(1, m + 1):
+        current[0] = i
         for j in range(1, n + 1):
             if outputs[i - 1] == reference_outputs[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1]
+                current[j] = previous[j - 1]
             else:
-                dp[i][j] = min(
-                    dp[i - 1][j] + 1,  # deletion
-                    dp[i][j - 1] + 1,  # insertion
-                    dp[i - 1][j - 1] + 1,  # substitution
+                current[j] = min(
+                    previous[j] + 1,  # deletion
+                    current[j - 1] + 1,  # insertion
+                    previous[j - 1] + 1,  # substitution
                 )
+        previous, current = current, previous
 
     # Calculate the distance and normalize it to a score between 0 and 1
-    distance = dp[m][n]
+    distance = previous[n]
     max_length = max(m, n)
     score = 1.0 - (distance / max_length) if max_length > 0 else 1.0
     return score

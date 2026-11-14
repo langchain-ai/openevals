@@ -1,0 +1,19 @@
+python/openevals/graph/__init__.py
+  s_4b669f58ec698b::t_9134e9464842d0 96-103,123-124,128-130,161,170,184,228,230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "754fc2a1aad11af30da18c71d40cdd2ad75df2a6",
+  "prompts": {},
+  "sessions": {
+    "s_4b669f58ec698b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f76b3fa-a6e4-4414-9768-5b77790418fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Brendan Whiting <brendan.whiting@langchain.dev>"
+    }
+  }
+}

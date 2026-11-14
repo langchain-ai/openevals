@@ -93,9 +93,14 @@ class _Node:
         return {name: ref._resolve(ctx, results) for name, ref in self._inputs.items()}
 
     def _traced_run(self, ctx: Any, results: dict) -> Any:
-        return traceable(name=self._name, run_type=self._run_type)(self._run)(
-            ctx, results
-        )
+        # Resolve inputs first so the trace shows only what this node reads,
+        # not the whole context and every earlier node's outputs.
+        values = self._values(ctx, results)
+        return traceable(
+            name=self._name,
+            run_type=self._run_type,
+            process_inputs=lambda inputs: inputs["values"],
+        )(self._run)(values)
 
 
 class _CodeNode(_Node):
@@ -115,12 +120,14 @@ class _CodeNode(_Node):
                 # A parameter named after another node reads that node's outputs.
                 yield name, self._fn.__globals__.get(name, name)
 
-    def _run(self, ctx: Any, results: dict) -> Any:
-        args = {
+    def _values(self, ctx: Any, results: dict) -> dict:
+        return {
             name: results[src] if isinstance(src, _Node) else _context(ctx, src)
             for name, src in self._sources()
         }
-        return self._fn(**args)
+
+    def _run(self, values: dict) -> Any:
+        return self._fn(**values)
 
 
 def node(fn: Optional[Callable[..., Any]] = None, **_: Any) -> Any:
@@ -151,9 +158,7 @@ class LLM(_Node):
         else:
             self._outputs = set(output_schema.__annotations__)
 
-    def _messages(self, ctx: Any, results: dict) -> list[dict]:
-        values = self._values(ctx, results)
-
+    def _messages(self, values: dict) -> list[dict]:
         def fill(text: str) -> str:
             return re.sub(r"\{\{(\w+)\}\}", lambda m: str(values.get(m[1], m[0])), text)
 
@@ -162,7 +167,7 @@ class LLM(_Node):
             prompt = [("user", prompt)]
         return [{"role": role, "content": fill(text)} for role, text in prompt]
 
-    def _run(self, ctx: Any, results: dict) -> Any:
+    def _run(self, values: dict) -> Any:
         from langchain.chat_models import init_chat_model
 
         schema = self._output_schema or {
@@ -176,7 +181,7 @@ class LLM(_Node):
         result = (
             init_chat_model(self._model)
             .with_structured_output(schema)
-            .invoke(self._messages(ctx, results))
+            .invoke(self._messages(values))
         )
         # A Pydantic schema gives a model instance; TypedDicts and dicts give a dict.
         return result.model_dump() if hasattr(result, "model_dump") else result
@@ -220,9 +225,9 @@ class DecisionModel(_Node):
             ) from e
         return TypeSafeClassifier(model=name)
 
-    def _run(self, ctx: Any, results: dict) -> dict:
+    def _run(self, values: dict) -> dict:
         response = self._decision_model().invoke(
-            {"state": self._values(ctx, results), "questions": self._questions}
+            {"state": values, "questions": self._questions}
         )
         return {key: getattr(a, a.type) for key, a in response.answers.items()}
 

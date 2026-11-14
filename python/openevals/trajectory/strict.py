@@ -1,6 +1,5 @@
 from __future__ import annotations
 from warnings import warn
-import json
 
 from openevals.trajectory.utils import _normalize_to_openai_messages_list
 from openevals.types import (
@@ -9,7 +8,7 @@ from openevals.types import (
     ToolArgsMatchOverrides,
 )
 from openevals.utils import _run_evaluator, _arun_evaluator
-from openevals.trajectory.utils import _get_matcher_for_tool_name
+from openevals.trajectory.utils import _is_trajectory_superset
 
 from typing import Any, Union, Optional, TYPE_CHECKING
 
@@ -50,29 +49,14 @@ def _scorer(
                 return False
             if len(output["tool_calls"]) != len(reference_output["tool_calls"]):
                 return False
-            # Create a copy of reference tool calls to track matches
-            seen = [False] * len(reference_output["tool_calls"])
-            for output_call in output["tool_calls"]:
-                found_match = False
-                for i, reference_call in enumerate(reference_output["tool_calls"]):
-                    if not seen[i] and (
-                        output_call["function"]["name"]
-                        == reference_call["function"]["name"]
-                    ):
-                        matcher = _get_matcher_for_tool_name(
-                            output_call["function"]["name"],
-                            tool_args_match_mode,
-                            tool_args_match_overrides,
-                        )
-                        if matcher(
-                            json.loads(output_call["function"]["arguments"]),
-                            json.loads(reference_call["function"]["arguments"]),
-                        ):
-                            found_match = True
-                            seen[i] = True
-                            break
-                if not found_match:
-                    return False
+            # Same number of calls, so a superset is a one-to-one match
+            if not _is_trajectory_superset(
+                [output],
+                [reference_output],
+                tool_args_match_mode,
+                tool_args_match_overrides,
+            ):
+                return False
     return True
 
 

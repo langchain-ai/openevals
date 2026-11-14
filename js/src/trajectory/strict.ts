@@ -7,7 +7,7 @@ import {
   ToolArgsMatchOverrides,
 } from "../types.js";
 import { _normalizeToOpenAIMessagesList, _runEvaluator } from "../utils.js";
-import { _getMatcherForToolName } from "./utils.js";
+import { _isTrajectorySuperset } from "./utils.js";
 
 export async function _scorer(params: {
   outputs: ChatCompletionMessage[];
@@ -51,37 +51,16 @@ export async function _scorer(params: {
       if (output.tool_calls!.length !== referenceOutput.tool_calls!.length) {
         return false;
       }
-      const referenceCalls = referenceOutput.tool_calls ?? [];
-      const seen = new Array(referenceCalls.length).fill(false);
-
-      for (const outputCall of output.tool_calls ?? []) {
-        let foundMatch = false;
-        for (let j = 0; j < referenceCalls.length; j++) {
-          const referenceCall = referenceCalls[j];
-          if (
-            !seen[j] &&
-            outputCall.function?.name === referenceCall.function?.name
-          ) {
-            const matcher = _getMatcherForToolName(
-              outputCall.function?.name ?? "",
-              toolArgsMatchMode,
-              toolArgsMatchOverrides
-            );
-            if (
-              await matcher(
-                JSON.parse(outputCall.function?.arguments ?? "{}"),
-                JSON.parse(referenceCall.function?.arguments ?? "{}")
-              )
-            ) {
-              foundMatch = true;
-              seen[j] = true;
-              break;
-            }
-          }
-        }
-        if (!foundMatch) {
-          return false;
-        }
+      // Same number of calls, so a superset is a one-to-one match
+      if (
+        !(await _isTrajectorySuperset(
+          [output],
+          [referenceOutput],
+          toolArgsMatchMode,
+          toolArgsMatchOverrides
+        ))
+      ) {
+        return false;
       }
     }
   }

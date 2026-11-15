@@ -1,7 +1,7 @@
 import { Embeddings } from "@langchain/core/embeddings";
 
 import { EvaluatorResult } from "../types.js";
-import { _runEvaluator } from "../utils.js";
+import { _runEvaluator, _stringifyForComparison } from "../utils.js";
 
 // Helper functions for vector calculations
 const handleEmbeddingOutputs = (
@@ -64,12 +64,8 @@ export const createEmbeddingSimilarityEvaluator = ({
       );
     }
 
-    const outputString =
-      typeof outputs === "string" ? outputs : JSON.stringify(outputs);
-    const referenceOutputString =
-      typeof referenceOutputs === "string"
-        ? referenceOutputs
-        : JSON.stringify(referenceOutputs);
+    const outputString = _stringifyForComparison(outputs);
+    const referenceOutputString = _stringifyForComparison(referenceOutputs);
 
     const getScore = async (): Promise<number> => {
       const receivedEmbedding = await embeddings.embedQuery(outputString);

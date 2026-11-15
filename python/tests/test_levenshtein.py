@@ -71,3 +71,32 @@ async def test_levenshtein_aevaluate():
     res = await client.aevaluate(target, data="json", evaluators=[evaluator])
     async for r in res:
         assert r["evaluation_results"]["results"][0].score is not None
+
+
+@pytest.mark.langsmith
+def test_levenshtein_ignores_key_order():
+    outputs = {"city": "Paris", "unit": "C", "details": {"lat": 48.85, "lon": 2.35}}
+    reference_outputs = {
+        "unit": "C",
+        "details": {"lon": 2.35, "lat": 48.85},
+        "city": "Paris",
+    }
+    res = levenshtein_distance(outputs=outputs, reference_outputs=reference_outputs)
+    assert res["key"] == "levenshtein_distance"
+    assert res["score"] == 1.0
+
+
+@pytest.mark.langsmith
+@pytest.mark.asyncio
+async def test_levenshtein_ignores_key_order_async():
+    outputs = {"city": "Paris", "unit": "C", "details": {"lat": 48.85, "lon": 2.35}}
+    reference_outputs = {
+        "unit": "C",
+        "details": {"lon": 2.35, "lat": 48.85},
+        "city": "Paris",
+    }
+    res = await levenshtein_distance_async(
+        outputs=outputs, reference_outputs=reference_outputs
+    )
+    assert res["key"] == "levenshtein_distance"
+    assert res["score"] == 1.0

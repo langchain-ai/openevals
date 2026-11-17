@@ -6,6 +6,28 @@ import {
 } from "../types.js";
 import { _deepEqual } from "../utils.js";
 
+// Stands in for tool call arguments that are not a JSON object. The call stays
+// in the trajectory and fails any match that compares its args, instead of
+// throwing while the message is parsed.
+const INVALID_ARGS_KEY = "__openevals_invalid_args";
+
+export function _parseToolCallArgs(
+  arguments_: string
+): Record<string, unknown> {
+  if (!arguments_.trim()) {
+    return {};
+  }
+  let args: unknown;
+  try {
+    args = JSON.parse(arguments_);
+  } catch {
+    args = undefined;
+  }
+  return typeof args === "object" && args !== null && !Array.isArray(args)
+    ? (args as Record<string, unknown>)
+    : { [INVALID_ARGS_KEY]: arguments_ };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _normalizeToolCall(toolCall: Record<string, any>): {
   name: string;
@@ -19,7 +41,7 @@ function _normalizeToolCall(toolCall: Record<string, any>): {
   ) {
     return {
       name: toolCall.function.name,
-      args: JSON.parse(toolCall.function.arguments),
+      args: _parseToolCallArgs(toolCall.function.arguments),
     };
   }
   return toolCall as { name: string; args: Record<string, unknown> };

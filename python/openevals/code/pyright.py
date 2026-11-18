@@ -5,6 +5,7 @@ import os
 
 from typing import Optional, Callable, Any, Union, Literal, Awaitable, Tuple
 
+from openevals.code.base import _type_checker_directive_error
 from openevals.code.llm import (
     _create_base_code_evaluator,
     _create_async_base_code_evaluator,
@@ -137,6 +138,9 @@ def create_pyright_evaluator(
         outputs: str,
         **kwargs,
     ):
+        error = _type_checker_directive_error(outputs)
+        if error is not None:
+            return (False, error)
         return _analyze_with_pyright(
             output=outputs,
             pyright_cli_args=pyright_cli_args,
@@ -194,6 +198,9 @@ def create_async_pyright_evaluator(
         outputs: str,
         **kwargs,
     ):
+        error = _type_checker_directive_error(outputs)
+        if error is not None:
+            return (False, error)
         return await _analyze_with_pyright_async(
             output=outputs,
             pyright_cli_args=pyright_cli_args,

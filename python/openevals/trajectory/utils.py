@@ -174,8 +174,12 @@ def _get_matcher_for_comparison_mode(
         return _subset_match
     elif mode == "superset":
         return _superset_match
-    else:
+    elif mode == "ignore":
         return _ignore_match
+    else:
+        raise ValueError(
+            f"Invalid tool args match mode: `{mode}`. Must be either `exact`, `ignore`, `subset`, or `superset`."
+        )
 
 
 def _get_partial_matcher_on_keys(keys: list[str]) -> Callable[[dict, dict], bool]:

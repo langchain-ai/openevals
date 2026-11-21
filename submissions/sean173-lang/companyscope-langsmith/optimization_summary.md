@@ -1,0 +1,3 @@
+# Optimization summary — optional comparison not yet run
+
+A/B comparison is **optional**. After running `python run_experiment.py --variant baseline` and `python run_experiment.py --variant cautious` on the same 18-case dataset, compare mean `llm_correctness`, citation validity, target latency, and observed token use in each JSON export. Select the cautious instruction set if it improves unsupported-claim handling without unacceptable time or cost; otherwise prefer the simpler baseline. **No comparative score or savings claim is made before both actual experiments run.** Judge-call costs may not be included in target-run cost exports.

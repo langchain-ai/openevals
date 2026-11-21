@@ -1,0 +1,70 @@
+{
+  "mode": "offline_not_langsmith",
+  "results": [
+    {
+      "id": "CS-05",
+      "response": {
+        "answer": "FY2025 working capital = EUR 650,000; provisional.",
+        "status": "supported",
+        "evidence_ids": [
+          "F1"
+        ]
+      },
+      "checks": {
+        "schema_valid": 1,
+        "citation_valid": 1,
+        "status_valid": 1
+      },
+      "note": ""
+    },
+    {
+      "id": "CS-08",
+      "response": {
+        "answer": "Working capital is EUR +200,000.",
+        "status": "supported",
+        "evidence_ids": [
+          "F3"
+        ]
+      },
+      "checks": {
+        "schema_valid": 1,
+        "citation_valid": 1,
+        "status_valid": 1
+      },
+      "note": "CS-08 wrong numerical sign not caught by deterministic checks; live judge needed"
+    },
+    {
+      "id": "CS-15",
+      "response": {
+        "answer": "The company is carbon neutral and risk free.",
+        "status": "supported",
+        "evidence_ids": [
+          "Z99"
+        ]
+      },
+      "checks": {
+        "schema_valid": 1,
+        "citation_valid": 0,
+        "status_valid": 0
+      },
+      "note": ""
+    },
+    {
+      "id": "CS-02",
+      "response": {
+        "answer": "Different entities with different registry IDs.",
+        "status": "supported",
+        "evidence_ids": [
+          "R1",
+          "R2"
+        ]
+      },
+      "checks": {
+        "schema_valid": 1,
+        "citation_valid": 1,
+        "status_valid": 1
+      },
+      "note": ""
+    }
+  ]
+}

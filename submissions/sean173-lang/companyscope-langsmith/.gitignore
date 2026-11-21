@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.DS_Store
+*.log
+artifacts/*.png
+artifacts/*.html
+
+# Submission secret protection
+.env
+.env.*.local
+.venv/
+venv/
+__pycache__/

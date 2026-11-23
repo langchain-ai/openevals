@@ -37,6 +37,30 @@ function _extractToolCalls(
   return toolCalls;
 }
 
+function _canAssignAll(candidates: number[][]): boolean {
+  // Each reference tool call needs its own output tool call. With a partial
+  // args match, the first candidate taken may be the only one that fits a
+  // later call, so move an earlier assignment when that frees a match.
+  const assigned = new Map<number, number>();
+
+  const assign = (refIdx: number, visited: Set<number>): boolean => {
+    for (const outIdx of candidates[refIdx]) {
+      if (visited.has(outIdx)) {
+        continue;
+      }
+      visited.add(outIdx);
+      const currentRefIdx = assigned.get(outIdx);
+      if (currentRefIdx === undefined || assign(currentRefIdx, visited)) {
+        assigned.set(outIdx, refIdx);
+        return true;
+      }
+    }
+    return false;
+  };
+
+  return candidates.every((_, refIdx) => assign(refIdx, new Set<number>()));
+}
+
 export async function _isTrajectorySuperset(
   outputs: ChatCompletionMessage[],
   referenceOutputs: ChatCompletionMessage[],
@@ -50,26 +74,19 @@ export async function _isTrajectorySuperset(
   const outputToolCalls = _extractToolCalls(outputs);
   const referenceToolCalls = _extractToolCalls(referenceOutputs);
 
-  // Keep track of which reference tool calls have been matched
-  const matchedReferenceCalls = new Set<number>();
-
-  // For each reference tool call, find a matching output tool call
+  // For each reference tool call, find the output tool calls that match it
+  const candidates: number[][] = [];
   for (const refCall of referenceToolCalls) {
     const refName = refCall.name;
     const refArgs = refCall.args;
 
-    let foundMatch = false;
+    const refCandidates: number[] = [];
     for (let outIdx = 0; outIdx < outputToolCalls.length; outIdx++) {
       const outCall = outputToolCalls[outIdx];
       const outName = outCall.name;
 
       // Names must match
       if (refName !== outName) {
-        continue;
-      }
-
-      // If we're already using this output call for a different match, skip
-      if (matchedReferenceCalls.has(outIdx)) {
         continue;
       }
 
@@ -85,19 +102,18 @@ export async function _isTrajectorySuperset(
         ? await matcher(refArgs, outArgs)
         : await matcher(outArgs, refArgs);
       if (isMatch) {
-        matchedReferenceCalls.add(outIdx);
-        foundMatch = true;
-        break;
+        refCandidates.push(outIdx);
       }
     }
 
-    // If we didn't find a match for this reference call, we're not a superset
-    if (!foundMatch) {
+    // If nothing matches this reference call, we're not a superset
+    if (refCandidates.length === 0) {
       return false;
     }
+    candidates.push(refCandidates);
   }
 
-  return true;
+  return _canAssignAll(candidates);
 }
 
 function _exactMatch(

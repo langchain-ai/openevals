@@ -86,6 +86,25 @@ def _extract_tool_calls(messages: list[ChatCompletionMessage]) -> list[dict]:
     return tool_calls
 
 
+def _can_assign_all(candidates: list[list[int]]) -> bool:
+    # Each reference tool call needs its own output tool call. With a partial
+    # args match, the first candidate taken may be the only one that fits a
+    # later call, so move an earlier assignment when that frees a match.
+    assigned: dict[int, int] = {}
+
+    def assign(ref_idx: int, visited: set[int]) -> bool:
+        for out_idx in candidates[ref_idx]:
+            if out_idx in visited:
+                continue
+            visited.add(out_idx)
+            if out_idx not in assigned or assign(assigned[out_idx], visited):
+                assigned[out_idx] = ref_idx
+                return True
+        return False
+
+    return all(assign(ref_idx, set()) for ref_idx in range(len(candidates)))
+
+
 def _is_trajectory_superset(
     outputs: list[ChatCompletionMessage],
     reference_outputs: list[ChatCompletionMessage],
@@ -99,24 +118,18 @@ def _is_trajectory_superset(
     output_tool_calls = _extract_tool_calls(outputs)
     reference_tool_calls = _extract_tool_calls(reference_outputs)
 
-    # Keep track of which reference tool calls have been matched
-    matched_reference_calls = set()
-
-    # For each reference tool call, find a matching output tool call
+    # For each reference tool call, find the output tool calls that match it
+    candidates: list[list[int]] = []
     for ref_call in reference_tool_calls:
         ref_name = ref_call["name"]
         ref_args = ref_call["args"]
 
-        found_match = False
+        ref_candidates = []
         for out_idx, out_call in enumerate(output_tool_calls):
             out_name = out_call["name"]
 
             # Names must match
             if ref_name != out_name:
-                continue
-
-            # If we're already using this output call for a different match, skip
-            if out_idx in matched_reference_calls:
                 continue
 
             # Check tool args according to match mode
@@ -130,15 +143,14 @@ def _is_trajectory_superset(
             else:
                 is_match = matcher(out_args, ref_args)
             if is_match:
-                matched_reference_calls.add(out_idx)
-                found_match = True
-                break
+                ref_candidates.append(out_idx)
 
-        # If we didn't find a match for this reference call, we're not a superset
-        if not found_match:
+        # If nothing matches this reference call, we're not a superset
+        if not ref_candidates:
             return False
+        candidates.append(ref_candidates)
 
-    return True
+    return _can_assign_all(candidates)
 
 
 def _exact_match(tool_call: dict, reference_tool_call: dict) -> bool:

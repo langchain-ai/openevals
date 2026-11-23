@@ -728,3 +728,34 @@ def test_error_no_rubric():
 def test_error_no_model():
     with pytest.raises(ValueError):
         create_json_match_evaluator(rubric={"a": "foo"})
+
+
+@pytest.mark.parametrize(
+    "evaluator_kwargs, outputs, reference_outputs",
+    [
+        ({"aggregator": "average"}, {}, {}),
+        (
+            {"aggregator": "average", "exclude_keys": ["a"]},
+            {"a": 1},
+            {"a": 2},
+        ),
+        ({"aggregator": "average", "list_aggregator": "average"}, [], []),
+        ({"aggregator": "all", "list_aggregator": "average"}, [], []),
+        (
+            {
+                "aggregator": "average",
+                "list_aggregator": "average",
+                "list_match_mode": "superset",
+            },
+            [{"a": 1}],
+            [],
+        ),
+    ],
+)
+def test_json_match_nothing_to_score_is_a_match(
+    evaluator_kwargs, outputs, reference_outputs
+):
+    evaluator = create_json_match_evaluator(**evaluator_kwargs)
+    result = evaluator(outputs=outputs, reference_outputs=reference_outputs)
+    assert len(result) == 1
+    assert result[0]["score"] == 1

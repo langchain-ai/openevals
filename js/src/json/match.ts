@@ -427,7 +427,7 @@ function _aggregateResults({
               (a, b) => Number(a) + Number(b),
               0
             ) / Object.keys(indexScores).length
-          : 0;
+          : 1;
         return { [[scoreKey, aggregator].join(":")]: score };
       }
 
@@ -493,7 +493,7 @@ function _aggregateResults({
             sum + (typeof v === "object" ? Number(v.score) : Number(v)),
           0
         ) / Object.keys(scores).length
-      : 0;
+      : 1;
     return { [[scoreKey, aggregator].join(":")]: score };
   } else if (aggregator === "all") {
     const score = Object.values(scores).some(

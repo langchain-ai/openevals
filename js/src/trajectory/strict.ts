@@ -7,7 +7,7 @@ import {
   ToolArgsMatchOverrides,
 } from "../types.js";
 import { _normalizeToOpenAIMessagesList, _runEvaluator } from "../utils.js";
-import { _getMatcherForToolName } from "./utils.js";
+import { _getMatcherForToolName, _parseToolCallArgs } from "./utils.js";
 
 export async function _scorer(params: {
   outputs: ChatCompletionMessage[];
@@ -69,8 +69,8 @@ export async function _scorer(params: {
             );
             if (
               await matcher(
-                JSON.parse(outputCall.function?.arguments ?? "{}"),
-                JSON.parse(referenceCall.function?.arguments ?? "{}")
+                _parseToolCallArgs(outputCall.function?.arguments ?? "{}"),
+                _parseToolCallArgs(referenceCall.function?.arguments ?? "{}")
               )
             ) {
               foundMatch = true;

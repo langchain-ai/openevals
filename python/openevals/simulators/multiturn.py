@@ -1,5 +1,5 @@
 import uuid
-import asyncio
+import inspect
 from typing import Any, Awaitable, Callable, Literal, Optional, Union
 from openevals.types import (
     SimpleEvaluator,
@@ -32,9 +32,10 @@ def _awrap(
 ) -> Callable:
     @traceable(name=run_name)
     async def _wrap_app(inputs: ChatCompletionMessage, **kwargs):
-        if asyncio.iscoroutinefunction(app):
-            return await app(inputs, thread_id=thread_id, **kwargs)
-        return app(inputs, thread_id=thread_id, **kwargs)
+        result = app(inputs, thread_id=thread_id, **kwargs)
+        if inspect.isawaitable(result):
+            return await result
+        return result
 
     return _wrap_app
 

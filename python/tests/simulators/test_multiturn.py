@@ -80,6 +80,28 @@ def test_multiturn_message_with_openai():
 
 
 @pytest.mark.asyncio
+async def test_multiturn_async_awaits_callable_objects_and_awaitable_results():
+    """An `async __call__` app and a sync user returning a coroutine are awaited."""
+
+    class App:
+        async def __call__(self, inputs, *, thread_id: str, **kwargs):
+            return {"role": "assistant", "content": "Hello!"}
+
+    async def reply():
+        return {"role": "user", "content": "Hi"}
+
+    def user(trajectory, *, thread_id: str, **kwargs):
+        return reply()
+
+    res = await run_multiturn_simulation_async(app=App(), user=user, max_turns=1)
+
+    assert [(m["role"], m["content"]) for m in res["trajectory"]] == [
+        ("user", "Hi"),
+        ("assistant", "Hello!"),
+    ]
+
+
+@pytest.mark.asyncio
 @pytest.mark.langsmith
 async def test_multiturn_failure_async():
     def give_refund():

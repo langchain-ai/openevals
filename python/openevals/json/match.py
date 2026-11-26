@@ -288,6 +288,7 @@ def _prepare_parameters(
                     "type": "boolean",
                     "description": f"Does the output for key {key}, follow the criteria? {key_criteria}",
                 }
+                json_schema["required"].append(raw_key)
             else:
                 json_schema["properties"][raw_key] = {
                     "type": "object",
@@ -304,6 +305,7 @@ def _prepare_parameters(
                     "required": ["score", "reasoning"],
                     "additionalProperties": False,
                 }
+                json_schema["required"].append(raw_key)
 
     for raw_key, value in reference_outputs.items():
         if use_list_reducer:

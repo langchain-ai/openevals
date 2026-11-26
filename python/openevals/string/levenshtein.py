@@ -10,9 +10,9 @@ def _scorer(outputs: Any, reference_outputs: Any) -> float:
             "Levenshtein distance requires both outputs and reference_outputs"
         )
     if not isinstance(outputs, str):
-        outputs = json.dumps(outputs)
+        outputs = json.dumps(outputs, sort_keys=True)
     if not isinstance(reference_outputs, str):
-        reference_outputs = json.dumps(reference_outputs)
+        reference_outputs = json.dumps(reference_outputs, sort_keys=True)
     # Create a matrix of size (m+1)x(n+1) where m and n are the string lengths
     m, n = len(outputs), len(reference_outputs)
     dp = [[0] * (n + 1) for _ in range(m + 1)]

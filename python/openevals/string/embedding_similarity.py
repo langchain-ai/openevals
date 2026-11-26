@@ -61,9 +61,9 @@ def create_embedding_similarity_evaluator(
             )
 
         if not isinstance(outputs, str):
-            outputs = json.dumps(outputs)
+            outputs = json.dumps(outputs, sort_keys=True)
         if not isinstance(reference_outputs, str):
-            reference_outputs = json.dumps(reference_outputs)
+            reference_outputs = json.dumps(reference_outputs, sort_keys=True)
 
         def get_score():
             embeddings = init_embeddings(model)
@@ -115,9 +115,9 @@ def create_async_embedding_similarity_evaluator(
             )
 
         if not isinstance(outputs, str):
-            outputs = json.dumps(outputs)
+            outputs = json.dumps(outputs, sort_keys=True)
         if not isinstance(reference_outputs, str):
-            reference_outputs = json.dumps(reference_outputs)
+            reference_outputs = json.dumps(reference_outputs, sort_keys=True)
 
         async def get_score():
             from langchain.embeddings import init_embeddings

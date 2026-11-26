@@ -432,3 +432,42 @@ export function _normalizeOutputsAsString(
     throw new Error(`Expected string or object, got ${typeof outputs}`);
   }
 }
+
+/**
+ * Recursively sorts object keys so that structurally equal values serialize
+ * to the same JSON string regardless of key insertion order.
+ */
+export function _sortKeysDeep(value: unknown): unknown {
+  if (value === undefined) {
+    return null; // Convert undefined to null for consistent handling
+  }
+  if (
+    value !== null &&
+    typeof value === "object" &&
+    typeof (value as { toJSON?: unknown }).toJSON === "function"
+  ) {
+    // Respect custom serialization (e.g. Date) the same way JSON.stringify does
+    return _sortKeysDeep((value as { toJSON: () => unknown }).toJSON());
+  }
+  if (Array.isArray(value)) {
+    return value.map(_sortKeysDeep);
+  }
+  if (typeof value === "object" && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => [k, _sortKeysDeep(v)])
+    );
+  }
+  return value;
+}
+
+/**
+ * Serializes a value to a string for comparison. Strings are returned as-is;
+ * everything else is JSON-stringified with object keys sorted.
+ */
+export function _stringifyForComparison(value: unknown): string {
+  return typeof value === "string"
+    ? value
+    : JSON.stringify(_sortKeysDeep(value));
+}

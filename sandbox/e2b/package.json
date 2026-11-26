@@ -4,9 +4,11 @@
   "packageManager": "yarn@3.5.1",
   "type": "module",
   "dependencies": {
-    "@e2b/cli": "^2.23.0"
+    "@e2b/cli": "^2.26.0"
   },
   "resolutions": {
+    "glob": ">=14.0.2",
+    "minimatch": ">=11.0.1",
     "tmp": ">=0.2.4"
   }
 }

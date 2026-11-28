@@ -180,6 +180,7 @@ See the [LLM-as-judge](#llm-as-judge) section for more information on how to cus
     - [Sandbox Pyright (Python-only)](#sandbox-pyright-python-only)
     - [Sandbox TypeScript type-checking (TypeScript-only)](#sandbox-typescript-type-checking-typescript-only)
     - [Sandbox Execution](#sandbox-execution)
+    - [Sandboxes on boxd](#sandboxes-on-boxd)
 
   </details>
 
@@ -2072,7 +2073,7 @@ OpenEvals contains some useful prebuilt evaluators for evaluating generated code
 
 - Type-checking generated code with [Pyright](https://github.com/microsoft/pyright) and [Mypy](https://github.com/python/mypy) (Python-only) or TypeScript's built-in type checker (JavaScript only)
   - Note that these local type-checking evaluators will not install any dependencies and will ignore errors for these imports
-- Sandboxed type-checking and execution evaluators that use [E2B](https://e2b.dev/) to install dependencies and run generated code securely
+- Sandboxed type-checking and execution evaluators that use [E2B](https://e2b.dev/) or [boxd](https://boxd.sh/?ref=openevals) to install dependencies and run generated code securely
 - LLM-as-a-judge for code
 
 All evaluators in this section accept `outputs` as a string, an object with a key `"messages"` that contains a list of messages, or a message-like object with a key `"content"` that contains a string.
@@ -2339,7 +2340,7 @@ console.log(evalResult);
 
 ## Sandboxed code
 
-LLMs can generate arbitrary code, and if you are running a code evaluator locally, you may not wish to install generated dependencies or run this arbitrary code locally. To solve this, OpenEvals integrates with [E2B](https://e2b.dev) to run some code evaluators in isolated sandboxes.
+LLMs can generate arbitrary code, and if you are running a code evaluator locally, you may not wish to install generated dependencies or run this arbitrary code locally. To solve this, OpenEvals integrates with [E2B](https://e2b.dev) and [boxd](https://boxd.sh/?ref=openevals) to run some code evaluators in isolated sandboxes. The sections below use E2B. [Sandboxes on boxd](#sandboxes-on-boxd) shows the same evaluators on a boxd machine.
 
 Given some output code from an LLM, these sandboxed code evaluators will run scripts in a sandbox that parse out dependencies and install them so that the evaluator has proper context for type-checking or execution.
 
@@ -2614,6 +2615,193 @@ console.log(evalResult);
 Above, the evaluator identifies and installs `@langchain/langgraph`, then attempts to execute the code. The type-check fails because the provided code misuses the imported package.
 
 If desired, you can pass an `environmentVariables` object when creating the evaluator. Generated code will  have access to these variables within the sandbox, but be cautious, as there is no way to predict exactly what code an LLM will generate.
+
+</details>
+
+### Sandboxes on boxd
+
+[boxd](https://boxd.sh/?ref=openevals) machines are full Ubuntu VMs with Python, `uv` and Node.js preinstalled, so the sandboxed evaluators work on them without a custom template. Each evaluator writes the generated code and its helper scripts into a project directory on the machine, installs the imported packages, then type-checks or runs the code.
+
+The boxd evaluators take a `boxd_client` (Python) or `boxdClient` (TypeScript) and the id of the machine to use. Otherwise they take the same parameters as their E2B counterparts, such as `sandbox_project_directory`, the code extraction parameters, and `environment_variables` for the execution evaluator. They also take a `timeout` in seconds (Python) or `timeoutMs` in milliseconds (TypeScript) for the install and run, 5 minutes by default.
+
+A machine keeps its installed packages between evaluations, so reusing one machine makes later runs faster. If the project directory already has a `package.json`, the TypeScript evaluators keep it and add TypeScript 5 and the imported packages to it. Evaluations that share a machine and a `sandbox_project_directory` run one at a time. To run them in parallel, give each evaluator its own directory or its own machine. A machine stays until you delete it.
+
+<details>
+<summary>Python</summary>
+
+Install the `boxd` package, available as an extra:
+
+```bash
+pip install openevals["boxd"]
+```
+
+Then set your boxd API key as an environment variable. You can create one with `boxd auth keys create openevals`:
+
+```bash
+export BOXD_API_KEY="YOUR_KEY_HERE"
+```
+
+Create a machine. Use `isolated=True` for generated code: the machine then has no credentials and no access to your other machines:
+
+```python
+from boxd import Boxd
+
+# Reads BOXD_API_KEY from the environment
+boxd_client = Boxd()
+
+# isolated=True keeps the machine off your private network and without credentials
+machine = boxd_client.machines.create("openevals-sandbox", isolated=True)
+boxd_client.machines.wait_until_ready(machine.id)
+```
+
+Then pass the client and the machine id to `create_boxd_execution_evaluator` or `create_boxd_pyright_evaluator`:
+
+```python
+from openevals.code.boxd.execution import create_boxd_execution_evaluator
+from openevals.code.boxd.pyright import create_boxd_pyright_evaluator
+
+execution_evaluator = create_boxd_execution_evaluator(
+    boxd_client=boxd_client,
+    machine_id=machine.id,
+)
+pyright_evaluator = create_boxd_pyright_evaluator(
+    boxd_client=boxd_client,
+    machine_id=machine.id,
+)
+
+CODE = """
+from typing import Annotated
+
+from typing_extensions import TypedDict
+
+from langgraph.graph import StateGraph
+from langgraph.graph.message import add_messages
+
+class State(TypedDict):
+    messages: Annotated[list, add_messages]
+
+builder = StateGraph(State)
+builder.add_node("start", lambda state: state)
+builder.compile()
+
+builder.invoke({})
+"""
+
+print(pyright_evaluator(outputs=CODE))
+print(execution_evaluator(outputs=CODE))
+```
+
+```
+{'key': 'pyright_succeeded', 'score': False, 'comment': '[{"severity": "error", "message": "Cannot access attribute \\"invoke\\" for class \\"StateGraph[State, None, State, State]\\"\\n\\u00a0\\u00a0Attribute \\"invoke\\" is unknown", "range": {"start": {"line": 15, "character": 8}, "end": {"line": 15, "character": 14}}, "rule": "reportAttributeAccessIssue"}]', 'metadata': None}
+{'key': 'execution_succeeded', 'score': False, 'comment': 'Command exited with code 1 and error:\nTraceback (most recent call last):\n  File "/home/boxd/openevals/outputs.py", line 14, in <module>\n    builder.compile()\n  File "/home/boxd/openevals/.venv/lib/python3.12/site-packages/langgraph/graph/state.py", line 1261, in compile\n    self.validate(\n  File "/home/boxd/openevals/.venv/lib/python3.12/site-packages/langgraph/graph/state.py", line 1143, in validate\n    raise ValueError(\nValueError: Graph must have an entrypoint: add at least one edge from START to another node\n', 'metadata': None}
+```
+
+Async versions are `create_async_boxd_execution_evaluator` and `create_async_boxd_pyright_evaluator`, which take an `AsyncBoxd` client.
+
+When you are done, delete the machine:
+
+```python
+boxd_client.machines.delete(machine.id)
+```
+
+</details>
+
+<details>
+<summary>TypeScript</summary>
+
+Install the boxd SDK:
+
+```bash
+npm install @boxd-sh/sdk
+```
+
+Then set your boxd API key as an environment variable. You can create one with `boxd auth keys create openevals`:
+
+```
+process.env.BOXD_API_KEY="YOUR_KEY_HERE"
+```
+
+Create a machine and pass the client and the machine id to `createBoxdTypeScriptEvaluator` or `createBoxdExecutionEvaluator`:
+
+```ts
+import { Boxd } from "@boxd-sh/sdk";
+import {
+  createBoxdExecutionEvaluator,
+  createBoxdTypeScriptEvaluator,
+} from "openevals/code/boxd";
+
+// Reads BOXD_API_KEY from the environment
+const boxdClient = new Boxd();
+
+// isolated: true keeps the machine off your private network and without credentials
+const machine = await boxdClient.machines.create({
+  name: "openevals-sandbox",
+  isolated: true,
+});
+await boxdClient.machines.waitUntilReady(machine.id);
+
+const typeScriptEvaluator = createBoxdTypeScriptEvaluator({
+  boxdClient,
+  machineId: machine.id,
+});
+const executionEvaluator = createBoxdExecutionEvaluator({
+  boxdClient,
+  machineId: machine.id,
+});
+
+const CODE = `
+import { Annotation, StateGraph } from '@langchain/langgraph';
+
+const StateAnnotation = Annotation.Root({
+  joke: Annotation<string>,
+  topic: Annotation<string>,
+});
+
+const graph = new StateGraph(StateAnnotation)
+  .addNode("joke", () => ({}))
+  .compile();
+
+await graph.invoke({
+  joke: "foo",
+  topic: "history",
+});
+`;
+
+console.log(await typeScriptEvaluator({ outputs: CODE }));
+console.log(await executionEvaluator({ outputs: CODE }));
+```
+
+```
+{
+  key: 'typescript_succeeded',
+  score: true,
+  comment: undefined,
+  metadata: undefined
+}
+{
+  key: 'execution_succeeded',
+  score: false,
+  comment: '/home/boxd/openevals/node_modules/@langchain/langgraph/src/graph/state.ts:1126\n' +
+    '        throw new Error(\n' +
+    '              ^\n' +
+    '\n' +
+    'Error: joke is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.\n' +
+    '    at StateGraph.addNode (/home/boxd/openevals/node_modules/@langchain/langgraph/src/graph/state.ts:1126:15)\n' +
+    '    at <anonymous> (/home/boxd/openevals/outputs.ts:10:4)\n' +
+    '    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n' +
+    '    at async node:internal/modules/esm/loader:647:26\n' +
+    '    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n' +
+    '\n' +
+    'Node.js v24.22.3\n',
+  metadata: undefined
+}
+```
+
+When you are done, delete the machine:
+
+```ts
+await boxdClient.machines.delete(machine.id);
+```
 
 </details>
 

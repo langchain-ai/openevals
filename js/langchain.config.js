@@ -24,6 +24,7 @@ export const config = {
     index: "index",
     "code/typescript": "code/typescript",
     "code/e2b": "code/e2b/index",
+    "code/boxd": "code/boxd/index",
     llm: "llm",
     prompts: "prompts/index",
     types: "types",
@@ -32,6 +33,7 @@ export const config = {
   requiresOptionalDependency: [
     "code/typescript",
     "code/e2b",
+    "code/boxd",
   ],
   tsConfigPath: resolve("./tsconfig.json"),
   packageSuffix: "core",
